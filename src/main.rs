@@ -1,71 +1,34 @@
-use tokens::Tokens;
+use parser::Token;
+use tokens::TokenType;
 
+use crate::parser::Parser;
+
+mod parser;
 mod tokens;
 
-fn construct_number(file: &Vec<u8>, index: &mut usize) -> Tokens {
-    let mut int_string = String::new();
-
-    let mut is_float = false;
-
-    while *index < file.len() {
-        let char = file[*index] as char;
-
-        if !char.is_numeric() && char != '.' {
-            break;
-        }
-
-        if char == '.' {
-            is_float = true;
-        }
-
-        int_string += &char.to_string();
-        *index += 1;
+fn print_only_tokens(tokens: &Vec<Token>) {
+    for token in tokens {
+        print!("{:?}, ", token.token);
     }
 
-    *index -= 1;
-
-    if !is_float {
-        Tokens::Integer(int_string.parse::<i32>().unwrap())
-    } else {
-        Tokens::Float(int_string.parse::<f32>().unwrap())
-    }
+    println!("");
 }
 
 fn main() {
     let file = std::fs::read("test/first.txt").unwrap();
 
-    let mut tokens: Vec<_> = vec![];
+    let mut parsed_tokens = vec![];
 
-    let mut index = 0;
+    let mut parser = Parser::new(&file);
 
-    while index < file.len() {
-        let char = file[index] as char;
+    loop {
+        let token = parser.get_next_token();
 
-        let token = match char {
-            ' ' | '\t' | '\n' => {
-                index += 1;
-                continue;
-            }
-            '+' => Tokens::Plus,
-            '-' => Tokens::Minus,
-            '*' => Tokens::Multiply,
-            '/' => Tokens::Divide,
-            '=' => Tokens::Equals,
-            _ => {
-                if char.is_numeric() {
-                    construct_number(&file, &mut index)
-                } else {
-                    Tokens::Unknown
-                }
-            }
-        };
-
-        println!("Token: {:?}", token);
-
-        tokens.push(token);
-
-        index += 1;
+        match token.token {
+            TokenType::EOF => break,
+            _ => parsed_tokens.push(token),
+        }
     }
 
-    println!("{:?}", tokens);
+    print_only_tokens(&parsed_tokens);
 }
