@@ -1,34 +1,15 @@
-use parser::Token;
-use tokens::TokenType;
-
-use crate::parser::Parser;
+use lexer::Lexer;
 
 mod parser;
 mod tokens;
-
-fn print_only_tokens(tokens: &Vec<Token>) {
-    for token in tokens {
-        print!("{:?}, ", token.token);
-    }
-
-    println!("");
-}
+mod lexer;
+mod  helpers;
+mod ast;
 
 fn main() {
     let file = std::fs::read("test/first.txt").unwrap();
 
-    let mut parsed_tokens = vec![];
+    let mut lexer = Lexer::new(&file);
 
-    let mut parser = Parser::new(&file);
-
-    loop {
-        let token = parser.get_next_token();
-
-        match token.token {
-            TokenType::EOF => break,
-            _ => parsed_tokens.push(token),
-        }
-    }
-
-    print_only_tokens(&parsed_tokens);
+    lexer.start();
 }

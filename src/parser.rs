@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::tokens::TokenType;
+use crate::tokens::{TokenType, Operations};
 
 #[derive(Debug)]
 pub struct Token {
@@ -81,10 +81,10 @@ impl<'a> Parser<'a> {
                     self.line_number += 1;
                     continue;
                 }
-                '+' => TokenType::Plus,
-                '-' => TokenType::Minus,
-                '*' => TokenType::Multiply,
-                '/' => TokenType::Divide,
+                '+' => TokenType::Op(Operations::Plus),
+                '-' => TokenType::Op(Operations::Minus),
+                '*' => TokenType::Op(Operations::Multiply),
+                '/' => TokenType::Op(Operations::Divide),
                 '=' => TokenType::Equals,
                 '(' => TokenType::LParen,
                 ')' => TokenType::RParen,
