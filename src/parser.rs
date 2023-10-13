@@ -1,115 +1,51 @@
-use std::fmt::Display;
-
-use crate::tokens::{TokenType, Operations};
-
-#[derive(Debug)]
-pub struct Token {
-    pub token: TokenType,
-    pub line_number: usize,
-    pub col_number: usize,
-}
-
-impl Display for Token {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "T: {:?}             , L: {:}, C: {}",
-            self.token, self.line_number, self.col_number
-        )
-    }
-}
+use crate::{
+    helpers::print_only_tokens,
+    lexer::{Lexer, Token},
+    tokens::TokenType,
+};
 
 pub struct Parser<'a> {
-    pub line_number: usize,
-    pub col_number: usize,
-    pub file: &'a Vec<u8>,
-    index: usize,
+    parser: Box<Lexer<'a>>,
+    parsed_tokens: Vec<Token>,
 }
 
 impl<'a> Parser<'a> {
     pub fn new(file: &'a Vec<u8>) -> Self {
-        Parser {
-            line_number: 0,
-            col_number: 0,
-            index: 0,
-            file,
+        let parser = Lexer::new(file);
+
+        Self {
+            parser: Box::new(parser),
+            parsed_tokens: vec![],
         }
     }
 
-    fn construct_number(&mut self) -> TokenType {
-        let mut int_string = String::new();
+    pub fn start(&mut self) {
+        loop {
+            let token = self.parser.get_next_token(false);
 
-        let mut is_float = false;
+            match &token.token {
+                TokenType::EOF => break,
 
-        while self.index < self.file.len() {
-            let char = self.file[self.index] as char;
+                TokenType::Integer(_) => {
+                    let next_token = self.parser.get_next_token(true);
 
-            if !char.is_numeric() && char != '.' {
-                break;
-            }
+                    match &next_token.token {
+                        TokenType::Op(_) => {
+                            println!("nice got, {:?}", &next_token);
+                        },
 
-            if char == '.' {
-                is_float = true;
-            }
-
-            int_string += &char.to_string();
-            self.index += 1;
-        }
-
-        self.index -= 1;
-
-        if !is_float {
-            TokenType::Integer(int_string.parse::<i32>().unwrap())
-        } else {
-            TokenType::Float(int_string.parse::<f32>().unwrap())
-        }
-    }
-
-    pub fn get_next_token(&mut self) -> Token {
-        while self.index < self.file.len() {
-            let char = self.file[self.index] as char;
-
-            let token = match char {
-                ' ' | '\t' => {
-                    self.index += 1;
-                    self.col_number += 1;
-                    continue;
-                }
-                '\n' => {
-                    self.index += 1;
-                    self.col_number = 0;
-                    self.line_number += 1;
-                    continue;
-                }
-                '+' => TokenType::Op(Operations::Plus),
-                '-' => TokenType::Op(Operations::Minus),
-                '*' => TokenType::Op(Operations::Multiply),
-                '/' => TokenType::Op(Operations::Divide),
-                '=' => TokenType::Equals,
-                '(' => TokenType::LParen,
-                ')' => TokenType::RParen,
-                _ => {
-                    if char.is_numeric() {
-                        self.construct_number()
-                    } else {
-                        TokenType::Unknown
+                        _ => {
+                            println!("Expected an operand, got {:?}", &next_token);
+                            return;
+                        }
                     }
                 }
-            };
+                _ => {}
+            }
 
-            self.index += 1;
-
-            return Token {
-                token,
-                line_number: self.line_number,
-                col_number: self.col_number,
-            };
+            self.parsed_tokens.push(token);
         }
 
-        return Token {
-            token: TokenType::EOF,
-            line_number: self.line_number,
-            col_number: self.col_number,
-        };
+        print_only_tokens(&self.parsed_tokens);
     }
 }

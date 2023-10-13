@@ -1,4 +1,4 @@
-use lexer::Lexer;
+use parser::Parser;
 
 mod parser;
 mod tokens;
@@ -9,7 +9,7 @@ mod ast;
 fn main() {
     let file = std::fs::read("test/first.txt").unwrap();
 
-    let mut lexer = Lexer::new(&file);
+    let mut parser = Parser::new(&file);
 
-    lexer.start();
+    parser.start();
 }

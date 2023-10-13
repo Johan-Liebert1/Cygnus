@@ -1,4 +1,4 @@
-use crate::parser::Token;
+use crate::lexer::Token;
 
 
 pub fn print_only_tokens(tokens: &Vec<Token>) {

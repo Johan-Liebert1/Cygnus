@@ -1,4 +1,4 @@
-use crate::{parser::Token, tokens::Operations};
+use crate::{lexer::Token, tokens::Operations};
 
 pub struct BinaryOP<'a> {
     left: &'a Token,

@@ -1,0 +1,4 @@
+PROGRAM             -> STATEMENT[]
+STATEMENT           -> BINARY_OPRATION
+BINARY_OPRATION     -> NUMBER (+|*|/|-) NUMBER
+NUMBER              -> INTEGER | FLOAT
