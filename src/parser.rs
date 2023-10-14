@@ -3,7 +3,7 @@ use std::process::exit;
 use crate::{
     helpers::{self, print_only_tokens},
     lexer::{Lexer, Token},
-    tokens::{Number, TokenEnum, Operations}, ast::{abstract_syntax_tree::AST, binary_op::BinaryOP},
+    tokens::{Number, TokenEnum, Operations}, ast::{binary_op::BinaryOP},
 };
 
 pub struct Parser<'a> {
@@ -36,9 +36,9 @@ impl<'a> Parser<'a> {
         print_only_tokens(&self.parsed_tokens);
     }
 
-    pub fn validate_token(&self, token: TokenEnum, expected_token: TokenEnum) {}
+    pub fn validate_token(&self, _token: TokenEnum, _expected_token: TokenEnum) {}
 
-    pub fn parse_number(&mut self) -> Token {
+    pub fn parse_operand(&mut self) -> Token {
         let token = self.parser.get_next_token(false);
 
         match &token.token {
@@ -71,9 +71,9 @@ impl<'a> Parser<'a> {
 
     /// BINARY_OPRATION -> NUMBER (+|*|/|-) NUMBER
     pub fn parse_binary_op(&mut self) -> BinaryOP {
-        let left_operand = Box::new(self.parse_number());
+        let left_operand = Box::new(self.parse_operand());
         let operator = Box::new(self.parse_operator());
-        let right_operand = Box::new(self.parse_number());
+        let right_operand = Box::new(self.parse_operand());
 
         return BinaryOP::new(left_operand, operator, right_operand);
     }
