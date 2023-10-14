@@ -1,4 +1,5 @@
-PROGRAM             -> STATEMENT[]
-STATEMENT           -> BINARY_OPRATION
-BINARY_OPRATION     -> NUMBER (+|*|/|-) NUMBER
-NUMBER              -> INTEGER | FLOAT
+PROGRAM       -> STATEMENT[]
+STATEMENT     -> EXPRESSION
+TERM          -> FACTOR (*|/) FACTOR
+EXPRESSION    -> TERM (+|-) TERM # for precedence as term will be calculated first 
+FACTOR        -> INTEGER | FLOAT

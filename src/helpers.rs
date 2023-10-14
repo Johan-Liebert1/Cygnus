@@ -1,5 +1,3 @@
-
-
 use crate::{lexer::Token, tokens::TokenEnum};
 
 pub fn print_only_tokens(tokens: &Vec<Token>) {
@@ -10,9 +8,9 @@ pub fn print_only_tokens(tokens: &Vec<Token>) {
     println!("");
 }
 
-pub fn unexpected_token(unexpected: &TokenEnum, expected: &TokenEnum) {
+pub fn unexpected_token(message: &'static str, unexpected: &TokenEnum, expected: &TokenEnum) {
     print!(
-        "Unexpected Token: {:?}. Expected: {:?} ",
-        unexpected, expected
+        "{}. Unexpected Token: {:?}. Expected: {:?} ",
+        message, unexpected, expected
     );
 }

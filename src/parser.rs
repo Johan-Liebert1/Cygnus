@@ -1,13 +1,14 @@
 use std::process::exit;
 
 use crate::{
-    helpers::{self, print_only_tokens},
+    ast::{abstract_syntax_tree::AST, binary_op::BinaryOP, factor::Factor},
+    helpers::{self},
     lexer::{Lexer, Token},
-    tokens::{Number, TokenEnum, Operations}, ast::{binary_op::BinaryOP},
+    tokens::{Number, Operations, TokenEnum},
 };
 
 pub struct Parser<'a> {
-    parser: Box<Lexer<'a>>,
+    lexer: Box<Lexer<'a>>,
     parsed_tokens: Vec<Token>,
 }
 
@@ -16,74 +17,105 @@ impl<'a> Parser<'a> {
         let parser = Lexer::new(file);
 
         Self {
-            parser: Box::new(parser),
+            lexer: Box::new(parser),
             parsed_tokens: vec![],
         }
     }
 
-    pub fn start(&mut self) {
-        loop {
-            let token = self.parser.get_next_token(false);
-
-            match &token.token {
-                TokenEnum::EOF => break,
-                _ => {
-                    self.parsed_tokens.push(token);
-                }
-            }
-        }
-
-        print_only_tokens(&self.parsed_tokens);
-    }
-
     pub fn validate_token(&self, _token: TokenEnum, _expected_token: TokenEnum) {}
 
-    pub fn parse_operand(&mut self) -> Token {
-        let token = self.parser.get_next_token(false);
+    /// FACTOR -> INTEGER | FLOAT
+    pub fn parse_factor(&mut self) -> Factor {
+        let next_token = self.lexer.peek_next_token();
 
-        match &token.token {
+        // println!("parse_factor next_token {:#?}", next_token);
+
+        match &next_token.token {
             TokenEnum::Number(..) => {
-                return token;
+                self.lexer.get_next_token();
+                return Factor::new(Box::new(next_token));
             }
 
             _ => {
-                helpers::unexpected_token(&token.token, &TokenEnum::Number(Number::Integer(1)));
+                helpers::unexpected_token(
+                    "parse_factor",
+                    &next_token.token,
+                    &TokenEnum::Number(Number::Integer(1)),
+                );
+
                 exit(1);
             }
         }
     }
 
-    pub fn parse_operator(&mut self) -> Token {
-        let token = self.parser.get_next_token(false);
+    /// TERM -> FACTOR (*|/) FACTOR
+    pub fn parse_term(&mut self) -> Box<dyn AST> {
+        let left = self.parse_factor();
 
-        match &token.token {
-            TokenEnum::Op(..) => {
-                return token;
-            }
+        let next_token = self.lexer.peek_next_token();
+
+        // println!("parse_term next_token {:#?}", next_token);
+
+        match &next_token.token {
+            TokenEnum::Op(op) => match op {
+                Operations::Divide | Operations::Multiply => {
+                    let token = self.lexer.get_next_token();
+
+                    return Box::new(BinaryOP::new(
+                        Box::new(left),
+                        Box::new(token),
+                        Box::new(self.parse_factor()),
+                    ));
+                }
+
+                _ => {
+                    return Box::new(left);
+                }
+            },
 
             _ => {
-                helpers::unexpected_token(&token.token, &TokenEnum::Op(Operations::Plus));
-                println!("Line: {}, Column: {}", self.parser.line_number, self.parser.col_number);
-                exit(1);
+                return Box::new(left);
             }
         }
     }
 
-    /// BINARY_OPRATION -> NUMBER (+|*|/|-) NUMBER
-    pub fn parse_binary_op(&mut self) -> BinaryOP {
-        let left_operand = Box::new(self.parse_operand());
-        let operator = Box::new(self.parse_operator());
-        let right_operand = Box::new(self.parse_operand());
+    /// EXPRESSION -> BINARY_OP (+|-) BINARY_OP
+    /// for precedence as term will be calculated first
+    pub fn parse_expression(&mut self) -> Box<dyn AST> {
+        let left_operand = self.parse_term();
 
-        return BinaryOP::new(left_operand, operator, right_operand);
+        let next_token = self.lexer.peek_next_token();
+
+        // println!("parse_expression, left_operand {:?}", left_operand);
+        // println!("parse_expression, next_token {:#?}", next_token);
+
+        match &next_token.token {
+            TokenEnum::Op(op) => match op {
+                Operations::Plus | Operations::Minus => {
+                    self.lexer.get_next_token();
+
+                    return Box::new(BinaryOP::new(
+                        left_operand,
+                        Box::new(next_token),
+                        self.parse_term(),
+                    ));
+                }
+
+                _ => {}
+            },
+
+            _ => {}
+        };
+
+        return left_operand;
     }
 
-    /// STATEMENT -> BINARY_OPRATION
-    pub fn parse_statements(&mut self) -> BinaryOP {
-        return self.parse_binary_op();
+    /// STATEMENT -> EXPRESSION
+    pub fn parse_statements(&mut self) -> Box<dyn AST> {
+        return self.parse_expression();
     }
 
-    pub fn parse(&mut self) -> BinaryOP {
+    pub fn parse(&mut self) -> Box<dyn AST> {
         return self.parse_statements();
     }
 }

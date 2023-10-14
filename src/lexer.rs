@@ -67,13 +67,25 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    pub fn get_next_token(&mut self, peek: bool) -> Token {
+    pub fn peek_next_token(&mut self) -> Token {
+        return self.advance_to_next_token(true);
+    }
+
+    pub fn get_next_token(&mut self) -> Token {
+        return self.advance_to_next_token(false);
+    }
+
+    pub fn advance_to_next_token(&mut self, peek: bool) -> Token {
         let index = self.index;
         let col_number = self.col_number;
         let line_number = self.line_number;
 
         while self.index < self.file.len() {
             let char = self.file[self.index] as char;
+
+            // if !peek {
+            //     println!("Current char '{}' Peek: {}", char, peek);
+            // }
 
             let token = match char {
                 ' ' | '\t' => {
@@ -87,13 +99,16 @@ impl<'a> Lexer<'a> {
                     self.line_number += 1;
                     continue;
                 }
+
                 '+' => TokenEnum::Op(Operations::Plus),
                 '-' => TokenEnum::Op(Operations::Minus),
                 '*' => TokenEnum::Op(Operations::Multiply),
                 '/' => TokenEnum::Op(Operations::Divide),
+
                 '=' => TokenEnum::Equals,
                 '(' => TokenEnum::LParen,
                 ')' => TokenEnum::RParen,
+
                 _ => {
                     if char.is_numeric() {
                         self.construct_number()

@@ -2,8 +2,6 @@
 
 use parser::Parser;
 
-use crate::ast::abstract_syntax_tree::AST;
-
 mod parser;
 mod tokens;
 mod lexer;
@@ -16,6 +14,8 @@ fn main() {
     let mut parser = Parser::new(&file);
 
     let mut ast = parser.parse_statements();
+
+    // println!("AST: {:#?}", ast);
 
     ast.visit();
 }

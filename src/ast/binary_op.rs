@@ -6,13 +6,13 @@ use super::abstract_syntax_tree::AST;
 
 #[derive(Debug)]
 pub struct BinaryOP {
-    left: Box<Token>,
+    left: Box<dyn AST>,
     operator: Box<Token>,
-    right: Box<Token>,
+    right: Box<dyn AST>,
 }
 
 impl BinaryOP {
-    pub fn new(left: Box<Token>, operator: Box<Token>, right: Box<Token>) -> Self {
+    pub fn new(left: Box<dyn AST>, operator: Box<Token>, right: Box<dyn AST>) -> Self {
         Self {
             left,
             operator,
@@ -21,7 +21,7 @@ impl BinaryOP {
     }
 
     fn get_left(&self) -> &Number {
-        match &self.left.token {
+        match &self.left.get_token().token {
             TokenEnum::Number(number) => {
                 return number;
             },
@@ -33,7 +33,7 @@ impl BinaryOP {
     }
 
     fn get_right(&self) -> &Number {
-        match &self.right.token {
+        match &self.right.get_token().token {
             TokenEnum::Number(number) => {
                 return number;
             },
@@ -44,7 +44,6 @@ impl BinaryOP {
         }
     }
 
-    // TODO: Refactor this abhorrent monstrosity
     fn add(&self) {
         if let Number::Integer(l) = self.get_left() {
             if let Number::Integer(r) = self.get_right()  {
@@ -119,7 +118,6 @@ impl BinaryOP {
 }
 
 impl AST for BinaryOP {
-
     fn visit(&mut self) {
         match &self.operator.token {
             TokenEnum::Op(operation) => {
@@ -146,5 +144,9 @@ impl AST for BinaryOP {
                 unreachable!("Found a non operator in binary expression")
             }
         };
+    }
+
+    fn get_token(&self) -> &Token {
+        return &self.operator;
     }
 }
