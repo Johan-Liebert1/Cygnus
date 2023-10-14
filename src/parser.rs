@@ -1,7 +1,9 @@
+use std::process::exit;
+
 use crate::{
-    helpers::print_only_tokens,
+    helpers::{self, print_only_tokens},
     lexer::{Lexer, Token},
-    tokens::TokenType,
+    tokens::{Number, TokenEnum, Operations}, ast::{abstract_syntax_tree::AST, binary_op::BinaryOP},
 };
 
 pub struct Parser<'a> {
@@ -24,28 +26,64 @@ impl<'a> Parser<'a> {
             let token = self.parser.get_next_token(false);
 
             match &token.token {
-                TokenType::EOF => break,
-
-                TokenType::Integer(_) => {
-                    let next_token = self.parser.get_next_token(true);
-
-                    match &next_token.token {
-                        TokenType::Op(_) => {
-                            println!("nice got, {:?}", &next_token);
-                        },
-
-                        _ => {
-                            println!("Expected an operand, got {:?}", &next_token);
-                            return;
-                        }
-                    }
+                TokenEnum::EOF => break,
+                _ => {
+                    self.parsed_tokens.push(token);
                 }
-                _ => {}
             }
-
-            self.parsed_tokens.push(token);
         }
 
         print_only_tokens(&self.parsed_tokens);
+    }
+
+    pub fn validate_token(&self, token: TokenEnum, expected_token: TokenEnum) {}
+
+    pub fn parse_number(&mut self) -> Token {
+        let token = self.parser.get_next_token(false);
+
+        match &token.token {
+            TokenEnum::Number(..) => {
+                return token;
+            }
+
+            _ => {
+                helpers::unexpected_token(&token.token, &TokenEnum::Number(Number::Integer(1)));
+                exit(1);
+            }
+        }
+    }
+
+    pub fn parse_operator(&mut self) -> Token {
+        let token = self.parser.get_next_token(false);
+
+        match &token.token {
+            TokenEnum::Op(..) => {
+                return token;
+            }
+
+            _ => {
+                helpers::unexpected_token(&token.token, &TokenEnum::Op(Operations::Plus));
+                println!("Line: {}, Column: {}", self.parser.line_number, self.parser.col_number);
+                exit(1);
+            }
+        }
+    }
+
+    /// BINARY_OPRATION -> NUMBER (+|*|/|-) NUMBER
+    pub fn parse_binary_op(&mut self) -> BinaryOP {
+        let left_operand = Box::new(self.parse_number());
+        let operator = Box::new(self.parse_operator());
+        let right_operand = Box::new(self.parse_number());
+
+        return BinaryOP::new(left_operand, operator, right_operand);
+    }
+
+    /// STATEMENT -> BINARY_OPRATION
+    pub fn parse_statements(&mut self) -> BinaryOP {
+        return self.parse_binary_op();
+    }
+
+    pub fn parse(&mut self) -> BinaryOP {
+        return self.parse_statements();
     }
 }

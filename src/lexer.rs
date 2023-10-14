@@ -1,10 +1,10 @@
 use std::fmt::Display;
 
-use crate::tokens::{Operations, TokenType};
+use crate::tokens::{Number, Operations, TokenEnum};
 
 #[derive(Debug)]
 pub struct Token {
-    pub token: TokenType,
+    pub token: TokenEnum,
     pub line_number: usize,
     pub col_number: usize,
 }
@@ -36,7 +36,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn construct_number(&mut self) -> TokenType {
+    fn construct_number(&mut self) -> TokenEnum {
         let mut int_string = String::new();
 
         let mut is_float = false;
@@ -53,25 +53,27 @@ impl<'a> Lexer<'a> {
             }
 
             int_string += &char.to_string();
+
+            self.col_number += 1;
             self.index += 1;
         }
 
         self.index -= 1;
 
         if !is_float {
-            TokenType::Integer(int_string.parse::<i32>().unwrap())
+            TokenEnum::Number(Number::Integer(int_string.parse::<i32>().unwrap()))
         } else {
-            TokenType::Float(int_string.parse::<f32>().unwrap())
+            TokenEnum::Number(Number::Float(int_string.parse::<f32>().unwrap()))
         }
     }
 
     pub fn get_next_token(&mut self, peek: bool) -> Token {
+        let index = self.index;
+        let col_number = self.col_number;
+        let line_number = self.line_number;
+
         while self.index < self.file.len() {
             let char = self.file[self.index] as char;
-
-            let index = self.index;
-            let col_number = self.col_number;
-            let line_number = self.line_number;
 
             let token = match char {
                 ' ' | '\t' => {
@@ -85,18 +87,18 @@ impl<'a> Lexer<'a> {
                     self.line_number += 1;
                     continue;
                 }
-                '+' => TokenType::Op(Operations::Plus),
-                '-' => TokenType::Op(Operations::Minus),
-                '*' => TokenType::Op(Operations::Multiply),
-                '/' => TokenType::Op(Operations::Divide),
-                '=' => TokenType::Equals,
-                '(' => TokenType::LParen,
-                ')' => TokenType::RParen,
+                '+' => TokenEnum::Op(Operations::Plus),
+                '-' => TokenEnum::Op(Operations::Minus),
+                '*' => TokenEnum::Op(Operations::Multiply),
+                '/' => TokenEnum::Op(Operations::Divide),
+                '=' => TokenEnum::Equals,
+                '(' => TokenEnum::LParen,
+                ')' => TokenEnum::RParen,
                 _ => {
                     if char.is_numeric() {
                         self.construct_number()
                     } else {
-                        TokenType::Unknown
+                        TokenEnum::Unknown
                     }
                 }
             };
@@ -119,7 +121,7 @@ impl<'a> Lexer<'a> {
         }
 
         return Token {
-            token: TokenType::EOF,
+            token: TokenEnum::EOF,
             line_number: self.line_number,
             col_number: self.col_number,
         };

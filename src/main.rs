@@ -1,4 +1,8 @@
+#![allow(dead_code)]
+
 use parser::Parser;
+
+use crate::ast::abstract_syntax_tree::AST;
 
 mod parser;
 mod tokens;
@@ -11,5 +15,7 @@ fn main() {
 
     let mut parser = Parser::new(&file);
 
-    parser.start();
+    let mut ast = parser.parse_statements();
+
+    ast.visit();
 }

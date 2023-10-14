@@ -1,5 +1,6 @@
-use crate::lexer::Token;
+use std::process::exit;
 
+use crate::{lexer::Token, tokens::TokenEnum};
 
 pub fn print_only_tokens(tokens: &Vec<Token>) {
     for token in tokens {
@@ -9,3 +10,9 @@ pub fn print_only_tokens(tokens: &Vec<Token>) {
     println!("");
 }
 
+pub fn unexpected_token(unexpected: &TokenEnum, expected: &TokenEnum) {
+    print!(
+        "Unexpected Token: {:?}. Expected: {:?} ",
+        unexpected, expected
+    );
+}

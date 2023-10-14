@@ -7,9 +7,14 @@ pub enum Operations {
 }
 
 #[derive(Debug)]
-pub enum TokenType {
+pub enum Number {
     Integer(i32),
     Float(f32),
+}
+
+#[derive(Debug)]
+pub enum TokenEnum {
+    Number(Number),
 
     Op(Operations),
 
