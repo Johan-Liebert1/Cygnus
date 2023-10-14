@@ -1,6 +1,9 @@
 use std::process::exit;
 
-use crate::{lexer::Token, tokens::{Operations, TokenEnum, Number}};
+use crate::{
+    lexer::Token,
+    tokens::{Number, Operations, TokenEnum},
+};
 
 use super::abstract_syntax_tree::AST;
 
@@ -24,7 +27,7 @@ impl BinaryOP {
         match &self.left.get_token().token {
             TokenEnum::Number(number) => {
                 return number;
-            },
+            }
 
             _ => {
                 exit(1);
@@ -36,7 +39,7 @@ impl BinaryOP {
         match &self.right.get_token().token {
             TokenEnum::Number(number) => {
                 return number;
-            },
+            }
 
             _ => {
                 exit(1);
@@ -46,7 +49,7 @@ impl BinaryOP {
 
     fn add(&self) {
         if let Number::Integer(l) = self.get_left() {
-            if let Number::Integer(r) = self.get_right()  {
+            if let Number::Integer(r) = self.get_right() {
                 return println!("{}", l + r);
             }
 
@@ -54,7 +57,7 @@ impl BinaryOP {
         };
 
         if let Number::Float(l) = self.get_left() {
-            if let Number::Float(r) = self.get_right()  {
+            if let Number::Float(r) = self.get_right() {
                 return println!("{}", l + r);
             }
 
@@ -64,7 +67,7 @@ impl BinaryOP {
 
     fn subtract(&self) {
         if let Number::Integer(l) = self.get_left() {
-            if let Number::Integer(r) = self.get_right()  {
+            if let Number::Integer(r) = self.get_right() {
                 return println!("{}", l - r);
             }
 
@@ -72,7 +75,7 @@ impl BinaryOP {
         };
 
         if let Number::Float(l) = self.get_left() {
-            if let Number::Float(r) = self.get_right()  {
+            if let Number::Float(r) = self.get_right() {
                 return println!("{}", l - r);
             }
 
@@ -82,7 +85,7 @@ impl BinaryOP {
 
     fn multiply(&self) {
         if let Number::Integer(l) = self.get_left() {
-            if let Number::Integer(r) = self.get_right()  {
+            if let Number::Integer(r) = self.get_right() {
                 return println!("{}", l * r);
             }
 
@@ -90,7 +93,7 @@ impl BinaryOP {
         };
 
         if let Number::Float(l) = self.get_left() {
-            if let Number::Float(r) = self.get_right()  {
+            if let Number::Float(r) = self.get_right() {
                 return println!("{}", l * r);
             }
 
@@ -100,7 +103,7 @@ impl BinaryOP {
 
     fn divide(&self) {
         if let Number::Integer(l) = self.get_left() {
-            if let Number::Integer(r) = self.get_right()  {
+            if let Number::Integer(r) = self.get_right() {
                 return println!("{}", l / r);
             }
 
@@ -108,7 +111,7 @@ impl BinaryOP {
         };
 
         if let Number::Float(l) = self.get_left() {
-            if let Number::Float(r) = self.get_right()  {
+            if let Number::Float(r) = self.get_right() {
                 return println!("{}", l / r);
             }
 
@@ -120,23 +123,21 @@ impl BinaryOP {
 impl AST for BinaryOP {
     fn visit(&mut self) {
         match &self.operator.token {
-            TokenEnum::Op(operation) => {
-                match operation {
-                    Operations::Plus => {
-                        self.add();
-                    },
+            TokenEnum::Op(operation) => match operation {
+                Operations::Plus => {
+                    self.add();
+                }
 
-                    Operations::Minus => {
-                        self.subtract();
-                    },
+                Operations::Minus => {
+                    self.subtract();
+                }
 
-                    Operations::Divide => {
-                        self.divide();
-                    },
+                Operations::Divide => {
+                    self.divide();
+                }
 
-                    Operations::Multiply => {
-                        self.multiply();
-                    },
+                Operations::Multiply => {
+                    self.multiply();
                 }
             },
 

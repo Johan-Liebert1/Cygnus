@@ -9,12 +9,12 @@ pub trait AST {
 
 impl Debug for dyn AST {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f,"{:#?}", self.get_token())
+        write!(f, "{:#?}", self.get_token())
     }
 }
 
 impl Display for dyn AST {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f,"{:?}", self.get_token())
+        write!(f, "{:?}", self.get_token())
     }
 }

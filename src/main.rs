@@ -1,12 +1,12 @@
 #![allow(dead_code)]
 
-use parser::Parser;
+use parser::parser::Parser;
 
+mod ast;
+mod helpers;
+mod lexer;
 mod parser;
 mod tokens;
-mod lexer;
-mod  helpers;
-mod ast;
 
 fn main() {
     let file = std::fs::read("test/first.txt").unwrap();

@@ -20,6 +20,10 @@ impl AST for Expression {
 
 impl Expression {
     pub fn new(left: Box<dyn AST>, operand: Box<Token>, right: Box<dyn AST>) -> Self {
-        Expression { left, operand, right }
+        Expression {
+            left,
+            operand,
+            right,
+        }
     }
 }

@@ -11,7 +11,6 @@ impl Factor {
     pub fn new(token: Box<Token>) -> Self {
         Self { token }
     }
-
 }
 
 impl AST for Factor {
