@@ -1,6 +1,6 @@
 use crate::lexer::Token;
 
-use super::abstract_syntax_tree::AST;
+use super::abstract_syntax_tree::{AST, VisitResult};
 
 pub struct Expression {
     left: Box<dyn AST>,
@@ -9,12 +9,17 @@ pub struct Expression {
 }
 
 impl AST for Expression {
-    fn visit(&mut self) {
-        println!("Expression visit")
+    fn visit(&self) -> VisitResult {
+        println!("Expression visit");
+        VisitResult { token: Box::new(self.operand.token.clone()) }
     }
 
     fn get_token(&self) -> &Token {
         return &self.operand;
+    }
+
+    fn print(&self) {
+        todo!()
     }
 }
 

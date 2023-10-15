@@ -5,7 +5,7 @@ use crate::{
     tokens::{Number, Operations, TokenEnum},
 };
 
-use super::abstract_syntax_tree::AST;
+use super::abstract_syntax_tree::{VisitResult, AST};
 
 #[derive(Debug)]
 pub struct BinaryOP {
@@ -23,8 +23,8 @@ impl BinaryOP {
         }
     }
 
-    fn get_left(&self) -> &Number {
-        match &self.left.get_token().token {
+    fn get_left(&self) -> Number {
+        match *self.left.visit().token {
             TokenEnum::Number(number) => {
                 return number;
             }
@@ -35,8 +35,8 @@ impl BinaryOP {
         }
     }
 
-    fn get_right(&self) -> &Number {
-        match &self.right.get_token().token {
+    fn get_right(&self) -> Number {
+        match *self.right.visit().token {
             TokenEnum::Number(number) => {
                 return number;
             }
@@ -47,97 +47,126 @@ impl BinaryOP {
         }
     }
 
-    fn add(&self) {
+    fn add(&self) -> VisitResult {
         if let Number::Integer(l) = self.get_left() {
             if let Number::Integer(r) = self.get_right() {
-                return println!("{}", l + r);
+                return VisitResult {
+                    token: Box::new(TokenEnum::Number(Number::Integer(l + r))),
+                };
             }
 
-            return println!("Cannot add Float to Integer");
+            panic!("Cannot add Float to Integer");
         };
 
         if let Number::Float(l) = self.get_left() {
             if let Number::Float(r) = self.get_right() {
-                return println!("{}", l + r);
+                return VisitResult {
+                    token: Box::new(TokenEnum::Number(Number::Float(l + r))),
+                };
             }
 
-            return println!("Cannot add Float to Integer");
+            panic!("Cannot add Float to Integer");
         };
+
+        panic!("wat add");
     }
 
-    fn subtract(&self) {
+    fn subtract(&self) -> VisitResult {
         if let Number::Integer(l) = self.get_left() {
             if let Number::Integer(r) = self.get_right() {
-                return println!("{}", l - r);
+                return VisitResult {
+                    token: Box::new(TokenEnum::Number(Number::Integer(l - r))),
+                };
             }
 
-            return println!("Cannot subtract Float from Integer");
+            panic!("Cannot subtract Float from Integer");
         };
 
         if let Number::Float(l) = self.get_left() {
             if let Number::Float(r) = self.get_right() {
-                return println!("{}", l - r);
+                return VisitResult {
+                    token: Box::new(TokenEnum::Number(Number::Float(l - r))),
+                };
             }
 
-            return println!("Cannot subtract Float from Integer");
+            panic!("Cannot subtract Float from Integer");
         };
+
+        panic!("wat subtract");
     }
 
-    fn multiply(&self) {
-        if let Number::Integer(l) = self.get_left() {
-            if let Number::Integer(r) = self.get_right() {
-                return println!("{}", l * r);
+    fn multiply(&self) -> VisitResult {
+        let left = self.get_left();
+        let right = self.get_right();
+
+        if let Number::Integer(l) = left {
+            if let Number::Integer(r) = right {
+                return VisitResult {
+                    token: Box::new(TokenEnum::Number(Number::Integer(l * r))),
+                };
             }
 
-            return println!("Cannot multiply Float with Integer");
+            panic!("Cannot multiply Float with Integer");
         };
 
         if let Number::Float(l) = self.get_left() {
             if let Number::Float(r) = self.get_right() {
-                return println!("{}", l * r);
+                return VisitResult {
+                    token: Box::new(TokenEnum::Number(Number::Float(l * r))),
+                };
             }
 
-            return println!("Cannot multiply Float with Integer");
+            panic!("Cannot multiply Float with Integer");
         };
+
+        panic!("wat multiply");
     }
 
-    fn divide(&self) {
+    fn divide(&self) -> VisitResult {
         if let Number::Integer(l) = self.get_left() {
             if let Number::Integer(r) = self.get_right() {
-                return println!("{}", l / r);
+                return VisitResult {
+                    token: Box::new(TokenEnum::Number(Number::Integer(l / r))),
+                };
             }
 
-            return println!("Cannot divide Float by Integer");
+            panic!("Cannot divide Float by Integer");
         };
 
         if let Number::Float(l) = self.get_left() {
             if let Number::Float(r) = self.get_right() {
-                return println!("{}", l / r);
+                return VisitResult {
+                    token: Box::new(TokenEnum::Number(Number::Float(l / r))),
+                };
             }
 
-            return println!("Cannot divide Float by Integer");
+            panic!("Cannot divide Float by Integer");
         };
+
+        panic!("wat divide")
     }
 }
 
 impl AST for BinaryOP {
-    fn visit(&mut self) {
+    fn visit(&self) -> VisitResult {
+        println!("Visiting BinaryOP, {:?}", &self.operator.token);
+
         match &self.operator.token {
             TokenEnum::Op(operation) => match operation {
                 Operations::Plus => {
-                    self.add();
+                    return self.add();
                 }
 
                 Operations::Minus => {
-                    self.subtract();
+                    return self.subtract();
                 }
 
                 Operations::Divide => {
-                    self.divide();
+                    return self.divide();
                 }
 
                 Operations::Multiply => {
-                    self.multiply();
+                    return self.multiply();
                 }
             },
 
@@ -149,5 +178,11 @@ impl AST for BinaryOP {
 
     fn get_token(&self) -> &Token {
         return &self.operator;
+    }
+
+    fn print(&self) {
+        self.left.print();
+        println!("BinaryOP: {:?}", self.get_token());
+        self.right.print();
     }
 }

@@ -13,9 +13,9 @@ fn main() {
 
     let mut parser = Parser::new(&file);
 
-    let mut ast = parser.parse_statements();
+    let ast = parser.parse_statements();
 
-    // println!("AST: {:#?}", ast);
+    let result = ast.visit();
 
-    ast.visit();
+    println!("{:#?}", result);
 }

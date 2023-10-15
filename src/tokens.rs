@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Operations {
     Plus,
     Minus,
@@ -6,13 +6,19 @@ pub enum Operations {
     Multiply,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Number {
     Integer(i32),
     Float(f32),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+pub enum Bracket {
+    LParen,
+    RParen,
+}
+
+#[derive(Debug, Clone)]
 pub enum TokenEnum {
     Number(Number),
 
@@ -20,8 +26,7 @@ pub enum TokenEnum {
 
     Equals,
 
-    LParen,
-    RParen,
+    Bracket(Bracket),
 
     Unknown,
     EOF,

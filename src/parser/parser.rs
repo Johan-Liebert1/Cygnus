@@ -4,12 +4,13 @@ use crate::{
     ast::{abstract_syntax_tree::AST, binary_op::BinaryOP, factor::Factor},
     helpers::{self},
     lexer::{Lexer, Token},
-    tokens::{Number, Operations, TokenEnum},
+    tokens::{Bracket, Number, Operations, TokenEnum},
 };
 
 pub struct Parser<'a> {
     lexer: Box<Lexer<'a>>,
     parsed_tokens: Vec<Token>,
+    bracket_stack: Vec<Bracket>,
 }
 
 impl<'a> Parser<'a> {
@@ -19,13 +20,14 @@ impl<'a> Parser<'a> {
         Self {
             lexer: Box::new(parser),
             parsed_tokens: vec![],
+            bracket_stack: vec![],
         }
     }
 
     pub fn validate_token(&self, _token: TokenEnum, _expected_token: TokenEnum) {}
 
     /// FACTOR -> INTEGER | FLOAT
-    pub fn parse_factor(&mut self) -> Factor {
+    pub fn parse_factor(&mut self) -> Box<dyn AST> {
         let next_token = self.lexer.peek_next_token();
 
         // println!("parse_factor next_token {:#?}", next_token);
@@ -33,8 +35,38 @@ impl<'a> Parser<'a> {
         match &next_token.token {
             TokenEnum::Number(..) => {
                 self.lexer.get_next_token();
-                return Factor::new(Box::new(next_token));
+                return Box::new(Factor::new(Box::new(next_token)));
             }
+
+            TokenEnum::Bracket(paren) => match paren {
+                Bracket::LParen => {
+                    self.lexer.get_next_token();
+                    let return_value = self.parse_expression();
+                    // need a right parenthesis here
+                    return return_value;
+                },
+
+                Bracket::RParen => match self.bracket_stack.last() {
+                    Some(bracket) => {
+                        match bracket {
+                            Bracket::LParen => {
+                                // all good. A left paren was closed
+                                todo!();
+                            }
+
+                            Bracket::RParen => {
+                                println!(") never opened");
+                                exit(1);
+                            }
+                        }
+                    }
+
+                    None => {
+                        println!(") never opened");
+                        exit(1);
+                    }
+                },
+            },
 
             _ => {
                 helpers::unexpected_token(
@@ -62,19 +94,19 @@ impl<'a> Parser<'a> {
                     let token = self.lexer.get_next_token();
 
                     return Box::new(BinaryOP::new(
-                        Box::new(left),
+                        left,
                         Box::new(token),
-                        Box::new(self.parse_factor()),
+                        self.parse_factor(),
                     ));
                 }
 
                 _ => {
-                    return Box::new(left);
+                    return left;
                 }
             },
 
             _ => {
-                return Box::new(left);
+                return left;
             }
         }
     }

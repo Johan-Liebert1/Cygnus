@@ -1,6 +1,6 @@
 use crate::lexer::Token;
 
-use super::abstract_syntax_tree::AST;
+use super::abstract_syntax_tree::{VisitResult, AST};
 
 /// FACTOR -> INTEGER | FLOAT
 pub struct Factor {
@@ -15,11 +15,17 @@ impl Factor {
 
 impl AST for Factor {
     /// no implementation for this
-    fn visit(&mut self) {
-        ()
+    fn visit(&self) -> VisitResult {
+        VisitResult {
+            token: Box::new(self.token.token.clone()),
+        }
     }
 
     fn get_token(&self) -> &Token {
         return &self.token;
+    }
+
+    fn print(&self) {
+        println!("Factor: {:?}", self.get_token());
     }
 }
