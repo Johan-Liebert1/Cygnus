@@ -4,7 +4,7 @@ use crate::{lexer::Token, tokens::TokenEnum};
 
 #[derive(Debug)]
 pub struct VisitResult {
-    pub token: Box<TokenEnum>
+    pub token: Box<TokenEnum>,
 }
 
 pub trait AST {

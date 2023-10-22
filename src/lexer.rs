@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::tokens::{Number, Operations, TokenEnum, Bracket};
+use crate::tokens::{Bracket, Number, Operations, TokenEnum};
 
 #[derive(Debug)]
 pub struct Token {
@@ -72,10 +72,14 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn get_next_token(&mut self) -> Token {
-        return self.advance_to_next_token(false);
+        let token = self.advance_to_next_token(false);
+
+        // println!("Lexer: {:#?}", token);
+
+        return token;
     }
 
-    pub fn advance_to_next_token(&mut self, peek: bool) -> Token {
+    fn advance_to_next_token(&mut self, peek: bool) -> Token {
         let index = self.index;
         let col_number = self.col_number;
         let line_number = self.line_number;

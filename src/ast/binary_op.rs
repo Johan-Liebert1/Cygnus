@@ -1,6 +1,7 @@
 use std::process::exit;
 
 use crate::{
+    constants,
     lexer::Token,
     tokens::{Number, Operations, TokenEnum},
 };
@@ -149,7 +150,10 @@ impl BinaryOP {
 
 impl AST for BinaryOP {
     fn visit(&self) -> VisitResult {
-        println!("Visiting BinaryOP, {:?}", &self.operator.token);
+        if constants::DEBUG_AST {
+            println!("{:#?}", &self);
+            println!("===============================================");
+        }
 
         match &self.operator.token {
             TokenEnum::Op(operation) => match operation {
@@ -181,8 +185,6 @@ impl AST for BinaryOP {
     }
 
     fn print(&self) {
-        self.left.print();
-        println!("BinaryOP: {:?}", self.get_token());
-        self.right.print();
+        println!("{:#?}", self);
     }
 }

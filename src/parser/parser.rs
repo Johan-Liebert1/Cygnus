@@ -2,6 +2,7 @@ use std::process::exit;
 
 use crate::{
     ast::{abstract_syntax_tree::AST, binary_op::BinaryOP, factor::Factor},
+    constants,
     helpers::{self},
     lexer::{Lexer, Token},
     tokens::{Bracket, Number, Operations, TokenEnum},
@@ -30,7 +31,9 @@ impl<'a> Parser<'a> {
     pub fn parse_factor(&mut self) -> Box<dyn AST> {
         let next_token = self.lexer.peek_next_token();
 
-        // println!("parse_factor next_token {:#?}", next_token);
+        if constants::PARSER_DEBUG {
+            println!("parse_factor next_token {:#?}", next_token);
+        }
 
         match &next_token.token {
             TokenEnum::Number(..) => {
@@ -42,16 +45,32 @@ impl<'a> Parser<'a> {
                 Bracket::LParen => {
                     self.lexer.get_next_token();
                     let return_value = self.parse_expression();
-                    // need a right parenthesis here
+
+                    match self.lexer.peek_next_token().token {
+                        TokenEnum::Bracket(b) => match b {
+                            Bracket::LParen => self.parse_expression(),
+
+                            Bracket::RParen => {
+                                self.lexer.get_next_token();
+                                return return_value;
+                            }
+                        },
+
+                        _ => {
+                            panic!("Unclosed (");
+                        }
+                    };
+
                     return return_value;
-                },
+                }
 
                 Bracket::RParen => match self.bracket_stack.last() {
                     Some(bracket) => {
                         match bracket {
                             Bracket::LParen => {
                                 // all good. A left paren was closed
-                                todo!();
+                                self.lexer.get_next_token();
+                                return Box::new(Factor::new(Box::new(next_token)));
                             }
 
                             Bracket::RParen => {
@@ -86,24 +105,31 @@ impl<'a> Parser<'a> {
 
         let next_token = self.lexer.peek_next_token();
 
-        // println!("parse_term next_token {:#?}", next_token);
+        if constants::PARSER_DEBUG {
+            println!("parse_term next_token {:#?}", next_token);
+        }
 
         match &next_token.token {
             TokenEnum::Op(op) => match op {
                 Operations::Divide | Operations::Multiply => {
                     let token = self.lexer.get_next_token();
 
-                    return Box::new(BinaryOP::new(
-                        left,
-                        Box::new(token),
-                        self.parse_factor(),
-                    ));
+                    return Box::new(BinaryOP::new(left, Box::new(token), self.parse_factor()));
                 }
 
                 _ => {
+                    if constants::PARSER_DEBUG {
+                        println!("parse_term returning left from inside TokenEnum::Op branch");
+                    }
+
                     return left;
                 }
             },
+
+            TokenEnum::Number(_) => {
+                self.lexer.get_next_token();
+                return self.parse_expression();
+            }
 
             _ => {
                 return left;
@@ -117,9 +143,6 @@ impl<'a> Parser<'a> {
         let left_operand = self.parse_term();
 
         let next_token = self.lexer.peek_next_token();
-
-        // println!("parse_expression, left_operand {:?}", left_operand);
-        // println!("parse_expression, next_token {:#?}", next_token);
 
         match &next_token.token {
             TokenEnum::Op(op) => match op {

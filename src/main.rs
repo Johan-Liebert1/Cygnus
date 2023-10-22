@@ -3,6 +3,7 @@
 use parser::parser::Parser;
 
 mod ast;
+mod constants;
 mod helpers;
 mod lexer;
 mod parser;
@@ -17,5 +18,6 @@ fn main() {
 
     let result = ast.visit();
 
-    println!("{:#?}", result);
+    println!("\n\nRESULT\n{:#?}", result);
+    // println!("AST\n{:#?}", ast);
 }

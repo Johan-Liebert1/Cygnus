@@ -1,8 +1,9 @@
-use crate::lexer::Token;
+use crate::{constants, lexer::Token};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
 /// FACTOR -> INTEGER | FLOAT
+#[derive(Debug)]
 pub struct Factor {
     token: Box<Token>,
 }
@@ -16,6 +17,10 @@ impl Factor {
 impl AST for Factor {
     /// no implementation for this
     fn visit(&self) -> VisitResult {
+        if constants::DEBUG_AST {
+            println!("{:?}", &self);
+        }
+
         VisitResult {
             token: Box::new(self.token.token.clone()),
         }
@@ -26,6 +31,6 @@ impl AST for Factor {
     }
 
     fn print(&self) {
-        println!("Factor: {:?}", self.get_token());
+        println!("{:#?}", self);
     }
 }
