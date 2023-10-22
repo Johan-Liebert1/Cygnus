@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::tokens::{Bracket, Number, Operations, TokenEnum, Comparators};
+use crate::tokens::{Bracket, Comparators, Number, Operations, TokenEnum};
 
 #[derive(Debug)]
 pub struct Token {
@@ -97,6 +97,7 @@ impl<'a> Lexer<'a> {
                     self.col_number += 1;
                     continue;
                 }
+
                 '\n' => {
                     self.index += 1;
                     self.col_number = 0;
@@ -114,8 +115,40 @@ impl<'a> Lexer<'a> {
                 '(' => TokenEnum::Bracket(Bracket::LParen),
                 ')' => TokenEnum::Bracket(Bracket::RParen),
 
-                '>' => TokenEnum::Comparator(Comparators::GreaterThan),
-                '<' => TokenEnum::Comparator(Comparators::LessThan),
+                '>' => TokenEnum::Comparator({
+                    self.index += 1;
+
+                    match self.peek_next_token().token {
+                        TokenEnum::Equals => {
+                            self.get_next_token();
+
+                            self.index -= 1;
+                            Comparators::GreaterThanEq
+                        }
+
+                        _ => {
+                            self.index -= 1;
+                            Comparators::GreaterThan
+                        }
+                    }
+                }),
+
+                '<' => TokenEnum::Comparator({
+                    self.index += 1;
+
+                    match self.peek_next_token().token {
+                        TokenEnum::Equals => {
+                            self.get_next_token();
+                            self.index -= 1;
+                            Comparators::LessThanEq
+                        }
+
+                        _ => {
+                            self.index -= 1;
+                            Comparators::LessThanEq
+                        }
+                    }
+                }),
 
                 _ => {
                     if char.is_numeric() {

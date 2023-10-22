@@ -58,6 +58,7 @@ impl ComparisonExp {
                 Comparators::LessThanEq => l <= r,
                 Comparators::GreaterThanEq => l >= r,
             },
+
             _ => {
                 unreachable!("Found non comparator")
             }
