@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub struct Parser<'a> {
-    lexer: Box<Lexer<'a>>,
+    pub lexer: Box<Lexer<'a>>,
     parsed_tokens: Vec<Token>,
     bracket_stack: Vec<Bracket>,
 }
@@ -29,7 +29,7 @@ impl<'a> Parser<'a> {
 
     /// FACTOR -> INTEGER | FLOAT
     pub fn parse_factor(&mut self) -> Box<dyn AST> {
-        let next_token = self.lexer.peek_next_token();
+        let next_token = self.peek_next_token();
 
         if constants::PARSER_DEBUG {
             println!("parse_factor next_token {:#?}", next_token);
@@ -37,21 +37,21 @@ impl<'a> Parser<'a> {
 
         match &next_token.token {
             TokenEnum::Number(..) => {
-                self.lexer.get_next_token();
+                self.get_next_token();
                 return Box::new(Factor::new(Box::new(next_token)));
             }
 
             TokenEnum::Bracket(paren) => match paren {
                 Bracket::LParen => {
-                    self.lexer.get_next_token();
+                    self.get_next_token();
                     let return_value = self.parse_expression();
 
-                    match self.lexer.peek_next_token().token {
+                    match self.peek_next_token().token {
                         TokenEnum::Bracket(b) => match b {
                             Bracket::LParen => self.parse_expression(),
 
                             Bracket::RParen => {
-                                self.lexer.get_next_token();
+                                self.get_next_token();
                                 return return_value;
                             }
                         },
@@ -69,7 +69,7 @@ impl<'a> Parser<'a> {
                         match bracket {
                             Bracket::LParen => {
                                 // all good. A left paren was closed
-                                self.lexer.get_next_token();
+                                self.get_next_token();
                                 return Box::new(Factor::new(Box::new(next_token)));
                             }
 
@@ -101,38 +101,41 @@ impl<'a> Parser<'a> {
 
     /// TERM -> FACTOR (*|/) FACTOR
     pub fn parse_term(&mut self) -> Box<dyn AST> {
-        let left = self.parse_factor();
+        let mut result = self.parse_factor();
 
-        let next_token = self.lexer.peek_next_token();
+        loop {
+            let next_token = self.peek_next_token();
 
-        if constants::PARSER_DEBUG {
-            println!("parse_term next_token {:#?}", next_token);
-        }
-
-        match &next_token.token {
-            TokenEnum::Op(op) => match op {
-                Operations::Divide | Operations::Multiply => {
-                    let token = self.lexer.get_next_token();
-
-                    return Box::new(BinaryOP::new(left, Box::new(token), self.parse_factor()));
-                }
-
-                _ => {
-                    if constants::PARSER_DEBUG {
-                        println!("parse_term returning left from inside TokenEnum::Op branch");
-                    }
-
-                    return left;
-                }
-            },
-
-            TokenEnum::Number(_) => {
-                self.lexer.get_next_token();
-                return self.parse_expression();
+            if constants::PARSER_DEBUG {
+                println!("parse_term next_token {:#?}", next_token);
             }
 
-            _ => {
-                return left;
+            match &next_token.token {
+                TokenEnum::Op(op) => match op {
+                    Operations::Divide | Operations::Multiply => {
+                        let token = self.get_next_token();
+
+                        // reassign the result 
+                        // if we have 1*2*3
+                        // in the first iteration, result is (left: 1, op: *, right: 2)
+                        // in the next iteration, result is 
+                        // [left: (left: 1, op: *, right: 2), op: *, right: 3]
+                        // and so on
+                        result = Box::new(BinaryOP::new(
+                            result,
+                            Box::new(token),
+                            self.parse_factor(),
+                        ));
+                    }
+
+                    _ => {
+                        return result;
+                    } 
+                },
+
+                _ => {
+                    return result;
+                }
             }
         }
     }
@@ -140,29 +143,40 @@ impl<'a> Parser<'a> {
     /// EXPRESSION -> BINARY_OP (+|-) BINARY_OP
     /// for precedence as term will be calculated first
     pub fn parse_expression(&mut self) -> Box<dyn AST> {
-        let left_operand = self.parse_term();
+        let mut result = self.parse_term();
 
-        let next_token = self.lexer.peek_next_token();
+        // to handle multiple
+        loop {
+            let next_token = self.peek_next_token();
 
-        match &next_token.token {
-            TokenEnum::Op(op) => match op {
-                Operations::Plus | Operations::Minus => {
-                    self.lexer.get_next_token();
+            match &next_token.token {
+                TokenEnum::Op(op) => match op {
+                    Operations::Plus | Operations::Minus => {
+                        self.get_next_token();
 
-                    return Box::new(BinaryOP::new(
-                        left_operand,
-                        Box::new(next_token),
-                        self.parse_term(),
-                    ));
+                        // reassign the result 
+                        // if we have 1+2+3
+                        // in the first iteration, result is (left: 1, op: +, right: 2)
+                        // in the next iteration, result is 
+                        // [left: (left: 1, op: +, right: 2), op: +, right: 3]
+                        // and so on
+                        result = Box::new(BinaryOP::new(
+                            result,
+                            Box::new(next_token),
+                            self.parse_term(),
+                        ));
+                    }
+
+                    _ => {
+                        return result;
+                    }
+                },
+
+                _ => {
+                    return result;
                 }
-
-                _ => {}
-            },
-
-            _ => {}
-        };
-
-        return left_operand;
+            };
+        }
     }
 
     /// STATEMENT -> EXPRESSION
