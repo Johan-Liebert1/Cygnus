@@ -48,103 +48,25 @@ impl BinaryOP {
         }
     }
 
-    fn add(&self) -> VisitResult {
-        if let Number::Integer(l) = self.get_left() {
-            if let Number::Integer(r) = self.get_right() {
-                return VisitResult {
-                    token: Box::new(TokenEnum::Number(Number::Integer(l + r))),
-                };
+    fn evaluate<T>(&self, l: T, r: T) -> T
+    where
+        T: std::ops::Add<Output = T>,
+        T: std::ops::Sub<Output = T>,
+        T: std::ops::Mul<Output = T>,
+        T: std::ops::Div<Output = T>,
+    {
+        match &self.operator.token {
+            TokenEnum::Op(op) => match op {
+                Operations::Plus => l + r,
+                Operations::Minus => l - r,
+                Operations::Divide => l / r,
+                Operations::Multiply => l * r,
+            },
+
+            _ => {
+                unreachable!("WTF!!")
             }
-
-            panic!("Cannot add Float to Integer");
-        };
-
-        if let Number::Float(l) = self.get_left() {
-            if let Number::Float(r) = self.get_right() {
-                return VisitResult {
-                    token: Box::new(TokenEnum::Number(Number::Float(l + r))),
-                };
-            }
-
-            panic!("Cannot add Float to Integer");
-        };
-
-        panic!("wat add");
-    }
-
-    fn subtract(&self) -> VisitResult {
-        if let Number::Integer(l) = self.get_left() {
-            if let Number::Integer(r) = self.get_right() {
-                return VisitResult {
-                    token: Box::new(TokenEnum::Number(Number::Integer(l - r))),
-                };
-            }
-
-            panic!("Cannot subtract Float from Integer");
-        };
-
-        if let Number::Float(l) = self.get_left() {
-            if let Number::Float(r) = self.get_right() {
-                return VisitResult {
-                    token: Box::new(TokenEnum::Number(Number::Float(l - r))),
-                };
-            }
-
-            panic!("Cannot subtract Float from Integer");
-        };
-
-        panic!("wat subtract");
-    }
-
-    fn multiply(&self) -> VisitResult {
-        let left = self.get_left();
-        let right = self.get_right();
-
-        if let Number::Integer(l) = left {
-            if let Number::Integer(r) = right {
-                return VisitResult {
-                    token: Box::new(TokenEnum::Number(Number::Integer(l * r))),
-                };
-            }
-
-            panic!("Cannot multiply Float with Integer");
-        };
-
-        if let Number::Float(l) = self.get_left() {
-            if let Number::Float(r) = self.get_right() {
-                return VisitResult {
-                    token: Box::new(TokenEnum::Number(Number::Float(l * r))),
-                };
-            }
-
-            panic!("Cannot multiply Float with Integer");
-        };
-
-        panic!("wat multiply");
-    }
-
-    fn divide(&self) -> VisitResult {
-        if let Number::Integer(l) = self.get_left() {
-            if let Number::Integer(r) = self.get_right() {
-                return VisitResult {
-                    token: Box::new(TokenEnum::Number(Number::Integer(l / r))),
-                };
-            }
-
-            panic!("Cannot divide Float by Integer");
-        };
-
-        if let Number::Float(l) = self.get_left() {
-            if let Number::Float(r) = self.get_right() {
-                return VisitResult {
-                    token: Box::new(TokenEnum::Number(Number::Float(l / r))),
-                };
-            }
-
-            panic!("Cannot divide Float by Integer");
-        };
-
-        panic!("wat divide")
+        }
     }
 }
 
@@ -155,29 +77,27 @@ impl AST for BinaryOP {
             println!("===============================================");
         }
 
-        match &self.operator.token {
-            TokenEnum::Op(operation) => match operation {
-                Operations::Plus => {
-                    return self.add();
-                }
-
-                Operations::Minus => {
-                    return self.subtract();
-                }
-
-                Operations::Divide => {
-                    return self.divide();
-                }
-
-                Operations::Multiply => {
-                    return self.multiply();
-                }
-            },
-
-            _ => {
-                unreachable!("Found a non operator in binary expression")
+        if let Number::Integer(l) = self.get_left() {
+            if let Number::Integer(r) = self.get_right() {
+                return VisitResult {
+                    token: Box::new(TokenEnum::Number(Number::Integer(self.evaluate(l, r)))),
+                };
             }
+
+            panic!("Cannot add Float to Integer");
         };
+
+        if let Number::Float(l) = self.get_left() {
+            if let Number::Float(r) = self.get_right() {
+                return VisitResult {
+                    token: Box::new(TokenEnum::Number(Number::Float(self.evaluate(l, r)))),
+                };
+            }
+
+            panic!("Cannot add Float to Integer");
+        };
+
+        panic!("wat add");
     }
 
     fn get_token(&self) -> &Token {
