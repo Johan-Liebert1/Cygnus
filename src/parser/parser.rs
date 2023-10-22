@@ -23,7 +23,7 @@ impl<'a> Parser<'a> {
 
     /// STATEMENT -> EXPRESSION
     pub fn parse_statements(&mut self) -> Box<dyn AST> {
-        return self.parse_expression();
+        return self.parse_comparison_expression();
     }
 
     pub fn parse(&mut self) -> Box<dyn AST> {

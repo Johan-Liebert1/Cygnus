@@ -8,7 +8,6 @@ impl <'a> Parser<'a> {
     pub fn parse_expression(&mut self) -> Box<dyn AST> {
         let mut result = self.parse_term();
 
-        // to handle multiple
         loop {
             let next_token = self.peek_next_token();
 

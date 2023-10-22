@@ -19,6 +19,20 @@ pub enum Bracket {
 }
 
 #[derive(Debug, Clone)]
+pub enum Comparators {
+    LessThan,
+    GreaterThan,
+    LessThanEq,
+    GreaterThanEq,
+}
+
+#[derive(Debug, Clone)]
+pub enum Boolean {
+    True,
+    False,
+}
+
+#[derive(Debug, Clone)]
 pub enum TokenEnum {
     Number(Number),
 
@@ -27,6 +41,10 @@ pub enum TokenEnum {
     Equals,
 
     Bracket(Bracket),
+
+    Comparator(Comparators),
+
+    Bool(bool),
 
     Unknown,
     EOF,

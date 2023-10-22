@@ -1,5 +1,6 @@
 PROGRAM       -> STATEMENT[]
 STATEMENT     -> EXPRESSION | LPAREN EXPRESSION RPAREN
+COMPARISON    -> EXPRESSION (> | < | >= | <=) EXPRESSION
 EXPRESSION    -> TERM (( + | - ) TERM)*                      # for precedence as term will be calculated first 
 TERM          -> FACTOR (( * | / ) FACTOR)*
 FACTOR        -> INTEGER | FLOAT
