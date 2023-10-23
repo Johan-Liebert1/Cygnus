@@ -1,6 +1,9 @@
 use std::fmt::Display;
 
-use crate::tokens::{Bracket, Comparators, Number, Operations, TokenEnum};
+use crate::{
+    keywords,
+    tokens::{Bracket, Comparators, Number, Operations, TokenEnum},
+};
 
 #[derive(Debug)]
 pub struct Token {
@@ -67,6 +70,31 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    fn construct_word(&mut self) -> TokenEnum {
+        let mut word = String::new();
+
+        while self.index < self.file.len() {
+            let char = self.file[self.index] as char;
+
+            if !char.is_alphanumeric() {
+                break;
+            }
+
+            word += &char.to_string();
+
+            self.col_number += 1;
+            self.index += 1;
+        }
+
+        self.index -= 1;
+
+        if keywords::KEYWORDS.contains(&word.as_str()) {
+            return TokenEnum::Keyword(word);
+        }
+
+        return TokenEnum::Variable(word);
+    }
+
     pub fn peek_next_token(&mut self) -> Token {
         return self.advance_to_next_token(true);
     }
@@ -115,6 +143,7 @@ impl<'a> Lexer<'a> {
                 '(' => TokenEnum::Bracket(Bracket::LParen),
                 ')' => TokenEnum::Bracket(Bracket::RParen),
 
+                // TODO: This messes up the column number in the final output
                 '>' => TokenEnum::Comparator({
                     self.index += 1;
 
@@ -150,13 +179,14 @@ impl<'a> Lexer<'a> {
                     }
                 }),
 
-                _ => {
-                    if char.is_numeric() {
-                        self.construct_number()
-                    } else {
-                        TokenEnum::Unknown
-                    }
-                }
+                // only handle ASCII for now
+                _ => match self.file[self.index] {
+                    65..=90 | 97..=122 => self.construct_word(),
+
+                    48..=57 => self.construct_number(),
+
+                    _ => TokenEnum::Unknown,
+                },
             };
 
             self.index += 1;

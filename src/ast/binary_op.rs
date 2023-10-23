@@ -77,20 +77,24 @@ impl AST for BinaryOP {
             println!("===============================================");
         }
 
-        if let Number::Integer(l) = self.get_left() {
-            if let Number::Integer(r) = self.get_right() {
+        if let Number::Integer(left) = self.get_left() {
+            if let Number::Integer(right) = self.get_right() {
                 return VisitResult {
-                    token: Box::new(TokenEnum::Number(Number::Integer(self.evaluate(l, r)))),
+                    token: Box::new(TokenEnum::Number(Number::Integer(
+                        self.evaluate(left, right),
+                    ))),
                 };
             }
 
             panic!("Cannot add Float to Integer");
         };
 
-        if let Number::Float(l) = self.get_left() {
-            if let Number::Float(r) = self.get_right() {
+        if let Number::Float(left_op) = self.get_left() {
+            if let Number::Float(right_op) = self.get_right() {
                 return VisitResult {
-                    token: Box::new(TokenEnum::Number(Number::Float(self.evaluate(l, r)))),
+                    token: Box::new(TokenEnum::Number(Number::Float(
+                        self.evaluate(left_op, right_op),
+                    ))),
                 };
             }
 

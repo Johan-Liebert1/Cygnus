@@ -3,7 +3,7 @@ use crate::ast::{abstract_syntax_tree::AST, comparison_exp::ComparisonExp};
 use super::parser::Parser;
 
 impl<'a> Parser<'a> {
-    /// COMPARISON    -> EXPRESSION (> | < | >= | <=) EXPRESSION
+    /// COMPARISON -> EXPRESSION (> | < | >= | <=) EXPRESSION
     pub fn parse_comparison_expression(&mut self) -> Box<dyn AST> {
         let left_expression = self.parse_expression();
 

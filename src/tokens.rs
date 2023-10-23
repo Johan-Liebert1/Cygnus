@@ -46,6 +46,10 @@ pub enum TokenEnum {
 
     Bool(bool),
 
+    Keyword(String),
+    
+    Variable(String),
+
     Unknown,
     EOF,
 }
