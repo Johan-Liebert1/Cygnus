@@ -95,6 +95,54 @@ impl<'a> Lexer<'a> {
         return TokenEnum::Variable(word);
     }
 
+    fn parse_comment(&mut self) -> String {
+        let mut comment = String::new();
+
+        while self.index < self.file.len() {
+            match self.file[self.index] {
+                b'\n' => {
+                    self.line_number += 1;
+                    self.col_number = 0;
+                    break;
+                }
+
+                _ => {
+                    comment += &(self.file[self.index] as char).to_string();
+                    self.index += 1;
+                }
+            }
+        }
+
+        return comment;
+    }
+
+    fn is_comment(&mut self) -> bool {
+        self.index += 1;
+
+        match self.peek_next_token().token {
+            TokenEnum::Op(op) => match op {
+                Operations::Minus => {
+                    self.get_next_token();
+
+                    // we have found a comment
+                    self.parse_comment();
+
+                    return true;
+                }
+
+                _ => {
+                    self.index -= 1;
+                    return false;
+                }
+            },
+
+            _ => {
+                self.index -= 1;
+                return false;
+            }
+        }
+    }
+
     pub fn peek_next_token(&mut self) -> Token {
         return self.advance_to_next_token(true);
     }
@@ -134,7 +182,13 @@ impl<'a> Lexer<'a> {
                 }
 
                 '+' => TokenEnum::Op(Operations::Plus),
-                '-' => TokenEnum::Op(Operations::Minus),
+                '-' => {
+                    if self.is_comment() {
+                        continue;
+                    } else {
+                        TokenEnum::Op(Operations::Minus)
+                    }
+                }
                 '*' => TokenEnum::Op(Operations::Multiply),
                 '/' => TokenEnum::Op(Operations::Divide),
 

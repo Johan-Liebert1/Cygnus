@@ -4,6 +4,7 @@ VARIABLE_DECLARATION     -> def VAR_NAME (-> COMPARISON_EXPRESSION)*
 COMPARISON_EXPRESSION    -> EXPRESSION ((> | < | >= | <=) EXPRESSION)*
 EXPRESSION               -> TERM (( + | - ) TERM)*                      # for precedence as term will be calculated first 
 TERM                     -> FACTOR (( * | / ) FACTOR)*
+COMMENT                  -> -- (ANY)* 
 FACTOR                   -> INTEGER | FLOAT | LPAREN EXPRESSION RPAREN
 LPAREN                   -> (
 RPAREN                   -> )

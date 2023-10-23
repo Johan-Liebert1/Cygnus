@@ -1,3 +1,5 @@
+use std::process::exit;
+
 use crate::{
     ast::abstract_syntax_tree::AST,
     lexer::{Lexer, Token},
@@ -31,7 +33,10 @@ impl<'a> Parser<'a> {
                 self.parse_assignment_statement()
             },
 
-            TokenEnum::Number(_) => todo!(),
+            TokenEnum::Number(_) => {
+                self.parse_comparison_expression()
+            },
+
             TokenEnum::Op(_) => todo!(),
             TokenEnum::Equals => todo!(),
             TokenEnum::Bracket(_) => todo!(),
@@ -39,7 +44,9 @@ impl<'a> Parser<'a> {
             TokenEnum::Bool(_) => todo!(),
             TokenEnum::Variable(_) => todo!(),
             TokenEnum::Unknown => todo!(),
-            TokenEnum::EOF => todo!(),
+            TokenEnum::EOF => {
+                exit(0);
+            },
         }
     }
 
