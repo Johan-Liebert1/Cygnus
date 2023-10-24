@@ -1,6 +1,6 @@
 use std::process::exit;
 
-use crate::{
+use crate::lexer::{
     lexer::Token,
     tokens::{Comparators, Number, TokenEnum},
 };

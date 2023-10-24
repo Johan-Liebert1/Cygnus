@@ -1,4 +1,7 @@
-use crate::ast::{abstract_syntax_tree::AST, comparison_exp::ComparisonExp};
+use crate::{
+    ast::{abstract_syntax_tree::AST, comparison_exp::ComparisonExp},
+    lexer::tokens::TokenEnum,
+};
 
 use super::parser::Parser;
 
@@ -11,7 +14,7 @@ impl<'a> Parser<'a> {
             let token = self.peek_next_token();
 
             match token.token {
-                crate::tokens::TokenEnum::Comparator(_) => {
+                TokenEnum::Comparator(_) => {
                     self.get_next_token();
 
                     return Box::new(ComparisonExp::new(

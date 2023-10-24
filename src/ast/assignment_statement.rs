@@ -1,3 +1,5 @@
+use crate::lexer::lexer::Token;
+
 use super::{abstract_syntax_tree::AST, variable::Variable};
 
 #[derive(Debug)]
@@ -17,7 +19,7 @@ impl AST for AssignmentStatement {
         todo!()
     }
 
-    fn get_token(&self) -> &crate::lexer::Token {
+    fn get_token(&self) -> &Token {
         todo!()
     }
 

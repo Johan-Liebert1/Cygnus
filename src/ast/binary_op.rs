@@ -2,8 +2,10 @@ use std::process::exit;
 
 use crate::{
     constants,
-    lexer::Token,
-    tokens::{Number, Operations, TokenEnum},
+    lexer::{
+        lexer::Token,
+        tokens::{Number, Operations, TokenEnum},
+    },
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};

@@ -1,4 +1,4 @@
-use crate::lexer::Token;
+use crate::lexer::lexer::Token;
 
 use super::parser::Parser;
 

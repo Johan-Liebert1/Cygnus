@@ -1,6 +1,7 @@
 use crate::{
     ast::{abstract_syntax_tree::AST, binary_op::BinaryOP},
-    tokens::{Operations, TokenEnum}, constants,
+    constants,
+    lexer::tokens::{Operations, TokenEnum},
 };
 
 use super::parser::Parser;

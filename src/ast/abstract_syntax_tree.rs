@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Display};
 
-use crate::{lexer::Token, tokens::TokenEnum};
+use crate::lexer::{lexer::Token, tokens::TokenEnum};
 
 #[derive(Debug)]
 pub struct VisitResult {

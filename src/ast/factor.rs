@@ -1,4 +1,4 @@
-use crate::{constants, lexer::Token};
+use crate::{constants, lexer::lexer::Token};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 

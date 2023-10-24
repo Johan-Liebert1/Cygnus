@@ -2,8 +2,10 @@ use std::process::exit;
 
 use crate::{
     ast::abstract_syntax_tree::AST,
-    lexer::{Lexer, Token},
-    tokens::{Bracket, TokenEnum},
+    lexer::{
+        lexer::{Lexer, Token},
+        tokens::{Bracket, TokenEnum},
+    },
 };
 
 pub struct Parser<'a> {
@@ -31,11 +33,9 @@ impl<'a> Parser<'a> {
             TokenEnum::Keyword(_) => {
                 self.get_next_token();
                 self.parse_assignment_statement()
-            },
+            }
 
-            TokenEnum::Number(_) => {
-                self.parse_comparison_expression()
-            },
+            TokenEnum::Number(_) => self.parse_comparison_expression(),
 
             TokenEnum::Op(_) => todo!(),
             TokenEnum::Equals => todo!(),
@@ -46,7 +46,7 @@ impl<'a> Parser<'a> {
             TokenEnum::Unknown => todo!(),
             TokenEnum::EOF => {
                 exit(0);
-            },
+            }
         }
     }
 

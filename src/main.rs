@@ -7,8 +7,6 @@ mod constants;
 mod helpers;
 mod lexer;
 mod parser;
-mod tokens;
-mod keywords;
 
 fn main() {
     let file = std::fs::read("test/first.txt").unwrap();

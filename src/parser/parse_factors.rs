@@ -3,7 +3,7 @@ use std::process::exit;
 use crate::{
     ast::{abstract_syntax_tree::AST, factor::Factor},
     constants, helpers,
-    tokens::{Bracket, Number, TokenEnum},
+    lexer::tokens::{Bracket, Number, TokenEnum},
 };
 
 use super::parser::Parser;

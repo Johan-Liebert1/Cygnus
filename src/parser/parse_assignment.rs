@@ -2,7 +2,7 @@ use crate::{
     ast::{
         abstract_syntax_tree::AST, assignment_statement::AssignmentStatement, variable::Variable,
     },
-    tokens::TokenEnum,
+    lexer::tokens::TokenEnum,
 };
 
 use super::parser::Parser;
@@ -14,7 +14,7 @@ impl<'a> Parser<'a> {
 
         if let TokenEnum::Variable(_) = token.token {
             return Variable::new(Box::new(token));
-        }     
+        }
 
         panic!("Expected a variable found {:?}", token);
     }
