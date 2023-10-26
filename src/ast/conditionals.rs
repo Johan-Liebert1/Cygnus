@@ -59,11 +59,13 @@ impl AST for ConditionalStatement {
             }
         }
 
+        // TODO: Panic if not boolean
         if let Some(else_statement) = &self.else_statement {
             return else_statement.block.visit();
         }
 
         return VisitResult {
+            // TODO: Think of a better token for unexecuted statements
             token: Box::new(TokenEnum::Unknown),
         };
     }
