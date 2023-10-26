@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Operations {
     Plus,
     Minus,
@@ -6,13 +6,13 @@ pub enum Operations {
     Multiply,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Number {
     Integer(i32),
     Float(f32),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Bracket {
     LParen,
     RParen,
@@ -20,7 +20,7 @@ pub enum Bracket {
     RCurly,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Comparators {
     LessThan,
     GreaterThan,
@@ -28,13 +28,13 @@ pub enum Comparators {
     GreaterThanEq,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Boolean {
     True,
     False,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TokenEnum {
     Number(Number),
 

@@ -26,6 +26,16 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Validates the current token with expected token and consumes the token
+    /// panics if current token is not the same as expected token
+    pub fn validate_token(&mut self, token_expected: TokenEnum) {
+        let token = self.get_next_token();
+
+        if token.token != token_expected {
+            panic!("Expected {:?}, got {:?}", token_expected, token);
+        }
+    }
+
     /// STATEMENT -> VARIABLE_DECLARATION | CONDITIONAL_STATEMENT | COMPARISON_EXPRESSION | LPAREN COMPARISON_EXPRESSION RPAREN
     pub fn parse_statements(&mut self) -> Box<dyn AST> {
         let current_token = self.peek_next_token();
@@ -38,7 +48,7 @@ impl<'a> Parser<'a> {
                     VAR_DEFINE => self.parse_assignment_statement(),
 
                     IF_STATEMENT => {
-                        self.parse_conditionals()
+                        self.parse_conditional_statement()
                     }
 
                     _ => {

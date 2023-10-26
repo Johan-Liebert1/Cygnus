@@ -67,7 +67,7 @@ impl<'a> Parser<'a> {
                             }
 
                             _ => {
-                                panic!("Invalid token {:?}", bracket);
+                                panic!("Invalid token {:?}", next_token);
                             }
                         }
                     }
@@ -79,7 +79,7 @@ impl<'a> Parser<'a> {
                 },
 
                 _ => {
-                    panic!("Invalid token {:?}", paren);
+                    panic!("Invalid token {:?}", next_token);
                 }
             },
 
