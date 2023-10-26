@@ -1,7 +1,4 @@
-use crate::lexer::{
-    lexer::Token,
-    tokens::{Boolean, TokenEnum},
-};
+use crate::lexer::tokens::TokenEnum;
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
@@ -57,7 +54,7 @@ impl AST for ConditionalStatement {
         for elif in &self.elif_ladder {
             if let TokenEnum::Bool(value) = *elif.condition.visit().token {
                 if value {
-                    return self.if_statement.block.visit();
+                    return elif.block.visit();
                 }
             }
         }
