@@ -8,8 +8,9 @@ pub const LOOP: &str = "loop";
 pub const USING: &str = "using";
 pub const FROM: &str = "from";
 pub const TO: &str = "to";
+pub const STEP: &str = "step";
 
-pub const KEYWORDS: [&str; 8] = [
+pub const KEYWORDS: [&str; 9] = [
     VAR_DEFINE,
     IF_STATEMENT,
     ELSE_STATEMENT,
@@ -18,4 +19,5 @@ pub const KEYWORDS: [&str; 8] = [
     USING,
     FROM,
     TO,
+    STEP,
 ];

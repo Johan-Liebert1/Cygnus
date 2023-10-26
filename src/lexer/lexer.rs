@@ -182,6 +182,8 @@ impl<'a> Lexer<'a> {
                 }
 
                 '+' => TokenEnum::Op(Operations::Plus),
+
+                // TODO: Handle negative integers
                 '-' => {
                     if self.is_comment() {
                         continue;

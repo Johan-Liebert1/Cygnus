@@ -7,14 +7,21 @@ pub struct Loop {
     from_range: Box<dyn AST>,
     /// an expression
     to_range: Box<dyn AST>,
+    step_by: Option<Box<dyn AST>>,
     block: Box<dyn AST>,
 }
 
 impl Loop {
-    pub fn new(from_range: Box<dyn AST>, to_range: Box<dyn AST>, block: Box<dyn AST>) -> Self {
+    pub fn new(
+        from_range: Box<dyn AST>,
+        to_range: Box<dyn AST>,
+        step_by: Option<Box<dyn AST>>,
+        block: Box<dyn AST>,
+    ) -> Self {
         Self {
             from_range,
             to_range,
+            step_by,
             block,
         }
     }
@@ -41,7 +48,21 @@ impl AST for Loop {
             unreachable!("Somehow did not get integer even after performing Integer enum check")
         };
 
-        for _ in from..to {
+        let mut step_by = 1;
+
+        if let Some(step) = &self.step_by {
+            step_by = if let TokenEnum::Number(Number::Integer(i)) = *step.visit().token {
+                if i < 0 {
+                    panic!("Step cannot be negative");
+                }
+
+                i as usize
+            } else {
+                panic!("Step has to be a positive integer")
+            };
+        }
+
+        for _ in (from..to).step_by(step_by) {
             // TODO: Remove this once print statements are implemented
             println!("{:?}", self.block.visit());
         }
