@@ -197,6 +197,9 @@ impl<'a> Lexer<'a> {
                 '(' => TokenEnum::Bracket(Bracket::LParen),
                 ')' => TokenEnum::Bracket(Bracket::RParen),
 
+                '{' => TokenEnum::Bracket(Bracket::LCurly),
+                '}' => TokenEnum::Bracket(Bracket::RCurly),
+
                 // TODO: This messes up the column number in the final output
                 '>' => TokenEnum::Comparator({
                     self.index += 1;

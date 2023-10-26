@@ -3,6 +3,7 @@ use std::process::exit;
 use crate::{
     ast::abstract_syntax_tree::AST,
     lexer::{
+        keywords::{IF_STATEMENT, VAR_DEFINE},
         lexer::{Lexer, Token},
         tokens::{Bracket, TokenEnum},
     },
@@ -29,21 +30,35 @@ impl<'a> Parser<'a> {
     pub fn parse_statements(&mut self) -> Box<dyn AST> {
         let current_token = self.peek_next_token();
 
-        match current_token.token {
-            TokenEnum::Keyword(_) => {
+        match &current_token.token {
+            TokenEnum::Keyword(keyword) => {
                 self.get_next_token();
-                self.parse_assignment_statement()
+
+                match keyword as &str {
+                    VAR_DEFINE => self.parse_assignment_statement(),
+
+                    IF_STATEMENT => {
+                        self.parse_conditionals()
+                    }
+
+                    _ => {
+                        panic!("Keyword {} not recognised", keyword);
+                    }
+                }
             }
 
-            TokenEnum::Number(_) => self.parse_comparison_expression(),
+            TokenEnum::Number(..) | TokenEnum::Bracket(..) => self.parse_comparison_expression(),
 
             TokenEnum::Op(_) => todo!(),
             TokenEnum::Equals => todo!(),
-            TokenEnum::Bracket(_) => todo!(),
             TokenEnum::Comparator(_) => todo!(),
             TokenEnum::Bool(_) => todo!(),
             TokenEnum::Variable(_) => todo!(),
-            TokenEnum::Unknown => todo!(),
+
+            TokenEnum::Unknown => {
+                panic!("Unknown token: {:?}", &current_token.token);
+            }
+
             TokenEnum::EOF => {
                 exit(0);
             }

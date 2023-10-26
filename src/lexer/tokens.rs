@@ -16,6 +16,8 @@ pub enum Number {
 pub enum Bracket {
     LParen,
     RParen,
+    LCurly,
+    RCurly,
 }
 
 #[derive(Debug, Clone)]

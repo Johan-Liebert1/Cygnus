@@ -28,13 +28,19 @@ impl<'a> Parser<'a> {
                     self.get_next_token();
                     let return_value = self.parse_expression();
 
-                    match self.peek_next_token().token {
+                    let next_next_token = self.peek_next_token();
+
+                    match &next_next_token.token {
                         TokenEnum::Bracket(b) => match b {
                             Bracket::LParen => self.parse_expression(),
 
                             Bracket::RParen => {
                                 self.get_next_token();
                                 return return_value;
+                            }
+
+                            _ => {
+                                panic!("Invalid token {:?}", &next_next_token);
                             }
                         },
 
@@ -59,6 +65,10 @@ impl<'a> Parser<'a> {
                                 println!(") never opened");
                                 exit(1);
                             }
+
+                            _ => {
+                                panic!("Invalid token {:?}", bracket);
+                            }
                         }
                     }
 
@@ -67,6 +77,10 @@ impl<'a> Parser<'a> {
                         exit(1);
                     }
                 },
+
+                _ => {
+                    panic!("Invalid token {:?}", paren);
+                }
             },
 
             _ => {

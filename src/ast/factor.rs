@@ -15,7 +15,6 @@ impl Factor {
 }
 
 impl AST for Factor {
-    /// no implementation for this
     fn visit(&self) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:?}", &self);
