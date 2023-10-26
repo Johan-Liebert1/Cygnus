@@ -26,7 +26,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// STATEMENT -> VARIABLE_DECLARATION | COMPARISON_EXPRESSION | LPAREN COMPARISON_EXPRESSION RPAREN
+    /// STATEMENT -> VARIABLE_DECLARATION | CONDITIONAL_STATEMENT | COMPARISON_EXPRESSION | LPAREN COMPARISON_EXPRESSION RPAREN
     pub fn parse_statements(&mut self) -> Box<dyn AST> {
         let current_token = self.peek_next_token();
 
