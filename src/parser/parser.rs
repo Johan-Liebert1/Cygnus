@@ -3,7 +3,7 @@ use std::process::exit;
 use crate::{
     ast::abstract_syntax_tree::AST,
     lexer::{
-        keywords::{IF_STATEMENT, VAR_DEFINE},
+        keywords::{IF_STATEMENT, VAR_DEFINE, LOOP},
         lexer::{Lexer, Token},
         tokens::{Bracket, TokenEnum},
     },
@@ -47,9 +47,9 @@ impl<'a> Parser<'a> {
                 match keyword as &str {
                     VAR_DEFINE => self.parse_assignment_statement(),
 
-                    IF_STATEMENT => {
-                        self.parse_conditional_statement()
-                    }
+                    IF_STATEMENT => self.parse_conditional_statement(),
+
+                    LOOP => self.parse_loop(),
 
                     _ => {
                         panic!("Keyword {} not recognised", keyword);

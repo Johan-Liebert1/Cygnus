@@ -55,3 +55,32 @@ pub enum TokenEnum {
     Unknown,
     EOF,
 }
+
+impl TokenEnum {
+    pub fn is_number(&self) -> bool {
+        match self {
+            TokenEnum::Number(..) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_integer(&self) -> bool {
+        match self {
+            TokenEnum::Number(n) => match n {
+                Number::Integer(..) => true,
+                Number::Float(..) => false,
+            },
+            _ => false,
+        }
+    }
+
+    pub fn is_float(&self) -> bool {
+        match self {
+            TokenEnum::Number(n) => match n {
+                Number::Float(..) => true,
+                Number::Integer(..) => false,
+            },
+            _ => false,
+        }
+    }
+}
