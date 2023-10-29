@@ -1,9 +1,9 @@
 use std::process::exit;
 
-use crate::lexer::{
+use crate::{lexer::{
     lexer::Token,
     tokens::{Comparators, Number, TokenEnum},
-};
+}, constants};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
@@ -68,6 +68,10 @@ impl ComparisonExp {
 
 impl AST for ComparisonExp {
     fn visit(&self) -> VisitResult {
+        if constants::DEBUG_AST {
+            println!("{:?}", &self);
+        }
+
         if let Number::Integer(l) = self.get_left() {
             if let Number::Integer(r) = self.get_right() {
                 return VisitResult {

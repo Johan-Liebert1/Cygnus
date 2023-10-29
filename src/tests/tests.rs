@@ -8,9 +8,7 @@ use crate::{
 
 fn run_the_test(file: &Vec<u8>) -> VisitResult {
     let mut parser = Parser::new(&file);
-
     let ast = parser.parse_statements();
-
     return ast.visit();
 }
 
@@ -102,6 +100,27 @@ fn arithmetic() {
         ("5 + 2 * (3 - 1)", TE::Number(Number::Integer(9))),
         ("(5 + 3) * 2 / 4", TE::Number(Number::Integer(4))),
         ("(3. + (4. * (5. - 6.))) * ((7. + (8. / (9. + 10.))) / 11.) - (12. * 13.) + (14. / (15. + (16. - 17.)))", TE::Number(Number::Float(-155.67464)))
+    ];
+
+    for (index, file) in files.iter().enumerate() {
+        assert_eq!(
+            *run_the_test(&file.0.as_bytes().to_vec()).token,
+            file.1,
+            "\nFailed at index: {}",
+            index
+        );
+    }
+}
+
+#[test]
+fn if_statement() {
+    let files = [
+        ("if 5 > 6 { 6 + 7 } else { 3 }", TE::Number(Number::Integer(3))),
+        ("if 5 < 6 { 6 + 7 } else { 3 }", TE::Number(Number::Integer(13))),
+        ("if 6 < 6 { 6 + 7 } else { 3 }", TE::Number(Number::Integer(3))),
+        ("if 5 <= 5 { 6 + 7 } else { 3 }", TE::Number(Number::Integer(13))),
+        ("if 5 > 5 { 6 + 7 } elif 6 < 9 { 69 } else { 3 }", TE::Number(Number::Integer(69))),
+        ("if (5 > 5) { 6 + 7 } elif (6 < 9) { 69 } else { 3 }", TE::Number(Number::Integer(69))),
     ];
 
     for (index, file) in files.iter().enumerate() {

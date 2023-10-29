@@ -233,7 +233,7 @@ impl<'a> Lexer<'a> {
 
                         _ => {
                             self.index -= 1;
-                            Comparators::LessThanEq
+                            Comparators::LessThan
                         }
                     }
                 }),
