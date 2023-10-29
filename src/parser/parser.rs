@@ -3,7 +3,7 @@ use std::process::exit;
 use crate::{
     ast::abstract_syntax_tree::AST,
     lexer::{
-        keywords::{IF_STATEMENT, VAR_DEFINE, LOOP},
+        keywords::{IF_STATEMENT, VAR_DEFINE, LOOP, ELSE_STATEMENT, ELIF_STATEMENT},
         lexer::{Lexer, Token},
         tokens::{Bracket, TokenEnum},
     },
@@ -51,8 +51,11 @@ impl<'a> Parser<'a> {
 
                     LOOP => self.parse_loop(),
 
+                    ELSE_STATEMENT => panic!("Found 'else' without an 'if' {:?}", current_token),
+                    ELIF_STATEMENT => panic!("Found 'elif' without an 'if' {:?}", current_token),
+
                     _ => {
-                        panic!("Keyword {} not recognised", keyword);
+                        panic!("Keyword '{}' not recognised", keyword);
                     }
                 }
             }
@@ -67,7 +70,7 @@ impl<'a> Parser<'a> {
             TokenEnum::Variable(_) => todo!(),
 
             TokenEnum::Unknown => {
-                panic!("Unknown token: {:?}", &current_token.token);
+                panic!("Unknown token: {:?}", &current_token);
             }
 
             TokenEnum::EOF => {

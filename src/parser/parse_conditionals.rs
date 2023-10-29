@@ -61,8 +61,6 @@ impl<'a> Parser<'a> {
 
     /// we get here after 'if' has been consumed
     pub fn parse_if_elif(&mut self) -> IfStatement {
-        println!("Parsing parse_if_elif");
-
         // Parse if statements and any and all elif and else statements
         // store them all in one AST
         let condition = self.parse_comparison_expression();
