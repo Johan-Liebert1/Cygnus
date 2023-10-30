@@ -1,4 +1,7 @@
-use crate::lexer::{keywords::FUNC_OUTPUT, lexer::Token, tokens::TokenEnum};
+use crate::{
+    interpreter::interpreter::Variables,
+    lexer::{keywords::FUNC_OUTPUT, lexer::Token, tokens::TokenEnum},
+};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
@@ -15,7 +18,7 @@ impl FunctionCall {
 }
 
 impl AST for FunctionCall {
-    fn visit(&self) -> VisitResult {
+    fn visit(&self, i: &mut Variables) -> VisitResult {
         match self.name.as_str() {
             FUNC_OUTPUT => {
                 for arg in &self.arguments {

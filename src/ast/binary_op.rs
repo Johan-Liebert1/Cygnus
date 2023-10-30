@@ -2,6 +2,7 @@ use std::process::exit;
 
 use crate::{
     constants,
+    interpreter::interpreter::Variables,
     lexer::{
         lexer::Token,
         tokens::{Number, Operations, TokenEnum},
@@ -26,8 +27,8 @@ impl BinaryOP {
         }
     }
 
-    fn get_left(&self) -> Number {
-        match *self.left.visit().token {
+    fn get_left(&self, i: &mut Variables) -> Number {
+        match *self.left.visit(i).token {
             TokenEnum::Number(number) => {
                 return number;
             }
@@ -38,8 +39,8 @@ impl BinaryOP {
         }
     }
 
-    fn get_right(&self) -> Number {
-        match *self.right.visit().token {
+    fn get_right(&self, i: &mut Variables) -> Number {
+        match *self.right.visit(i).token {
             TokenEnum::Number(number) => {
                 return number;
             }
@@ -73,14 +74,14 @@ impl BinaryOP {
 }
 
 impl AST for BinaryOP {
-    fn visit(&self) -> VisitResult {
+    fn visit(&self, i: &mut Variables) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:#?}", &self);
             println!("===============================================");
         }
 
-        if let Number::Integer(left) = self.get_left() {
-            if let Number::Integer(right) = self.get_right() {
+        if let Number::Integer(left) = self.get_left(i) {
+            if let Number::Integer(right) = self.get_right(i) {
                 return VisitResult {
                     token: Box::new(TokenEnum::Number(Number::Integer(
                         self.evaluate(left, right),
@@ -91,8 +92,8 @@ impl AST for BinaryOP {
             panic!("Cannot add Float to Integer");
         };
 
-        if let Number::Float(left_op) = self.get_left() {
-            if let Number::Float(right_op) = self.get_right() {
+        if let Number::Float(left_op) = self.get_left(i) {
+            if let Number::Float(right_op) = self.get_right(i) {
                 return VisitResult {
                     token: Box::new(TokenEnum::Number(Number::Float(
                         self.evaluate(left_op, right_op),

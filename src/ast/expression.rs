@@ -1,4 +1,4 @@
-use crate::lexer::lexer::Token;
+use crate::{interpreter::interpreter::Variables, lexer::lexer::Token};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
@@ -10,7 +10,7 @@ pub struct Expression {
 }
 
 impl AST for Expression {
-    fn visit(&self) -> VisitResult {
+    fn visit(&self, i: &mut Variables) -> VisitResult {
         println!("Expression visit");
         VisitResult {
             token: Box::new(self.operand.token.clone()),

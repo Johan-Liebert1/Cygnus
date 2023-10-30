@@ -1,4 +1,4 @@
-use crate::lexer::lexer::Token;
+use crate::{interpreter::interpreter::Variables, lexer::lexer::Token};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
@@ -11,12 +11,16 @@ pub struct Variable {
 
 impl Variable {
     pub fn new(token: Box<Token>, var_type: String, var_name: String) -> Self {
-        Self { token, var_type, var_name }
+        Self {
+            token,
+            var_type,
+            var_name,
+        }
     }
 }
 
 impl AST for Variable {
-    fn visit(&self) -> VisitResult {
+    fn visit(&self, i: &mut Variables) -> VisitResult {
         todo!()
     }
 

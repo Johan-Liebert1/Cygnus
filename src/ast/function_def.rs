@@ -1,6 +1,6 @@
-use crate::lexer::lexer::Token;
+use crate::{interpreter::interpreter::Variables, lexer::lexer::Token};
 
-use super::abstract_syntax_tree::{AST, VisitResult};
+use super::abstract_syntax_tree::{VisitResult, AST};
 
 #[derive(Debug)]
 pub struct FunctionDefinition {
@@ -20,8 +20,8 @@ impl FunctionDefinition {
 }
 
 impl AST for FunctionDefinition {
-    fn visit(&self) -> VisitResult {
-        self.block.visit()
+    fn visit(&self, i: &mut Variables) -> VisitResult {
+        self.block.visit(i)
     }
 
     fn get_token(&self) -> &Token {

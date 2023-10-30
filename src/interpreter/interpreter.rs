@@ -1,21 +1,26 @@
 use std::collections::HashMap;
 
-use crate::{ast::abstract_syntax_tree::{AST, VisitResult}, lexer::tokens::Number};
+use crate::{
+    ast::abstract_syntax_tree::{VisitResult, AST},
+    lexer::tokens::Number,
+};
+
+pub type Variables = HashMap<String, Number>;
 
 pub struct Interpreter {
     ast: Box<dyn AST>,
-    variables: HashMap<String, Number>
+    variables: Variables,
 }
 
 impl Interpreter {
     pub fn new(ast: Box<dyn AST>) -> Self {
         Self {
             ast,
-            variables: HashMap::new()
+            variables: HashMap::new(),
         }
     }
 
-    pub fn interpret(&self) -> VisitResult {
-        return self.ast.visit();
+    pub fn interpret(&mut self) -> VisitResult {
+        return self.ast.visit(&mut self.variables);
     }
 }
