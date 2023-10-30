@@ -1,7 +1,7 @@
 use crate::{
     ast::{abstract_syntax_tree::AST, ast_loop::Loop},
     lexer::{
-        keywords::{FROM, TO, STEP},
+        keywords::{FROM, STEP, TO},
         tokens::{Bracket, TokenEnum},
     },
 };
@@ -10,7 +10,7 @@ use super::parser::Parser;
 
 impl<'a> Parser<'a> {
     // TODO: Also consider step keyword
-    // 
+    //
     /// LOOP -> loop from LPAREN* EXPRESSION to EXPRESSION (step EXPRESSION)* RPAREN* (with VAR_NAME)* LCURLY STATEMENT[] RCURLY
     pub fn parse_loop(&mut self) -> Box<dyn AST> {
         // we get here after consuming the 'loop' keyword
@@ -53,11 +53,11 @@ impl<'a> Parser<'a> {
                         self.get_next_token();
 
                         Some(self.parse_expression())
-                    },
+                    }
 
-                    _ => None
+                    _ => None,
                 }
-            },
+            }
 
             _ => None,
         };

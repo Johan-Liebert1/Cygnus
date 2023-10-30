@@ -92,6 +92,10 @@ impl<'a> Lexer<'a> {
             return TokenEnum::Keyword(word);
         }
 
+        if keywords::TYPES.contains(&word.as_str()) {
+            return TokenEnum::Type(word);
+        }
+
         return TokenEnum::Variable(word);
     }
 
@@ -201,6 +205,8 @@ impl<'a> Lexer<'a> {
 
                 '{' => TokenEnum::Bracket(Bracket::LCurly),
                 '}' => TokenEnum::Bracket(Bracket::RCurly),
+
+                ':' => TokenEnum::Colon,
 
                 // TODO: This messes up the column number in the final output
                 '>' => TokenEnum::Comparator({

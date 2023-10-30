@@ -7,3 +7,5 @@ pub mod factor;
 pub mod variable;
 pub mod conditionals;
 pub mod ast_loop;
+pub mod function_def;
+pub mod function_call;

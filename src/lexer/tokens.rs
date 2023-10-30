@@ -36,21 +36,19 @@ pub enum Boolean {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenEnum {
-    Number(Number),
-
-    Op(Operations),
-
     Equals,
 
+    Number(Number),
     Bracket(Bracket),
-
+    Op(Operations),
     Comparator(Comparators),
 
     Bool(bool),
-
     Keyword(String),
-
     Variable(String),
+    Type(String),
+
+    Colon,
 
     Unknown,
     EOF,

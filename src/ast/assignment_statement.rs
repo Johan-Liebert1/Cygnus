@@ -1,6 +1,6 @@
 use crate::lexer::lexer::Token;
 
-use super::{abstract_syntax_tree::AST, variable::Variable};
+use super::{abstract_syntax_tree::{AST, VisitResult}, variable::Variable};
 
 #[derive(Debug)]
 pub struct AssignmentStatement {
@@ -15,7 +15,7 @@ impl AssignmentStatement {
 }
 
 impl AST for AssignmentStatement {
-    fn visit(&self) -> super::abstract_syntax_tree::VisitResult {
+    fn visit(&self) -> VisitResult {
         todo!()
     }
 

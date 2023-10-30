@@ -3,7 +3,7 @@ use std::process::exit;
 use crate::{
     ast::abstract_syntax_tree::AST,
     lexer::{
-        keywords::{IF_STATEMENT, VAR_DEFINE, LOOP, ELSE_STATEMENT, ELIF_STATEMENT},
+        keywords::{ELIF_STATEMENT, ELSE_STATEMENT, IF_STATEMENT, LOOP, VAR_DEFINE},
         lexer::{Lexer, Token},
         tokens::{Bracket, TokenEnum},
     },
@@ -63,11 +63,35 @@ impl<'a> Parser<'a> {
             // FIXME: This cannot be any bracket, example { is not correct
             TokenEnum::Number(..) | TokenEnum::Bracket(..) => self.parse_comparison_expression(),
 
+            TokenEnum::Variable(..) => {
+                self.get_next_token();
+
+                match self.peek_next_token().token {
+                    TokenEnum::Bracket(b) => {
+                        match b {
+                            Bracket::LParen => {
+                                // function invocation
+                                self.parse_function()
+                            }
+
+                            Bracket::RParen => todo!(),
+                            Bracket::LCurly => todo!(),
+                            Bracket::RCurly => todo!(),
+                        }
+                    }
+
+                    _ => {
+                        todo!("variable next token")
+                    }
+                }
+            }
+
             TokenEnum::Op(_) => todo!(),
             TokenEnum::Equals => todo!(),
             TokenEnum::Comparator(_) => todo!(),
             TokenEnum::Bool(_) => todo!(),
-            TokenEnum::Variable(_) => todo!(),
+            TokenEnum::Type(_) => todo!(),
+            TokenEnum::Colon => todo!(),
 
             TokenEnum::Unknown => {
                 panic!("Unknown token: {:?}", &current_token);
