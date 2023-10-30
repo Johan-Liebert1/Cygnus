@@ -10,7 +10,7 @@ pub struct Expression {
 }
 
 impl AST for Expression {
-    fn visit(&self, i: &mut Variables) -> VisitResult {
+    fn visit(&self, _: &mut Variables) -> VisitResult {
         println!("Expression visit");
         VisitResult {
             token: Box::new(self.operand.token.clone()),

@@ -20,7 +20,7 @@ impl Variable {
 }
 
 impl AST for Variable {
-    fn visit(&self, i: &mut Variables) -> VisitResult {
+    fn visit(&self, _: &mut Variables) -> VisitResult {
         todo!()
     }
 

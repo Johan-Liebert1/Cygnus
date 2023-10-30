@@ -18,7 +18,7 @@ impl AssignmentStatement {
 }
 
 impl AST for AssignmentStatement {
-    fn visit(&self, i: &mut Variables) -> VisitResult {
+    fn visit(&self, _: &mut Variables) -> VisitResult {
         todo!()
     }
 

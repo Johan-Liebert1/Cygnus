@@ -18,7 +18,7 @@ impl FunctionCall {
 }
 
 impl AST for FunctionCall {
-    fn visit(&self, i: &mut Variables) -> VisitResult {
+    fn visit(&self, _: &mut Variables) -> VisitResult {
         match self.name.as_str() {
             FUNC_OUTPUT => {
                 for arg in &self.arguments {
