@@ -9,7 +9,7 @@ pub type Variables = HashMap<String, Number>;
 
 pub struct Interpreter {
     ast: Box<dyn AST>,
-    variables: Variables,
+    pub variables: Variables,
 }
 
 impl Interpreter {

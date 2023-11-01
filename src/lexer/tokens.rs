@@ -50,7 +50,7 @@ pub enum TokenEnum {
 
     Colon,
 
-    Unknown,
+    Unknown(String),
     EOF,
 }
 

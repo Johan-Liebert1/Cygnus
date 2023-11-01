@@ -5,8 +5,8 @@ use super::abstract_syntax_tree::{VisitResult, AST};
 #[derive(Debug)]
 pub struct Variable {
     token: Box<Token>,
-    var_name: String,
-    var_type: String,
+    pub var_name: String,
+    pub var_type: String,
 }
 
 impl Variable {

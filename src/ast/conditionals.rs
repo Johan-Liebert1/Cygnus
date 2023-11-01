@@ -66,7 +66,7 @@ impl AST for ConditionalStatement {
 
         return VisitResult {
             // TODO: Think of a better token for unexecuted statements
-            token: Box::new(TokenEnum::Unknown),
+            token: Box::new(TokenEnum::Unknown("".into())),
         };
     }
 

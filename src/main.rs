@@ -16,11 +16,11 @@ fn main() {
     let file = std::fs::read("test/first.txt").unwrap();
 
     let mut parser = Parser::new(&file);
-    let ast = parser.parse_statements();
+    let ast = parser.parse_program();
 
     let mut interpreter = Interpreter::new(ast);
     let result = interpreter.interpret();
 
     println!("\n\nRESULT\n{:#?}", result);
-    // println!("AST\n{:#?}", ast);
+    println!("{:#?}", interpreter.variables)
 }

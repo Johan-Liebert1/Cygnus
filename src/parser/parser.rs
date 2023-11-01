@@ -1,7 +1,5 @@
-use std::process::exit;
-
 use crate::{
-    ast::abstract_syntax_tree::AST,
+    ast::{abstract_syntax_tree::AST, program::Program},
     lexer::{
         keywords::{ELIF_STATEMENT, ELSE_STATEMENT, IF_STATEMENT, LOOP, VAR_DEFINE},
         lexer::{Lexer, Token},
@@ -51,8 +49,12 @@ impl<'a> Parser<'a> {
 
                     LOOP => self.parse_loop(),
 
-                    ELSE_STATEMENT => panic!("Found 'else' without an 'if' {:?}", current_token),
-                    ELIF_STATEMENT => panic!("Found 'elif' without an 'if' {:?}", current_token),
+                    ELSE_STATEMENT => {
+                        panic!("Found 'else' without an 'if' {:?}", current_token)
+                    }
+                    ELIF_STATEMENT => {
+                        panic!("Found 'elif' without an 'if' {:?}", current_token)
+                    }
 
                     _ => {
                         panic!("Keyword '{}' not recognised", keyword);
@@ -93,17 +95,33 @@ impl<'a> Parser<'a> {
             TokenEnum::Type(_) => todo!(),
             TokenEnum::Colon => todo!(),
 
-            TokenEnum::Unknown => {
+            TokenEnum::Unknown(..) => {
                 panic!("Unknown token: {:?}", &current_token);
             }
 
             TokenEnum::EOF => {
-                exit(0);
+                unreachable!("Reached EOF");
             }
         }
     }
 
-    pub fn parse(&mut self) -> Box<dyn AST> {
-        return self.parse_statements();
+    pub fn parse_program(&mut self) -> Box<dyn AST> {
+        let mut statements: Vec<Box<dyn AST>> = vec![];
+
+        loop {
+            let current_token = self.peek_next_token();
+
+            match &current_token.token {
+                TokenEnum::EOF => {
+                    break;
+                }
+
+                _ => {
+                    statements.push(self.parse_statements());
+                }
+            }
+        }
+
+        return Box::new(Program::new(statements));
     }
 }

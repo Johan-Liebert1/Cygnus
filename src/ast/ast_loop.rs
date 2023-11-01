@@ -71,7 +71,7 @@ impl AST for Loop {
         }
 
         return VisitResult {
-            token: Box::new(TokenEnum::Unknown),
+            token: Box::new(TokenEnum::Unknown("".into())),
         };
     }
 

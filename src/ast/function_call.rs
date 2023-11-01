@@ -26,7 +26,7 @@ impl AST for FunctionCall {
                 }
 
                 return VisitResult {
-                    token: Box::new(TokenEnum::Unknown),
+                    token: Box::new(TokenEnum::Unknown("".into())),
                 };
             }
 

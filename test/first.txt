@@ -1,1 +1,4 @@
-def hello: int = 3;
+def hello: int = 3
+def hello2: int = 9
+
+hello + hello2
