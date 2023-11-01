@@ -250,7 +250,7 @@ impl<'a> Lexer<'a> {
 
                     48..=57 => self.construct_number(),
 
-                    _ => TokenEnum::Unknown,
+                    _ => TokenEnum::Unknown(char.to_string()),
                 },
             };
 

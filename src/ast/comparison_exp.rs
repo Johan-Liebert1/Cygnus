@@ -1,9 +1,13 @@
 use std::process::exit;
 
-use crate::{lexer::{
-    lexer::Token,
-    tokens::{Comparators, Number, TokenEnum},
-}, constants};
+use crate::{
+    constants,
+    interpreter::interpreter::Variables,
+    lexer::{
+        lexer::Token,
+        tokens::{Comparators, Number, TokenEnum},
+    },
+};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
@@ -23,8 +27,8 @@ impl ComparisonExp {
         }
     }
 
-    fn get_left(&self) -> Number {
-        match *self.left.visit().token {
+    fn get_left(&self, i: &mut Variables) -> Number {
+        match *self.left.visit(i).token {
             TokenEnum::Number(number) => {
                 return number;
             }
@@ -35,8 +39,8 @@ impl ComparisonExp {
         }
     }
 
-    fn get_right(&self) -> Number {
-        match *self.right.visit().token {
+    fn get_right(&self, i: &mut Variables) -> Number {
+        match *self.right.visit(i).token {
             TokenEnum::Number(number) => {
                 return number;
             }
@@ -67,13 +71,13 @@ impl ComparisonExp {
 }
 
 impl AST for ComparisonExp {
-    fn visit(&self) -> VisitResult {
+    fn visit(&self, i: &mut Variables) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:?}", &self);
         }
 
-        if let Number::Integer(l) = self.get_left() {
-            if let Number::Integer(r) = self.get_right() {
+        if let Number::Integer(l) = self.get_left(i) {
+            if let Number::Integer(r) = self.get_right(i) {
                 return VisitResult {
                     token: Box::new(self.compare(l, r)),
                 };
@@ -82,8 +86,8 @@ impl AST for ComparisonExp {
             panic!("Cannot compare Float with Integer");
         };
 
-        if let Number::Float(l) = self.get_left() {
-            if let Number::Float(r) = self.get_right() {
+        if let Number::Float(l) = self.get_left(i) {
+            if let Number::Float(r) = self.get_right(i) {
                 return VisitResult {
                     token: Box::new(self.compare(l, r)),
                 };

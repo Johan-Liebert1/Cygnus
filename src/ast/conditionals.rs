@@ -1,4 +1,4 @@
-use crate::lexer::tokens::TokenEnum;
+use crate::{interpreter::interpreter::Variables, lexer::tokens::TokenEnum};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
@@ -44,29 +44,29 @@ impl ConditionalStatement {
 }
 
 impl AST for ConditionalStatement {
-    fn visit(&self) -> VisitResult {
-        if let TokenEnum::Bool(value) = *self.if_statement.condition.visit().token {
+    fn visit(&self, i: &mut Variables) -> VisitResult {
+        if let TokenEnum::Bool(value) = *self.if_statement.condition.visit(i).token {
             if value {
-                return self.if_statement.block.visit();
+                return self.if_statement.block.visit(i);
             }
         }
 
         for elif in &self.elif_ladder {
-            if let TokenEnum::Bool(value) = *elif.condition.visit().token {
+            if let TokenEnum::Bool(value) = *elif.condition.visit(i).token {
                 if value {
-                    return elif.block.visit();
+                    return elif.block.visit(i);
                 }
             }
         }
 
         // TODO: Panic if not boolean
         if let Some(else_statement) = &self.else_statement {
-            return else_statement.block.visit();
+            return else_statement.block.visit(i);
         }
 
         return VisitResult {
             // TODO: Think of a better token for unexecuted statements
-            token: Box::new(TokenEnum::Unknown),
+            token: Box::new(TokenEnum::Unknown("".into())),
         };
     }
 

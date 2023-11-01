@@ -1,5 +1,5 @@
+use crate::interpreter::interpreter::Interpreter;
 #[allow(unused_imports)]
-
 use crate::{
     ast::abstract_syntax_tree::VisitResult,
     lexer::tokens::{Number, TokenEnum as TE},
@@ -9,7 +9,11 @@ use crate::{
 fn run_the_test(file: &Vec<u8>) -> VisitResult {
     let mut parser = Parser::new(&file);
     let ast = parser.parse_statements();
-    return ast.visit();
+
+    let mut interpreter = Interpreter::new(ast);
+    let result = interpreter.interpret();
+
+    return result;
 }
 
 #[test]
@@ -115,12 +119,30 @@ fn arithmetic() {
 #[test]
 fn if_statement() {
     let files = [
-        ("if 5 > 6 { 6 + 7 } else { 3 }", TE::Number(Number::Integer(3))),
-        ("if 5 < 6 { 6 + 7 } else { 3 }", TE::Number(Number::Integer(13))),
-        ("if 6 < 6 { 6 + 7 } else { 3 }", TE::Number(Number::Integer(3))),
-        ("if 5 <= 5 { 6 + 7 } else { 3 }", TE::Number(Number::Integer(13))),
-        ("if 5 > 5 { 6 + 7 } elif 6 < 9 { 69 } else { 3 }", TE::Number(Number::Integer(69))),
-        ("if (5 > 5) { 6 + 7 } elif (6 < 9) { 69 } else { 3 }", TE::Number(Number::Integer(69))),
+        (
+            "if 5 > 6 { 6 + 7 } else { 3 }",
+            TE::Number(Number::Integer(3)),
+        ),
+        (
+            "if 5 < 6 { 6 + 7 } else { 3 }",
+            TE::Number(Number::Integer(13)),
+        ),
+        (
+            "if 6 < 6 { 6 + 7 } else { 3 }",
+            TE::Number(Number::Integer(3)),
+        ),
+        (
+            "if 5 <= 5 { 6 + 7 } else { 3 }",
+            TE::Number(Number::Integer(13)),
+        ),
+        (
+            "if 5 > 5 { 6 + 7 } elif 6 < 9 { 69 } else { 3 }",
+            TE::Number(Number::Integer(69)),
+        ),
+        (
+            "if (5 > 5) { 6 + 7 } elif (6 < 9) { 69 } else { 3 }",
+            TE::Number(Number::Integer(69)),
+        ),
     ];
 
     for (index, file) in files.iter().enumerate() {
