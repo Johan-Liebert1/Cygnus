@@ -1,6 +1,6 @@
 use crate::{interpreter::interpreter::Variables, lexer::tokens::TokenEnum};
 
-use super::abstract_syntax_tree::{AST, VisitResult};
+use super::abstract_syntax_tree::{VisitResult, AST};
 
 pub struct Program {
     statements: Vec<Box<dyn AST>>,
@@ -26,7 +26,7 @@ impl AST for Program {
         }
 
         VisitResult {
-            token: Box::new(TokenEnum::Unknown("".into()))
+            token: Box::new(TokenEnum::Unknown("".into())),
         }
     }
 

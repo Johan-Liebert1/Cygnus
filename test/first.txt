@@ -1,4 +1,4 @@
-def a: int = 3
+def a: int = 59 + 1
 def b: int = 9
 
-output(1, 2, 3 * 4, a + b)
+output(a)

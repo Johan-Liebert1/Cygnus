@@ -77,14 +77,7 @@ impl BinaryOP {
         let r2 = i.get(var2);
 
         match (r1, r2) {
-            (Some(var1), Some(var2)) => {
-                println!("{:?}, {:?}", var1, var2);
-                let t = self.eval_number_number(var1, var2);
-
-                println!("{:?}", t);
-
-                t
-            }
+            (Some(var1), Some(var2)) => self.eval_number_number(var1, var2),
 
             (None, Some(_)) => panic!("Variable {} is not defined", var2),
             (Some(_), None) => panic!("Variable {} is not defined", var1),

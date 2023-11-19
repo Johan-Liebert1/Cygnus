@@ -19,8 +19,8 @@ fn main() {
     let ast = parser.parse_program();
 
     let mut interpreter = Interpreter::new(ast);
-    let result = interpreter.interpret();
+    let _result = interpreter.interpret();
 
-    println!("\n\nRESULT\n{:#?}", result);
+    // println!("\n\nRESULT\n{:#?}", result);
     // println!("{:#?}", interpreter.variables)
 }

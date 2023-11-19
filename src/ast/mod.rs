@@ -8,5 +8,5 @@ pub mod expression;
 pub mod factor;
 pub mod function_call;
 pub mod function_def;
-pub mod variable;
 pub mod program;
+pub mod variable;

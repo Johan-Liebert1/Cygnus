@@ -21,10 +21,8 @@ impl AST for FunctionCall {
     fn visit(&self, i: &mut Variables) -> VisitResult {
         match self.name.as_str() {
             FUNC_OUTPUT => {
-                println!("Args: {:?}", &self.arguments);
-                
                 for arg in &self.arguments {
-                    print!("{:?}", arg.visit(i));
+                    println!("{:?} {:?}", arg, arg.visit(i));
                 }
 
                 return VisitResult {
