@@ -8,21 +8,23 @@ use super::abstract_syntax_tree::{VisitResult, AST};
 #[derive(Debug)]
 pub struct FunctionCall {
     name: String,
-    arguments: Vec<String>,
+    arguments: Vec<Box<dyn AST>>,
 }
 
 impl FunctionCall {
-    pub fn new(name: String, arguments: Vec<String>) -> Self {
+    pub fn new(name: String, arguments: Vec<Box<dyn AST>>) -> Self {
         Self { name, arguments }
     }
 }
 
 impl AST for FunctionCall {
-    fn visit(&self, _: &mut Variables) -> VisitResult {
+    fn visit(&self, i: &mut Variables) -> VisitResult {
         match self.name.as_str() {
             FUNC_OUTPUT => {
+                println!("Args: {:?}", &self.arguments);
+                
                 for arg in &self.arguments {
-                    print!("{}", arg);
+                    print!("{:?}", arg.visit(i));
                 }
 
                 return VisitResult {

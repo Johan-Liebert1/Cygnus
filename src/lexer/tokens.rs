@@ -45,6 +45,8 @@ pub enum Operand {
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenEnum {
     Equals,
+    Comma,
+    Colon,
 
     Number(Number),
     Bracket(Bracket),
@@ -55,8 +57,6 @@ pub enum TokenEnum {
     Keyword(String),
     Variable(String),
     Type(String),
-
-    Colon,
 
     Unknown(String),
     EOF,

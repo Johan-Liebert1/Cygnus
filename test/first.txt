@@ -1,4 +1,4 @@
 def a: int = 3
 def b: int = 9
 
-b > ff
+output(1, 2, 3 * 4, a + b)
