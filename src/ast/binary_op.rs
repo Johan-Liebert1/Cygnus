@@ -1,5 +1,3 @@
-use std::process::exit;
-
 use crate::{
     constants,
     interpreter::interpreter::Variables,

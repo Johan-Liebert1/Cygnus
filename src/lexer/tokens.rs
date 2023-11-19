@@ -1,4 +1,4 @@
-use std::{error::Error, fmt::Display};
+use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Operations {

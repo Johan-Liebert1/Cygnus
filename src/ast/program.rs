@@ -14,14 +14,19 @@ impl Program {
 
 impl AST for Program {
     fn visit(&self, x: &mut Variables) -> VisitResult {
+        let mut last: Option<VisitResult> = None;
+
         for statement in &self.statements {
             let result = statement.visit(x);
+            last = Some(result);
+        }
 
-            // println!("{:?}", result);
+        if let Some(res) = last {
+            return res;
         }
 
         VisitResult {
-            token: Box::new(TokenEnum::Unknown("".to_string()))
+            token: Box::new(TokenEnum::Unknown("".into()))
         }
     }
 
