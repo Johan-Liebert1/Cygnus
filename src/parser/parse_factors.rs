@@ -18,7 +18,7 @@ impl<'a> Parser<'a> {
         }
 
         match &next_token.token {
-            TokenEnum::Number(..) | TokenEnum::Variable(..) => {
+            TokenEnum::Number(..) | TokenEnum::Str(..) | TokenEnum::Variable(..) => {
                 // println!("Inside the Number Variable thing {:?}", &next_token.token);
 
                 self.get_next_token();

@@ -147,6 +147,27 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    fn construct_string(&mut self) -> TokenEnum {
+        let mut string: String = String::new();
+
+        // skip the "
+        self.index += 1;
+
+        while self.index < self.file.len()
+            && self.file[self.index] as char != '"'
+            && self.file[self.index] as char != '\n'
+        {
+            string += &(self.file[self.index] as char).to_string();
+
+            self.index += 1;
+            self.col_number += 1;
+        }
+
+        self.index -= 1;
+
+        return TokenEnum::Str(string);
+    }
+
     pub fn peek_next_token(&mut self) -> Token {
         return self.advance_to_next_token(true);
     }
@@ -249,6 +270,9 @@ impl<'a> Lexer<'a> {
                     65..=90 | 97..=122 => self.construct_word(),
 
                     48..=57 => self.construct_number(),
+
+                    // double quote
+                    // 34 => self.construct_string(),
 
                     _ => TokenEnum::Unknown(char.to_string()),
                 },

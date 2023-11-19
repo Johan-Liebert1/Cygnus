@@ -1,4 +1,2 @@
-def a: int = 3
+def a: int = "hello"
 def b: int = 9
-
-b > ff

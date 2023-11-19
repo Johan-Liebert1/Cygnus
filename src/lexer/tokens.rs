@@ -58,6 +58,8 @@ pub enum TokenEnum {
 
     Colon,
 
+    Str(String),
+
     Unknown(String),
     EOF,
 }
