@@ -5,7 +5,7 @@ use crate::{
     interpreter::interpreter::Variables,
     lexer::{
         lexer::Token,
-        tokens::{Number, Operations, TokenEnum},
+        tokens::{Number, Operand, Operations, TokenEnum},
     },
 };
 
@@ -24,30 +24,6 @@ impl BinaryOP {
             left,
             operator,
             right,
-        }
-    }
-
-    fn get_left(&self, i: &mut Variables) -> Number {
-        match *self.left.visit(i).token {
-            TokenEnum::Number(number) => {
-                return number;
-            }
-
-            _ => {
-                exit(1);
-            }
-        }
-    }
-
-    fn get_right(&self, i: &mut Variables) -> Number {
-        match *self.right.visit(i).token {
-            TokenEnum::Number(number) => {
-                return number;
-            }
-
-            _ => {
-                exit(1);
-            }
         }
     }
 
@@ -71,6 +47,70 @@ impl BinaryOP {
             }
         }
     }
+
+    fn eval_number_number(&self, left_op: &Number, right_op: &Number) -> VisitResult {
+        match (left_op, right_op) {
+            (Number::Integer(l), Number::Integer(r)) => VisitResult {
+                token: Box::new(TokenEnum::new_integer(self.evaluate(*l, *r))),
+            },
+
+            (Number::Float(l), Number::Float(r)) => VisitResult {
+                token: Box::new(TokenEnum::new_float(self.evaluate(*l, *r))),
+            },
+
+            _ => {
+                panic!("Cannot add Float and Integer");
+            }
+        }
+    }
+
+    fn eval_var_num(&self, number: &Number, variable: &String, i: &mut Variables) -> VisitResult {
+        let result = i.get(variable);
+
+        match result {
+            Some(var_num) => self.eval_number_number(number, var_num),
+
+            None => panic!("Variable {} is not defined", variable),
+        }
+    }
+
+    fn eval_var_var(&self, var1: &String, var2: &String, i: &mut Variables) -> VisitResult {
+        let r1 = i.get(var1);
+        let r2 = i.get(var2);
+
+        match (r1, r2) {
+            (Some(var1), Some(var2)) => {
+                println!("{:?}, {:?}", var1, var2);
+                let t = self.eval_number_number(var1, var2);
+
+                println!("{:?}", t);
+
+                t
+            }
+
+            (None, Some(_)) => panic!("Variable {} is not defined", var2),
+            (Some(_), None) => panic!("Variable {} is not defined", var1),
+            (None, None) => panic!("Variable {} and {} is not defined", var1, var2),
+        }
+    }
+
+    fn evaluate_operands(
+        &self,
+        left_op: &Operand,
+        right_op: &Operand,
+        i: &mut Variables,
+    ) -> VisitResult {
+        match (left_op, right_op) {
+            (Operand::Number(left_op), Operand::Number(right_op)) => {
+                self.eval_number_number(left_op, right_op)
+            }
+
+            (Operand::Number(n), Operand::Variable(v)) => self.eval_var_num(n, v, i),
+            (Operand::Variable(v), Operand::Number(n)) => self.eval_var_num(n, v, i),
+
+            (Operand::Variable(v1), Operand::Variable(v2)) => self.eval_var_var(v1, v2, i),
+        }
+    }
 }
 
 impl AST for BinaryOP {
@@ -80,31 +120,28 @@ impl AST for BinaryOP {
             println!("===============================================");
         }
 
-        if let Number::Integer(left) = self.get_left(i) {
-            if let Number::Integer(right) = self.get_right(i) {
-                return VisitResult {
-                    token: Box::new(TokenEnum::Number(Number::Integer(
-                        self.evaluate(left, right),
-                    ))),
-                };
+        let visit_left = self.left.visit(i);
+        let visit_right = self.right.visit(i);
+
+        let left_operand = visit_left.token.get_operand();
+        let right_operand = visit_right.token.get_operand();
+
+        match (&left_operand, &right_operand) {
+            (Ok(lop), Ok(rop)) => {
+                // Handle the case where both operands are Ok
+                return self.evaluate_operands(lop, rop, i);
             }
 
-            panic!("Cannot add Float to Integer");
-        };
-
-        if let Number::Float(left_op) = self.get_left(i) {
-            if let Number::Float(right_op) = self.get_right(i) {
-                return VisitResult {
-                    token: Box::new(TokenEnum::Number(Number::Float(
-                        self.evaluate(left_op, right_op),
-                    ))),
-                };
+            (Err(err), _) => {
+                // Handle the case where left_operand is an error
+                panic!("{}", err);
             }
 
-            panic!("Cannot add Float to Integer");
+            (_, Err(err)) => {
+                // Handle the case where right_operand is an error
+                panic!("{}", err);
+            }
         };
-
-        panic!("wat add");
     }
 
     fn get_token(&self) -> &Token {

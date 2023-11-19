@@ -26,7 +26,7 @@ pub struct Lexer<'a> {
     pub line_number: usize,
     pub col_number: usize,
     pub file: &'a Vec<u8>,
-    index: usize,
+    pub index: usize,
 }
 
 impl<'a> Lexer<'a> {

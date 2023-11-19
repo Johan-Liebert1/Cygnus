@@ -1,4 +1,4 @@
-def hello: int = 3
-def hello2: int = 9
+def a: int = 3
+def b: int = 9
 
-hello + hello2
+a + b

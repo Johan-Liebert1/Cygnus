@@ -9,7 +9,7 @@ use crate::{
 use super::parser::Parser;
 
 impl<'a> Parser<'a> {
-    /// FACTOR -> INTEGER | FLOAT
+    /// FACTOR -> INTEGER | FLOAT | VARIABLE | LPAREN EXPRESSION RPAREN
     pub fn parse_factor(&mut self) -> Box<dyn AST> {
         let next_token = self.peek_next_token();
 
@@ -18,7 +18,9 @@ impl<'a> Parser<'a> {
         }
 
         match &next_token.token {
-            TokenEnum::Number(..) => {
+            TokenEnum::Number(..) | TokenEnum::Variable(..) => {
+                // println!("Inside the Number Variable thing {:?}", &next_token.token);
+
                 self.get_next_token();
                 return Box::new(Factor::new(Box::new(next_token)));
             }

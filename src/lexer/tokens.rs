@@ -1,3 +1,5 @@
+use std::{error::Error, fmt::Display};
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Operations {
     Plus,
@@ -35,6 +37,12 @@ pub enum Boolean {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum Operand {
+    Number(Number),
+    Variable(String),
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum TokenEnum {
     Equals,
 
@@ -52,6 +60,14 @@ pub enum TokenEnum {
 
     Unknown(String),
     EOF,
+}
+
+pub struct OperandConversionError(TokenEnum);
+
+impl Display for OperandConversionError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?} cannot be used as an operand", self.0)
+    }
 }
 
 impl TokenEnum {
@@ -80,5 +96,23 @@ impl TokenEnum {
             },
             _ => false,
         }
+    }
+
+    pub fn get_operand(&self) -> Result<Operand, OperandConversionError> {
+        match self {
+            TokenEnum::Number(n) => return Ok(Operand::Number(n.clone())),
+
+            TokenEnum::Variable(n) => return Ok(Operand::Variable(n.to_string())),
+
+            _ => Err(OperandConversionError(self.clone())),
+        }
+    }
+
+    pub fn new_float(f: f32) -> TokenEnum {
+        return TokenEnum::Number(Number::Float(f));
+    }
+
+    pub fn new_integer(f: i32) -> TokenEnum {
+        return TokenEnum::Number(Number::Integer(f));
     }
 }

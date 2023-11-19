@@ -65,14 +65,17 @@ impl<'a> Parser<'a> {
             // FIXME: This cannot be any bracket, example { is not correct
             TokenEnum::Number(..) | TokenEnum::Bracket(..) => self.parse_comparison_expression(),
 
-            TokenEnum::Variable(..) => {
-                self.get_next_token();
+            TokenEnum::Variable(_) => {
+                let nth_token = self.peek_nth_token(2);
 
-                match self.peek_next_token().token {
+                // println!("found var {}. nth token {:#?}", var, nth_token);
+
+                match nth_token.token {
                     TokenEnum::Bracket(b) => {
                         match b {
                             Bracket::LParen => {
                                 // function invocation
+                                self.get_next_token();
                                 self.parse_function()
                             }
 
@@ -83,7 +86,8 @@ impl<'a> Parser<'a> {
                     }
 
                     _ => {
-                        todo!("variable next token")
+                        // println!("In the variable thing. Token {:?}", a);
+                        self.parse_comparison_expression()
                     }
                 }
             }

@@ -22,5 +22,5 @@ fn main() {
     let result = interpreter.interpret();
 
     println!("\n\nRESULT\n{:#?}", result);
-    println!("{:#?}", interpreter.variables)
+    // println!("{:#?}", interpreter.variables)
 }

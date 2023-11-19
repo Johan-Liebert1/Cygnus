@@ -13,9 +13,11 @@ impl Program {
 }
 
 impl AST for Program {
-    fn visit(&self, x: &mut Variables) -> super::abstract_syntax_tree::VisitResult {
+    fn visit(&self, x: &mut Variables) -> VisitResult {
         for statement in &self.statements {
-            statement.visit(x);
+            let result = statement.visit(x);
+
+            // println!("{:?}", result);
         }
 
         VisitResult {
