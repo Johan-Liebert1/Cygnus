@@ -1,4 +1,8 @@
-use crate::{interpreter::interpreter::{Variables, Functions}, lexer::tokens::TokenEnum};
+use crate::{
+    interpreter::interpreter::{Functions, Variables},
+    lexer::tokens::TokenEnum,
+};
+use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
@@ -44,17 +48,17 @@ impl ConditionalStatement {
 }
 
 impl AST for ConditionalStatement {
-    fn visit(&self, i: &mut Variables, f: &mut Functions) -> VisitResult {
-        if let TokenEnum::Bool(value) = *self.if_statement.condition.visit(i, f).token {
+    fn visit(&self, i: &mut Variables, f: Rc<RefCell<&Functions>>) -> VisitResult {
+        if let TokenEnum::Bool(value) = *self.if_statement.condition.visit(i, Rc::clone(&f)).token {
             if value {
-                return self.if_statement.block.visit(i, f);
+                return self.if_statement.block.visit(i, Rc::clone(&f));
             }
         }
 
         for elif in &self.elif_ladder {
-            if let TokenEnum::Bool(value) = *elif.condition.visit(i, f).token {
+            if let TokenEnum::Bool(value) = *elif.condition.visit(i, Rc::clone(&f)).token {
                 if value {
-                    return elif.block.visit(i, f);
+                    return elif.block.visit(i, Rc::clone(&f));
                 }
             }
         }

@@ -1,7 +1,11 @@
-use std::fmt::{Debug, Display};
+use std::{
+    cell::RefCell,
+    fmt::{Debug, Display},
+    rc::Rc,
+};
 
 use crate::{
-    interpreter::interpreter::{Variables, Functions},
+    interpreter::interpreter::{Functions, Variables},
     lexer::{lexer::Token, tokens::TokenEnum},
 };
 
@@ -11,7 +15,7 @@ pub struct VisitResult {
 }
 
 pub trait AST {
-    fn visit(&self, x: &mut Variables, _: &mut Functions) -> VisitResult;
+    fn visit(&self, x: &mut Variables, _: Rc<RefCell<&Functions>>) -> VisitResult;
     fn get_token(&self) -> &Token;
     fn print(&self);
 }

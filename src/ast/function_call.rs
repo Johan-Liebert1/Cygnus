@@ -1,5 +1,7 @@
+use std::{cell::RefCell, rc::Rc};
+
 use crate::{
-    interpreter::interpreter::{Variables, Functions},
+    interpreter::interpreter::{Functions, Variables},
     lexer::{keywords::FUNC_OUTPUT, lexer::Token, tokens::TokenEnum},
 };
 
@@ -18,21 +20,19 @@ impl FunctionCall {
 }
 
 impl AST for FunctionCall {
-    fn visit(&self, i: &mut Variables, f: &mut Functions) -> VisitResult {
+    fn visit(&self, i: &mut Variables, f: Rc<RefCell<&Functions>>) -> VisitResult {
         match self.name.as_str() {
             FUNC_OUTPUT => {
-                for arg in &self.arguments {
-                    println!("{:?} {:?}", arg, arg.visit(i, f));
-                }
-
                 return VisitResult {
                     token: Box::new(TokenEnum::Unknown("".into())),
                 };
             }
 
-            _ => {
-                unimplemented!("Function {} unimplemented", self.name)
-            }
+            name => match f.borrow().get(name) {
+                Some(function_ast) => function_ast.visit(i, Rc::clone(&f)),
+
+                None => unimplemented!("Function {} unimplemented", self.name),
+            },
         }
     }
 

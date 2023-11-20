@@ -1,7 +1,8 @@
 use crate::{
-    interpreter::interpreter::{Variables, Functions},
+    interpreter::interpreter::{Functions, Variables},
     lexer::tokens::{Number, TokenEnum},
 };
+use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
@@ -31,9 +32,9 @@ impl Loop {
 }
 
 impl AST for Loop {
-    fn visit(&self, i: &mut Variables, f: &mut Functions) -> VisitResult {
-        let from = self.from_range.visit(i, f);
-        let to = self.to_range.visit(i, f);
+    fn visit(&self, i: &mut Variables, f: Rc<RefCell<&Functions>>) -> VisitResult {
+        let from = self.from_range.visit(i, Rc::clone(&f));
+        let to = self.to_range.visit(i, Rc::clone(&f));
 
         if !from.token.is_integer() || !to.token.is_integer() {
             panic!("Expected from and to expressions to be Integer");
@@ -54,7 +55,7 @@ impl AST for Loop {
         let mut step_by = 1;
 
         if let Some(step) = &self.step_by {
-            step_by = if let TokenEnum::Number(Number::Integer(i)) = *step.visit(i, f).token {
+            step_by = if let TokenEnum::Number(Number::Integer(i)) = *step.visit(i, Rc::clone(&f)).token {
                 if i < 0 {
                     panic!("Step cannot be negative");
                 }
@@ -67,7 +68,7 @@ impl AST for Loop {
 
         for _ in (from..to).step_by(step_by) {
             // TODO: Remove this once print statements are implemented
-            println!("{:?}", self.block.visit(i, f));
+            println!("{:?}", self.block.visit(i, Rc::clone(&f)));
         }
 
         return VisitResult {

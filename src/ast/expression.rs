@@ -1,4 +1,8 @@
-use crate::{interpreter::interpreter::{Variables, Functions}, lexer::lexer::Token};
+use crate::{
+    interpreter::interpreter::{Functions, Variables},
+    lexer::lexer::Token,
+};
+use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
@@ -10,7 +14,7 @@ pub struct Expression {
 }
 
 impl AST for Expression {
-    fn visit(&self, _: &mut Variables, _: &mut Functions) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<&Functions>>) -> VisitResult {
         println!("Expression visit");
         VisitResult {
             token: Box::new(self.operand.token.clone()),

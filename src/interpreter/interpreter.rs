@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::{
     ast::abstract_syntax_tree::{VisitResult, AST},
@@ -24,6 +24,8 @@ impl Interpreter {
     }
 
     pub fn interpret(&mut self) -> VisitResult {
-        return self.ast.visit(&mut self.variables, &mut self.functions);
+        return self
+            .ast
+            .visit(&mut self.variables, Rc::new(RefCell::new(&self.functions)));
     }
 }

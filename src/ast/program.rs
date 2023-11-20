@@ -1,4 +1,8 @@
-use crate::{interpreter::interpreter::{Variables, Functions}, lexer::tokens::TokenEnum};
+use crate::{
+    interpreter::interpreter::{Functions, Variables},
+    lexer::tokens::TokenEnum,
+};
+use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
@@ -13,11 +17,11 @@ impl Program {
 }
 
 impl AST for Program {
-    fn visit(&self, x: &mut Variables, f: &mut Functions) -> VisitResult {
+    fn visit(&self, x: &mut Variables, f: Rc<RefCell<&Functions>>) -> VisitResult {
         let mut last: Option<VisitResult> = None;
 
         for statement in &self.statements {
-            let result = statement.visit(x, f);
+            let result = statement.visit(x, Rc::clone(&f));
             last = Some(result);
         }
 

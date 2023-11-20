@@ -1,11 +1,12 @@
 use crate::{
-    interpreter::interpreter::{Variables, Functions},
+    interpreter::interpreter::{Functions, Variables},
     lexer::{
         keywords::{TYPE_FLOAT, TYPE_INT},
         lexer::Token,
         tokens::Number,
     },
 };
+use std::{cell::RefCell, rc::Rc};
 
 use super::{
     abstract_syntax_tree::{VisitResult, AST},
@@ -30,7 +31,7 @@ impl FunctionDefinition {
 }
 
 impl AST for FunctionDefinition {
-    fn visit(&self, i: &mut Variables, f: &mut Functions) -> VisitResult {
+    fn visit(&self, i: &mut Variables, f: Rc<RefCell<&Functions>>) -> VisitResult {
         // TODO: handle global variables and function parameters with the same name
         for param in &self.parameters {
             let value = match param.var_type.as_str() {
