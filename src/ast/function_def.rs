@@ -1,6 +1,16 @@
-use crate::{lexer::lexer::Token, interpreter::interpreter::Variables};
+use crate::{
+    interpreter::interpreter::Variables,
+    lexer::{
+        keywords::{TYPE_FLOAT, TYPE_INT},
+        lexer::Token,
+        tokens::Number,
+    },
+};
 
-use super::{abstract_syntax_tree::{VisitResult, AST}, variable::Variable};
+use super::{
+    abstract_syntax_tree::{VisitResult, AST},
+    variable::Variable,
+};
 
 #[derive(Debug)]
 pub struct FunctionDefinition {
@@ -21,7 +31,24 @@ impl FunctionDefinition {
 
 impl AST for FunctionDefinition {
     fn visit(&self, i: &mut Variables) -> VisitResult {
-        self.block.visit(i)
+        // TODO: handle global variables and function parameters with the same name
+        for param in &self.parameters {
+            let value = match param.var_type.as_str() {
+                TYPE_INT => Number::Integer(0),
+                TYPE_FLOAT => Number::Float(0.0),
+                t => unimplemented!("Variable type {t} not implemented"),
+            };
+
+            i.insert(param.var_name.clone(), value);
+        }
+
+        let t = self.block.visit(i);
+
+        for param in &self.parameters {
+            i.remove(&param.var_name);
+        }
+
+        return t;
     }
 
     fn get_token(&self) -> &Token {

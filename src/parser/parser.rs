@@ -1,7 +1,9 @@
 use crate::{
     ast::{abstract_syntax_tree::AST, program::Program},
     lexer::{
-        keywords::{ELIF_STATEMENT, ELSE_STATEMENT, IF_STATEMENT, LOOP, VAR_DEFINE, FUNCTION_DEFINE},
+        keywords::{
+            ELIF_STATEMENT, ELSE_STATEMENT, FUNCTION_DEFINE, IF_STATEMENT, LOOP, VAR_DEFINE,
+        },
         lexer::{Lexer, Token},
         tokens::{Bracket, TokenEnum},
     },
