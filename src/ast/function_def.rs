@@ -1,5 +1,5 @@
 use crate::{
-    interpreter::interpreter::Variables,
+    interpreter::interpreter::{Variables, Functions},
     lexer::{
         keywords::{TYPE_FLOAT, TYPE_INT},
         lexer::Token,
@@ -30,7 +30,7 @@ impl FunctionDefinition {
 }
 
 impl AST for FunctionDefinition {
-    fn visit(&self, i: &mut Variables) -> VisitResult {
+    fn visit(&self, i: &mut Variables, f: &mut Functions) -> VisitResult {
         // TODO: handle global variables and function parameters with the same name
         for param in &self.parameters {
             let value = match param.var_type.as_str() {
@@ -42,7 +42,7 @@ impl AST for FunctionDefinition {
             i.insert(param.var_name.clone(), value);
         }
 
-        let t = self.block.visit(i);
+        let t = self.block.visit(i, f);
 
         for param in &self.parameters {
             i.remove(&param.var_name);

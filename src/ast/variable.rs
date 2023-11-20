@@ -1,4 +1,4 @@
-use crate::{interpreter::interpreter::Variables, lexer::lexer::Token};
+use crate::{interpreter::interpreter::{Variables, Functions}, lexer::lexer::Token};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
@@ -20,7 +20,7 @@ impl Variable {
 }
 
 impl AST for Variable {
-    fn visit(&self, _: &mut Variables) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: &mut Functions) -> VisitResult {
         todo!()
     }
 

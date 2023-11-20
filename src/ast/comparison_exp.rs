@@ -1,6 +1,6 @@
 use crate::{
     constants,
-    interpreter::interpreter::Variables,
+    interpreter::interpreter::{Variables, Functions},
     lexer::{
         lexer::Token,
         tokens::{Comparators, Number, Operand, TokenEnum},
@@ -102,14 +102,14 @@ impl ComparisonExp {
 }
 
 impl AST for ComparisonExp {
-    fn visit(&self, i: &mut Variables) -> VisitResult {
+    fn visit(&self, i: &mut Variables, f: &mut Functions) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:#?}", &self);
             println!("===============================================");
         }
 
-        let visit_left = self.left.visit(i);
-        let visit_right = self.right.visit(i);
+        let visit_left = self.left.visit(i, f);
+        let visit_right = self.right.visit(i, f);
 
         let left_operand = visit_left.token.get_operand();
         let right_operand = visit_right.token.get_operand();

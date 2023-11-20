@@ -1,5 +1,5 @@
 use crate::{
-    interpreter::interpreter::Variables,
+    interpreter::interpreter::{Variables, Functions},
     lexer::tokens::{Number, TokenEnum},
 };
 
@@ -31,9 +31,9 @@ impl Loop {
 }
 
 impl AST for Loop {
-    fn visit(&self, i: &mut Variables) -> VisitResult {
-        let from = self.from_range.visit(i);
-        let to = self.to_range.visit(i);
+    fn visit(&self, i: &mut Variables, f: &mut Functions) -> VisitResult {
+        let from = self.from_range.visit(i, f);
+        let to = self.to_range.visit(i, f);
 
         if !from.token.is_integer() || !to.token.is_integer() {
             panic!("Expected from and to expressions to be Integer");
@@ -54,7 +54,7 @@ impl AST for Loop {
         let mut step_by = 1;
 
         if let Some(step) = &self.step_by {
-            step_by = if let TokenEnum::Number(Number::Integer(i)) = *step.visit(i).token {
+            step_by = if let TokenEnum::Number(Number::Integer(i)) = *step.visit(i, f).token {
                 if i < 0 {
                     panic!("Step cannot be negative");
                 }
@@ -67,7 +67,7 @@ impl AST for Loop {
 
         for _ in (from..to).step_by(step_by) {
             // TODO: Remove this once print statements are implemented
-            println!("{:?}", self.block.visit(i));
+            println!("{:?}", self.block.visit(i, f));
         }
 
         return VisitResult {

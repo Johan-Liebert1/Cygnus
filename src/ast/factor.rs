@@ -1,4 +1,4 @@
-use crate::{constants, interpreter::interpreter::Variables, lexer::lexer::Token};
+use crate::{constants, interpreter::interpreter::{Variables, Functions}, lexer::lexer::Token};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
@@ -15,7 +15,7 @@ impl Factor {
 }
 
 impl AST for Factor {
-    fn visit(&self, _: &mut Variables) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: &mut Functions) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:?}", &self);
         }

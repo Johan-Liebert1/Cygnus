@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display};
 
 use crate::{
-    interpreter::interpreter::Variables,
+    interpreter::interpreter::{Variables, Functions},
     lexer::{lexer::Token, tokens::TokenEnum},
 };
 
@@ -11,7 +11,7 @@ pub struct VisitResult {
 }
 
 pub trait AST {
-    fn visit(&self, x: &mut Variables) -> VisitResult;
+    fn visit(&self, x: &mut Variables, _: &mut Functions) -> VisitResult;
     fn get_token(&self) -> &Token;
     fn print(&self);
 }
