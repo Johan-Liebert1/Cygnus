@@ -1,19 +1,19 @@
-use crate::{interpreter::interpreter::Variables, lexer::lexer::Token};
+use crate::{lexer::lexer::Token, interpreter::interpreter::Variables};
 
-use super::abstract_syntax_tree::{VisitResult, AST};
+use super::{abstract_syntax_tree::{VisitResult, AST}, variable::Variable};
 
 #[derive(Debug)]
 pub struct FunctionDefinition {
     name: String,
-    arguments: Vec<String>,
+    parameters: Vec<Variable>,
     block: Box<dyn AST>,
 }
 
 impl FunctionDefinition {
-    pub fn new(name: String, arguments: Vec<String>, block: Box<dyn AST>) -> Self {
+    pub fn new(name: String, arguments: Vec<Variable>, block: Box<dyn AST>) -> Self {
         Self {
             name,
-            arguments,
+            parameters: arguments,
             block,
         }
     }

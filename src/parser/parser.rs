@@ -1,7 +1,7 @@
 use crate::{
     ast::{abstract_syntax_tree::AST, program::Program},
     lexer::{
-        keywords::{ELIF_STATEMENT, ELSE_STATEMENT, IF_STATEMENT, LOOP, VAR_DEFINE},
+        keywords::{ELIF_STATEMENT, ELSE_STATEMENT, IF_STATEMENT, LOOP, VAR_DEFINE, FUNCTION_DEFINE},
         lexer::{Lexer, Token},
         tokens::{Bracket, TokenEnum},
     },
@@ -48,6 +48,8 @@ impl<'a> Parser<'a> {
                     IF_STATEMENT => self.parse_conditional_statement(),
 
                     LOOP => self.parse_loop(),
+
+                    FUNCTION_DEFINE => self.parse_function_definition(),
 
                     ELSE_STATEMENT => {
                         panic!("Found 'else' without an 'if' {:?}", current_token)

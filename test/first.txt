@@ -1,4 +1,5 @@
-def a: int = 59 + 1
-def b: int = 9
+fun myfunc(hello: int, bye: float) {
+    output(69)
+}
 
-output(a)
+myfunc()

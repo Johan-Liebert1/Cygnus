@@ -1,3 +1,4 @@
+pub const FUNCTION_DEFINE: &str = "fun";
 pub const VAR_DEFINE: &str = "def";
 
 pub const IF_STATEMENT: &str = "if";
@@ -10,7 +11,7 @@ pub const FROM: &str = "from";
 pub const TO: &str = "to";
 pub const STEP: &str = "step";
 
-pub const KEYWORDS: [&str; 9] = [
+pub const KEYWORDS: [&str; 10] = [
     VAR_DEFINE,
     IF_STATEMENT,
     ELSE_STATEMENT,
@@ -20,6 +21,7 @@ pub const KEYWORDS: [&str; 9] = [
     FROM,
     TO,
     STEP,
+    FUNCTION_DEFINE,
 ];
 
 // Predefined functions
@@ -28,7 +30,6 @@ pub const KEYWORDS: [&str; 9] = [
 pub const FUNC_OUTPUT: &str = "output";
 
 // types
-
 pub const TYPE_INT: &str = "int";
 pub const TYPE_FLOAT: &str = "float";
 

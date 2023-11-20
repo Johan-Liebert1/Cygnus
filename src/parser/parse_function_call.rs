@@ -6,7 +6,7 @@ use crate::{
 use super::parser::Parser;
 
 impl<'a> Parser<'a> {
-    /// FUNCTION -> VAR_NAME LPAREN (FACTOR)* RPAREN LCURLY STATEMENT[] RCURLY
+    /// FUNCTION_CALL -> VAR_NAME LPAREN (FACTOR)* RPAREN
     pub fn parse_function_call(&mut self, name: String) -> Box<dyn AST> {
         // We parse from the LPAREN
         // consume the LPAREN
