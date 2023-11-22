@@ -1,6 +1,10 @@
 use crate::{
     interpreter::interpreter::{Functions, Variables},
-    lexer::{lexer::Token, tokens::{TokenEnum, Number}},
+    lexer::{
+        keywords::{TYPE_FLOAT, TYPE_INT},
+        lexer::Token,
+        tokens::{Number, TokenEnum},
+    },
 };
 use std::{cell::RefCell, rc::Rc};
 

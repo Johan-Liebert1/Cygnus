@@ -55,7 +55,9 @@ impl AST for Loop {
         let mut step_by = 1;
 
         if let Some(step) = &self.step_by {
-            step_by = if let TokenEnum::Number(Number::Integer(i)) = *step.visit(i, Rc::clone(&f)).token {
+            step_by = if let TokenEnum::Number(Number::Integer(i)) =
+                *step.visit(i, Rc::clone(&f)).token
+            {
                 if i < 0 {
                     panic!("Step cannot be negative");
                 }

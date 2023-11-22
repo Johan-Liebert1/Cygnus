@@ -1,14 +1,15 @@
-use std::{cell::RefCell, rc::Rc, collections::HashMap};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::{
     ast::{abstract_syntax_tree::AST, program::Program},
+    interpreter::interpreter::Functions,
     lexer::{
         keywords::{
             ELIF_STATEMENT, ELSE_STATEMENT, FUNCTION_DEFINE, IF_STATEMENT, LOOP, VAR_DEFINE,
         },
         lexer::{Lexer, Token},
         tokens::{Bracket, TokenEnum},
-    }, interpreter::interpreter::Functions,
+    },
 };
 
 pub type ParserFunctions = Rc<RefCell<Functions>>;
@@ -17,7 +18,7 @@ pub struct Parser<'a> {
     pub lexer: Box<Lexer<'a>>,
     parsed_tokens: Vec<Token>,
     pub bracket_stack: Vec<Bracket>,
-    functions: ParserFunctions,
+    pub functions: ParserFunctions,
 }
 
 impl<'a> Parser<'a> {

@@ -15,11 +15,11 @@ pub struct Interpreter {
 }
 
 impl Interpreter {
-    pub fn new(ast: Rc<Box<dyn AST>>) -> Self {
+    pub fn new(ast: Rc<Box<dyn AST>>, functions: Rc<RefCell<Functions>>) -> Self {
         Self {
             ast,
             variables: HashMap::new(),
-            functions: Rc::new(RefCell::new(HashMap::new())),
+            functions,
         }
     }
 

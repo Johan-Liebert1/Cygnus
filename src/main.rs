@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::{collections::HashMap, rc::Rc, cell::RefCell};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use parser::parser::Parser;
 
@@ -20,7 +20,7 @@ fn main() {
     let mut parser = Parser::new(&file);
     let ast = parser.parse_program();
 
-    let mut interpreter = Interpreter::new(ast);
+    let mut interpreter = Interpreter::new(ast, parser.functions);
     let _result = interpreter.interpret();
 
     let h: HashMap<i32, i32> = HashMap::new();
