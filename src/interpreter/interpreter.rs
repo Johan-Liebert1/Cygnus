@@ -1,21 +1,21 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::{
-    ast::{abstract_syntax_tree::{VisitResult, AST}, function_def::FunctionDefinition},
+    ast::abstract_syntax_tree::{VisitResult, AST},
     lexer::tokens::Number,
 };
 
 pub type Variables = HashMap<String, Number>;
-pub type Functions = HashMap<String, Rc<FunctionDefinition>>;
+pub type Functions = HashMap<String, Rc<Box<dyn AST>>>;
 
-pub struct Interpreter{
-    ast: Box<dyn AST>,
+pub struct Interpreter {
+    ast: Rc<Box<dyn AST>>,
     pub variables: Variables,
     pub functions: Rc<RefCell<Functions>>,
 }
 
-impl Interpreter{
-    pub fn new(ast: Box<dyn AST>) -> Self {
+impl Interpreter {
+    pub fn new(ast: Rc<Box<dyn AST>>) -> Self {
         Self {
             ast,
             variables: HashMap::new(),

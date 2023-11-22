@@ -1,8 +1,7 @@
-use std::{cell::RefCell, rc::Rc};
+use std::rc::Rc;
 
 use crate::{
     ast::{abstract_syntax_tree::AST, function_def::FunctionDefinition, variable::Variable},
-    interpreter::interpreter::Functions,
     lexer::tokens::{Bracket, TokenEnum},
 };
 
@@ -43,7 +42,7 @@ impl<'a> Parser<'a> {
     }
 
     /// FUNCTION_DEF -> fun VAR_NAME LPAREN (VAR_NAME : VAR_TYPE (,*))* RPAREN LCURLY STATEMENT[] RCURLY
-    pub fn parse_function_definition(&mut self, f: ParserFunctions) -> Box<dyn AST> {
+    pub fn parse_function_definition(&mut self, f: ParserFunctions) -> Rc<Box<dyn AST>> {
         // we get here after consuming 'fn'
 
         let function_name = match self.get_next_token().token {
@@ -99,12 +98,14 @@ impl<'a> Parser<'a> {
         // return fdef;
 
         // Create an Rc from the Box
-        let fdef = Rc::new(FunctionDefinition::new(function_name, parameters, block));
+        let fdef = FunctionDefinition::new(function_name, parameters, block);
+
+        let fdef: Rc<Box<dyn AST>> = Rc::new(Box::new(fdef));
 
         // Use Rc::clone to get a reference-counted clone of the Rc, not the inner value
         f.borrow_mut().insert(ff, Rc::clone(&fdef));
 
         // Convert Rc back to Box for the return value
-        return Box::new((*Rc::clone(&fdef)).clone());
+        return Rc::clone(&fdef);
     }
 }

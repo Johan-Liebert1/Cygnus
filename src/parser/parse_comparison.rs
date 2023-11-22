@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{
     ast::{abstract_syntax_tree::AST, comparison_exp::ComparisonExp},
     lexer::tokens::TokenEnum,
@@ -7,7 +9,7 @@ use super::parser::Parser;
 
 impl<'a> Parser<'a> {
     /// COMPARISON -> EXPRESSION (> | < | >= | <=) EXPRESSION
-    pub fn parse_comparison_expression(&mut self) -> Box<dyn AST> {
+    pub fn parse_comparison_expression(&mut self) -> Rc<Box<dyn AST>> {
         let left_expression = self.parse_expression();
 
         loop {
@@ -17,11 +19,11 @@ impl<'a> Parser<'a> {
                 TokenEnum::Comparator(_) => {
                     self.get_next_token();
 
-                    return Box::new(ComparisonExp::new(
+                    return Rc::new(Box::new(ComparisonExp::new(
                         left_expression,
                         Box::new(token),
                         self.parse_expression(),
-                    ));
+                    )));
                 }
 
                 _ => {

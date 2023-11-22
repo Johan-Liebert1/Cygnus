@@ -12,13 +12,13 @@ use super::abstract_syntax_tree::{VisitResult, AST};
 
 #[derive(Debug)]
 pub struct ComparisonExp {
-    left: Box<dyn AST>,
+    left: Rc<Box<dyn AST>>,
     comp_op: Box<Token>,
-    right: Box<dyn AST>,
+    right: Rc<Box<dyn AST>>,
 }
 
 impl ComparisonExp {
-    pub fn new(left: Box<dyn AST>, comp_op: Box<Token>, right: Box<dyn AST>) -> Self {
+    pub fn new(left: Rc<Box<dyn AST>>, comp_op: Box<Token>, right: Rc<Box<dyn AST>>) -> Self {
         Self {
             left,
             comp_op,

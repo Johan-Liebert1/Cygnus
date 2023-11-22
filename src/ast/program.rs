@@ -7,11 +7,11 @@ use std::{cell::RefCell, rc::Rc};
 use super::abstract_syntax_tree::{VisitResult, AST};
 
 pub struct Program {
-    statements: Vec<Box<dyn AST>>,
+    statements: Vec<Rc<Box<dyn AST>>>,
 }
 
 impl Program {
-    pub fn new(statements: Vec<Box<dyn AST>>) -> Self {
+    pub fn new(statements: Vec<Rc<Box<dyn AST>>>) -> Self {
         Self { statements }
     }
 }

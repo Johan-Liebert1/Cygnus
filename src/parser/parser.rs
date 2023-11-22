@@ -43,7 +43,7 @@ impl<'a> Parser<'a> {
     }
 
     /// STATEMENT -> VARIABLE_DECLARATION | CONDITIONAL_STATEMENT | COMPARISON_EXPRESSION | LPAREN COMPARISON_EXPRESSION RPAREN
-    pub fn parse_statements(&mut self) -> Box<dyn AST> {
+    pub fn parse_statements(&mut self) -> Rc<Box<dyn AST>> {
         let current_token = self.peek_next_token();
 
         match &current_token.token {
@@ -119,8 +119,8 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse_program(&mut self) -> Box<dyn AST> {
-        let mut statements: Vec<Box<dyn AST>> = vec![];
+    pub fn parse_program(&mut self) -> Rc<Box<dyn AST>> {
+        let mut statements: Vec<Rc<Box<dyn AST>>> = vec![];
 
         loop {
             let current_token = self.peek_next_token();
@@ -136,6 +136,6 @@ impl<'a> Parser<'a> {
             }
         }
 
-        return Box::new(Program::new(statements));
+        return Rc::new(Box::new(Program::new(statements)));
     }
 }

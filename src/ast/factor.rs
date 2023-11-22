@@ -38,3 +38,11 @@ impl AST for Factor {
         println!("{:#?}", self);
     }
 }
+
+// fn thing() -> Box<Rc<dyn AST>> {
+//     return Box::new(Factor::new(Box::new(Token {
+//         token: crate::lexer::tokens::TokenEnum::EOF,
+//         line_number: 1,
+//         col_number: 1,
+//     })));
+// }

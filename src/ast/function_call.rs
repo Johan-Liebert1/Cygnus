@@ -10,11 +10,11 @@ use super::abstract_syntax_tree::{VisitResult, AST};
 #[derive(Debug)]
 pub struct FunctionCall {
     name: String,
-    arguments: Vec<Box<dyn AST>>,
+    arguments: Vec<Rc<Box<dyn AST>>>,
 }
 
 impl FunctionCall {
-    pub fn new(name: String, arguments: Vec<Box<dyn AST>>) -> Self {
+    pub fn new(name: String, arguments: Vec<Rc<Box<dyn AST>>>) -> Self {
         Self { name, arguments }
     }
 }

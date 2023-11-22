@@ -13,11 +13,11 @@ use super::{
 pub struct FunctionDefinition {
     name: String,
     parameters: Vec<Variable>,
-    block: Box<dyn AST>,
+    block: Rc<Box<dyn AST>>,
 }
 
 impl FunctionDefinition {
-    pub fn new(name: String, arguments: Vec<Variable>, block: Box<dyn AST>) -> Self {
+    pub fn new(name: String, arguments: Vec<Variable>, block: Rc<Box<dyn AST>>) -> Self {
         Self {
             name,
             parameters: arguments,
@@ -63,14 +63,14 @@ impl AST for FunctionDefinition {
 pub struct FunctionExecution<'a> {
     name: String,
     parameters: Rc<&'a Vec<Variable>>,
-    block: Rc<&'a Box<dyn AST>>,
+    block: Rc<&'a Rc<Box<dyn AST>>>,
 }
 
 impl<'a> FunctionExecution<'a> {
     pub fn new(
         name: String,
         arguments: Rc<&'a Vec<Variable>>,
-        block: Rc<&'a Box<dyn AST>>,
+        block: Rc<&'a Rc<Box<dyn AST>>>,
     ) -> Self {
         Self {
             name,

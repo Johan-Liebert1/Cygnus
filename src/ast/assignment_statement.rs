@@ -13,11 +13,11 @@ use super::{
 #[derive(Debug)]
 pub struct AssignmentStatement {
     left: Variable,
-    right: Box<dyn AST>,
+    right: Rc<Box<dyn AST>>,
 }
 
 impl AssignmentStatement {
-    pub fn new(left: Variable, right: Box<dyn AST>) -> Self {
+    pub fn new(left: Variable, right: Rc<Box<dyn AST>>) -> Self {
         Self { left, right }
     }
 }

@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{
     ast::{
         abstract_syntax_tree::AST, assignment_statement::AssignmentStatement, variable::Variable,
@@ -43,7 +45,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse_assignment_statement(&mut self) -> Box<dyn AST> {
+    pub fn parse_assignment_statement(&mut self) -> Rc<Box<dyn AST>> {
         // we get here after consuming 'def'
 
         let left = self.parse_variable();
@@ -59,9 +61,9 @@ impl<'a> Parser<'a> {
         };
 
         // TODO: handle function calls and strings and stuff here
-        return Box::new(AssignmentStatement::new(
+        return Rc::new(Box::new(AssignmentStatement::new(
             left,
             self.parse_comparison_expression(),
-        ));
+        )));
     }
 }

@@ -8,19 +8,19 @@ use super::abstract_syntax_tree::{VisitResult, AST};
 
 pub struct Loop {
     /// an expression
-    from_range: Box<dyn AST>,
+    from_range: Rc<Box<dyn AST>>,
     /// an expression
-    to_range: Box<dyn AST>,
-    step_by: Option<Box<dyn AST>>,
-    block: Box<dyn AST>,
+    to_range: Rc<Box<dyn AST>>,
+    step_by: Option<Rc<Box<dyn AST>>>,
+    block: Rc<Box<dyn AST>>,
 }
 
 impl Loop {
     pub fn new(
-        from_range: Box<dyn AST>,
-        to_range: Box<dyn AST>,
-        step_by: Option<Box<dyn AST>>,
-        block: Box<dyn AST>,
+        from_range: Rc<Box<dyn AST>>,
+        to_range: Rc<Box<dyn AST>>,
+        step_by: Option<Rc<Box<dyn AST>>>,
+        block: Rc<Box<dyn AST>>,
     ) -> Self {
         Self {
             from_range,

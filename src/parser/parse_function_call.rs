@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{
     ast::{abstract_syntax_tree::AST, function_call::FunctionCall},
     lexer::tokens::{Bracket, TokenEnum},
@@ -7,12 +9,12 @@ use super::parser::Parser;
 
 impl<'a> Parser<'a> {
     /// FUNCTION_CALL -> VAR_NAME LPAREN (FACTOR)* RPAREN
-    pub fn parse_function_call(&mut self, name: String) -> Box<dyn AST> {
+    pub fn parse_function_call(&mut self, name: String) -> Rc<Box<dyn AST>> {
         // We parse from the LPAREN
         // consume the LPAREN
         self.get_next_token();
 
-        let mut arguments: Vec<Box<dyn AST>> = vec![];
+        let mut arguments: Vec<Rc<Box<dyn AST>>> = vec![];
 
         loop {
             let token = self.peek_next_token();
@@ -39,6 +41,6 @@ impl<'a> Parser<'a> {
             };
         }
 
-        return Box::new(FunctionCall::new(name, arguments));
+        return Rc::new(Box::new(FunctionCall::new(name, arguments)));
     }
 }

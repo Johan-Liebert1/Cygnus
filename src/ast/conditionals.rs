@@ -7,22 +7,22 @@ use std::{cell::RefCell, rc::Rc};
 use super::abstract_syntax_tree::{VisitResult, AST};
 
 pub struct IfStatement {
-    condition: Box<dyn AST>,
-    block: Box<dyn AST>,
+    condition: Rc<Box<dyn AST>>,
+    block: Rc<Box<dyn AST>>,
 }
 
 impl IfStatement {
-    pub fn new(condition: Box<dyn AST>, block: Box<dyn AST>) -> Self {
+    pub fn new(condition: Rc<Box<dyn AST>>, block: Rc<Box<dyn AST>>) -> Self {
         Self { condition, block }
     }
 }
 
 pub struct ElseStatement {
-    block: Box<dyn AST>,
+    block: Rc<Box<dyn AST>>,
 }
 
 impl ElseStatement {
-    pub fn new(block: Box<dyn AST>) -> Self {
+    pub fn new(block: Rc<Box<dyn AST>>) -> Self {
         Self { block }
     }
 }

@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{
     ast::{abstract_syntax_tree::AST, binary_op::BinaryOP},
     constants,
@@ -8,7 +10,7 @@ use super::parser::Parser;
 
 impl<'a> Parser<'a> {
     /// TERM -> FACTOR (*|/) FACTOR
-    pub fn parse_term(&mut self) -> Box<dyn AST> {
+    pub fn parse_term(&mut self) -> Rc<Box<dyn AST>> {
         let mut result = self.parse_factor();
 
         loop {
@@ -29,8 +31,11 @@ impl<'a> Parser<'a> {
                         // in the next iteration, result is
                         // [left: (left: 1, op: *, right: 2), op: *, right: 3]
                         // and so on
-                        result =
-                            Box::new(BinaryOP::new(result, Box::new(token), self.parse_factor()));
+                        result = Rc::new(Box::new(BinaryOP::new(
+                            result,
+                            Box::new(token),
+                            self.parse_factor(),
+                        )));
                     }
 
                     _ => {
