@@ -1,4 +1,9 @@
-use crate::{constants, interpreter::interpreter::Variables, lexer::lexer::Token};
+use crate::{
+    constants,
+    interpreter::interpreter::{Functions, Variables},
+    lexer::lexer::Token,
+};
+use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
@@ -15,7 +20,7 @@ impl Factor {
 }
 
 impl AST for Factor {
-    fn visit(&self, _: &mut Variables) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:?}", &self);
         }
@@ -33,3 +38,11 @@ impl AST for Factor {
         println!("{:#?}", self);
     }
 }
+
+// fn thing() -> Box<Rc<dyn AST>> {
+//     return Box::new(Factor::new(Box::new(Token {
+//         token: crate::lexer::tokens::TokenEnum::EOF,
+//         line_number: 1,
+//         col_number: 1,
+//     })));
+// }

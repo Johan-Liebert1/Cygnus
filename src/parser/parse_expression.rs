@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{
     ast::{abstract_syntax_tree::AST, binary_op::BinaryOP},
     lexer::tokens::{Operations, TokenEnum},
@@ -8,7 +10,7 @@ use super::parser::Parser;
 impl<'a> Parser<'a> {
     /// EXPRESSION -> BINARY_OP (+|-) BINARY_OP
     /// for precedence as term will be calculated first
-    pub fn parse_expression(&mut self) -> Box<dyn AST> {
+    pub fn parse_expression(&mut self) -> Rc<Box<dyn AST>> {
         let mut result = self.parse_term();
 
         loop {
@@ -25,11 +27,11 @@ impl<'a> Parser<'a> {
                         // in the next iteration, result is
                         // [left: (left: 1, op: +, right: 2), op: +, right: 3]
                         // and so on
-                        result = Box::new(BinaryOP::new(
+                        result = Rc::new(Box::new(BinaryOP::new(
                             result,
                             Box::new(next_token),
                             self.parse_term(),
-                        ));
+                        )));
                     }
 
                     _ => {

@@ -1,23 +1,24 @@
 use crate::{
     constants,
-    interpreter::interpreter::Variables,
+    interpreter::interpreter::{Functions, Variables},
     lexer::{
         lexer::Token,
         tokens::{Comparators, Number, Operand, TokenEnum},
     },
 };
+use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
 #[derive(Debug)]
 pub struct ComparisonExp {
-    left: Box<dyn AST>,
+    left: Rc<Box<dyn AST>>,
     comp_op: Box<Token>,
-    right: Box<dyn AST>,
+    right: Rc<Box<dyn AST>>,
 }
 
 impl ComparisonExp {
-    pub fn new(left: Box<dyn AST>, comp_op: Box<Token>, right: Box<dyn AST>) -> Self {
+    pub fn new(left: Rc<Box<dyn AST>>, comp_op: Box<Token>, right: Rc<Box<dyn AST>>) -> Self {
         Self {
             left,
             comp_op,
@@ -102,14 +103,14 @@ impl ComparisonExp {
 }
 
 impl AST for ComparisonExp {
-    fn visit(&self, i: &mut Variables) -> VisitResult {
+    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:#?}", &self);
             println!("===============================================");
         }
 
-        let visit_left = self.left.visit(i);
-        let visit_right = self.right.visit(i);
+        let visit_left = self.left.visit(i, Rc::clone(&f));
+        let visit_right = self.right.visit(i, Rc::clone(&f));
 
         let left_operand = visit_left.token.get_operand();
         let right_operand = visit_right.token.get_operand();

@@ -1,24 +1,28 @@
-use crate::{interpreter::interpreter::Variables, lexer::tokens::TokenEnum};
+use crate::{
+    interpreter::interpreter::{Functions, Variables},
+    lexer::tokens::TokenEnum,
+};
+use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
 pub struct IfStatement {
-    condition: Box<dyn AST>,
-    block: Box<dyn AST>,
+    condition: Rc<Box<dyn AST>>,
+    block: Rc<Box<dyn AST>>,
 }
 
 impl IfStatement {
-    pub fn new(condition: Box<dyn AST>, block: Box<dyn AST>) -> Self {
+    pub fn new(condition: Rc<Box<dyn AST>>, block: Rc<Box<dyn AST>>) -> Self {
         Self { condition, block }
     }
 }
 
 pub struct ElseStatement {
-    block: Box<dyn AST>,
+    block: Rc<Box<dyn AST>>,
 }
 
 impl ElseStatement {
-    pub fn new(block: Box<dyn AST>) -> Self {
+    pub fn new(block: Rc<Box<dyn AST>>) -> Self {
         Self { block }
     }
 }
@@ -44,24 +48,24 @@ impl ConditionalStatement {
 }
 
 impl AST for ConditionalStatement {
-    fn visit(&self, i: &mut Variables) -> VisitResult {
-        if let TokenEnum::Bool(value) = *self.if_statement.condition.visit(i).token {
+    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+        if let TokenEnum::Bool(value) = *self.if_statement.condition.visit(i, Rc::clone(&f)).token {
             if value {
-                return self.if_statement.block.visit(i);
+                return self.if_statement.block.visit(i, Rc::clone(&f));
             }
         }
 
         for elif in &self.elif_ladder {
-            if let TokenEnum::Bool(value) = *elif.condition.visit(i).token {
+            if let TokenEnum::Bool(value) = *elif.condition.visit(i, Rc::clone(&f)).token {
                 if value {
-                    return elif.block.visit(i);
+                    return elif.block.visit(i, Rc::clone(&f));
                 }
             }
         }
 
         // TODO: Panic if not boolean
         if let Some(else_statement) = &self.else_statement {
-            return else_statement.block.visit(i);
+            return else_statement.block.visit(i, f);
         }
 
         return VisitResult {

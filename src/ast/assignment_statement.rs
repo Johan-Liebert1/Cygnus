@@ -1,5 +1,7 @@
+use std::{cell::RefCell, rc::Rc};
+
 use crate::{
-    interpreter::interpreter::Variables,
+    interpreter::interpreter::{Functions, Variables},
     lexer::{lexer::Token, tokens::TokenEnum},
 };
 
@@ -11,18 +13,18 @@ use super::{
 #[derive(Debug)]
 pub struct AssignmentStatement {
     left: Variable,
-    right: Box<dyn AST>,
+    right: Rc<Box<dyn AST>>,
 }
 
 impl AssignmentStatement {
-    pub fn new(left: Variable, right: Box<dyn AST>) -> Self {
+    pub fn new(left: Variable, right: Rc<Box<dyn AST>>) -> Self {
         Self { left, right }
     }
 }
 
 impl AST for AssignmentStatement {
-    fn visit(&self, vars: &mut Variables) -> VisitResult {
-        let right_visit = self.right.visit(vars);
+    fn visit(&self, vars: &mut Variables, functions: Rc<RefCell<Functions>>) -> VisitResult {
+        let right_visit = self.right.visit(vars, functions);
 
         // TODO: change this so that the expression is stored here and we need to visit the varible
         // to evaluate the value

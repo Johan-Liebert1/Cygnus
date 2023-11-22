@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{
     ast::{
         abstract_syntax_tree::AST,
@@ -13,7 +15,7 @@ use super::parser::Parser;
 
 impl<'a> Parser<'a> {
     /// CONDITIONAL_STATEMENT -> if LPAREN* COMPARISON_EXPRESSION RPAREN* LCURLY STATEMENT[]* RCURLY ELSE_STATEMENT*
-    pub fn parse_conditional_statement(&mut self) -> Box<dyn AST> {
+    pub fn parse_conditional_statement(&mut self) -> Rc<Box<dyn AST>> {
         // we get here after 'if' has been consumed
 
         // parse the if statements
@@ -52,11 +54,11 @@ impl<'a> Parser<'a> {
             }
         }
 
-        return Box::new(ConditionalStatement::new(
+        return Rc::new(Box::new(ConditionalStatement::new(
             if_statement,
             elif_ladder,
             else_statement,
-        ));
+        )));
     }
 
     /// we get here after 'if' has been consumed

@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{
     ast::{abstract_syntax_tree::AST, ast_loop::Loop},
     lexer::{
@@ -12,7 +14,7 @@ impl<'a> Parser<'a> {
     // TODO: Also consider step keyword
     //
     /// LOOP -> loop from LPAREN* EXPRESSION to EXPRESSION (step EXPRESSION)* RPAREN* (with VAR_NAME)* LCURLY STATEMENT[] RCURLY
-    pub fn parse_loop(&mut self) -> Box<dyn AST> {
+    pub fn parse_loop(&mut self) -> Rc<Box<dyn AST>> {
         // we get here after consuming the 'loop' keyword
 
         self.validate_token(TokenEnum::Keyword(FROM.to_string()));
@@ -68,6 +70,6 @@ impl<'a> Parser<'a> {
         let block = self.parse_statements();
         self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
 
-        return Box::new(Loop::new(from_range, to_range, step, block));
+        return Rc::new(Box::new(Loop::new(from_range, to_range, step, block)));
     }
 }

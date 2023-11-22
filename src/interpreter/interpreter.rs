@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::{
     ast::abstract_syntax_tree::{VisitResult, AST},
@@ -6,21 +6,31 @@ use crate::{
 };
 
 pub type Variables = HashMap<String, Number>;
+pub type Functions = HashMap<String, Rc<Box<dyn AST>>>;
 
 pub struct Interpreter {
-    ast: Box<dyn AST>,
+    ast: Rc<Box<dyn AST>>,
     pub variables: Variables,
+    pub functions: Rc<RefCell<Functions>>,
 }
 
 impl Interpreter {
-    pub fn new(ast: Box<dyn AST>) -> Self {
+    pub fn new(ast: Rc<Box<dyn AST>>, functions: Rc<RefCell<Functions>>) -> Self {
         Self {
             ast,
             variables: HashMap::new(),
+            functions,
         }
     }
 
     pub fn interpret(&mut self) -> VisitResult {
-        return self.ast.visit(&mut self.variables);
+        return self
+            .ast
+            .visit(&mut self.variables, Rc::clone(&self.functions));
     }
+}
+
+fn x(f: Rc<RefCell<HashMap<i32, i32>>>) {
+    let mut c = f.borrow_mut();
+    c.insert(1, 2);
 }

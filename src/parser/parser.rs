@@ -1,5 +1,8 @@
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
+
 use crate::{
     ast::{abstract_syntax_tree::AST, program::Program},
+    interpreter::interpreter::Functions,
     lexer::{
         keywords::{
             ELIF_STATEMENT, ELSE_STATEMENT, FUNCTION_DEFINE, IF_STATEMENT, LOOP, VAR_DEFINE,
@@ -9,10 +12,13 @@ use crate::{
     },
 };
 
+pub type ParserFunctions = Rc<RefCell<Functions>>;
+
 pub struct Parser<'a> {
     pub lexer: Box<Lexer<'a>>,
     parsed_tokens: Vec<Token>,
     pub bracket_stack: Vec<Bracket>,
+    pub functions: ParserFunctions,
 }
 
 impl<'a> Parser<'a> {
@@ -23,6 +29,7 @@ impl<'a> Parser<'a> {
             lexer: Box::new(parser),
             parsed_tokens: vec![],
             bracket_stack: vec![],
+            functions: Rc::new(RefCell::new(HashMap::new())),
         }
     }
 
@@ -37,7 +44,7 @@ impl<'a> Parser<'a> {
     }
 
     /// STATEMENT -> VARIABLE_DECLARATION | CONDITIONAL_STATEMENT | COMPARISON_EXPRESSION | LPAREN COMPARISON_EXPRESSION RPAREN
-    pub fn parse_statements(&mut self) -> Box<dyn AST> {
+    pub fn parse_statements(&mut self) -> Rc<Box<dyn AST>> {
         let current_token = self.peek_next_token();
 
         match &current_token.token {
@@ -51,7 +58,7 @@ impl<'a> Parser<'a> {
 
                     LOOP => self.parse_loop(),
 
-                    FUNCTION_DEFINE => self.parse_function_definition(),
+                    FUNCTION_DEFINE => self.parse_function_definition(Rc::clone(&self.functions)),
 
                     ELSE_STATEMENT => {
                         panic!("Found 'else' without an 'if' {:?}", current_token)
@@ -113,8 +120,8 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse_program(&mut self) -> Box<dyn AST> {
-        let mut statements: Vec<Box<dyn AST>> = vec![];
+    pub fn parse_program(&mut self) -> Rc<Box<dyn AST>> {
+        let mut statements: Vec<Rc<Box<dyn AST>>> = vec![];
 
         loop {
             let current_token = self.peek_next_token();
@@ -130,6 +137,6 @@ impl<'a> Parser<'a> {
             }
         }
 
-        return Box::new(Program::new(statements));
+        return Rc::new(Box::new(Program::new(statements)));
     }
 }
