@@ -48,7 +48,7 @@ impl ConditionalStatement {
 }
 
 impl AST for ConditionalStatement {
-    fn visit(&self, i: &mut Variables, f: Rc<RefCell<&Functions>>) -> VisitResult {
+    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         if let TokenEnum::Bool(value) = *self.if_statement.condition.visit(i, Rc::clone(&f)).token {
             if value {
                 return self.if_statement.block.visit(i, Rc::clone(&f));

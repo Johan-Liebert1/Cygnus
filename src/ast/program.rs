@@ -17,7 +17,7 @@ impl Program {
 }
 
 impl AST for Program {
-    fn visit(&self, x: &mut Variables, f: Rc<RefCell<&Functions>>) -> VisitResult {
+    fn visit(&self, x: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         let mut last: Option<VisitResult> = None;
 
         for statement in &self.statements {

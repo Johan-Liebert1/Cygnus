@@ -15,7 +15,7 @@ pub struct VisitResult {
 }
 
 pub trait AST {
-    fn visit(&self, x: &mut Variables, _: Rc<RefCell<&Functions>>) -> VisitResult;
+    fn visit(&self, x: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult;
     fn get_token(&self) -> &Token;
     fn print(&self);
 }

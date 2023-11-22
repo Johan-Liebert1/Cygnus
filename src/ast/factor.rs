@@ -20,7 +20,7 @@ impl Factor {
 }
 
 impl AST for Factor {
-    fn visit(&self, _: &mut Variables, _: Rc<RefCell<&Functions>>) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:?}", &self);
         }

@@ -1,3 +1,5 @@
+use std::{cell::RefCell, rc::Rc, collections::HashMap};
+
 use crate::{
     ast::{abstract_syntax_tree::AST, program::Program},
     lexer::{
@@ -6,13 +8,16 @@ use crate::{
         },
         lexer::{Lexer, Token},
         tokens::{Bracket, TokenEnum},
-    },
+    }, interpreter::interpreter::Functions,
 };
+
+pub type ParserFunctions = Rc<RefCell<Functions>>;
 
 pub struct Parser<'a> {
     pub lexer: Box<Lexer<'a>>,
     parsed_tokens: Vec<Token>,
     pub bracket_stack: Vec<Bracket>,
+    functions: ParserFunctions,
 }
 
 impl<'a> Parser<'a> {
@@ -23,6 +28,7 @@ impl<'a> Parser<'a> {
             lexer: Box::new(parser),
             parsed_tokens: vec![],
             bracket_stack: vec![],
+            functions: Rc::new(RefCell::new(HashMap::new())),
         }
     }
 
@@ -51,7 +57,7 @@ impl<'a> Parser<'a> {
 
                     LOOP => self.parse_loop(),
 
-                    FUNCTION_DEFINE => self.parse_function_definition(),
+                    FUNCTION_DEFINE => self.parse_function_definition(Rc::clone(&self.functions)),
 
                     ELSE_STATEMENT => {
                         panic!("Found 'else' without an 'if' {:?}", current_token)

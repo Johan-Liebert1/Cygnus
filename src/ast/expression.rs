@@ -14,7 +14,7 @@ pub struct Expression {
 }
 
 impl AST for Expression {
-    fn visit(&self, _: &mut Variables, _: Rc<RefCell<&Functions>>) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
         println!("Expression visit");
         VisitResult {
             token: Box::new(self.operand.token.clone()),

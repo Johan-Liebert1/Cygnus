@@ -20,7 +20,7 @@ impl FunctionCall {
 }
 
 impl AST for FunctionCall {
-    fn visit(&self, i: &mut Variables, f: Rc<RefCell<&Functions>>) -> VisitResult {
+    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         match self.name.as_str() {
             FUNC_OUTPUT => {
                 return VisitResult {

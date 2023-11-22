@@ -23,7 +23,7 @@ impl AssignmentStatement {
 }
 
 impl AST for AssignmentStatement {
-    fn visit(&self, vars: &mut Variables, functions: Rc<RefCell<&Functions>>) -> VisitResult {
+    fn visit(&self, vars: &mut Variables, functions: Rc<RefCell<Functions>>) -> VisitResult {
         let right_visit = self.right.visit(vars, functions);
 
         // TODO: change this so that the expression is stored here and we need to visit the varible

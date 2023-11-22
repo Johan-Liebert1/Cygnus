@@ -25,7 +25,7 @@ impl Variable {
 }
 
 impl AST for Variable {
-    fn visit(&self, _: &mut Variables, _: Rc<RefCell<&Functions>>) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
         todo!()
     }
 

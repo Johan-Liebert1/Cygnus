@@ -32,7 +32,7 @@ impl Loop {
 }
 
 impl AST for Loop {
-    fn visit(&self, i: &mut Variables, f: Rc<RefCell<&Functions>>) -> VisitResult {
+    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         let from = self.from_range.visit(i, Rc::clone(&f));
         let to = self.to_range.visit(i, Rc::clone(&f));
 
