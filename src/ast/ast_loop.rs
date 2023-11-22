@@ -69,8 +69,7 @@ impl AST for Loop {
         }
 
         for _ in (from..to).step_by(step_by) {
-            // TODO: Remove this once print statements are implemented
-            println!("{:?}", self.block.visit(i, Rc::clone(&f)));
+            self.block.visit(i, Rc::clone(&f));
         }
 
         return VisitResult {

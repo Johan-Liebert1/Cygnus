@@ -31,6 +31,8 @@ impl FunctionDefinition {
 }
 
 impl AST for FunctionDefinition {
+    // TODO: This function will be visited twice, once when the interpreter calls visit, and 
+    // another when the function is actually called
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         // TODO: handle global variables and function parameters with the same name
         for param in &self.parameters {
@@ -52,58 +54,6 @@ impl AST for FunctionDefinition {
         return VisitResult {
             token: Box::new(TokenEnum::Unknown("".to_string())),
         };
-    }
-
-    fn get_token(&self) -> &Token {
-        todo!()
-    }
-
-    fn print(&self) {
-        println!("{:?}", &self);
-    }
-}
-
-#[derive(Debug)]
-pub struct FunctionExecution<'a> {
-    name: String,
-    parameters: Rc<&'a Vec<Variable>>,
-    block: Rc<&'a Rc<Box<dyn AST>>>,
-}
-
-impl<'a> FunctionExecution<'a> {
-    pub fn new(
-        name: String,
-        arguments: Rc<&'a Vec<Variable>>,
-        block: Rc<&'a Rc<Box<dyn AST>>>,
-    ) -> Self {
-        Self {
-            name,
-            parameters: arguments,
-            block,
-        }
-    }
-}
-
-impl<'a> AST for FunctionExecution<'a> {
-    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
-        // TODO: handle global variables and function parameters with the same name
-        // for param in self.parameters {
-        //     let value = match param.var_type.as_str() {
-        //         TYPE_INT => Number::Integer(0),
-        //         TYPE_FLOAT => Number::Float(0.0),
-        //         t => unimplemented!("Variable type {t} not implemented"),
-        //     };
-
-        //     i.insert(param.var_name.clone(), value);
-        // }
-
-        let t = self.block.visit(i, f);
-
-        // for param in self.parameters {
-        //     i.remove(&param.var_name);
-        // }
-
-        return t;
     }
 
     fn get_token(&self) -> &Token {

@@ -9,7 +9,6 @@ use crate::{
 fn run_the_test(file: &Vec<u8>) -> VisitResult {
     let mut parser = Parser::new(&file);
 
-    // TODO: Update this to parse the entire program
     let ast = parser.parse_program();
 
     let mut interpreter = Interpreter::new(ast, parser.functions);

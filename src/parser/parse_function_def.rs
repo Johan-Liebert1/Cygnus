@@ -36,7 +36,7 @@ impl<'a> Parser<'a> {
             };
         }
 
-        println!("parameters {:?}", parameters);
+        // println!("parameters {:?}", parameters);
 
         return parameters;
     }
@@ -92,15 +92,10 @@ impl<'a> Parser<'a> {
 
         let ff = function_name.clone();
 
-        // let fdef =  Box::new(FunctionDefinition::new(function_name, parameters, block));
-        // f.borrow_mut().insert(ff, Rc::new(*fdef));
-
-        // return fdef;
-
         // Create an Rc from the Box
-        let fdef = FunctionDefinition::new(function_name, parameters, block);
+        let function_def = FunctionDefinition::new(function_name, parameters, block);
 
-        let fdef: Rc<Box<dyn AST>> = Rc::new(Box::new(fdef));
+        let fdef: Rc<Box<dyn AST>> = Rc::new(Box::new(function_def));
 
         // Use Rc::clone to get a reference-counted clone of the Rc, not the inner value
         f.borrow_mut().insert(ff, Rc::clone(&fdef));
