@@ -1,3 +1,7 @@
-loop from 1 to 6 {
-    output(6)
+def a: int = 4
+
+loop from 1 to 100 {
+    a = a + 1
 }
+
+output(a)

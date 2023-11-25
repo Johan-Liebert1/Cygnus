@@ -63,7 +63,6 @@ impl<'a> Parser<'a> {
         };
 
         // TODO: Handle (with VAR_NAME)* here
-
         self.validate_token(TokenEnum::Bracket(Bracket::LCurly));
         let block = self.parse_statements();
         self.validate_token(TokenEnum::Bracket(Bracket::RCurly));

@@ -31,7 +31,7 @@ impl FunctionDefinition {
 }
 
 impl AST for FunctionDefinition {
-    // TODO: This function will be visited twice, once when the interpreter calls visit, and 
+    // TODO: This function will be visited twice, once when the interpreter calls visit, and
     // another when the function is actually called
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         // TODO: handle global variables and function parameters with the same name

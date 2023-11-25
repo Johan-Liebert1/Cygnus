@@ -52,7 +52,7 @@ impl<'a> Parser<'a> {
                 self.get_next_token();
 
                 match keyword as &str {
-                    VAR_DEFINE => self.parse_assignment_statement(),
+                    VAR_DEFINE => self.parse_declaration_statement(),
 
                     IF_STATEMENT => self.parse_conditional_statement(),
 

@@ -11,18 +11,18 @@ use super::{
 };
 
 #[derive(Debug)]
-pub struct AssignmentStatement {
+pub struct DeclarationStatement {
     left: Variable,
     right: Rc<Box<dyn AST>>,
 }
 
-impl AssignmentStatement {
+impl DeclarationStatement {
     pub fn new(left: Variable, right: Rc<Box<dyn AST>>) -> Self {
         Self { left, right }
     }
 }
 
-impl AST for AssignmentStatement {
+impl AST for DeclarationStatement {
     fn visit(&self, vars: &mut Variables, functions: Rc<RefCell<Functions>>) -> VisitResult {
         let right_visit = self.right.visit(vars, functions);
 

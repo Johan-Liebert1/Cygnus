@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::{
     ast::{
-        abstract_syntax_tree::AST, assignment_statement::AssignmentStatement, variable::Variable,
+        abstract_syntax_tree::AST, assignment_statement::DeclarationStatement, variable::Variable,
     },
     lexer::tokens::TokenEnum,
 };
@@ -19,6 +19,7 @@ impl<'a> Parser<'a> {
                 let token = self.get_next_token();
 
                 match token.token {
+                    // : after variable name, so can only be VAR_NAME: VAR_TYPE
                     TokenEnum::Colon => {
                         let token = self.peek_next_token();
 
@@ -37,6 +38,11 @@ impl<'a> Parser<'a> {
                         }
                     }
 
+                    // = after variable name, so can only be VAR_NAME = (COMPARISON_EXPRESSION)
+                    TokenEnum::Equals => {
+                        return Variable::new(Box::new(token), var_type.to_string(), var_name);
+                    }
+
                     _ => panic!("Expected : found {:?}", token),
                 }
             }
@@ -45,7 +51,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse_assignment_statement(&mut self) -> Rc<Box<dyn AST>> {
+    pub fn parse_declaration_statement(&mut self) -> Rc<Box<dyn AST>> {
         // we get here after consuming 'def'
 
         let left = self.parse_variable();
@@ -61,7 +67,7 @@ impl<'a> Parser<'a> {
         };
 
         // TODO: handle function calls and strings and stuff here
-        return Rc::new(Box::new(AssignmentStatement::new(
+        return Rc::new(Box::new(DeclarationStatement::new(
             left,
             self.parse_comparison_expression(),
         )));
