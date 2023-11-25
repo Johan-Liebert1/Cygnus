@@ -95,9 +95,14 @@ impl<'a> Parser<'a> {
                         }
                     }
 
+                    TokenEnum::Equals => {
+                        // variable assignment
+                        self.get_next_token();
+                        self.parse_assignment_statement(var.to_string())
+                    }
+
                     _ => {
-                        // println!("In the variable thing. Token {:?}", a);
-                        self.parse_comparison_expression()
+                        unimplemented!("TokenEnum::Variable not ")
                     }
                 }
             }

@@ -20,11 +20,11 @@ impl FunctionCall {
 }
 
 impl AST for FunctionCall {
-    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         match self.name.as_str() {
             FUNC_OUTPUT => {
                 for arg in &self.arguments {
-                    println!("{:?}", arg.visit(i, Rc::clone(&f)));
+                    println!("{:?}", arg.visit(v, Rc::clone(&f)));
                 }
 
                 return VisitResult {
@@ -36,7 +36,7 @@ impl AST for FunctionCall {
                 Some(function_ast) => {
                     println!("Visiting func {name}");
 
-                    function_ast.visit(i, Rc::clone(&f))
+                    function_ast.visit(v, Rc::clone(&f))
                 }
 
                 None => unimplemented!("Function {} unimplemented", self.name),

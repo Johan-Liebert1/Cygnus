@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::{
     ast::{
-        abstract_syntax_tree::AST, assignment_statement::DeclarationStatement, variable::Variable,
+        abstract_syntax_tree::AST, declaration_statement::DeclarationStatement, variable::Variable,
     },
     lexer::tokens::TokenEnum,
 };
@@ -36,11 +36,6 @@ impl<'a> Parser<'a> {
 
                             _ => panic!("Expected type found {:?}", token),
                         }
-                    }
-
-                    // = after variable name, so can only be VAR_NAME = (COMPARISON_EXPRESSION)
-                    TokenEnum::Equals => {
-                        return Variable::new(Box::new(token), var_type.to_string(), var_name);
                     }
 
                     _ => panic!("Expected : found {:?}", token),

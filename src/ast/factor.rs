@@ -1,7 +1,7 @@
 use crate::{
     constants,
     interpreter::interpreter::{Functions, Variables},
-    lexer::lexer::Token,
+    lexer::{lexer::Token, tokens::TokenEnum},
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -20,13 +20,25 @@ impl Factor {
 }
 
 impl AST for Factor {
-    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:?}", &self);
         }
 
+        let token_enum = match &self.token.token {
+            TokenEnum::Variable(var_name) => {
+                if let Some(n) = v.get(var_name) {
+                    TokenEnum::Number(n.clone())
+                } else {
+                    panic!("Variable {var_name} not defined");
+                }
+            }
+
+            t => t.clone(),
+        };
+
         VisitResult {
-            token: Box::new(self.token.token.clone()),
+            token: Box::new(token_enum),
         }
     }
 
