@@ -1,6 +1,6 @@
 use crate::{
     interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::TokenEnum,
+    lexer::tokens::TokenEnum, asm::asm::ASM,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -17,6 +17,10 @@ impl Program {
 }
 
 impl AST for Program {
+    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        todo!()
+    }
+
     fn visit(&self, x: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         let mut last: Option<VisitResult> = None;
 

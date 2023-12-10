@@ -1,7 +1,7 @@
 use crate::{
     constants,
     interpreter::interpreter::{Functions, Variables},
-    lexer::{lexer::Token, tokens::TokenEnum},
+    lexer::{lexer::Token, tokens::TokenEnum}, asm::asm::ASM,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -20,6 +20,10 @@ impl Factor {
 }
 
 impl AST for Factor {
+    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        todo!()
+    }
+
     fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:?}", &self);

@@ -1,6 +1,6 @@
 use crate::{
     interpreter::interpreter::{Functions, Variables},
-    lexer::lexer::Token,
+    lexer::lexer::Token, asm::asm::ASM,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -14,6 +14,10 @@ pub struct Expression {
 }
 
 impl AST for Expression {
+    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        todo!()
+    }
+
     fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
         println!("Expression visit");
         VisitResult {

@@ -1,6 +1,6 @@
 use crate::{
     interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::{Number, TokenEnum},
+    lexer::tokens::{Number, TokenEnum}, asm::asm::ASM,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -32,6 +32,10 @@ impl Loop {
 }
 
 impl AST for Loop {
+    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        todo!()
+    }
+
     fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         let from = self.from_range.visit(i, Rc::clone(&f));
         let to = self.to_range.visit(i, Rc::clone(&f));

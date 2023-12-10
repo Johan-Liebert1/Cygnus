@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
     interpreter::interpreter::{Functions, Variables},
-    lexer::{lexer::Token, tokens::TokenEnum},
+    lexer::{lexer::Token, tokens::TokenEnum}, asm::asm::ASM,
 };
 
 #[derive(Debug)]
@@ -16,6 +16,7 @@ pub struct VisitResult {
 
 pub trait AST {
     fn visit(&self, x: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult;
+    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM);
     fn get_token(&self) -> &Token;
     fn print(&self);
 }

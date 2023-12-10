@@ -4,7 +4,7 @@ use crate::{
         keywords::{TYPE_FLOAT, TYPE_INT},
         lexer::Token,
         tokens::{Number, TokenEnum},
-    },
+    }, asm::asm::ASM,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -31,6 +31,10 @@ impl FunctionDefinition {
 }
 
 impl AST for FunctionDefinition {
+    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        todo!()
+    }
+
     // TODO: This function will be visited twice, once when the interpreter calls visit, and
     // another when the function is actually called
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {

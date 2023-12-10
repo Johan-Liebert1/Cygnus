@@ -6,6 +6,7 @@ use parser::parser::Parser;
 
 use crate::interpreter::interpreter::Interpreter;
 
+mod asm;
 mod ast;
 mod constants;
 mod helpers;

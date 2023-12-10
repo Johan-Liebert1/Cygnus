@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     interpreter::interpreter::{Functions, Variables},
-    lexer::{lexer::Token, tokens::TokenEnum},
+    lexer::{lexer::Token, tokens::TokenEnum}, asm::asm::ASM,
 };
 
 use super::{
@@ -23,6 +23,10 @@ impl DeclarationStatement {
 }
 
 impl AST for DeclarationStatement {
+    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        todo!()
+    }
+
     fn visit(&self, vars: &mut Variables, functions: Rc<RefCell<Functions>>) -> VisitResult {
         let right_visit = self.right.visit(vars, functions);
 

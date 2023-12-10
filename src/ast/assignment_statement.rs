@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::TokenEnum,
+    lexer::tokens::TokenEnum, asm::asm::ASM,
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};
@@ -20,6 +20,10 @@ impl AssignmentStatement {
 }
 
 impl AST for AssignmentStatement {
+    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        todo!()
+    }
+
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         let right_visit = self.right.visit(v, f);
 

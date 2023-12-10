@@ -1,6 +1,6 @@
 use crate::{
     interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::TokenEnum,
+    lexer::tokens::TokenEnum, asm::asm::ASM,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -48,6 +48,10 @@ impl ConditionalStatement {
 }
 
 impl AST for ConditionalStatement {
+    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        todo!()
+    }
+
     fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         if let TokenEnum::Bool(value) = *self.if_statement.condition.visit(i, Rc::clone(&f)).token {
             if value {

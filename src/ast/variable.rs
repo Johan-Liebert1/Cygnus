@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     interpreter::interpreter::{Functions, Variables},
-    lexer::lexer::Token,
+    lexer::lexer::Token, asm::asm::ASM,
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};
@@ -25,6 +25,10 @@ impl Variable {
 }
 
 impl AST for Variable {
+    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        todo!()
+    }
+
     fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
         todo!()
     }

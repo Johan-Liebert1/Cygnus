@@ -1,7 +1,1 @@
-def a: int = 0
-
-loop from 1 to 100 {
-    a = a + 1
-}
-
-output(a)
+1 + 2

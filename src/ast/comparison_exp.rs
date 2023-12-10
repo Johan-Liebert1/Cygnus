@@ -5,6 +5,7 @@ use crate::{
         lexer::Token,
         tokens::{Comparators, Number, Operand, TokenEnum},
     },
+    asm::asm::ASM,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -103,6 +104,10 @@ impl ComparisonExp {
 }
 
 impl AST for ComparisonExp {
+    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        todo!()
+    }
+
     fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:#?}", &self);

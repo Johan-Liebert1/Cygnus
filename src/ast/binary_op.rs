@@ -4,7 +4,7 @@ use crate::{
     lexer::{
         lexer::Token,
         tokens::{Number, Operand, Operations, TokenEnum},
-    },
+    }, asm::asm::ASM
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -16,6 +16,8 @@ pub struct BinaryOP {
     operator: Box<Token>,
     right: Rc<Box<dyn AST>>,
 }
+
+const COMPILATION: bool = true;
 
 impl BinaryOP {
     pub fn new(left: Rc<Box<dyn AST>>, operator: Box<Token>, right: Rc<Box<dyn AST>>) -> Self {
@@ -32,6 +34,7 @@ impl BinaryOP {
         T: std::ops::Sub<Output = T>,
         T: std::ops::Mul<Output = T>,
         T: std::ops::Div<Output = T>,
+        T: std::fmt::Debug,
     {
         match &self.operator.token {
             TokenEnum::Op(op) => match op {
@@ -106,6 +109,10 @@ impl BinaryOP {
 }
 
 impl AST for BinaryOP {
+    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        todo!()
+    }
+
     fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:#?}", &self);

@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     interpreter::interpreter::{Functions, Variables},
-    lexer::{keywords::FUNC_OUTPUT, lexer::Token, tokens::TokenEnum},
+    lexer::{keywords::FUNC_OUTPUT, lexer::Token, tokens::TokenEnum}, asm::asm::ASM,
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};
@@ -20,6 +20,10 @@ impl FunctionCall {
 }
 
 impl AST for FunctionCall {
+    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        todo!()
+    }
+
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         match self.name.as_str() {
             FUNC_OUTPUT => {
