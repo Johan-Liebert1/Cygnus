@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
-
 use parser::parser::Parser;
 
 use crate::interpreter::interpreter::Interpreter;
@@ -22,13 +20,9 @@ fn main() {
     let ast = parser.parse_program();
 
     let mut interpreter = Interpreter::new(ast, parser.functions);
-    let _result = interpreter.interpret();
+    let _result = interpreter.compile();
 
-    let h: HashMap<i32, i32> = HashMap::new();
-    let c = Rc::new(RefCell::new(h));
-
-    let mut map = c.borrow_mut();
-    map.insert(2, 3);
+    println!("{:#?}", interpreter.asm);
 
     // println!("\n\nRESULT\n{:#?}", result);
     // println!("{:#?}", interpreter.variables)

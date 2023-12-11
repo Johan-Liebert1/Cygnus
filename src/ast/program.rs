@@ -17,8 +17,11 @@ impl Program {
 }
 
 impl AST for Program {
-    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        todo!()
+    fn visit_com(&self, x: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        for statement in &self.statements {
+            statement.visit_com(x, Rc::clone(&f), asm);
+        }
+
     }
 
     fn visit(&self, x: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
