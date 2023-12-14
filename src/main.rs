@@ -15,18 +15,18 @@ mod lexer;
 mod parser;
 mod tests;
 
-fn run_asm() -> io::Result<()> {
+fn generate_asm() -> io::Result<()> {
     std::env::set_current_dir("./generated")?;
 
     let mut nasm = std::process::Command::new("nasm");
     nasm.args(["-f", "elf64", "-o", "output.o", "output.asm"]);
-    nasm.spawn()?;
+    let mut spawn = nasm.spawn()?;
+    spawn.wait()?;
 
     let mut linker = std::process::Command::new("ld");
     linker.args(["output.o", "-o" ,"output"]);
-    linker.spawn()?;
-
-    std::process::Command::new("./output").spawn()?;
+    let mut spawn = linker.spawn()?;
+    spawn.wait()?;
 
     Ok(())
 }
@@ -40,14 +40,29 @@ fn main() {
     let mut interpreter = Interpreter::new(ast, parser.functions);
     let _result = interpreter.compile();
 
-    match run_asm() {
+    match generate_asm() {
         Ok(_) => {
             println!("Successful!");
         }
 
         Err(e) => {
-            println!("{:?}", e);
+            println!("Failed to generate asm: {:?}", e);
             return;
         }
     }
+
+    match std::process::Command::new("./output").spawn() {
+        Ok(ref mut child) => {
+            match child.wait() {
+                Ok(exit_status) => println!("Exited with status {exit_status}"),
+                Err(err) => println!("Error while waiting for child {:?}", err),
+            }
+        },
+
+        Err(e) => {
+            println!("Failed to spawn run process: {:?}", e);
+        },
+    }
+
+
 }

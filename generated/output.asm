@@ -8,10 +8,12 @@ section .text
 	global _start
 
 _start:
-	mov rax, 1
+	mov rax, 400
 
-	mov rbx, 2
+	mov rbx, 900
 
 	add rax, rbx
-	exit 69
+
+	 call _printRAX
+	exit 0
 

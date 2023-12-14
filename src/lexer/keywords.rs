@@ -27,7 +27,7 @@ pub const KEYWORDS: [&str; 10] = [
 // Predefined functions
 
 /// prints anything in args to stdout
-pub const FUNC_OUTPUT: &str = "output";
+pub const FUNC_WRITE: &str = "write";
 
 // types
 pub const TYPE_INT: &str = "int";

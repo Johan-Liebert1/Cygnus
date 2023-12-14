@@ -53,7 +53,7 @@ impl Interpreter {
                     file.write_all(file_bytes.as_bytes())?;
 
                     if label.name == "_start" {
-                        file.write(b"\texit 69")?;
+                        file.write(b"\texit 0")?;
                     }
 
                     file.write(b"\n\n")?;
