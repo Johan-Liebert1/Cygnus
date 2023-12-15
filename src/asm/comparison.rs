@@ -3,13 +3,12 @@ use crate::lexer::tokens::Comparators;
 use super::asm::ASM;
 
 impl ASM {
-    pub fn compare_two_numbers<T>(&mut self, l: T, r: T, op: Comparators)
-    where
-        T: PartialOrd + std::fmt::Debug,
+    pub fn compare_two_numbers(&mut self, op: Comparators)
     {
         let mut instructions = vec![
-            format!("mov rax, {:?}", l),
-            format!("mov rbx, {:?}", r),
+            format!(";; We pop in the opposite order of comparison as we push onto the stack"),
+            format!("pop rbx"),
+            format!("pop rax"),
             format!("cmp rax, rbx"),
         ];
 
@@ -23,9 +22,11 @@ impl ASM {
         instructions.push(String::from(inst));
 
         instructions.extend(vec![
-            format!("mov rax, 1"),
-            format!(".skip:"),
             format!("mov rax, 0"),
+            format!("jmp .skip_n"),
+            format!(".skip:"),
+            format!("mov rax, 1"),
+            format!(".skip_n:")
         ]);
 
         for label in &mut self.labels {

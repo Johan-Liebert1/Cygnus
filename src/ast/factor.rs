@@ -21,7 +21,7 @@ impl Factor {
 
 impl AST for Factor {
     fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        todo!()
+        asm.generate_asm_factor(&self.token.token);
     }
 
     fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {

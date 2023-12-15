@@ -53,30 +53,6 @@ impl BinaryOP {
         }
     }
 
-    fn generate_asm<T>(&self, l: T, r: T, asm: &mut ASM)
-    where
-        T: std::ops::Add<Output = T>,
-        T: std::ops::Sub<Output = T>,
-        T: std::ops::Mul<Output = T>,
-        T: std::ops::Div<Output = T>,
-        T: std::fmt::Debug,
-    {
-        println!("BinaryOP generate_asm");
-
-        match &self.operator.token {
-            TokenEnum::Op(op) => match op {
-                Operations::Plus => asm.add_two_numbers(l, r),
-                Operations::Minus => todo!(),
-                Operations::Divide => todo!(),
-                Operations::Multiply => todo!(),
-            },
-
-            _ => {
-                unreachable!("WTF!!")
-            }
-        }
-    }
-
     fn eval_number_number(
         &self,
         left_op: &Number,
@@ -85,25 +61,15 @@ impl BinaryOP {
     ) -> Option<VisitResult> {
         match (left_op, right_op) {
             (Number::Integer(l), Number::Integer(r)) => {
-                if let Some(a) = asm {
-                    self.generate_asm(*l, *r, a);
-                    return None;
-                }
-
                 return Some(VisitResult {
                     token: Box::new(TokenEnum::new_integer(self.evaluate(*l, *r))),
-                })
+                });
             }
 
             (Number::Float(l), Number::Float(r)) => {
-                if let Some(a) = asm {
-                    self.generate_asm(*l, *r, a);
-                    return None;
-                }
-
                 return Some(VisitResult {
                     token: Box::new(TokenEnum::new_float(self.evaluate(*l, *r))),
-                })
+                });
             }
 
             _ => {
@@ -162,28 +128,10 @@ impl BinaryOP {
 
 impl AST for BinaryOP {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        let visit_left = self.left.visit_com(v, Rc::clone(&f), asm);
-        let visit_right = self.right.visit_com(v, Rc::clone(&f), asm);
+        self.left.visit_com(v, Rc::clone(&f), asm);
+        self.right.visit_com(v, Rc::clone(&f), asm);
 
-        // let left_operand = visit_left.token.get_operand();
-        // let right_operand = visit_right.token.get_operand();
-
-        // match (&left_operand, &right_operand) {
-        //     (Ok(lop), Ok(rop)) => {
-        //         // Handle the case where both operands are Ok
-        //         self.evaluate_operands(lop, rop, v, Some(asm))
-        //     }
-
-        //     (Err(err), _) => {
-        //         // Handle the case where left_operand is an error
-        //         panic!("{}", err);
-        //     }
-
-        //     (_, Err(err)) => {
-        //         // Handle the case where right_operand is an error
-        //         panic!("{}", err);
-        //     }
-        // };
+        asm.add_two_numbers();
     }
 
     fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {

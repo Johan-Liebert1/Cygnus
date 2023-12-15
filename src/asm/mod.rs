@@ -3,3 +3,4 @@ pub mod asm;
 pub mod functions;
 pub mod conditionals;
 pub mod comparison;
+pub mod factor;

@@ -45,19 +45,6 @@ impl ComparisonExp {
         });
     }
 
-    fn generate_asm<T>(&self, l: T, r: T, asm: &mut ASM)
-    where
-        T: PartialOrd,
-        T: std::fmt::Debug,
-    {
-        match &self.comp_op.token {
-            TokenEnum::Comparator(comp) => asm.compare_two_numbers(l, r, comp.clone()),
-            _ => {
-                unreachable!("Found non comparator")
-            }
-        };
-    }
-
     fn eval_number_number(
         &self,
         left_op: &Number,
@@ -66,22 +53,12 @@ impl ComparisonExp {
     ) -> Option<VisitResult> {
         match (left_op, right_op) {
             (Number::Integer(l), Number::Integer(r)) => {
-                if let Some(asm) = asm {
-                    self.generate_asm(l, r, asm);
-                    return None;
-                }
-
                 return Some(VisitResult {
                     token: Box::new(self.compare(*l, *r)),
                 });
             }
 
             (Number::Float(l), Number::Float(r)) => {
-                if let Some(asm) = asm {
-                    self.generate_asm(l, r, asm);
-                    return None;
-                }
-
                 return Some(VisitResult {
                     token: Box::new(self.compare(*l, *r)),
                 });
@@ -143,29 +120,16 @@ impl ComparisonExp {
 
 impl AST for ComparisonExp {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        // FIXME: Cannot visit here else it'll start evaluating expressions
-        let visit_left = self.left.visit(v, Rc::clone(&f));
-        let visit_right = self.right.visit(v, Rc::clone(&f));
+        self.left.visit_com(v, Rc::clone(&f), asm);
+        self.right.visit_com(v, Rc::clone(&f), asm);
 
-        let left_operand = visit_left.token.get_operand();
-        let right_operand = visit_right.token.get_operand();
-
-        match (&left_operand, &right_operand) {
-            (Ok(lop), Ok(rop)) => {
-                // Handle the case where both operands are Ok
-                self.evaluate_operands(lop, rop, v, Some(asm));
+        match &self.comp_op.token {
+            TokenEnum::Comparator(c) => {
+                asm.compare_two_numbers(c.clone());
             }
 
-            (Err(err), _) => {
-                // Handle the case where left_operand is an error
-                panic!("{}", err);
-            }
-
-            (_, Err(err)) => {
-                // Handle the case where right_operand is an error
-                panic!("{}", err);
-            }
-        };
+            _ => panic!("Found non comparator for a Comparison Expression")
+        }
     }
 
     fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {

@@ -25,8 +25,6 @@ impl AST for FunctionCall {
             FUNC_WRITE => {
                 for arg in &self.arguments {
                     // this will generate everything and put in rax
-                    println!("{:?}", arg);
-
                     arg.visit_com(v, Rc::clone(&f), asm);
                     asm.func_write();
                 }
@@ -47,7 +45,7 @@ impl AST for FunctionCall {
         match self.name.as_str() {
             FUNC_WRITE => {
                 for arg in &self.arguments {
-                    println!("{:?}", arg.visit(v, Rc::clone(&f)));
+                    arg.visit(v, Rc::clone(&f));
                 }
 
                 return VisitResult {
