@@ -9,10 +9,12 @@ impl ASM {
         T: std::ops::Div<Output = T>,
         T: std::fmt::Debug,
     {
+        println!("add_two_numbers a = {:?}, b = {:?}", a, b);
+
         let first = vec![
-            format!("\tmov rax, {:?}\n", a),
-            format!("\tmov rbx, {:?}\n", b),
-            format!("\tadd rax, rbx\n"),
+            format!("mov rax, {:?}", a),
+            format!("mov rbx, {:?}", b),
+            format!("add rax, rbx"),
         ];
 
         for label in &mut self.labels {

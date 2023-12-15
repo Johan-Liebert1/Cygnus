@@ -48,12 +48,12 @@ impl Interpreter {
 
                 for label in &self.asm.labels {
                     let mut file_bytes = format!("{}:\n", &label.name);
-                    file_bytes += &label.code.join("\n");
+                    file_bytes += &label.code.join("\n\t");
 
                     file.write_all(file_bytes.as_bytes())?;
 
                     if label.name == "_start" {
-                        file.write(b"\texit 0")?;
+                        file.write(b"\n\texit 0")?;
                     }
 
                     file.write(b"\n\n")?;

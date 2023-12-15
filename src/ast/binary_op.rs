@@ -37,6 +37,8 @@ impl BinaryOP {
         T: std::ops::Div<Output = T>,
         T: std::fmt::Debug,
     {
+        println!("BinaryOP generate_asm");
+
         match &self.operator.token {
             TokenEnum::Op(op) => match op {
                 Operations::Plus => l + r,
@@ -59,6 +61,8 @@ impl BinaryOP {
         T: std::ops::Div<Output = T>,
         T: std::fmt::Debug,
     {
+        println!("BinaryOP generate_asm");
+
         match &self.operator.token {
             TokenEnum::Op(op) => match op {
                 Operations::Plus => asm.add_two_numbers(l, r),
@@ -158,28 +162,28 @@ impl BinaryOP {
 
 impl AST for BinaryOP {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        let visit_left = self.left.visit(v, Rc::clone(&f));
-        let visit_right = self.right.visit(v, Rc::clone(&f));
+        let visit_left = self.left.visit_com(v, Rc::clone(&f), asm);
+        let visit_right = self.right.visit_com(v, Rc::clone(&f), asm);
 
-        let left_operand = visit_left.token.get_operand();
-        let right_operand = visit_right.token.get_operand();
+        // let left_operand = visit_left.token.get_operand();
+        // let right_operand = visit_right.token.get_operand();
 
-        match (&left_operand, &right_operand) {
-            (Ok(lop), Ok(rop)) => {
-                // Handle the case where both operands are Ok
-                self.evaluate_operands(lop, rop, v, Some(asm))
-            }
+        // match (&left_operand, &right_operand) {
+        //     (Ok(lop), Ok(rop)) => {
+        //         // Handle the case where both operands are Ok
+        //         self.evaluate_operands(lop, rop, v, Some(asm))
+        //     }
 
-            (Err(err), _) => {
-                // Handle the case where left_operand is an error
-                panic!("{}", err);
-            }
+        //     (Err(err), _) => {
+        //         // Handle the case where left_operand is an error
+        //         panic!("{}", err);
+        //     }
 
-            (_, Err(err)) => {
-                // Handle the case where right_operand is an error
-                panic!("{}", err);
-            }
-        };
+        //     (_, Err(err)) => {
+        //         // Handle the case where right_operand is an error
+        //         panic!("{}", err);
+        //     }
+        // };
     }
 
     fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {

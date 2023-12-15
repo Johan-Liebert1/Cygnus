@@ -1,11 +1,11 @@
 use crate::{
+    asm::asm::ASM,
     constants,
     interpreter::interpreter::{Functions, Variables},
     lexer::{
         lexer::Token,
         tokens::{Comparators, Number, Operand, TokenEnum},
     },
-    asm::asm::ASM,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -45,15 +45,47 @@ impl ComparisonExp {
         });
     }
 
-    fn eval_number_number(&self, left_op: &Number, right_op: &Number) -> VisitResult {
-        match (left_op, right_op) {
-            (Number::Integer(l), Number::Integer(r)) => VisitResult {
-                token: Box::new(self.compare(*l, *r)),
-            },
+    fn generate_asm<T>(&self, l: T, r: T, asm: &mut ASM)
+    where
+        T: PartialOrd,
+        T: std::fmt::Debug,
+    {
+        match &self.comp_op.token {
+            TokenEnum::Comparator(comp) => asm.compare_two_numbers(l, r, comp.clone()),
+            _ => {
+                unreachable!("Found non comparator")
+            }
+        };
+    }
 
-            (Number::Float(l), Number::Float(r)) => VisitResult {
-                token: Box::new(self.compare(*l, *r)),
-            },
+    fn eval_number_number(
+        &self,
+        left_op: &Number,
+        right_op: &Number,
+        asm: Option<&mut ASM>,
+    ) -> Option<VisitResult> {
+        match (left_op, right_op) {
+            (Number::Integer(l), Number::Integer(r)) => {
+                if let Some(asm) = asm {
+                    self.generate_asm(l, r, asm);
+                    return None;
+                }
+
+                return Some(VisitResult {
+                    token: Box::new(self.compare(*l, *r)),
+                });
+            }
+
+            (Number::Float(l), Number::Float(r)) => {
+                if let Some(asm) = asm {
+                    self.generate_asm(l, r, asm);
+                    return None;
+                }
+
+                return Some(VisitResult {
+                    token: Box::new(self.compare(*l, *r)),
+                });
+            }
 
             _ => {
                 panic!("Cannot compare Float and Integer");
@@ -61,22 +93,27 @@ impl ComparisonExp {
         }
     }
 
-    fn eval_var_num(&self, number: &Number, variable: &String, i: &mut Variables) -> VisitResult {
+    fn eval_var_num(
+        &self,
+        number: &Number,
+        variable: &String,
+        i: &mut Variables,
+    ) -> Option<VisitResult> {
         let result = i.get(variable);
 
         match result {
-            Some(var_num) => self.eval_number_number(number, var_num),
+            Some(var_num) => self.eval_number_number(number, var_num, None),
 
             None => panic!("Variable {} is not defined", variable),
         }
     }
 
-    fn eval_var_var(&self, var1: &String, var2: &String, i: &mut Variables) -> VisitResult {
+    fn eval_var_var(&self, var1: &String, var2: &String, i: &mut Variables) -> Option<VisitResult> {
         let r1 = i.get(var1);
         let r2 = i.get(var2);
 
         match (r1, r2) {
-            (Some(var1), Some(var2)) => self.eval_number_number(var1, var2),
+            (Some(var1), Some(var2)) => self.eval_number_number(var1, var2, None),
 
             (None, Some(_)) => panic!("Variable {} is not defined", var1),
             (Some(_), None) => panic!("Variable {} is not defined", var2),
@@ -89,10 +126,11 @@ impl ComparisonExp {
         left_op: &Operand,
         right_op: &Operand,
         i: &mut Variables,
-    ) -> VisitResult {
+        asm: Option<&mut ASM>,
+    ) -> Option<VisitResult> {
         match (left_op, right_op) {
             (Operand::Number(left_op), Operand::Number(right_op)) => {
-                self.eval_number_number(left_op, right_op)
+                self.eval_number_number(left_op, right_op, asm)
             }
 
             (Operand::Number(n), Operand::Variable(v)) => self.eval_var_num(n, v, i),
@@ -104,8 +142,30 @@ impl ComparisonExp {
 }
 
 impl AST for ComparisonExp {
-    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        todo!()
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        // FIXME: Cannot visit here else it'll start evaluating expressions
+        let visit_left = self.left.visit(v, Rc::clone(&f));
+        let visit_right = self.right.visit(v, Rc::clone(&f));
+
+        let left_operand = visit_left.token.get_operand();
+        let right_operand = visit_right.token.get_operand();
+
+        match (&left_operand, &right_operand) {
+            (Ok(lop), Ok(rop)) => {
+                // Handle the case where both operands are Ok
+                self.evaluate_operands(lop, rop, v, Some(asm));
+            }
+
+            (Err(err), _) => {
+                // Handle the case where left_operand is an error
+                panic!("{}", err);
+            }
+
+            (_, Err(err)) => {
+                // Handle the case where right_operand is an error
+                panic!("{}", err);
+            }
+        };
     }
 
     fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
@@ -123,7 +183,12 @@ impl AST for ComparisonExp {
         match (&left_operand, &right_operand) {
             (Ok(lop), Ok(rop)) => {
                 // Handle the case where both operands are Ok
-                return self.evaluate_operands(lop, rop, i);
+                let r = self.evaluate_operands(lop, rop, i, None);
+
+                return match r {
+                    Some(r) => r,
+                    None => panic!("Comparison Exp returned None in interpreter mode"),
+                };
             }
 
             (Err(err), _) => {

@@ -48,28 +48,28 @@ impl ConditionalStatement {
 }
 
 impl AST for ConditionalStatement {
-    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        todo!()
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        self.if_statement.condition.visit_com(v, f, asm);
     }
 
-    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
-        if let TokenEnum::Bool(value) = *self.if_statement.condition.visit(i, Rc::clone(&f)).token {
+    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+        if let TokenEnum::Bool(value) = *self.if_statement.condition.visit(v, Rc::clone(&f)).token {
             if value {
-                return self.if_statement.block.visit(i, Rc::clone(&f));
+                return self.if_statement.block.visit(v, Rc::clone(&f));
             }
         }
 
         for elif in &self.elif_ladder {
-            if let TokenEnum::Bool(value) = *elif.condition.visit(i, Rc::clone(&f)).token {
+            if let TokenEnum::Bool(value) = *elif.condition.visit(v, Rc::clone(&f)).token {
                 if value {
-                    return elif.block.visit(i, Rc::clone(&f));
+                    return elif.block.visit(v, Rc::clone(&f));
                 }
             }
         }
 
         // TODO: Panic if not boolean
         if let Some(else_statement) = &self.else_statement {
-            return else_statement.block.visit(i, f);
+            return else_statement.block.visit(v, f);
         }
 
         return VisitResult {
