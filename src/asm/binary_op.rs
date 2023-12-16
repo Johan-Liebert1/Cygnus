@@ -11,8 +11,10 @@ impl ASM {
             format!("push rax"),
         ];
 
+        let current_label = self.current_label();
+
         for label in &mut self.labels {
-            if label.name == "_start" {
+            if label.name == current_label {
                 label.code.extend(first);
                 break;
             }

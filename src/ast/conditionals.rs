@@ -1,6 +1,7 @@
 use crate::{
+    asm::{asm::ASM, conditionals::ConditionalJumpTo},
     interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::TokenEnum, asm::asm::ASM,
+    lexer::tokens::TokenEnum,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -49,7 +50,40 @@ impl ConditionalStatement {
 
 impl AST for ConditionalStatement {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        self.if_statement.condition.visit_com(v, f, asm);
+        self.if_statement.condition.visit_com(v, Rc::clone(&f), asm);
+
+        asm.if_start(if self.elif_ladder.len() > 0 {
+            ConditionalJumpTo::Elif
+        } else if let Some(_) = &self.else_statement {
+            ConditionalJumpTo::Else
+        } else {
+            ConditionalJumpTo::IfEnd
+        });
+
+        self.if_statement.block.visit_com(v, Rc::clone(&f), asm);
+
+        asm.if_end();
+
+        for (index, elif) in self.elif_ladder.iter().enumerate() {
+            elif.condition.visit_com(v, Rc::clone(&f), asm);
+
+            // if it's the last index, then jump to else, else jump to the next elif
+            asm.elif_start(
+                "elif".into(),
+                index,
+                if self.elif_ladder.len() - index - 1 > 0 {
+                    ConditionalJumpTo::Elif
+                } else if let Some(_) = &self.else_statement {
+                    ConditionalJumpTo::Else
+                } else {
+                    ConditionalJumpTo::ElifEnd
+                },
+            );
+
+            elif.block.visit_com(v, Rc::clone(&f), asm);
+
+            asm.elif_end(index);
+        }
     }
 
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
