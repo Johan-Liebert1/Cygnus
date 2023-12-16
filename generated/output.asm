@@ -22,9 +22,8 @@ push 5
 	.skip_next0:
 	;; push onto the stack whatever's in rax so rest of the program can use it
 	push rax
-
-.if:
-pop rcx
+	.if:
+	pop rcx
 	cmp rcx, 0
 	;; if the comparison value is false, jump to the next label altogether
 	je .if_end
@@ -53,9 +52,8 @@ pop rcx
 	.skip_next1:
 	;; push onto the stack whatever's in rax so rest of the program can use it
 	push rax
-
-.elif_0:
-pop rcx
+	.elif_0:
+	pop rcx
 	cmp rcx, 0
 	;; if the comparison value is false, jump to the next label altogether
 	je .elif_0_end
@@ -84,9 +82,8 @@ pop rcx
 	.skip_next2:
 	;; push onto the stack whatever's in rax so rest of the program can use it
 	push rax
-
-.elif_1:
-pop rcx
+	.elif_1:
+	pop rcx
 	cmp rcx, 0
 	;; if the comparison value is false, jump to the next label altogether
 	je .else
@@ -101,9 +98,8 @@ pop rcx
 	call _printRAX
 	jmp .else_end
 	.elif_1_end:
-
-.else:
-push 420
+	.else:
+	push 420
 	push 0
 	;; get the two operands from the stack
 	pop rax
@@ -112,7 +108,6 @@ push 420
 	;; push the result back onto the stack
 	push rax
 	call _printRAX
-
-.else_end:
-
+	.else_end:
+	exit 0
 

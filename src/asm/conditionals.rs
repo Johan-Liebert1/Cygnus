@@ -9,7 +9,7 @@ pub enum ConditionalJumpTo {
 
 impl ASM {
     pub fn if_start(&mut self, jump_to: ConditionalJumpTo) {
-        self.change_current_label(".if".into());
+        // self.change_current_label(".if".into());
 
         let jump_to_label = match jump_to {
             ConditionalJumpTo::IfEnd => ".if_end",
@@ -19,6 +19,9 @@ impl ASM {
         };
 
         let instructions = vec![
+            // if label
+            format!(".if:"),
+
             format!("pop rcx"),
             format!("cmp rcx, 0"),
             format!(";; if the comparison value is false, jump to the next label altogether"),
@@ -64,7 +67,7 @@ impl ASM {
         elif_number: usize,
         jump_to: ConditionalJumpTo,
     ) {
-        self.change_current_label(format!(".{}_{}", label_name, elif_number));
+        // self.change_current_label(format!(".{}_{}", label_name, elif_number));
 
         let jump_to_label = match jump_to {
             ConditionalJumpTo::IfEnd => panic!("cannot jump to if from elif"),
@@ -74,6 +77,9 @@ impl ASM {
         };
 
         let instructions = vec![
+            // elif label
+            format!(".{}_{}:", label_name, elif_number),
+
             format!("pop rcx"),
             format!("cmp rcx, 0"),
             format!(";; if the comparison value is false, jump to the next label altogether"),
@@ -117,10 +123,28 @@ impl ASM {
 
     /// The label name for else will be unique
     pub fn else_start(&mut self, label_name: String) {
-        self.change_current_label(format!(".{}", label_name));
+        // self.change_current_label();
+
+        let current_label = self.current_label();
+
+        for label in &mut self.labels {
+            if label.name == current_label {
+                label.code.push(format!(".{}:", label_name));
+                break;
+            }
+        }
     }
 
     pub fn else_end(&mut self, label_name: String) {
-        self.change_current_label(format!(".{}_end", label_name));
+        // self.change_current_label(format!(".{}_end", label_name));
+
+        let current_label = self.current_label();
+
+        for label in &mut self.labels {
+            if label.name == current_label {
+                label.code.push(format!(".{}_end:", label_name));
+                break;
+            }
+        }
     }
 }
