@@ -1,10 +1,11 @@
 use crate::{
+    asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
     lexer::{
         keywords::{TYPE_FLOAT, TYPE_INT},
         lexer::Token,
         tokens::{Number, TokenEnum},
-    }, asm::asm::ASM,
+    },
 };
 use std::{cell::RefCell, rc::Rc};
 

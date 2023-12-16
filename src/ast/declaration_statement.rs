@@ -1,8 +1,9 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
+    asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::{lexer::Token, tokens::TokenEnum}, asm::asm::ASM,
+    lexer::{lexer::Token, tokens::TokenEnum},
 };
 
 use super::{

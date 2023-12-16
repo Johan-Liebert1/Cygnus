@@ -24,7 +24,7 @@ fn generate_asm() -> io::Result<()> {
     spawn.wait()?;
 
     let mut linker = std::process::Command::new("ld");
-    linker.args(["output.o", "-o" ,"output"]);
+    linker.args(["output.o", "-o", "output"]);
     let mut spawn = linker.spawn()?;
     spawn.wait()?;
 
@@ -52,17 +52,13 @@ fn main() {
     }
 
     match std::process::Command::new("./output").spawn() {
-        Ok(ref mut child) => {
-            match child.wait() {
-                Ok(exit_status) => println!("Exited with status {exit_status}"),
-                Err(err) => println!("Error while waiting for child {:?}", err),
-            }
+        Ok(ref mut child) => match child.wait() {
+            Ok(exit_status) => println!("Exited with status {exit_status}"),
+            Err(err) => println!("Error while waiting for child {:?}", err),
         },
 
         Err(e) => {
             println!("Failed to spawn run process: {:?}", e);
-        },
+        }
     }
-
-
 }

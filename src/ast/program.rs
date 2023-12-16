@@ -1,6 +1,7 @@
 use crate::{
+    asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::TokenEnum, asm::asm::ASM,
+    lexer::tokens::TokenEnum,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -21,7 +22,6 @@ impl AST for Program {
         for statement in &self.statements {
             statement.visit_com(x, Rc::clone(&f), asm);
         }
-
     }
 
     fn visit(&self, x: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {

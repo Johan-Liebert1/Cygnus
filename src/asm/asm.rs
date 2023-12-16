@@ -20,13 +20,9 @@ impl Default for ASM {
             comparison_num: 0,
             current_label: "_start".to_string(),
 
-            include: vec![
-                r#"%include "std.asm""#
-            ],
+            include: vec![r#"%include "std.asm""#],
 
-            text: vec![
-                String::from("\tglobal _start")
-            ],
+            text: vec![String::from("\tglobal _start")],
 
             bss: vec![
                 // for printing numbers
@@ -52,7 +48,10 @@ impl ASM {
             }
         }
 
-        self.labels.push(Label { name: new_label, code: vec![] });
+        self.labels.push(Label {
+            name: new_label,
+            code: vec![],
+        });
     }
 
     pub fn current_label(&self) -> String {

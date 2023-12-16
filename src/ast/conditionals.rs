@@ -53,7 +53,8 @@ impl AST for ConditionalStatement {
         self.if_statement.condition.visit_com(v, Rc::clone(&f), asm);
 
         asm.if_start(if self.elif_ladder.len() > 0 {
-            ConditionalJumpTo::Elif
+            // we jump to IfEnd as IfEnd label contains the comparison expression for elif
+            ConditionalJumpTo::IfEnd
         } else if let Some(_) = &self.else_statement {
             ConditionalJumpTo::Else
         } else {
@@ -62,7 +63,16 @@ impl AST for ConditionalStatement {
 
         self.if_statement.block.visit_com(v, Rc::clone(&f), asm);
 
-        asm.if_end();
+        asm.if_end(
+            if let Some(_) = self.else_statement {
+                ConditionalJumpTo::Else
+            } else if self.elif_ladder.len() > 0 {
+                ConditionalJumpTo::ElifEnd
+            } else {
+                ConditionalJumpTo::Else
+            },
+            self.elif_ladder.len(),
+        );
 
         for (index, elif) in self.elif_ladder.iter().enumerate() {
             elif.condition.visit_com(v, Rc::clone(&f), asm);

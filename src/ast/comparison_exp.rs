@@ -128,7 +128,7 @@ impl AST for ComparisonExp {
                 asm.compare_two_numbers(c.clone());
             }
 
-            _ => panic!("Found non comparator for a Comparison Expression")
+            _ => panic!("Found non comparator for a Comparison Expression"),
         }
     }
 

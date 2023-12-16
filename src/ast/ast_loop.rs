@@ -1,6 +1,7 @@
 use crate::{
+    asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::{Number, TokenEnum}, asm::asm::ASM,
+    lexer::tokens::{Number, TokenEnum},
 };
 use std::{cell::RefCell, rc::Rc};
 

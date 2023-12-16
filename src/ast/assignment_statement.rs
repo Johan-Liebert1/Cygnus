@@ -1,8 +1,9 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
+    asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::TokenEnum, asm::asm::ASM,
+    lexer::tokens::TokenEnum,
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};

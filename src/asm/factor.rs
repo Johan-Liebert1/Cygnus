@@ -1,4 +1,4 @@
-use crate::lexer::tokens::{TokenEnum, Number};
+use crate::lexer::tokens::{Number, TokenEnum};
 
 use super::asm::ASM;
 
