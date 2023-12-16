@@ -42,7 +42,7 @@ impl ASM {
             ConditionalJumpTo::IfEnd => panic!("Cannot jump to if end from if end"),
             ConditionalJumpTo::ElifEnd => format!(".elif_{}_end", elif_len - 1),
             ConditionalJumpTo::Elif => panic!("Cannot jump to elif start from if end"),
-            ConditionalJumpTo::Else => ".else".into(),
+            ConditionalJumpTo::Else => ".else_end".into(),
         };
 
         // if we ever enter the if block, then that's it, we can jump straight to the end of the else or the elif block
@@ -90,19 +90,37 @@ impl ASM {
         }
     }
 
-    pub fn elif_end(&mut self, elif_number: usize) {
+    // we need jump_to in case there is not else
+    pub fn elif_end(&mut self, elif_number: usize, jump_to: ConditionalJumpTo) {
+        let jump_to_label = match jump_to {
+            ConditionalJumpTo::IfEnd => panic!("Cannot jump to if end from elif end"),
+            ConditionalJumpTo::ElifEnd => format!(".elif_{}_end", elif_number),
+            ConditionalJumpTo::Elif => panic!("Cannot jump to elif start from elif end"),
+            ConditionalJumpTo::Else => ".else_end".into(),
+        };
+
+        // if we ever enter the if block, then that's it, we can jump straight to the end of the else or the elif block
+        let instructions = vec![
+            format!("jmp {}", jump_to_label),
+            format!(".elif_{}_end:", elif_number),
+        ];
+
         let current_label = self.current_label();
 
         for label in &mut self.labels {
             if label.name == current_label {
-                label.code.push(format!(".elif_{}_end:", elif_number));
+                label.code.extend(instructions);
                 break;
             }
         }
     }
 
     /// The label name for else will be unique
-    pub fn gen_else(&mut self, label_name: String) {
+    pub fn else_start(&mut self, label_name: String) {
         self.change_current_label(format!(".{}", label_name));
+    }
+
+    pub fn else_end(&mut self, label_name: String) {
+        self.change_current_label(format!(".{}_end", label_name));
     }
 }
