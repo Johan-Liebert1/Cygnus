@@ -99,6 +99,32 @@ impl<'a> Lexer<'a> {
         return TokenEnum::Variable(word);
     }
 
+    pub fn construct_string(&mut self) -> TokenEnum {
+        // we get here when we encounter "
+
+        // skip past the '"'
+        self.index += 1;
+
+        let mut string_literal = String::new();
+
+        while self.index < self.file.len() {
+            match self.file[self.index] {
+                b'"' => {
+                    break;
+                }
+
+                _ => {
+                    string_literal += &(self.file[self.index] as char).to_string();
+                    self.index += 1;
+                    self.col_number += 1;
+                }
+            }
+        }
+
+        // don't inc index here as it'll be incremented in the lexer.advance func anyway
+        return TokenEnum::StringLiteral(string_literal);
+    }
+
     fn parse_comment(&mut self) -> String {
         let mut comment = String::new();
 
@@ -113,6 +139,7 @@ impl<'a> Lexer<'a> {
                 _ => {
                     comment += &(self.file[self.index] as char).to_string();
                     self.index += 1;
+                    self.col_number += 1;
                 }
             }
         }

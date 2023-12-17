@@ -8,26 +8,32 @@ pub struct Label {
 pub struct ASM {
     pub include: Vec<&'static str>,
     pub text: Vec<String>,
+    pub data: Vec<String>,
     pub bss: Vec<String>,
     pub labels: Vec<Label>,
     pub comparison_num: usize,
+    pub num_strings: usize,
+
     current_label: String,
 }
 
 impl Default for ASM {
     fn default() -> Self {
         Self {
+            num_strings: 0,
             comparison_num: 0,
             current_label: "_start".to_string(),
 
             include: vec![r#"%include "std.asm""#],
 
-            text: vec![String::from("\tglobal _start")],
+            text: vec![String::from("global _start")],
+
+            data: vec![],
 
             bss: vec![
                 // for printing numbers
-                String::from("\tdigitSpace resb 100"),
-                String::from("\tdigitSpacePos resb 8"),
+                String::from("digitSpace resb 100"),
+                String::from("digitSpacePos resb 8"),
             ],
 
             labels: vec![Label {

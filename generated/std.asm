@@ -59,3 +59,19 @@ _printRAXLoop2:
     jge _printRAXLoop2
 
     ret
+
+_printString:
+    ;; assuming the start of the string is in rax
+    ;; and the length of the string in rbx
+
+    pop r8 ;; assuming this is length
+    pop r9 ;; assuming this is start of string
+
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, r9
+    mov rdx, r8
+    syscall
+
+    ret
+

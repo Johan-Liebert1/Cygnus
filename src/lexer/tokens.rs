@@ -58,6 +58,8 @@ pub enum TokenEnum {
     Variable(String),
     Type(String),
 
+    StringLiteral(String),
+
     Unknown(String),
     EOF,
 }

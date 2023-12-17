@@ -107,6 +107,8 @@ impl<'a> Parser<'a> {
                 }
             }
 
+            TokenEnum::StringLiteral(_) => todo!(),
+
             TokenEnum::Op(_) => todo!(),
             TokenEnum::Equals => todo!(),
             TokenEnum::Comparator(_) => todo!(),
