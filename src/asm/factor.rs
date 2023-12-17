@@ -14,8 +14,6 @@ impl ASM {
             },
 
             TokenEnum::StringLiteral(s) => {
-                println!("factor asm {s}");
-
                 // add the string literal in the data segement
                 self.data.push(format!(
                     "string_{} db {}",
@@ -28,7 +26,8 @@ impl ASM {
                 ));
 
                 instructions.extend(vec![
-                    format!("push string_{}", self.num_strings),
+                    format!("mov rax, string_{}", self.num_strings),
+                    format!("push rax"),
                     format!("push {}", s.len()),
                 ]);
 

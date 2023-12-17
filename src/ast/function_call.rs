@@ -34,7 +34,7 @@ impl AST for FunctionCall {
                     println!("{:?}", arg_token);
 
                     match arg_token {
-                        TokenEnum::StringLiteral(_) => todo!(),
+                        TokenEnum::StringLiteral(_) => asm.func_write_string(),
 
                         _ => {
                             // TODO: Fix this thing as anything other than Sting will have a nonsense
