@@ -26,8 +26,22 @@ impl AST for FunctionCall {
             FUNC_WRITE => {
                 for arg in &self.arguments {
                     // this will generate everything and put in rax
+
                     arg.visit_com(v, Rc::clone(&f), asm);
-                    asm.func_write();
+
+                    let arg_token = &arg.get_token().token;
+
+                    println!("{:?}", arg_token);
+
+                    match arg_token {
+                        TokenEnum::StringLiteral(_) => asm.func_write_string(),
+
+                        _ => {
+                            // TODO: Fix this thing as anything other than Sting will have a nonsense
+                            // get_token function
+                            asm.func_write_number();
+                        }
+                    }
                 }
             }
 
@@ -46,6 +60,7 @@ impl AST for FunctionCall {
         match self.name.as_str() {
             FUNC_WRITE => {
                 for arg in &self.arguments {
+                    // println!("Visiting func write. Arg {:?}", arg);
                     println!("{:?}", arg.visit(v, Rc::clone(&f)));
                 }
 

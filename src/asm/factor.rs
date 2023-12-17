@@ -13,6 +13,27 @@ impl ASM {
                 Number::Float(_) => todo!(),
             },
 
+            TokenEnum::StringLiteral(s) => {
+                // add the string literal in the data segement
+                self.data.push(format!(
+                    "string_{} db {}",
+                    self.num_strings,
+                    s.as_bytes()
+                        .iter()
+                        .map(|x| { x.to_string() })
+                        .collect::<Vec<String>>()
+                        .join(",")
+                ));
+
+                instructions.extend(vec![
+                    format!("mov rax, string_{}", self.num_strings),
+                    format!("push rax"),
+                    format!("push {}", s.len()),
+                ]);
+
+                self.num_strings += 1;
+            }
+
             TokenEnum::Equals => todo!(),
             TokenEnum::Comma => todo!(),
             TokenEnum::Colon => todo!(),

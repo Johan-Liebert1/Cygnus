@@ -59,3 +59,12 @@ _printRAXLoop2:
     jge _printRAXLoop2
 
     ret
+
+_printString:
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, r9
+    mov rdx, r8
+    syscall
+
+    ret

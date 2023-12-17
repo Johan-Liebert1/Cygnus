@@ -85,6 +85,8 @@ impl<'a> Lexer<'a> {
                 ':' => TokenEnum::Colon,
                 ',' => TokenEnum::Comma,
 
+                '"' => self.construct_string(),
+
                 // TODO: This messes up the column number in the final output
                 '>' => TokenEnum::Comparator({
                     self.index += 1;

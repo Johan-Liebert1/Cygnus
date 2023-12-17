@@ -33,17 +33,24 @@ impl Interpreter {
         match file {
             Ok(ref mut file) => {
                 // write includes
-                file.write(self.asm.include.join("\n").as_bytes())?;
+                file.write(self.asm.include.join("\n\t").as_bytes())?;
                 file.write(b"\n\n")?;
 
                 // write .bss section
                 file.write(b"section .bss\n")?;
-                file.write_all(self.asm.bss.join("\n").as_bytes())?;
+                file.write_all(self.asm.bss.join("\n\t").as_bytes())?;
                 file.write(b"\n\n")?;
+
+                if self.asm.data.len() > 0 {
+                    // write .data section
+                    file.write(b"section .data\n")?;
+                    file.write_all(self.asm.data.join("\n\t").as_bytes())?;
+                    file.write(b"\n\n")?;
+                }
 
                 // write .text section
                 file.write(b"section .text\n")?;
-                file.write_all(self.asm.text.join("\n").as_bytes())?;
+                file.write_all(self.asm.text.join("\n\t").as_bytes())?;
                 file.write(b"\n\n")?;
 
                 for label in &self.asm.labels {

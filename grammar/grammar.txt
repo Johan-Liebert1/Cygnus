@@ -12,7 +12,7 @@ COMPARISON_EXPRESSION    -> EXPRESSION ((> | < | >= | <=) EXPRESSION)*
 EXPRESSION               -> TERM (( + | - ) TERM)*                      # for precedence as term will be calculated first 
 TERM                     -> FACTOR (( * | / ) FACTOR)*
 COMMENT                  -> -- (ANY)* 
-FACTOR                   -> INTEGER | FLOAT | VARIABLE | LPAREN EXPRESSION RPAREN
+FACTOR                   -> INTEGER | FLOAT | VARIABLE | STRING_LITERAL | LPAREN EXPRESSION RPAREN
 VAR_NAME                 -> any valid identifier
 LPAREN                   -> (
 RPAREN                   -> )
