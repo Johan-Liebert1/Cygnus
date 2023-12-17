@@ -46,7 +46,7 @@ impl AST for FunctionCall {
         match self.name.as_str() {
             FUNC_WRITE => {
                 for arg in &self.arguments {
-                    arg.visit(v, Rc::clone(&f));
+                    println!("{:?}", arg.visit(v, Rc::clone(&f)));
                 }
 
                 return VisitResult {

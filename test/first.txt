@@ -1,9 +1,5 @@
-if 5 > 8 {
-    write(9 + 1)
-} elif 6 > 9 {
-    write(10 + 1)
-} elif 1 < 0 {
-    write(68 + 1)
-} else {
-    write(420 + 0)
+loop from 1 to 10 {
+    loop from 1 to 5 {
+        write(69)
+    }
 }

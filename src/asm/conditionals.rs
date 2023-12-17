@@ -21,7 +21,6 @@ impl ASM {
         let instructions = vec![
             // if label
             format!(".if:"),
-
             format!("pop rcx"),
             format!("cmp rcx, 0"),
             format!(";; if the comparison value is false, jump to the next label altogether"),
@@ -79,7 +78,6 @@ impl ASM {
         let instructions = vec![
             // elif label
             format!(".{}_{}:", label_name, elif_number),
-
             format!("pop rcx"),
             format!("cmp rcx, 0"),
             format!(";; if the comparison value is false, jump to the next label altogether"),

@@ -31,6 +31,8 @@ fn generate_asm() -> io::Result<()> {
     Ok(())
 }
 
+const COMPILE_MODE: bool = false;
+
 fn main() {
     let file = std::fs::read("test/first.txt").unwrap();
 
@@ -38,27 +40,36 @@ fn main() {
     let ast = parser.parse_program();
 
     let mut interpreter = Interpreter::new(ast, parser.functions);
-    let _result = interpreter.compile();
 
-    match generate_asm() {
-        Ok(_) => {
-            println!("Successful!");
+    if COMPILE_MODE {
+        let _result = interpreter.compile();
+
+        match generate_asm() {
+            Ok(_) => {
+                println!("Successful!");
+            }
+
+            Err(e) => {
+                println!("Failed to generate asm: {:?}", e);
+                return;
+            }
         }
 
-        Err(e) => {
-            println!("Failed to generate asm: {:?}", e);
-            return;
+        match std::process::Command::new("./output").spawn() {
+            Ok(ref mut child) => match child.wait() {
+                Ok(exit_status) => println!("Exited with status {exit_status}"),
+                Err(err) => println!("Error while waiting for child {:?}", err),
+            },
+
+            Err(e) => {
+                println!("Failed to spawn run process: {:?}", e);
+            }
         }
+
+        return;
     }
 
-    match std::process::Command::new("./output").spawn() {
-        Ok(ref mut child) => match child.wait() {
-            Ok(exit_status) => println!("Exited with status {exit_status}"),
-            Err(err) => println!("Error while waiting for child {:?}", err),
-        },
+    let result = interpreter.interpret();
 
-        Err(e) => {
-            println!("Failed to spawn run process: {:?}", e);
-        }
-    }
+    println!("{:#?}", result);
 }
