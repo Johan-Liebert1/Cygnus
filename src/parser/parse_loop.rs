@@ -1,10 +1,11 @@
 use std::rc::Rc;
 
 use crate::{
-    ast::{abstract_syntax_tree::AST, ast_loop::Loop},
+    ast::{abstract_syntax_tree::AST, ast_loop::Loop, factor::Factor},
     lexer::{
         keywords::{FROM, STEP, TO},
-        tokens::{Bracket, TokenEnum},
+        lexer::Token,
+        tokens::{Bracket, Number, TokenEnum},
     },
 };
 
@@ -45,6 +46,12 @@ impl<'a> Parser<'a> {
             _ => self.parse_expression(),
         };
 
+        let default_step: Rc<Box<dyn AST>> = Rc::new(Box::new(Factor::new(Box::new(Token {
+            token: TokenEnum::Number(Number::Integer(1)),
+            line_number: 0,
+            col_number: 0,
+        }))));
+
         let step = match self.peek_next_token().token {
             TokenEnum::Keyword(keyword) => {
                 match keyword.as_str() {
@@ -52,14 +59,14 @@ impl<'a> Parser<'a> {
                         // consume 'step'
                         self.get_next_token();
 
-                        Some(self.parse_expression())
+                        self.parse_expression()
                     }
 
-                    _ => None,
+                    _ => default_step,
                 }
             }
 
-            _ => None,
+            _ => default_step,
         };
 
         // TODO: Handle (with VAR_NAME)* here

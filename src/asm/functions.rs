@@ -6,6 +6,7 @@ impl ASM {
 
         for label in &mut self.labels {
             if label.name == current_label {
+                label.code.push(String::from("pop rax"));
                 label.code.push(String::from("call _printRAX"));
             }
         }
