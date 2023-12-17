@@ -12,7 +12,7 @@ pub struct Loop {
     from_range: Rc<Box<dyn AST>>,
     /// an expression
     to_range: Rc<Box<dyn AST>>,
-    step_by: Option<Rc<Box<dyn AST>>>,
+    step_by: Rc<Box<dyn AST>>,
     block: Rc<Box<dyn AST>>,
 }
 
@@ -20,7 +20,7 @@ impl Loop {
     pub fn new(
         from_range: Rc<Box<dyn AST>>,
         to_range: Rc<Box<dyn AST>>,
-        step_by: Option<Rc<Box<dyn AST>>>,
+        step_by: Rc<Box<dyn AST>>,
         block: Rc<Box<dyn AST>>,
     ) -> Self {
         Self {
@@ -33,16 +33,32 @@ impl Loop {
 }
 
 impl AST for Loop {
-    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        todo!()
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        // 1. Visit the from expression, to expression and step expression if they exist. Push
+        //    them onto the stack
+        //
+        // 2. On every loop iteration, we pop these into r0, r1 and r2 and perform the step
+        //    operation
+        //
+        // 3. Compare if the current addition value is equal to the `to` value, and if they are
+        //    equal break the loop
+
+        self.from_range.visit_com(v, Rc::clone(&f), asm);
+        self.to_range.visit_com(v, Rc::clone(&f), asm);
+        self.step_by.visit_com(v, Rc::clone(&f), asm);
+
+        asm.gen_loop_start();
+        self.block.visit_com(v, Rc::clone(&f), asm);
+        asm.gen_loop_end();
     }
 
-    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
-        let from = self.from_range.visit(i, Rc::clone(&f));
-        let to = self.to_range.visit(i, Rc::clone(&f));
+    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+        let from = self.from_range.visit(v, Rc::clone(&f));
+        let to = self.to_range.visit(v, Rc::clone(&f));
+        let step_by = self.step_by.visit(v, Rc::clone(&f));
 
-        if !from.token.is_integer() || !to.token.is_integer() {
-            panic!("Expected from and to expressions to be Integer");
+        if !from.token.is_integer() || !to.token.is_integer() || !step_by.token.is_integer() {
+            panic!("Expected from, to and step expressions to be Integer");
         }
 
         let from = if let TokenEnum::Number(Number::Integer(i)) = *from.token {
@@ -57,24 +73,18 @@ impl AST for Loop {
             unreachable!("Somehow did not get integer even after performing Integer enum check")
         };
 
-        let mut step_by = 1;
+        let step_by = if let TokenEnum::Number(Number::Integer(i)) = *step_by.token {
+            if i < 0 {
+                panic!("Step cannot be negative");
+            }
 
-        if let Some(step) = &self.step_by {
-            step_by = if let TokenEnum::Number(Number::Integer(i)) =
-                *step.visit(i, Rc::clone(&f)).token
-            {
-                if i < 0 {
-                    panic!("Step cannot be negative");
-                }
-
-                i as usize
-            } else {
-                panic!("Step has to be a positive integer")
-            };
-        }
+            i as usize
+        } else {
+            panic!("Step has to be a positive integer")
+        };
 
         for _ in (from..to).step_by(step_by) {
-            self.block.visit(i, Rc::clone(&f));
+            self.block.visit(v, Rc::clone(&f));
         }
 
         return VisitResult {

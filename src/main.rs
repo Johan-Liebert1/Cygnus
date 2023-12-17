@@ -31,7 +31,7 @@ fn generate_asm() -> io::Result<()> {
     Ok(())
 }
 
-const COMPILE_MODE: bool = false;
+const COMPILE_MODE: bool = true;
 
 fn main() {
     let file = std::fs::read("test/first.txt").unwrap();
@@ -55,16 +55,16 @@ fn main() {
             }
         }
 
-        match std::process::Command::new("./output").spawn() {
-            Ok(ref mut child) => match child.wait() {
-                Ok(exit_status) => println!("Exited with status {exit_status}"),
-                Err(err) => println!("Error while waiting for child {:?}", err),
-            },
+        // match std::process::Command::new("./output").spawn() {
+        //     Ok(ref mut child) => match child.wait() {
+        //         Ok(exit_status) => println!("Exited with status {exit_status}"),
+        //         Err(err) => println!("Error while waiting for child {:?}", err),
+        //     },
 
-            Err(e) => {
-                println!("Failed to spawn run process: {:?}", e);
-            }
-        }
+        //     Err(e) => {
+        //         println!("Failed to spawn run process: {:?}", e);
+        //     }
+        // }
 
         return;
     }
