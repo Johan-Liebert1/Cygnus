@@ -24,6 +24,8 @@ pub enum Bracket {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Comparators {
+    DoubleEquals,
+    NotEquals,
     LessThan,
     GreaterThan,
     LessThanEq,

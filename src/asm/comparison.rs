@@ -16,6 +16,8 @@ impl ASM {
             Comparators::GreaterThan => format!("jg .skip_{}", self.comparison_num),
             Comparators::LessThanEq => format!("jle .skip_{}", self.comparison_num),
             Comparators::GreaterThanEq => format!("jge .skip_{}", self.comparison_num),
+            Comparators::DoubleEquals => format!("je .skip_{}", self.comparison_num),
+            Comparators::NotEquals => format!("jne .skip_{}", self.comparison_num),
         };
 
         instructions.extend(vec![

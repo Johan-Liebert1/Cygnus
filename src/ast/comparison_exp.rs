@@ -37,6 +37,8 @@ impl ComparisonExp {
                 Comparators::GreaterThan => l > r,
                 Comparators::LessThanEq => l <= r,
                 Comparators::GreaterThanEq => l >= r,
+                Comparators::DoubleEquals => l == r,
+                Comparators::NotEquals => l != r,
             },
 
             _ => {

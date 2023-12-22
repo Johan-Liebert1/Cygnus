@@ -71,10 +71,37 @@ impl<'a> Lexer<'a> {
                         TokenEnum::Op(Operations::Minus)
                     }
                 }
+
                 '*' => TokenEnum::Op(Operations::Multiply),
                 '/' => TokenEnum::Op(Operations::Divide),
 
-                '=' => TokenEnum::Equals,
+                '=' => {
+                    self.index += 1;
+
+                    let tok = match self.peek_next_token().token {
+                        TokenEnum::Equals => TokenEnum::Comparator(Comparators::DoubleEquals),
+
+                        _ => {
+                            TokenEnum::Equals
+                        }
+                    };
+
+                    tok
+                },
+
+                '!' => {
+                    self.index += 1;
+
+                    let tok = match self.peek_next_token().token {
+                        TokenEnum::Equals => TokenEnum::Comparator(Comparators::NotEquals),
+
+                        _ => {
+                            TokenEnum::Unknown("!".to_string())
+                        }
+                    };
+
+                    tok
+                }
 
                 '(' => TokenEnum::Bracket(Bracket::LParen),
                 ')' => TokenEnum::Bracket(Bracket::RParen),

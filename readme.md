@@ -1,6 +1,9 @@
 ### Todo, to do, tu du, tu du, tu du, tu du, tu duuuuuu, tu du du
+
+- [] Write tests
+
 - [] Command line args for the compiler, to turn on/off various features
-- [] Implement all binary ops
+- [x] Implement all binary ops
 - [] Add ==, != and other comparison ops
 - [] Add bitwise operations
 - [] Functions in Compilation mode
