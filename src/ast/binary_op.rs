@@ -131,7 +131,13 @@ impl AST for BinaryOP {
         self.left.visit_com(v, Rc::clone(&f), asm);
         self.right.visit_com(v, Rc::clone(&f), asm);
 
-        asm.add_two_numbers();
+        match &self.operator.token {
+            TokenEnum::Op(c) => {
+                asm.binary_op_nums(c.clone());
+            }
+
+            _ => panic!("Found non operator for a Binary Expression"),
+        }
     }
 
     fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {

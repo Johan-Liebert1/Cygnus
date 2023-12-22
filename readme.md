@@ -1,3 +1,18 @@
+### Todo, to do, tu du, tu du, tu du, tu du, tu duuuuuu, tu du du
+- [] Command line args for the compiler, to turn on/off various features
+- [] Implement all binary ops
+- [] Add ==, != and other comparison ops
+- [] Add bitwise operations
+- [] Functions in Compilation mode
+- [] Variables in Compilation mode
+- [] Pointer deref
+- [] Command link arguments
+- [] Variable scoping
+- [] Proper type checking
+- [] Random access to memory
+- [] Ability to allocate and deallocate memory
+- [] Macros
+
 # Grammar
 
     PROGRAM                  -> STATEMENT[]

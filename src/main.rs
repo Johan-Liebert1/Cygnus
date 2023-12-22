@@ -15,6 +15,8 @@ mod lexer;
 mod parser;
 mod tests;
 
+const COMPILE_MODE: bool = true;
+
 fn generate_asm() -> io::Result<()> {
     std::env::set_current_dir("./generated")?;
 
@@ -31,8 +33,6 @@ fn generate_asm() -> io::Result<()> {
     Ok(())
 }
 
-const COMPILE_MODE: bool = true;
-
 fn main() {
     let file = std::fs::read("test/first.txt").unwrap();
 
@@ -46,7 +46,7 @@ fn main() {
 
         match generate_asm() {
             Ok(_) => {
-                println!("Successful!");
+                println!("Successful! Not running the program");
             }
 
             Err(e) => {
