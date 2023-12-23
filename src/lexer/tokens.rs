@@ -1,6 +1,12 @@
 use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum VariableEnum {
+    Number(Number),
+    String(String),
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Operations {
     Plus,
     Minus,

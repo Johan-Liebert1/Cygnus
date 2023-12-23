@@ -1,10 +1,10 @@
-use crate::lexer::tokens::{Number, TokenEnum};
+use crate::{lexer::tokens::{Number, TokenEnum}, interpreter::interpreter::Variables};
 
 use super::asm::ASM;
 
 impl ASM {
     /// Pushes whatever token's in here onto the stack
-    pub fn generate_asm_factor(&mut self, token: &TokenEnum) {
+    pub fn generate_asm_factor(&mut self, token: &TokenEnum, vars: &Variables) {
         let mut instructions: Vec<String> = vec![];
 
         match token {
@@ -32,7 +32,11 @@ impl ASM {
                 ]);
 
                 self.num_strings += 1;
-            }
+            },
+
+            TokenEnum::Variable(v) => {
+                println!("Variable generate_asm_factor: {:#?}", vars.get(v).unwrap());
+            },
 
             TokenEnum::Equals => todo!(),
             TokenEnum::Comma => todo!(),
@@ -42,7 +46,6 @@ impl ASM {
             TokenEnum::Comparator(_) => todo!(),
             TokenEnum::Bool(_) => todo!(),
             TokenEnum::Keyword(_) => todo!(),
-            TokenEnum::Variable(_) => todo!(),
             TokenEnum::Type(_) => todo!(),
             TokenEnum::Unknown(_) => todo!(),
             TokenEnum::EOF => todo!(),

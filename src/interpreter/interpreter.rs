@@ -1,13 +1,14 @@
 use std::io::prelude::*;
 use std::{cell::RefCell, collections::HashMap, fs::File, rc::Rc};
 
+use crate::lexer::tokens::VariableEnum;
 use crate::{
     asm::asm::ASM,
     ast::abstract_syntax_tree::{VisitResult, AST},
     lexer::tokens::Number,
 };
 
-pub type Variables = HashMap<String, Number>;
+pub type Variables = HashMap<String, VariableEnum>;
 pub type Functions = HashMap<String, Rc<Box<dyn AST>>>;
 
 pub struct Interpreter {
@@ -21,7 +22,10 @@ impl Interpreter {
     pub fn new(ast: Rc<Box<dyn AST>>, functions: Rc<RefCell<Functions>>) -> Self {
         Self {
             ast,
-            variables: HashMap::new(),
+            variables: HashMap::from([
+                ("argc".into(), VariableEnum::Number(Number::Integer(0))),
+                ("argv".into(), VariableEnum::String("".into())),
+            ]),
             functions,
             asm: ASM::default(),
         }

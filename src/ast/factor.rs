@@ -2,7 +2,7 @@ use crate::{
     asm::asm::ASM,
     constants,
     interpreter::interpreter::{Functions, Variables},
-    lexer::{lexer::Token, tokens::TokenEnum},
+    lexer::{lexer::Token, tokens::{TokenEnum, VariableEnum}},
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -22,7 +22,7 @@ impl Factor {
 
 impl AST for Factor {
     fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        asm.generate_asm_factor(&self.token.token);
+        asm.generate_asm_factor(&self.token.token, x);
     }
 
     fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
@@ -33,9 +33,12 @@ impl AST for Factor {
         let token_enum = match &self.token.token {
             TokenEnum::Variable(var_name) => {
                 if let Some(n) = v.get(var_name) {
-                    TokenEnum::Number(n.clone())
+                    match n {
+                        VariableEnum::Number(n) => TokenEnum::Number(n.clone()),
+                        VariableEnum::String(s) => TokenEnum::StringLiteral(s.to_string()),
+                    }
                 } else {
-                    panic!("Variable {var_name} not defined");
+                    panic!("Variable '{var_name}' not defined");
                 }
             }
 

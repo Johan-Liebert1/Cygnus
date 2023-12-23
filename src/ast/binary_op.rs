@@ -4,7 +4,7 @@ use crate::{
     interpreter::interpreter::{Functions, Variables},
     lexer::{
         lexer::Token,
-        tokens::{Number, Operand, Operations, TokenEnum},
+        tokens::{Number, Operand, Operations, TokenEnum, VariableEnum},
     },
 };
 use std::{cell::RefCell, rc::Rc};
@@ -103,7 +103,10 @@ impl BinaryOP {
         let result = i.get(variable);
 
         match result {
-            Some(var_num) => self.eval_number_number(number, var_num),
+            Some(var_num) => match var_num {
+                VariableEnum::Number(var_num) => self.eval_number_number(number, var_num),
+                VariableEnum::String(_) => todo!(),
+            },
 
             None => panic!("Variable {} is not defined", variable),
         }
@@ -114,7 +117,15 @@ impl BinaryOP {
         let r2 = i.get(var2);
 
         match (r1, r2) {
-            (Some(var1), Some(var2)) => self.eval_number_number(var1, var2),
+            (Some(var1), Some(var2)) => match (var1, var2) {
+                (VariableEnum::Number(var1), VariableEnum::Number(var2)) => {
+                    self.eval_number_number(var1, var2)
+                }
+
+                (VariableEnum::Number(_), VariableEnum::String(_)) => todo!(),
+                (VariableEnum::String(_), VariableEnum::Number(_)) => todo!(),
+                (VariableEnum::String(_), VariableEnum::String(_)) => todo!(),
+            },
 
             (None, Some(_)) => panic!("Variable {} is not defined", var2),
             (Some(_), None) => panic!("Variable {} is not defined", var1),

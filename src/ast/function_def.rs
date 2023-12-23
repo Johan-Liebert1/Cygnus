@@ -4,7 +4,7 @@ use crate::{
     lexer::{
         keywords::{TYPE_FLOAT, TYPE_INT},
         lexer::Token,
-        tokens::{Number, TokenEnum},
+        tokens::{Number, TokenEnum, VariableEnum},
     },
 };
 use std::{cell::RefCell, rc::Rc};
@@ -47,7 +47,7 @@ impl AST for FunctionDefinition {
                 t => unimplemented!("Variable type {t} not implemented"),
             };
 
-            v.insert(param.var_name.clone(), value);
+            v.insert(param.var_name.clone(), VariableEnum::Number(value));
         }
 
         self.block.visit(v, f);
