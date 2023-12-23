@@ -15,8 +15,6 @@ mod lexer;
 mod parser;
 mod tests;
 
-const COMPILE_MODE: bool = true;
-
 fn generate_asm() -> io::Result<()> {
     std::env::set_current_dir("./generated")?;
 
@@ -34,6 +32,27 @@ fn generate_asm() -> io::Result<()> {
 }
 
 fn main() {
+    #[allow(non_snake_case)]
+    let mut COMPILE_MODE = false;
+
+    let cmd_args = std::env::args().collect::<Vec<String>>();
+
+    for arg in cmd_args.into_iter().skip(1) {
+        match arg.as_str() {
+            "com" => {
+                COMPILE_MODE = true
+            },
+
+            "int" => {
+                COMPILE_MODE = false
+            },
+
+            e => {
+                println!("Unrecognised arg {e}")
+            }
+        };
+    }
+
     let file = std::fs::read("test/first.txt").unwrap();
 
     let mut parser = Parser::new(&file);

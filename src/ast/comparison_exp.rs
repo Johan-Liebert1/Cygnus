@@ -47,11 +47,7 @@ impl ComparisonExp {
         });
     }
 
-    fn eval_number_number(
-        &self,
-        left_op: &Number,
-        right_op: &Number
-    ) -> VisitResult {
+    fn eval_number_number(&self, left_op: &Number, right_op: &Number) -> VisitResult {
         match (left_op, right_op) {
             (Number::Integer(l), Number::Integer(r)) => {
                 return VisitResult {
@@ -71,12 +67,7 @@ impl ComparisonExp {
         }
     }
 
-    fn eval_var_num(
-        &self,
-        number: &Number,
-        variable: &String,
-        i: &mut Variables,
-    ) -> VisitResult {
+    fn eval_var_num(&self, number: &Number, variable: &String, i: &mut Variables) -> VisitResult {
         let result = i.get(variable);
 
         match result {

@@ -5,7 +5,7 @@ impl ASM {
         // we should have in the stack
         //
         // step <- stack top
-        // to 
+        // to
         // from
 
         // 1. The comparison will be done inside the .loop: label, at the very top
@@ -15,22 +15,16 @@ impl ASM {
         let loop_start = vec![
             format!(".loop:"),
             format!("pop rcx"), // step
-            format!("pop rbx"), // to 
-            format!("pop rax"), // from 
-
+            format!("pop rbx"), // to
+            format!("pop rax"), // from
             format!("add rax, rcx"),
             format!("dec rax"),
-
             // now compare rax to rbx - 1 and if they're equal jump to the end
             format!("dec rbx"),
             format!("cmp rax, rbx"),
             format!("jg .loop_end"),
-
-
             format!("inc rax"),
             format!("inc rbx"),
-
-            
             format!("push rax"),
             format!("push rbx"),
             format!("push rcx"),
@@ -46,7 +40,6 @@ impl ASM {
         }
     }
 
-    
     pub fn gen_loop_end(&mut self) {
         let loop_end = vec![
             // unconditional jump to loop start

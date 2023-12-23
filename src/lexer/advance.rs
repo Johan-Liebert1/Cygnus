@@ -81,13 +81,11 @@ impl<'a> Lexer<'a> {
                     let tok = match self.peek_next_token().token {
                         TokenEnum::Equals => TokenEnum::Comparator(Comparators::DoubleEquals),
 
-                        _ => {
-                            TokenEnum::Equals
-                        }
+                        _ => TokenEnum::Equals,
                     };
 
                     tok
-                },
+                }
 
                 '!' => {
                     self.index += 1;
@@ -95,9 +93,7 @@ impl<'a> Lexer<'a> {
                     let tok = match self.peek_next_token().token {
                         TokenEnum::Equals => TokenEnum::Comparator(Comparators::NotEquals),
 
-                        _ => {
-                            TokenEnum::Unknown("!".to_string())
-                        }
+                        _ => TokenEnum::Unknown("!".to_string()),
                     };
 
                     tok
@@ -128,17 +124,15 @@ impl<'a> Lexer<'a> {
                         TokenEnum::Comparator(com) => match com {
                             Comparators::GreaterThan => TokenEnum::Op(Operations::ShiftRight),
 
-                            e => {
-                                TokenEnum::Unknown(format!("<{:?}", e))
-                            }
-                        }
+                            e => TokenEnum::Unknown(format!("<{:?}", e)),
+                        },
 
                         _ => {
                             self.index -= 1;
                             TokenEnum::Comparator(Comparators::GreaterThan)
                         }
                     }
-                },
+                }
 
                 '<' => {
                     self.index += 1;
@@ -153,10 +147,8 @@ impl<'a> Lexer<'a> {
                         TokenEnum::Comparator(com) => match com {
                             Comparators::LessThan => TokenEnum::Op(Operations::ShiftLeft),
 
-                            e => {
-                                TokenEnum::Unknown(format!("<{:?}", e))
-                            }
-                        }
+                            e => TokenEnum::Unknown(format!("<{:?}", e)),
+                        },
 
                         _ => {
                             self.index -= 1;
@@ -165,7 +157,7 @@ impl<'a> Lexer<'a> {
                     };
 
                     tok
-                },
+                }
 
                 // only handle ASCII for now
                 _ => match self.file[self.index] {

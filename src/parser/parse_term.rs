@@ -22,7 +22,10 @@ impl<'a> Parser<'a> {
 
             match &next_token.token {
                 TokenEnum::Op(op) => match op {
-                    Operations::Divide | Operations::Multiply | Operations::ShiftLeft | Operations::ShiftRight => {
+                    Operations::Divide
+                    | Operations::Multiply
+                    | Operations::ShiftLeft
+                    | Operations::ShiftRight => {
                         let token = self.get_next_token();
 
                         // reassign the result

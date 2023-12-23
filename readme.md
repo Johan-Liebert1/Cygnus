@@ -2,11 +2,11 @@
 
 - [] Write tests
 
-- [] Command line args for the compiler, to turn on/off various features
+- [x] Command line args for the compiler, to turn on/off various features
 - [x] Implement all binary ops
 - [x] Add ==, != and other comparison ops
 - [] Add bitwise operations
-    - [] shl, shr
+    - [x] shl, shr
     - [] or, and, xor
 - [] Functions in Compilation mode
 - [] Variables in Compilation mode
