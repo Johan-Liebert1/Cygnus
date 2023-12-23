@@ -10,85 +10,16 @@ global _start
 
 _start:
 mov [argc], rsp
-	mov rax, [argc]
-	mov rax, [rax + 8]
-	push rax
-	mov rbx, 0
-	.strlen0:
-	inc rax
-	inc rbx
-	mov cl, [rax]
-	cmp cl, 0
-	jne .strlen0
-	push rbx
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
-	syscall
-	mov rax, [argc]
-	mov rax, [rax + 8]
-	push rax
-	mov rbx, 0
-	.strlen1:
-	inc rax
-	inc rbx
-	mov cl, [rax]
-	cmp cl, 0
-	jne .strlen1
-	push rbx
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
-	syscall
-	mov rax, [argc]
-	mov rax, [rax + 8]
-	push rax
-	mov rbx, 0
-	.strlen2:
-	inc rax
-	inc rbx
-	mov cl, [rax]
-	cmp cl, 0
-	jne .strlen2
-	push rbx
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
-	syscall
-	mov rax, [argc]
-	mov rax, [rax + 8]
-	push rax
-	mov rbx, 0
-	.strlen3:
-	inc rax
-	inc rbx
-	mov cl, [rax]
-	cmp cl, 0
-	jne .strlen3
-	push rbx
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
-	syscall
+	push 21
+	push 5
+	;; get the two operands from the stack
+	xor rdx, rdx
+	pop rbx
+	pop rax
+	div rbx
+	;; push the remainder result back onto the stack
+	push rdx
+	pop rax
+	call _printRAX
 	exit 0
 

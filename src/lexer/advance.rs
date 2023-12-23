@@ -74,6 +74,7 @@ impl<'a> Lexer<'a> {
 
                 '*' => TokenEnum::Op(Operations::Multiply),
                 '/' => TokenEnum::Op(Operations::Divide),
+                '%' => TokenEnum::Op(Operations::Modulo),
 
                 '=' => {
                     self.index += 1;

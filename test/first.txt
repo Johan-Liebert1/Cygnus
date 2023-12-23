@@ -1,1 +1,1 @@
-write(argv)
+write(21 % 5)

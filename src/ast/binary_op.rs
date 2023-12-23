@@ -35,6 +35,7 @@ impl BinaryOP {
         T: std::ops::Div<Output = T>,
         T: std::ops::Shl<Output = T>,
         T: std::ops::Shr<Output = T>,
+        T: std::ops::Rem<Output = T>,
         T: std::fmt::Debug,
     {
         match &self.operator.token {
@@ -45,6 +46,7 @@ impl BinaryOP {
                 Operations::Multiply => l * r,
                 Operations::ShiftLeft => l << r,
                 Operations::ShiftRight => l >> r,
+                Operations::Modulo => l % r,
             },
 
             _ => {
@@ -68,9 +70,8 @@ impl BinaryOP {
                 Operations::Divide => l / r,
                 Operations::Multiply => l * r,
                 Operations::ShiftLeft => panic!("Op << not implemented for floating point numbers"),
-                Operations::ShiftRight => {
-                    panic!("Op >> not implemented for floating point numbers")
-                }
+                Operations::ShiftRight => panic!("Op >> not implemented for floating point numbers"),
+                Operations::Modulo => panic!("Op % not implemented for floating point numbers"),
             },
 
             _ => {

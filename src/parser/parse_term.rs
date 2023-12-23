@@ -9,7 +9,7 @@ use crate::{
 use super::parser::Parser;
 
 impl<'a> Parser<'a> {
-    /// TERM -> FACTOR (*|/) FACTOR
+    /// TERM -> FACTOR (( * | /  | << | >> | % ) FACTOR)*
     pub fn parse_term(&mut self) -> Rc<Box<dyn AST>> {
         let mut result = self.parse_factor();
 
@@ -25,7 +25,8 @@ impl<'a> Parser<'a> {
                     Operations::Divide
                     | Operations::Multiply
                     | Operations::ShiftLeft
-                    | Operations::ShiftRight => {
+                    | Operations::ShiftRight
+                    | Operations::Modulo => {
                         let token = self.get_next_token();
 
                         // reassign the result

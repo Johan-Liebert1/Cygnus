@@ -91,6 +91,18 @@ impl ASM {
                     format!("push rax"),
                 ]
             }
+
+            Operations::Modulo => {
+                vec![
+                    format!(";; get the two operands from the stack"),
+                    format!("xor rdx, rdx"),
+                    format!("pop rbx"),
+                    format!("pop rax"),
+                    format!("div rbx"),
+                    format!(";; push the remainder result back onto the stack"),
+                    format!("push rdx"),
+                ]
+            }
         };
 
         let current_label = self.current_label();

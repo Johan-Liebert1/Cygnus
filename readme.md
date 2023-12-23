@@ -30,9 +30,9 @@
     ELSE_STATEMENT           -> else LCURLY STATEMENT[]* RCURLY
     VARIABLE_DECLARATION     -> def VAR_NAME: VAR_TYPE (= COMPARISON_EXPRESSION)*
     VAR_TYPE                 -> int | float
-    COMPARISON_EXPRESSION    -> EXPRESSION ((> | < | >= | <=) EXPRESSION)*
+    COMPARISON_EXPRESSION    -> EXPRESSION ((> | < | >= | <= | == | !=) EXPRESSION)*
     EXPRESSION               -> TERM (( + | - ) TERM)*                      # for precedence as term will be calculated first
-    TERM                     -> FACTOR (( * | / ) FACTOR)*
+    TERM                     -> FACTOR (( * | /  | << | >> | % ) FACTOR)*
     COMMENT                  -> -- (ANY)*
     FACTOR                   -> INTEGER | FLOAT | VARIABLE | STRING_LITERAL | LPAREN EXPRESSION RPAREN
     VAR_NAME                 -> any valid identifier
