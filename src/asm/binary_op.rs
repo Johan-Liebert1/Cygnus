@@ -41,7 +41,7 @@ impl ASM {
                     format!(";; push the result back onto the stack"),
                     format!("push rax"),
                 ]
-            },
+            }
 
             Operations::Multiply => {
                 vec![
@@ -53,9 +53,44 @@ impl ASM {
                     format!(";; push the result back onto the stack"),
                     format!("push rax"),
                 ]
-            },
-            Operations::ShiftLeft => todo!(),
-            Operations::ShiftRight => todo!(),
+            }
+
+            Operations::ShiftLeft => {
+                // 1 << 10
+                // push 1
+                // push 10
+                // 1 should be popped into rax and 10 in rcx
+                vec![
+                    format!(";; get the two operands from the stack"),
+                    // the shl instruction in x86 assembly does not allow the use of a general-purpose register like bl
+                    // for the count operand when the destination is a 64-bit register like rax.
+                    // The count operand must be either an immediate value (a constant) or the cl register.
+                    format!("pop rcx"),
+                    format!("pop rax"),
+                    format!(";; We can only shift left or right by 8 bits"),
+                    format!("shl rax, cl"),
+                    format!(";; push the result back onto the stack"),
+                    format!("push rax"),
+                ]
+            }
+
+            Operations::ShiftRight => {
+                // push 1
+                // push 10
+                // 1 should be popped into rax and 10 in rcx
+                vec![
+                    format!(";; get the two operands from the stack"),
+                    // the shl instruction in x86 assembly does not allow the use of a general-purpose register like bl
+                    // for the count operand when the destination is a 64-bit register like rax.
+                    // The count operand must be either an immediate value (a constant) or the cl register.
+                    format!("pop rcx"),
+                    format!("pop rax"),
+                    format!(";; We can only shift left or right by 8 bits"),
+                    format!("shr rax, cl"),
+                    format!(";; push the result back onto the stack"),
+                    format!("push rax"),
+                ]
+            }
         };
 
         let current_label = self.current_label();

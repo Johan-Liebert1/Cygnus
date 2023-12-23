@@ -8,19 +8,21 @@ section .text
 global _start
 
 _start:
-push 5
-	push 7
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
+push 1024
+	push 9
+	;; get the two operands from the stack
+	pop rcx
 	pop rax
-	cmp rax, rbx
-	jne .skip_0
-	mov rax, 0
-	jmp .skip_next0
-	.skip_0:
-	mov rax, 1
-	.skip_next0:
-	;; push onto the stack whatever's in rax so rest of the program can use it
+	;; We can only shift left or right by 8 bits
+	shr rax, cl
+	;; push the result back onto the stack
+	push rax
+	push 2
+	;; get the two operands from the stack
+	pop rax
+	pop rbx
+	add rax, rbx
+	;; push the result back onto the stack
 	push rax
 	pop rax
 	call _printRAX

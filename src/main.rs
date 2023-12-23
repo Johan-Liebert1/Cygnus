@@ -1,4 +1,4 @@
-// #![allow(dead_code, unused)]
+#![allow(dead_code, unused)]
 
 use std::io;
 
@@ -15,7 +15,7 @@ mod lexer;
 mod parser;
 mod tests;
 
-const COMPILE_MODE: bool = false;
+const COMPILE_MODE: bool = true;
 
 fn generate_asm() -> io::Result<()> {
     std::env::set_current_dir("./generated")?;
