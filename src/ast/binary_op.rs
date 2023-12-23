@@ -18,8 +18,6 @@ pub struct BinaryOP {
     right: Rc<Box<dyn AST>>,
 }
 
-const COMPILATION: bool = true;
-
 impl BinaryOP {
     pub fn new(left: Rc<Box<dyn AST>>, operator: Box<Token>, right: Rc<Box<dyn AST>>) -> Self {
         Self {
@@ -82,20 +80,19 @@ impl BinaryOP {
     fn eval_number_number(
         &self,
         left_op: &Number,
-        right_op: &Number,
-        asm: Option<&mut ASM>,
-    ) -> Option<VisitResult> {
+        right_op: &Number
+    ) -> VisitResult {
         match (left_op, right_op) {
             (Number::Integer(l), Number::Integer(r)) => {
-                return Some(VisitResult {
+                return VisitResult {
                     token: Box::new(TokenEnum::new_integer(self.evaluate_int(*l, *r))),
-                });
+                };
             }
 
             (Number::Float(l), Number::Float(r)) => {
-                return Some(VisitResult {
+                return VisitResult {
                     token: Box::new(TokenEnum::new_float(self.evaluate_float(*l, *r))),
-                });
+                };
             }
 
             _ => {
@@ -109,22 +106,22 @@ impl BinaryOP {
         number: &Number,
         variable: &String,
         i: &mut Variables,
-    ) -> Option<VisitResult> {
+    ) -> VisitResult {
         let result = i.get(variable);
 
         match result {
-            Some(var_num) => self.eval_number_number(number, var_num, None),
+            Some(var_num) => self.eval_number_number(number, var_num),
 
             None => panic!("Variable {} is not defined", variable),
         }
     }
 
-    fn eval_var_var(&self, var1: &String, var2: &String, i: &mut Variables) -> Option<VisitResult> {
+    fn eval_var_var(&self, var1: &String, var2: &String, i: &mut Variables) -> VisitResult {
         let r1 = i.get(var1);
         let r2 = i.get(var2);
 
         match (r1, r2) {
-            (Some(var1), Some(var2)) => self.eval_number_number(var1, var2, None),
+            (Some(var1), Some(var2)) => self.eval_number_number(var1, var2),
 
             (None, Some(_)) => panic!("Variable {} is not defined", var2),
             (Some(_), None) => panic!("Variable {} is not defined", var1),
@@ -136,12 +133,11 @@ impl BinaryOP {
         &self,
         left_op: &Operand,
         right_op: &Operand,
-        i: &mut Variables,
-        asm: Option<&mut ASM>,
-    ) -> Option<VisitResult> {
+        i: &mut Variables
+    ) -> VisitResult {
         match (left_op, right_op) {
             (Operand::Number(left_op), Operand::Number(right_op)) => {
-                self.eval_number_number(left_op, right_op, asm)
+                self.eval_number_number(left_op, right_op)
             }
 
             (Operand::Number(n), Operand::Variable(v)) => self.eval_var_num(n, v, i),
@@ -182,12 +178,7 @@ impl AST for BinaryOP {
             (Ok(lop), Ok(rop)) => {
                 // Handle the case where both operands are Ok
 
-                let r = self.evaluate_operands(lop, rop, i, None);
-
-                return match r {
-                    Some(r) => r,
-                    None => panic!("BinaryOP returned None in interpreter mode"),
-                };
+                return self.evaluate_operands(lop, rop, i);
             }
 
             (Err(err), _) => {
