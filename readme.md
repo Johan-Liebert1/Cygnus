@@ -1,22 +1,22 @@
 ### Todo, to do, tu du, tu du, tu du, tu du, tu duuuuuu, tu du du
 
-- [] Write tests
+- [ ] Write tests
 
 - [x] Command line args for the compiler, to turn on/off various features
 - [x] Implement all binary ops
 - [x] Add ==, != and other comparison ops
-- [] Add bitwise operations
+- [ ] Add bitwise operations
     - [x] shl, shr
-    - [] or, and, xor
-- [] Functions in Compilation mode
-- [] Variables in Compilation mode
-- [] Pointer deref
-- [] Command link arguments
-- [] Variable scoping
-- [] Proper type checking
-- [] Random access to memory
-- [] Ability to allocate and deallocate memory
-- [] Macros
+    - [ ] or, and, xor
+- [ ] Functions in Compilation mode
+- [ ] Variables in Compilation mode
+- [ ] Pointer deref
+- [ ] Command link arguments
+- [ ] Variable scoping
+- [ ] Proper type checking
+- [ ] Random access to memory
+- [ ] Ability to allocate and deallocate memory
+- [ ] Macros
 
 # Grammar
 

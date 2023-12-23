@@ -34,6 +34,8 @@ impl Default for ASM {
                 // for printing numbers
                 String::from("digitSpace resb 100"),
                 String::from("digitSpacePos resb 8"),
+                String::from("argc resb 8"),
+                String::from("argv resb 8"),
             ],
 
             labels: vec![Label {
