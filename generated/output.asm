@@ -3,28 +3,92 @@
 section .bss
 digitSpace resb 100
 	digitSpacePos resb 8
+	argc resb 8
 
 section .text
 global _start
 
 _start:
-push 1024
-	push 9
-	;; get the two operands from the stack
-	pop rcx
-	pop rax
-	;; We can only shift left or right by 8 bits
-	shr rax, cl
-	;; push the result back onto the stack
+mov [argc], rsp
+	mov rax, [argc]
+	mov rax, [rax + 8]
 	push rax
-	push 2
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
+	mov rbx, 0
+	.strlen0:
+	inc rax
+	inc rbx
+	mov cl, [rax]
+	cmp cl, 0
+	jne .strlen0
+	push rbx
+	;; Assuming length is pushed last
+	pop r8
+	;; Assuming string address is pushed first
+	pop r9
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, r9
+	mov rdx, r8
+	syscall
+	mov rax, [argc]
+	mov rax, [rax + 8]
 	push rax
-	pop rax
-	call _printRAX
+	mov rbx, 0
+	.strlen1:
+	inc rax
+	inc rbx
+	mov cl, [rax]
+	cmp cl, 0
+	jne .strlen1
+	push rbx
+	;; Assuming length is pushed last
+	pop r8
+	;; Assuming string address is pushed first
+	pop r9
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, r9
+	mov rdx, r8
+	syscall
+	mov rax, [argc]
+	mov rax, [rax + 8]
+	push rax
+	mov rbx, 0
+	.strlen2:
+	inc rax
+	inc rbx
+	mov cl, [rax]
+	cmp cl, 0
+	jne .strlen2
+	push rbx
+	;; Assuming length is pushed last
+	pop r8
+	;; Assuming string address is pushed first
+	pop r9
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, r9
+	mov rdx, r8
+	syscall
+	mov rax, [argc]
+	mov rax, [rax + 8]
+	push rax
+	mov rbx, 0
+	.strlen3:
+	inc rax
+	inc rbx
+	mov cl, [rax]
+	cmp cl, 0
+	jne .strlen3
+	push rbx
+	;; Assuming length is pushed last
+	pop r8
+	;; Assuming string address is pushed first
+	pop r9
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, r9
+	mov rdx, r8
+	syscall
 	exit 0
 

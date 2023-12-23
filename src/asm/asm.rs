@@ -35,12 +35,16 @@ impl Default for ASM {
                 String::from("digitSpace resb 100"),
                 String::from("digitSpacePos resb 8"),
                 String::from("argc resb 8"),
-                String::from("argv resb 8"),
             ],
 
             labels: vec![Label {
                 name: String::from("_start"),
-                code: vec![],
+                code: vec![
+                    // save argc and argv
+                    
+                    // top of stack -> argc argv0 argv1 argv2 ...
+                    format!("mov [argc], rsp"),
+                ],
             }],
         }
     }

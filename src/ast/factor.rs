@@ -22,7 +22,7 @@ impl Factor {
 
 impl AST for Factor {
     fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        asm.generate_asm_factor(&self.token.token);
+        asm.generate_asm_factor(&self.token.token, x);
     }
 
     fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
