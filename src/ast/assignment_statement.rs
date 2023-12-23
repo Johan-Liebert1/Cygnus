@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::TokenEnum,
+    lexer::tokens::{TokenEnum, VariableEnum},
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};
@@ -25,20 +25,30 @@ impl AST for AssignmentStatement {
         todo!()
     }
 
+    // TODO: change this so that the expression is stored here and we need to visit the varible
+    // to evaluate the value
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         let right_visit = self.right.visit(v, f);
 
-        // TODO: change this so that the expression is stored here and we need to visit the varible
-        // to evaluate the value
-        if let TokenEnum::Number(n) = &*right_visit.token {
-            v.insert(self.var_name.clone(), n.clone());
+        match &*right_visit.token {
+            TokenEnum::StringLiteral(s) => {
+                v.insert(self.var_name.clone(), VariableEnum::String(s.into()));
+            }
 
-            return VisitResult {
-                token: right_visit.token,
-            };
+            TokenEnum::Number(n) => {
+                v.insert(self.var_name.clone(), VariableEnum::Number(n.clone()));
+            }
+
+            TokenEnum::Variable(_) => todo!(),
+
+            _ => {
+                panic!("Variable value is not a Number, String or Variable");
+            }
         }
 
-        panic!("Variable value is not a Number");
+        return VisitResult {
+            token: right_visit.token,
+        };
     }
 
     fn get_token(&self) -> &crate::lexer::lexer::Token {

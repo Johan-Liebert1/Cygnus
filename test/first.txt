@@ -1,1 +1,2 @@
+def a: int = 50
 write(a)
