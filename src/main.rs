@@ -15,7 +15,7 @@ mod lexer;
 mod parser;
 mod tests;
 
-const COMPILE_MODE: bool = true;
+const COMPILE_MODE: bool = false;
 
 fn generate_asm() -> io::Result<()> {
     std::env::set_current_dir("./generated")?;

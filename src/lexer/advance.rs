@@ -115,40 +115,57 @@ impl<'a> Lexer<'a> {
                 '"' => self.construct_string(),
 
                 // TODO: This messes up the column number in the final output
-                '>' => TokenEnum::Comparator({
-                    self.index += 1;
-
-                    match self.peek_next_token().token {
-                        TokenEnum::Equals => {
-                            self.get_next_token();
-
-                            self.index -= 1;
-                            Comparators::GreaterThanEq
-                        }
-
-                        _ => {
-                            self.index -= 1;
-                            Comparators::GreaterThan
-                        }
-                    }
-                }),
-
-                '<' => TokenEnum::Comparator({
+                '>' => {
                     self.index += 1;
 
                     match self.peek_next_token().token {
                         TokenEnum::Equals => {
                             self.get_next_token();
                             self.index -= 1;
-                            Comparators::LessThanEq
+                            TokenEnum::Comparator(Comparators::GreaterThanEq)
+                        }
+
+                        TokenEnum::Comparator(com) => match com {
+                            Comparators::GreaterThan => TokenEnum::Op(Operations::ShiftRight),
+
+                            e => {
+                                TokenEnum::Unknown(format!("<{:?}", e))
+                            }
                         }
 
                         _ => {
                             self.index -= 1;
-                            Comparators::LessThan
+                            TokenEnum::Comparator(Comparators::GreaterThan)
                         }
                     }
-                }),
+                },
+
+                '<' => {
+                    self.index += 1;
+
+                    let tok = match self.peek_next_token().token {
+                        TokenEnum::Equals => {
+                            self.get_next_token();
+                            self.index -= 1;
+                            TokenEnum::Comparator(Comparators::LessThanEq)
+                        }
+
+                        TokenEnum::Comparator(com) => match com {
+                            Comparators::LessThan => TokenEnum::Op(Operations::ShiftLeft),
+
+                            e => {
+                                TokenEnum::Unknown(format!("<{:?}", e))
+                            }
+                        }
+
+                        _ => {
+                            self.index -= 1;
+                            TokenEnum::Comparator(Comparators::LessThan)
+                        }
+                    };
+
+                    tok
+                },
 
                 // only handle ASCII for now
                 _ => match self.file[self.index] {

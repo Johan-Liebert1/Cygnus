@@ -54,6 +54,8 @@ impl ASM {
                     format!("push rax"),
                 ]
             },
+            Operations::ShiftLeft => todo!(),
+            Operations::ShiftRight => todo!(),
         };
 
         let current_label = self.current_label();

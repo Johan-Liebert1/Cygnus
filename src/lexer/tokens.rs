@@ -6,6 +6,8 @@ pub enum Operations {
     Minus,
     Divide,
     Multiply,
+    ShiftLeft,
+    ShiftRight,
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -29,7 +29,33 @@ impl BinaryOP {
         }
     }
 
-    fn evaluate<T>(&self, l: T, r: T) -> T
+    fn evaluate_int<T>(&self, l: T, r: T) -> T
+    where
+        T: std::ops::Add<Output = T>,
+        T: std::ops::Sub<Output = T>,
+        T: std::ops::Mul<Output = T>,
+        T: std::ops::Div<Output = T>,
+        T: std::ops::Shl<Output = T>,
+        T: std::ops::Shr<Output = T>,
+        T: std::fmt::Debug,
+    {
+        match &self.operator.token {
+            TokenEnum::Op(op) => match op {
+                Operations::Plus => l + r,
+                Operations::Minus => l - r,
+                Operations::Divide => l / r,
+                Operations::Multiply => l * r,
+                Operations::ShiftLeft => l << r,
+                Operations::ShiftRight => l >> r,
+            },
+
+            _ => {
+                unreachable!("WTF!!")
+            }
+        }
+    }
+
+    fn evaluate_float<T>(&self, l: T, r: T) -> T
     where
         T: std::ops::Add<Output = T>,
         T: std::ops::Sub<Output = T>,
@@ -37,14 +63,14 @@ impl BinaryOP {
         T: std::ops::Div<Output = T>,
         T: std::fmt::Debug,
     {
-        println!("BinaryOP generate_asm");
-
         match &self.operator.token {
             TokenEnum::Op(op) => match op {
                 Operations::Plus => l + r,
                 Operations::Minus => l - r,
                 Operations::Divide => l / r,
                 Operations::Multiply => l * r,
+                Operations::ShiftLeft => panic!("Op << not implemented for floating point numbers"),
+                Operations::ShiftRight => panic!("Op >> not implemented for floating point numbers"),
             },
 
             _ => {
@@ -62,13 +88,13 @@ impl BinaryOP {
         match (left_op, right_op) {
             (Number::Integer(l), Number::Integer(r)) => {
                 return Some(VisitResult {
-                    token: Box::new(TokenEnum::new_integer(self.evaluate(*l, *r))),
+                    token: Box::new(TokenEnum::new_integer(self.evaluate_int(*l, *r))),
                 });
             }
 
             (Number::Float(l), Number::Float(r)) => {
                 return Some(VisitResult {
-                    token: Box::new(TokenEnum::new_float(self.evaluate(*l, *r))),
+                    token: Box::new(TokenEnum::new_float(self.evaluate_float(*l, *r))),
                 });
             }
 

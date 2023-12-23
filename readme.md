@@ -4,8 +4,10 @@
 
 - [] Command line args for the compiler, to turn on/off various features
 - [x] Implement all binary ops
-- [] Add ==, != and other comparison ops
+- [x] Add ==, != and other comparison ops
 - [] Add bitwise operations
+    - [] shl, shr
+    - [] or, and, xor
 - [] Functions in Compilation mode
 - [] Variables in Compilation mode
 - [] Pointer deref
