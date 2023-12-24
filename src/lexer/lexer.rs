@@ -76,7 +76,7 @@ impl<'a> Lexer<'a> {
         while self.index < self.file.len() {
             let char = self.file[self.index] as char;
 
-            if !char.is_alphanumeric() {
+            if !char.is_alphanumeric() && char != '_' {
                 break;
             }
 

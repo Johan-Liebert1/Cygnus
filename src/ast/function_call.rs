@@ -3,7 +3,11 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::{keywords::{FUNC_WRITE, FUNC_STRLEN}, lexer::Token, tokens::TokenEnum},
+    lexer::{
+        keywords::{FUNC_STRLEN, FUNC_WRITE},
+        lexer::Token,
+        tokens::TokenEnum,
+    },
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};
@@ -46,8 +50,7 @@ impl AST for FunctionCall {
                 }
             }
 
-            FUNC_STRLEN => {
-            }
+            FUNC_STRLEN => {}
 
             name => match f.borrow().get(name) {
                 Some(function_ast) => {

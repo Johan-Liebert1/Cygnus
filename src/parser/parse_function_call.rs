@@ -8,7 +8,7 @@ use crate::{
 use super::parser::Parser;
 
 impl<'a> Parser<'a> {
-    /// FUNCTION_CALL -> VAR_NAME LPAREN (FACTOR)* RPAREN
+    /// FUNCTION_CALL -> VAR_NAME LPAREN (COMPARISON_EXPRESSION)* RPAREN
     pub fn parse_function_call(&mut self, name: String) -> Rc<Box<dyn AST>> {
         // We parse from the LPAREN
         // consume the LPAREN
@@ -24,6 +24,11 @@ impl<'a> Parser<'a> {
                     Bracket::RParen => {
                         self.get_next_token();
                         break;
+                    }
+
+                    Bracket::LParen => {
+                        let factor = self.parse_comparison_expression();
+                        arguments.push(factor);
                     }
 
                     _ => panic!("Unexpected token {:#?}", token),

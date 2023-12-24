@@ -55,14 +55,12 @@ impl ASM {
                 // since argc contained the address, we need to dereference it again to get the
                 // actual value
                 format!("mov rax, [rax + 8]"),
-
                 // now rax has the string
                 // we need to calculate its length
                 // it's NULL terminated
 
                 // save rax
                 format!("push rax"),
-
                 format!("mov rbx, 0"),
                 format!(".strlen:"),
                 format!("inc rax"),
@@ -71,7 +69,6 @@ impl ASM {
                 format!("cmp cl, 0"),
                 format!("jne .strlen"),
                 format!("push rbx"),
-
                 format!("pop r8"),
                 format!("pop r9"),
                 format!("mov rax, 1"),

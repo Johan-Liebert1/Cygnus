@@ -2,7 +2,10 @@ use crate::{
     asm::asm::ASM,
     constants,
     interpreter::interpreter::{Functions, Variables},
-    lexer::{lexer::Token, tokens::{TokenEnum, VariableEnum}},
+    lexer::{
+        lexer::Token,
+        tokens::{TokenEnum, VariableEnum},
+    },
 };
 use std::{cell::RefCell, rc::Rc};
 

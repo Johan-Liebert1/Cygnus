@@ -1,4 +1,7 @@
-use crate::{lexer::tokens::{Number, TokenEnum}, interpreter::interpreter::Variables};
+use crate::{
+    interpreter::interpreter::Variables,
+    lexer::tokens::{Number, TokenEnum},
+};
 
 use super::asm::ASM;
 
@@ -32,11 +35,11 @@ impl ASM {
                 ]);
 
                 self.num_strings += 1;
-            },
+            }
 
             TokenEnum::Variable(v) => {
                 println!("Variable generate_asm_factor: {:#?}", vars.get(v).unwrap());
-            },
+            }
 
             TokenEnum::Equals => todo!(),
             TokenEnum::Comma => todo!(),

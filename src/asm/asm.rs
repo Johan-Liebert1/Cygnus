@@ -41,7 +41,7 @@ impl Default for ASM {
                 name: String::from("_start"),
                 code: vec![
                     // save argc and argv
-                    
+
                     // top of stack -> argc argv0 argv1 argv2 ...
                     format!("mov [argc], rsp"),
                 ],

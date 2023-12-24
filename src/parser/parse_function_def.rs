@@ -43,7 +43,7 @@ impl<'a> Parser<'a> {
 
     /// FUNCTION_DEF -> fun VAR_NAME LPAREN (VAR_NAME : VAR_TYPE (,*))* RPAREN LCURLY STATEMENT[] RCURLY
     pub fn parse_function_definition(&mut self, f: ParserFunctions) -> Rc<Box<dyn AST>> {
-        // we get here after consuming 'fn'
+        // we get here after consuming 'fun'
 
         let function_name = match self.get_next_token().token {
             TokenEnum::Variable(n) => n,

@@ -70,7 +70,9 @@ impl BinaryOP {
                 Operations::Divide => l / r,
                 Operations::Multiply => l * r,
                 Operations::ShiftLeft => panic!("Op << not implemented for floating point numbers"),
-                Operations::ShiftRight => panic!("Op >> not implemented for floating point numbers"),
+                Operations::ShiftRight => {
+                    panic!("Op >> not implemented for floating point numbers")
+                }
                 Operations::Modulo => panic!("Op % not implemented for floating point numbers"),
             },
 
