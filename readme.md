@@ -1,4 +1,4 @@
-## Programming Language called Berk
+## Programming Language called CBerk
 
 ### Todo, to do, tu du, tu du, tu du, tu du, tu duuuuuu, tu du du
 

@@ -133,7 +133,7 @@ fn main() {
         };
     }
 
-    if let Some(stdout) = parse_input_file("test/first.txt".into(), COMPILE_MODE, false, false) {
+    if let Some(stdout) = parse_input_file("test/first.cberk".into(), COMPILE_MODE, false, false) {
         let mut reader = BufReader::new(stdout);
         let mut buf = vec![];
         reader.read_to_end(&mut buf);
