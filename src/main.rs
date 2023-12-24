@@ -39,7 +39,13 @@ pub fn parse_input_file(
     run_asm: bool,
     is_test: bool,
 ) -> Option<ChildStdout> {
-    let file = std::fs::read(path).unwrap();
+    let file = match std::fs::read(&path) {
+        Ok(file) => file,
+        Err(err) => {
+            println!("Failed to open `{path}` with err {:?}", err);
+            return None;
+        },
+    };
 
     let mut parser = Parser::new(&file);
     let ast = parser.parse_program();
@@ -47,11 +53,10 @@ pub fn parse_input_file(
     let mut interpreter = Interpreter::new(ast, parser.functions);
 
     if compile_mode {
-        let current_dir = std::env::current_dir().unwrap();
-
-        std::env::set_current_dir("./generated").unwrap();
-
         let _result = interpreter.compile();
+
+        let current_dir = std::env::current_dir().unwrap();
+        std::env::set_current_dir("./generated").unwrap();
 
         match generate_asm() {
             Ok(_) => {
@@ -128,7 +133,7 @@ fn main() {
         };
     }
 
-    if let Some(stdout) = parse_input_file("test/first.txt".into(), COMPILE_MODE, true, false) {
+    if let Some(stdout) = parse_input_file("test/first.txt".into(), COMPILE_MODE, false, false) {
         let mut reader = BufReader::new(stdout);
         let mut buf = vec![];
         reader.read_to_end(&mut buf);

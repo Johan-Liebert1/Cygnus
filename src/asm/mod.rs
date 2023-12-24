@@ -5,3 +5,4 @@ pub mod comparison;
 pub mod conditionals;
 pub mod factor;
 pub mod functions;
+pub mod internal_functions;

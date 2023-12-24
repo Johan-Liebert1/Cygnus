@@ -2,4 +2,9 @@ fun my_world() {
     write("my_world")
 }
 
+fun your_world() {
+    write("your_world")
+}
+
 my_world()
+your_world()

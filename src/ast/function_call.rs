@@ -55,7 +55,7 @@ impl AST for FunctionCall {
             name => match f.borrow().get(name) {
                 Some(function_ast) => {
                     println!("Visiting func {name}");
-                    function_ast.visit_com(v, Rc::clone(&f), asm);
+                    asm.function_call(&String::from(name));
                 }
 
                 None => unimplemented!("Function {} unimplemented", self.name),

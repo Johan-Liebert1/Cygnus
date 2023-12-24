@@ -32,7 +32,11 @@ impl Interpreter {
     }
 
     fn write_nasm(&self) -> Result<(), std::io::Error> {
-        let mut file = File::create("generated/output.asm");
+        let file_name = "generated/output.asm";
+
+        println!("pwd {:?}", std::env::current_dir());
+
+        let mut file = File::create(&file_name);
 
         match file {
             Ok(ref mut file) => {
@@ -72,7 +76,7 @@ impl Interpreter {
             }
 
             Err(e) => {
-                println!("Failed to open file: {}", e);
+                println!("Failed to open file `{file_name}` in interpreter: {}", e);
             }
         }
 
