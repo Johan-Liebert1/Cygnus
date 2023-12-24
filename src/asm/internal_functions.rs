@@ -12,6 +12,20 @@ impl ASM {
         }
     }
 
+    pub fn func_exit(&mut self) {
+        let current_label = self.current_label();
+
+        for label in &mut self.labels {
+            if label.name == current_label {
+                label.code.extend(vec![
+                    format!("pop rdi"),
+                    format!("mov rax, 60"),
+                    format!("syscall"),
+                ]);
+            }
+        }
+    }
+
     pub fn func_write_string(&mut self) {
         let current_label = self.current_label();
 

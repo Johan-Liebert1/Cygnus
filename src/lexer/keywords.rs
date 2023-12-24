@@ -28,6 +28,7 @@ pub const KEYWORDS: [&str; 10] = [
 
 /// prints anything in args to stdout
 pub const FUNC_WRITE: &str = "write";
+pub const FUNC_EXIT: &str = "exit";
 pub const FUNC_STRLEN: &str = "strlen";
 
 // types

@@ -8,7 +8,8 @@
 - [ ] Add bitwise operations
     - [x] shl, shr
     - [ ] or, and, xor
-- [ ] Functions in Compilation mode
+- [ ] `return` and `break` statements
+- [x] Functions in Compilation mode
 - [ ] Variables in Compilation mode
 - [ ] Pointer deref
 - [ ] Command link arguments

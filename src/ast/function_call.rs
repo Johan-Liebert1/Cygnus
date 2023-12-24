@@ -1,12 +1,12 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, process::exit, rc::Rc};
 
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
     lexer::{
-        keywords::{FUNC_STRLEN, FUNC_WRITE},
+        keywords::{FUNC_EXIT, FUNC_STRLEN, FUNC_WRITE},
         lexer::Token,
-        tokens::TokenEnum,
+        tokens::{Number, TokenEnum},
     },
 };
 
@@ -50,6 +50,18 @@ impl AST for FunctionCall {
                 }
             }
 
+            FUNC_EXIT => {
+                if self.arguments.len() == 0 {
+                    panic!("exit needs one argument");
+                }
+
+                for arg in &self.arguments {
+                    arg.visit_com(v, Rc::clone(&f), asm);
+                }
+
+                asm.func_exit();
+            }
+
             FUNC_STRLEN => {}
 
             name => match f.borrow().get(name) {
@@ -74,6 +86,34 @@ impl AST for FunctionCall {
                 return VisitResult {
                     token: Box::new(TokenEnum::Unknown("".into())),
                 };
+            }
+
+            FUNC_EXIT => {
+                if self.arguments.len() == 0 {
+                    panic!("exit needs one argument");
+                }
+
+                for arg in &self.arguments {
+                    // println!("Visiting func write. Arg {:?}", arg);
+                    // println!("{:?}", arg.visit(v, Rc::clone(&f)));
+
+                    let arg = arg.visit(v, Rc::clone(&f));
+
+                    match *arg.token {
+                        TokenEnum::Number(n) => match n {
+                            Number::Integer(i) => exit(i),
+                            Number::Float(_) => {
+                                panic!("exit needs an integer argument. Received float")
+                            }
+                        },
+
+                        t => {
+                            panic!("exit needs an integer argument. Received {:?}", t);
+                        }
+                    }
+                }
+
+                exit(1);
             }
 
             name => match f.borrow().get(name) {

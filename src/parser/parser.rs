@@ -47,7 +47,7 @@ impl<'a> Parser<'a> {
     pub fn parse_statements(&mut self) -> Rc<Box<dyn AST>> {
         let current_token = self.peek_next_token();
 
-        println!("parse_statements current_token {:#?}", current_token);
+        // println!("parse_statements current_token {:#?}", current_token);
 
         match &current_token.token {
             TokenEnum::Keyword(keyword) => {
@@ -83,7 +83,7 @@ impl<'a> Parser<'a> {
                 // 2 here as we haven't consumed the `var` token
                 let nth_token = self.peek_nth_token(2);
 
-                println!("parse_statements variable nth_token {:#?}", current_token);
+                // println!("parse_statements variable nth_token {:#?}", current_token);
 
                 match nth_token.token {
                     TokenEnum::Bracket(b) => {
