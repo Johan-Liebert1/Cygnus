@@ -32,8 +32,10 @@ impl FunctionDefinition {
 }
 
 impl AST for FunctionDefinition {
-    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        todo!()
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        asm.function_def(&self.name);
+        self.block.visit_com(v, f, asm);
+        asm.function_def_end(&self.name);
     }
 
     // TODO: This function will be visited twice, once when the interpreter calls visit, and
