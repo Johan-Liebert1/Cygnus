@@ -56,8 +56,9 @@ impl<'a> Lexer<'a> {
 
                 '\n' => {
                     self.index += 1;
-                    self.col_number = 0;
+                    self.col_number = 1;
                     self.line_number += 1;
+
                     continue;
                 }
 

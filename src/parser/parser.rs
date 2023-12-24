@@ -47,6 +47,8 @@ impl<'a> Parser<'a> {
     pub fn parse_statements(&mut self) -> Rc<Box<dyn AST>> {
         let current_token = self.peek_next_token();
 
+        println!("parse_statements current_token {:#?}", current_token);
+
         match &current_token.token {
             TokenEnum::Keyword(keyword) => {
                 self.get_next_token();
@@ -63,6 +65,7 @@ impl<'a> Parser<'a> {
                     ELSE_STATEMENT => {
                         panic!("Found 'else' without an 'if' {:?}", current_token)
                     }
+
                     ELIF_STATEMENT => {
                         panic!("Found 'elif' without an 'if' {:?}", current_token)
                     }
@@ -79,6 +82,8 @@ impl<'a> Parser<'a> {
             TokenEnum::Variable(var) => {
                 // 2 here as we haven't consumed the `var` token
                 let nth_token = self.peek_nth_token(2);
+
+                println!("parse_statements variable nth_token {:#?}", current_token);
 
                 match nth_token.token {
                     TokenEnum::Bracket(b) => {
@@ -127,7 +132,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse_program(&mut self) -> Rc<Box<dyn AST>> {
+    pub fn parse_program(&mut self, inside_function: bool) -> Rc<Box<dyn AST>> {
         let mut statements: Vec<Rc<Box<dyn AST>>> = vec![];
 
         loop {
@@ -137,6 +142,18 @@ impl<'a> Parser<'a> {
                 TokenEnum::EOF => {
                     break;
                 }
+
+                TokenEnum::Bracket(b) => match b {
+                    Bracket::RCurly => {
+                        if inside_function {
+                            return Rc::new(Box::new(Program::new(statements)));
+                        } else {
+                            statements.push(self.parse_statements())
+                        }
+                    }
+
+                    _ => statements.push(self.parse_statements()),
+                },
 
                 _ => {
                     statements.push(self.parse_statements());

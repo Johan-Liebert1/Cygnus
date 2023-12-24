@@ -77,7 +77,11 @@ impl<'a> Parser<'a> {
             }
         };
 
-        let block = self.parse_statements();
+        // As we can fit an entire program inside a function
+        // TODO: This introduces function and variable scoping issues
+        let block = self.parse_program(true);
+
+        println!("next token after parse_statements in parse_function_definition {:?}", self.peek_next_token().token);
 
         match self.get_next_token().token {
             TokenEnum::Bracket(b) => match b {

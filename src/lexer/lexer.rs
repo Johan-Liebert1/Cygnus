@@ -32,8 +32,8 @@ pub struct Lexer<'a> {
 impl<'a> Lexer<'a> {
     pub fn new(file: &'a Vec<u8>) -> Self {
         Lexer {
-            line_number: 0,
-            col_number: 0,
+            line_number: 1,
+            col_number: 1,
             index: 0,
             file,
         }
@@ -131,8 +131,8 @@ impl<'a> Lexer<'a> {
         while self.index < self.file.len() {
             match self.file[self.index] {
                 b'\n' => {
-                    self.line_number += 1;
-                    self.col_number = 0;
+                    // not incrementing line number here as that's aready done inside of self.advance
+                    self.col_number = 1;
                     break;
                 }
 
