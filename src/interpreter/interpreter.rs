@@ -45,24 +45,24 @@ impl Interpreter {
                 file.write(b"\n\n")?;
 
                 // write .bss section
-                file.write(b"section .bss\n")?;
+                file.write(b"section .bss\n\t")?;
                 file.write_all(self.asm.bss.join("\n\t").as_bytes())?;
                 file.write(b"\n\n")?;
 
                 if self.asm.data.len() > 0 {
                     // write .data section
-                    file.write(b"section .data\n")?;
+                    file.write(b"section .data\n\t")?;
                     file.write_all(self.asm.data.join("\n\t").as_bytes())?;
                     file.write(b"\n\n")?;
                 }
 
                 // write .text section
-                file.write(b"section .text\n")?;
+                file.write(b"section .text\n\t")?;
                 file.write_all(self.asm.text.join("\n\t").as_bytes())?;
                 file.write(b"\n\n")?;
 
                 for label in &self.asm.labels {
-                    let mut file_bytes = format!("{}:\n", &label.name);
+                    let mut file_bytes = format!("{}:\n\t", &label.name);
                     file_bytes += &label.code.join("\n\t");
 
                     file.write_all(file_bytes.as_bytes())?;

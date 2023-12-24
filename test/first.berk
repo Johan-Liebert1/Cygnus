@@ -1,4 +1,4 @@
+exit(1)
 loop from 1 to 30 {
-    -- exit(1)
     write("hi")
 }
