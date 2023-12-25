@@ -23,14 +23,18 @@ fn get_stdout_and_actual_result(file_name: &str) -> (String, String) {
 
 #[test]
 fn arithmetic() {
-    println!("pwd {:?}", std::env::current_dir());
     let (stdout_str, file_result) = get_stdout_and_actual_result("arithmetic.cberk");
     assert_eq!(stdout_str, file_result);
 }
 
 #[test]
 fn if_elif_else() {
-    println!("pwd {:?}", std::env::current_dir());
     let (stdout_str, file_result) = get_stdout_and_actual_result("if-elif-else.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
+fn fibonacci() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("fibonacci.cberk");
     assert_eq!(stdout_str, file_result);
 }

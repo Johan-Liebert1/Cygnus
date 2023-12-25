@@ -5,7 +5,7 @@ def three: int = 0
 write(one)
 write(two)
 
-loop from 1 to 50 {
+loop from 1 to 51 {
     three = one + two
     write(three)
 
