@@ -108,6 +108,7 @@ impl<'a> Lexer<'a> {
                 '}' => TokenEnum::Bracket(Bracket::RCurly),
 
                 ':' => TokenEnum::Colon,
+                ';' => TokenEnum::SemiColon,
                 ',' => TokenEnum::Comma,
 
                 '"' => self.construct_string(),

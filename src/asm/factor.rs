@@ -79,6 +79,7 @@ impl ASM {
 
             TokenEnum::Equals => todo!(),
             TokenEnum::Comma => todo!(),
+            TokenEnum::SemiColon => todo!(),
             TokenEnum::Colon => todo!(),
             TokenEnum::Bracket(_) => todo!(),
             TokenEnum::Op(_) => todo!(),

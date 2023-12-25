@@ -12,10 +12,10 @@
     - [ ] or, and, xor
 - [ ] `return` and `break` statements
 - [x] Functions in Compilation mode
-- [ ] Variables in Compilation mode
+- [x] Variables in Compilation mode
+- [ ] Variable scoping
 - [ ] Pointer deref
 - [ ] Command link arguments
-- [ ] Variable scoping
 - [ ] Proper type checking
 - [ ] Random access to memory
 - [ ] Ability to allocate and deallocate memory

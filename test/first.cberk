@@ -1,5 +1,5 @@
-def one: int = 0
-def two: int = 1
+def one: int = 0;
+def two: int = 1;
 def three: int = 0
 
 write(one)

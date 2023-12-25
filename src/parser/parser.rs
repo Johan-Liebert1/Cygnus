@@ -121,6 +121,7 @@ impl<'a> Parser<'a> {
             TokenEnum::Type(_) => todo!(),
             TokenEnum::Colon => todo!(),
             TokenEnum::Comma => todo!(),
+            TokenEnum::SemiColon => todo!(),
 
             TokenEnum::Unknown(..) => {
                 panic!("Unknown token: {:?}", &current_token);
@@ -141,6 +142,10 @@ impl<'a> Parser<'a> {
             match &current_token.token {
                 TokenEnum::EOF => {
                     break;
+                }
+
+                TokenEnum::SemiColon => {
+                    continue
                 }
 
                 TokenEnum::Bracket(b) => match b {

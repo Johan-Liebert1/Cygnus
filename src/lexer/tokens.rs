@@ -58,6 +58,7 @@ pub enum TokenEnum {
     Equals,
     Comma,
     Colon,
+    SemiColon,
 
     Number(Number),
     Bracket(Bracket),
