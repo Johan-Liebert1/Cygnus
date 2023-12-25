@@ -4,7 +4,9 @@ use super::asm::ASM;
 
 impl ASM {
     pub fn variable_declaration(&mut self, var_name: &String) {
-        self.data.push(format!("{} db 0", var_name));
+        // this needs to be dq, as we are assuming all integers are 64 bits
+        // db will only allocate 1 byte while dq allocates a word
+        self.data.push(format!("{} dq 0", var_name));
     }
 
     /// pops the top most element on the stack and assigns it to the variable
