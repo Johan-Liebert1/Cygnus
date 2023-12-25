@@ -72,7 +72,7 @@ impl<'a> Parser<'a> {
                 Bracket::LCurly => {
                     self.get_next_token();
 
-                    let statements = self.parse_statements();
+                    let statements = self.parse_program(true);
 
                     self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
 

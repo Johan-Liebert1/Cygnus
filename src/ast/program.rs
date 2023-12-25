@@ -7,6 +7,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
+#[derive(Debug)]
 pub struct Program {
     statements: Vec<Rc<Box<dyn AST>>>,
 }
@@ -46,6 +47,6 @@ impl AST for Program {
     }
 
     fn print(&self) {
-        todo!()
+        println!("{:#?}", self);
     }
 }

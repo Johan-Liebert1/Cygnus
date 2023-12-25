@@ -1,5 +1,6 @@
 use super::asm::ASM;
 
+#[derive(Debug)]
 pub enum ConditionalJumpTo {
     IfEnd,
     ElifEnd,
@@ -8,19 +9,23 @@ pub enum ConditionalJumpTo {
 }
 
 impl ASM {
+    pub fn inc_num_ifs(&mut self) {
+        self.num_ifs += 1;
+    }
+
     pub fn if_start(&mut self, jump_to: ConditionalJumpTo) {
-        // self.change_current_label(".if".into());
+        // println!("if_start jump_to {:?}", jump_to);
 
         let jump_to_label = match jump_to {
-            ConditionalJumpTo::IfEnd => ".if_end",
+            ConditionalJumpTo::IfEnd => format!(".if_end_{}", self.num_ifs),
             ConditionalJumpTo::ElifEnd => panic!("Cannot jump to elif end from if start"),
-            ConditionalJumpTo::Elif => ".elif_0",
-            ConditionalJumpTo::Else => ".else",
+            ConditionalJumpTo::Elif => format!(".elif_{}_0", self.num_ifs),
+            ConditionalJumpTo::Else => format!(".else_{}", self.num_ifs),
         };
 
         let instructions = vec![
             // if label
-            format!(".if:"),
+            format!(".if_{}:", self.num_ifs),
             format!("pop rcx"),
             format!("cmp rcx, 0"),
             format!(";; if the comparison value is false, jump to the next label altogether"),
@@ -38,17 +43,24 @@ impl ASM {
     }
 
     pub fn if_end(&mut self, jump_to: ConditionalJumpTo, elif_len: usize) {
+        // println!("if_end jump_to {:?}", jump_to);
+
         let current_label = self.current_label();
 
         let jump_to_label = match jump_to {
-            ConditionalJumpTo::IfEnd => panic!("Cannot jump to if end from if end"),
-            ConditionalJumpTo::ElifEnd => format!(".elif_{}_end", elif_len - 1),
+            // we simply jump to the very next label here as this means that there is a single if block without any elif
+            // or else 
+            ConditionalJumpTo::IfEnd => format!(".if_end_{}", self.num_ifs),
+            ConditionalJumpTo::ElifEnd => format!(".elif_{}_{}_end", self.num_ifs, elif_len - 1),
             ConditionalJumpTo::Elif => panic!("Cannot jump to elif start from if end"),
-            ConditionalJumpTo::Else => ".else_end".into(),
+            ConditionalJumpTo::Else => format!(".else_end_{}", self.num_ifs),
         };
 
         // if we ever enter the if block, then that's it, we can jump straight to the end of the else or the elif block
-        let instructions = vec![format!("jmp {}", jump_to_label), ".if_end:".into()];
+        let instructions = vec![
+            format!("jmp {}", jump_to_label),
+            format!(".if_end_{}:", self.num_ifs),
+        ];
 
         for label in &mut self.labels {
             if label.name == current_label {
@@ -60,24 +72,19 @@ impl ASM {
 
     /// The label names for all elifs will be of the same format, i.e. <elif label name>_<elif_number>
     /// so that we can easily jump around
-    pub fn elif_start(
-        &mut self,
-        label_name: String,
-        elif_number: usize,
-        jump_to: ConditionalJumpTo,
-    ) {
+    pub fn elif_start(&mut self, elif_number: usize, jump_to: ConditionalJumpTo) {
         // self.change_current_label(format!(".{}_{}", label_name, elif_number));
 
         let jump_to_label = match jump_to {
             ConditionalJumpTo::IfEnd => panic!("cannot jump to if from elif"),
-            ConditionalJumpTo::ElifEnd => format!(".elif_{}_end", elif_number),
-            ConditionalJumpTo::Elif => format!(".elif_{}", elif_number + 1),
-            ConditionalJumpTo::Else => ".else".into(),
+            ConditionalJumpTo::ElifEnd => format!(".elif_{}_{}_end", self.num_ifs, elif_number),
+            ConditionalJumpTo::Elif => format!(".elif_{}_{}", self.num_ifs, elif_number + 1),
+            ConditionalJumpTo::Else => format!(".else_{}", self.num_ifs),
         };
 
         let instructions = vec![
             // elif label
-            format!(".{}_{}:", label_name, elif_number),
+            format!(".elif_{}_{}:", self.num_ifs, elif_number),
             format!("pop rcx"),
             format!("cmp rcx, 0"),
             format!(";; if the comparison value is false, jump to the next label altogether"),
@@ -98,15 +105,15 @@ impl ASM {
     pub fn elif_end(&mut self, elif_number: usize, jump_to: ConditionalJumpTo) {
         let jump_to_label = match jump_to {
             ConditionalJumpTo::IfEnd => panic!("Cannot jump to if end from elif end"),
-            ConditionalJumpTo::ElifEnd => format!(".elif_{}_end", elif_number),
+            ConditionalJumpTo::ElifEnd => format!(".elif_{}_{}_end", self.num_ifs, elif_number),
             ConditionalJumpTo::Elif => panic!("Cannot jump to elif start from elif end"),
-            ConditionalJumpTo::Else => ".else_end".into(),
+            ConditionalJumpTo::Else => format!(".else_end_{}", self.num_ifs),
         };
 
         // if we ever enter the if block, then that's it, we can jump straight to the end of the else or the elif block
         let instructions = vec![
             format!("jmp {}", jump_to_label),
-            format!(".elif_{}_end:", elif_number),
+            format!(".elif_{}_{}_end:", self.num_ifs, elif_number),
         ];
 
         let current_label = self.current_label();
@@ -120,27 +127,25 @@ impl ASM {
     }
 
     /// The label name for else will be unique
-    pub fn else_start(&mut self, label_name: String) {
-        // self.change_current_label();
-
+    pub fn else_start(&mut self) {
         let current_label = self.current_label();
 
         for label in &mut self.labels {
             if label.name == current_label {
-                label.code.push(format!(".{}:", label_name));
+                label.code.push(format!(".else_{}:", self.num_ifs));
                 break;
             }
         }
     }
 
-    pub fn else_end(&mut self, label_name: String) {
+    pub fn else_end(&mut self) {
         // self.change_current_label(format!(".{}_end", label_name));
 
         let current_label = self.current_label();
 
         for label in &mut self.labels {
             if label.name == current_label {
-                label.code.push(format!(".{}_end:", label_name));
+                label.code.push(format!(".else_end_{}:", self.num_ifs));
                 break;
             }
         }

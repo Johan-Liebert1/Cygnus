@@ -5,555 +5,167 @@ section .bss
 	digitSpacePos resb 8
 	argc resb 8
 
+section .data
+	string_0 db 53,32,62,32,56
+	string_1 db 54,32,62,32,50
+	string_2 db 53,32,60,32,56,32,97,110,100,32,54,32,60,32,50
+	string_3 db 52,32,62,32,50
+
 section .text
 	global _start
 
 _start:
 	mov [argc], rsp
-	push 3
-	push 2
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 4
-	push 2
-	push 3
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 5
-	push 3
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	push 2
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
 	push 1
-	push 1
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 0
-	push 3
-	push 2
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 9
 	push 5
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	sub rax, rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 10
-	push 3
-	push 2
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	sub rax, rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 15
-	push 5
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	sub rax, rbx
-	;; push the result back onto the stack
-	push rax
-	push 3
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	sub rax, rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 6
 	push 1
-	;; get the two operands from the stack
+	.loop_0:
+	pop rcx
 	pop rbx
 	pop rax
-	sub rax, rbx
-	;; push the result back onto the stack
+	add rax, rcx
+	dec rax
+	dec rbx
+	cmp rax, rbx
+	jg .loop_end_0
+	inc rax
+	inc rbx
 	push rax
-	pop rax
-	call _printRAX
+	push rbx
+	push rcx
+	push 5
 	push 8
-	push 3
-	push 1
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
+	;; We pop in the opposite order of comparison as we push onto the stack
 	pop rbx
 	pop rax
-	sub rax, rbx
-	;; push the result back onto the stack
+	cmp rax, rbx
+	je .skip_0
+	mov rax, 0
+	jmp .skip_next0
+	.skip_0:
+	mov rax, 1
+	.skip_next0:
+	;; push onto the stack whatever's in rax so rest of the program can use it
 	push rax
-	pop rax
-	call _printRAX
-	push 3
-	push 2
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
+	.if_0:
+	pop rcx
+	cmp rcx, 0
+	;; if the comparison value is false, jump to the next label altogether
+	je .if_end_0
+	mov rax, string_0
 	push rax
-	pop rax
-	call _printRAX
-	push 2
-	push 3
-	push 2
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
 	push 5
-	push 3
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
-	push rax
+	;; Assuming length is pushed last
+	pop r8
+	;; Assuming string address is pushed first
+	pop r9
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, r9
+	mov rdx, r8
+	syscall
+	jmp .else_end_0
+	.if_end_0:
+	push 6
 	push 2
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
+	;; We pop in the opposite order of comparison as we push onto the stack
 	pop rbx
-	mul rbx
-	;; push the result back onto the stack
+	pop rax
+	cmp rax, rbx
+	je .skip_1
+	mov rax, 0
+	jmp .skip_next1
+	.skip_1:
+	mov rax, 1
+	.skip_next1:
+	;; push onto the stack whatever's in rax so rest of the program can use it
 	push rax
-	pop rax
-	call _printRAX
-	push 4
-	push 3
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
+	.elif_0_0:
+	pop rcx
+	cmp rcx, 0
+	;; if the comparison value is false, jump to the next label altogether
+	je .else_0
+	mov rax, string_1
 	push rax
-	pop rax
-	call _printRAX
 	push 5
-	push 2
-	push 2
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
+	;; Assuming length is pushed last
+	pop r8
+	;; Assuming string address is pushed first
+	pop r9
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, r9
+	mov rdx, r8
+	syscall
+	jmp .else_end_0
+	.elif_0_0_end:
+	.else_0:
+	mov rax, string_2
 	push rax
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 8
-	push 2
-	;; clean up rdx as this might mess up the final output
-	xor rdx, rdx
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	div rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 18
-	push 2
-	push 1
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	;; clean up rdx as this might mess up the final output
-	xor rdx, rdx
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	div rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 12
-	push 3
-	;; clean up rdx as this might mess up the final output
-	xor rdx, rdx
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	div rbx
-	;; push the result back onto the stack
-	push rax
-	push 2
-	;; clean up rdx as this might mess up the final output
-	xor rdx, rdx
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	div rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
 	push 15
-	push 5
-	;; clean up rdx as this might mess up the final output
-	xor rdx, rdx
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	div rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 20
-	push 5
+	;; Assuming length is pushed last
+	pop r8
+	;; Assuming string address is pushed first
+	pop r9
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, r9
+	mov rdx, r8
+	syscall
+	.else_end_0:
+	jmp .loop_0
+	.loop_end_0:
 	push 1
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	;; clean up rdx as this might mess up the final output
-	xor rdx, rdx
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	div rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 5
-	push 3
-	push 2
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 6
-	push 2
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	push 3
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
-	push rax
-	push 6
-	push 2
-	;; clean up rdx as this might mess up the final output
-	xor rdx, rdx
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	div rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	sub rax, rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 12
-	push 3
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	push 3
-	;; clean up rdx as this might mess up the final output
-	xor rdx, rdx
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	div rbx
-	;; push the result back onto the stack
-	push rax
-	push 2
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 5
-	push 2
 	push 3
 	push 1
-	;; get the two operands from the stack
+	.loop_1:
+	pop rcx
 	pop rbx
 	pop rax
-	sub rax, rbx
-	;; push the result back onto the stack
+	add rax, rcx
+	dec rax
+	dec rbx
+	cmp rax, rbx
+	jg .loop_end_1
+	inc rax
+	inc rbx
 	push rax
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
-	push 5
-	push 3
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
+	push rbx
+	push rcx
+	push 4
 	push 2
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
-	push rax
-	push 4
-	;; clean up rdx as this might mess up the final output
-	xor rdx, rdx
-	;; get the two operands from the stack
+	;; We pop in the opposite order of comparison as we push onto the stack
 	pop rbx
 	pop rax
-	div rbx
-	;; push the result back onto the stack
+	cmp rax, rbx
+	jg .skip_2
+	mov rax, 0
+	jmp .skip_next2
+	.skip_2:
+	mov rax, 1
+	.skip_next2:
+	;; push onto the stack whatever's in rax so rest of the program can use it
 	push rax
-	pop rax
-	call _printRAX
-	push 3
-	push 4
-	push 6
+	.if_1:
+	pop rcx
+	cmp rcx, 0
+	;; if the comparison value is false, jump to the next label altogether
+	je .if_end_1
+	mov rax, string_3
+	push rax
 	push 5
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	sub rax, rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	push 7
-	push 8
-	push 9
-	push 10
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	;; clean up rdx as this might mess up the final output
-	xor rdx, rdx
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	div rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	push 11
-	;; clean up rdx as this might mess up the final output
-	xor rdx, rdx
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	div rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
-	push rax
-	push 12
-	push 13
-	;; get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	push 1434
-	push 15
-	push 142
-	push 16
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	sub rax, rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	;; clean up rdx as this might mess up the final output
-	xor rdx, rdx
-	;; get the two operands from the stack
-	pop rbx
-	pop rax
-	div rbx
-	;; push the result back onto the stack
-	push rax
-	;; get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	call _printRAX
+	;; Assuming length is pushed last
+	pop r8
+	;; Assuming string address is pushed first
+	pop r9
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, r9
+	mov rdx, r8
+	syscall
+	jmp .if_end_1
+	.if_end_1:
+	jmp .loop_1
+	.loop_end_1:
 	exit 0
 

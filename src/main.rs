@@ -50,6 +50,8 @@ pub fn parse_input_file(
     let mut parser = Parser::new(&file);
     let ast = parser.parse_program(false);
 
+    // println!("ast {:#?}", ast);
+
     let mut interpreter = Interpreter::new(ast, parser.functions);
 
     if compile_mode {

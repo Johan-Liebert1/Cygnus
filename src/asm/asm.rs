@@ -13,6 +13,8 @@ pub struct ASM {
     pub labels: Vec<Label>,
     pub comparison_num: usize,
     pub num_strings: usize,
+    pub num_ifs: usize,
+    pub num_loops: usize,
 
     current_label: String,
 }
@@ -23,6 +25,8 @@ impl Default for ASM {
             num_strings: 0,
             comparison_num: 0,
             current_label: "_start".to_string(),
+            num_ifs: 0,
+            num_loops: 0,
 
             include: vec![r#"%include "std.asm""#],
 

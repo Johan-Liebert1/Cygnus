@@ -1,0 +1,11 @@
+if 5 > 8 {
+    write("5 > 8")
+} elif 6 > 2 {
+    write("6 > 2")
+} else {
+    write("5 < 8 and 6 < 2")
+}
+
+elif 4 > 2 {
+    write("4 > 2")
+}

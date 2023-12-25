@@ -7,6 +7,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
+#[derive(Debug)]
 pub struct Loop {
     /// an expression
     from_range: Rc<Box<dyn AST>>,
@@ -97,6 +98,6 @@ impl AST for Loop {
     }
 
     fn print(&self) {
-        todo!()
+        println!("{:#?}", self);
     }
 }

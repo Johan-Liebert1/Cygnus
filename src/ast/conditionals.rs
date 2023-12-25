@@ -7,6 +7,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
+#[derive(Debug)]
 pub struct IfStatement {
     condition: Rc<Box<dyn AST>>,
     block: Rc<Box<dyn AST>>,
@@ -18,6 +19,7 @@ impl IfStatement {
     }
 }
 
+#[derive(Debug)]
 pub struct ElseStatement {
     block: Rc<Box<dyn AST>>,
 }
@@ -28,6 +30,7 @@ impl ElseStatement {
     }
 }
 
+#[derive(Debug)]
 pub struct ConditionalStatement {
     if_statement: IfStatement,
     elif_ladder: Vec<IfStatement>,
@@ -69,7 +72,7 @@ impl AST for ConditionalStatement {
             } else if self.elif_ladder.len() > 0 {
                 ConditionalJumpTo::ElifEnd
             } else {
-                ConditionalJumpTo::Else
+                ConditionalJumpTo::IfEnd
             },
             self.elif_ladder.len(),
         );
@@ -79,7 +82,6 @@ impl AST for ConditionalStatement {
 
             // if it's the last index, then jump to else, else jump to the next elif
             asm.elif_start(
-                "elif".into(),
                 index,
                 if index < self.elif_ladder.len() - 1 {
                     ConditionalJumpTo::ElifEnd
@@ -105,12 +107,14 @@ impl AST for ConditionalStatement {
         }
 
         if let Some(e) = &self.else_statement {
-            asm.else_start("else".into());
+            asm.else_start();
 
             e.block.visit_com(v, Rc::clone(&f), asm);
 
-            asm.else_end("else".into());
+            asm.else_end();
         }
+
+        asm.inc_num_ifs();
     }
 
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
@@ -144,6 +148,6 @@ impl AST for ConditionalStatement {
     }
 
     fn print(&self) {
-        todo!()
+        println!("{:#?}", self);
     }
 }
