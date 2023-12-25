@@ -6,33 +6,31 @@ section .bss
 	argc resb 8
 
 section .data
-	a db 0
+	a dq 0
+	b dq 0
 
 section .text
 	global _start
 
 _start:
 	mov [argc], rsp
-	push 21
+	push 69
 	pop rax
 	mov [a], rax
-	push 32
-	push 45
+	push 420
+	pop rax
+	mov [b], rax
+	mov rax, [a]
+	push rax
+	mov rax, [b]
+	push rax
 	;; get the two operands from the stack
 	pop rax
 	pop rbx
 	add rax, rbx
 	;; push the result back onto the stack
 	push rax
-	push 76
-	;; get the two operands from the stack
 	pop rax
-	pop rbx
-	add rax, rbx
-	;; push the result back onto the stack
-	push rax
-	pop rax
-	mov [a], rax
-
+	call _printRAX
 	exit 0
 

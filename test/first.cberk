@@ -1,3 +1,4 @@
-def a: int = 21
+def a: int = 69
+def b: int = 420
 
-a = 32 + 45 + 76
+write(a + b)

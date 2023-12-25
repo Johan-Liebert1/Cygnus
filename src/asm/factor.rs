@@ -62,8 +62,19 @@ impl ASM {
                 self.num_strings += 1;
             }
 
-            TokenEnum::Variable(v) => {
-                println!("Variable generate_asm_factor: {:#?}", vars.get(v).unwrap());
+            TokenEnum::Variable(var_name) => {
+                match vars.get(var_name) {
+                    Some(..) => {
+                        instructions.extend(vec![
+                            format!("mov rax, [{var_name}]"),
+                            format!("push rax"),
+                        ]);
+                    },
+
+                    None => {
+                        println!("Variable {var_name} is not defined")
+                    },
+                };
             }
 
             TokenEnum::Equals => todo!(),

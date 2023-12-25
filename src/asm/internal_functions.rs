@@ -1,4 +1,20 @@
+use crate::{
+    ast::variable::Variable, interpreter::interpreter::Variables, lexer::tokens::VariableEnum,
+};
+
 use super::asm::ASM;
+
+const WRITE_STRING_ASM_INSTRUCTIONS: [&str; 9] = [
+    ";; Assuming length is pushed last",
+    "pop r8",
+    ";; Assuming string address is pushed first",
+    "pop r9",
+    "mov rax, 1",
+    "mov rdi, 1",
+    "mov rsi, r9",
+    "mov rdx, r8",
+    "syscall",
+];
 
 impl ASM {
     pub fn func_write_number(&mut self) {
@@ -34,23 +50,14 @@ impl ASM {
                 // TODO: There's some weird stack alloc issue when I try to do this. So this takes a
                 // backseat for now
                 // label.code.push(String::from("call _printString"));
-
-                label.code.extend(vec![
-                    format!(";; Assuming length is pushed last"),
-                    format!("pop r8"),
-                    format!(";; Assuming string address is pushed first"),
-                    format!("pop r9"),
-                    format!("mov rax, 1"),
-                    format!("mov rdi, 1"),
-                    format!("mov rsi, r9"),
-                    format!("mov rdx, r8"),
-                    format!("syscall"),
-                ]);
+                label
+                    .code
+                    .extend(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()));
             }
         }
     }
 
-    pub fn func_write_var(&mut self, var_name: &String) {
+    pub fn func_write_var(&mut self, var_name: &String, variables: &Variables) {
         // TODO: Un-hardcode this
 
         let instructions = match var_name.as_str() {
@@ -92,8 +99,31 @@ impl ASM {
                 format!("syscall"),
             ],
 
-            _ => vec![],
+            // the variable value or its address will be pushed onto the stack
+            _ => {
+                match variables.get(var_name) {
+                    Some(var_enum) => {
+                        match var_enum {
+                            VariableEnum::Number(..) => {
+                                vec![
+                                    format!("pop rax"),
+                                    // TODO: Handle printing strings and stuff
+                                    format!("call _printRAX"),
+                                ]
+                            }
+
+                            VariableEnum::String(_) => {
+                                WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
+                            }
+                        }
+                    }
+
+                    None => panic!("Variable {var_name} is not defined"),
+                }
+            }
         };
+
+        println!("var_name = {var_name}. instructions {:?}", instructions);
 
         let current_label = self.current_label();
 

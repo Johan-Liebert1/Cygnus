@@ -5,7 +5,7 @@ use crate::{
     interpreter::interpreter::{Functions, Variables},
     lexer::{
         lexer::Token,
-        tokens::{TokenEnum, VariableEnum},
+        tokens::{TokenEnum, VariableEnum, Number},
     },
 };
 
@@ -27,9 +27,11 @@ impl DeclarationStatement {
 }
 
 impl AST for DeclarationStatement {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, vars: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        vars.insert(self.left.var_name.clone(), self.left.get_var_enum_from_type());
+
         asm.variable_declaration(&self.left.var_name);
-        self.right.visit_com(v, f, asm);
+        self.right.visit_com(vars, f, asm);
         asm.variable_assignment(&self.left.var_name);
     }
 

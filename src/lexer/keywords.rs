@@ -34,5 +34,6 @@ pub const FUNC_STRLEN: &str = "strlen";
 // types
 pub const TYPE_INT: &str = "int";
 pub const TYPE_FLOAT: &str = "float";
+pub const TYPE_STRING: &str = "str";
 
-pub const TYPES: [&str; 2] = [TYPE_INT, TYPE_FLOAT];
+pub const TYPES: [&str; 3] = [TYPE_INT, TYPE_FLOAT, TYPE_STRING];

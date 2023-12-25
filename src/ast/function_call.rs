@@ -39,7 +39,7 @@ impl AST for FunctionCall {
                     match arg_token {
                         TokenEnum::StringLiteral(_) => asm.func_write_string(),
 
-                        TokenEnum::Variable(var_name) => asm.func_write_var(var_name),
+                        TokenEnum::Variable(var_name) => asm.func_write_var(var_name, v),
 
                         _ => {
                             // TODO: Fix this thing as anything other than Sting will have a nonsense
