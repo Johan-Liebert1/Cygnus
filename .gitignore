@@ -1,3 +1,4 @@
 /target
 *.o
 generated/output
+generated/output.asm
