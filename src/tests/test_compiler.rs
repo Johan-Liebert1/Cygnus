@@ -5,19 +5,32 @@ use std::{
 
 use crate::{generate_asm, parse_input_file};
 
-#[test]
-fn arithmetic() {
+fn get_stdout_and_actual_result(file_name: &str) -> (String, String) {
     let mut stdout_str = String::new();
 
-    if let Some(ref mut stdout) = parse_input_file("./examples/arithmetic.cberk".into(), true, true, true) {
+    if let Some(ref mut stdout) = parse_input_file(format!("./examples/{}", file_name), true, true, true) {
         stdout.read_to_string(&mut stdout_str);
     }
 
-    let mut file = File::create("output.sfdf").unwrap();
-    file.write_all(stdout_str.as_bytes());
+    let file_name_wo_ext = file_name.split('.').collect::<Vec<&str>>();
 
-    let file_result = fs::read_to_string("./examples/output/arithmetic").unwrap();
-    let file_result_left = fs::read_to_string("./output.sfdf").unwrap();
+    println!("file_name_wo_ext {:?}", file_name_wo_ext);
 
-    assert_eq!(file_result_left, file_result);
+    let file_result = fs::read_to_string(format!("./examples/output/{}", file_name_wo_ext[0])).unwrap();
+
+    return (stdout_str, file_result)
+}
+
+#[test]
+fn arithmetic() {
+    println!("pwd {:?}", std::env::current_dir());
+    let (stdout_str, file_result) = get_stdout_and_actual_result("arithmetic.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
+fn if_elif_else() {
+    println!("pwd {:?}", std::env::current_dir());
+    let (stdout_str, file_result) = get_stdout_and_actual_result("if-elif-else.cberk");
+    assert_eq!(stdout_str, file_result);
 }

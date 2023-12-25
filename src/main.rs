@@ -39,6 +39,8 @@ pub fn parse_input_file(
     run_asm: bool,
     is_test: bool,
 ) -> Option<ChildStdout> {
+    println!("Parsing file {path}");
+
     let file = match std::fs::read(&path) {
         Ok(file) => file,
         Err(err) => {
@@ -125,19 +127,29 @@ fn main() {
 
     let cmd_args = std::env::args().collect::<Vec<String>>();
 
-    for arg in cmd_args.into_iter().skip(1) {
+    let mut file_name_next = false;
+
+    let mut file_name = "test/first.cberk";
+
+    for arg in cmd_args.iter().skip(1) {
         match arg.as_str() {
             "com" => COMPILE_MODE = true,
             "int" => COMPILE_MODE = false,
             "-r" => RUN_PROGRAM = true,
+            "-f" => file_name_next = true,
 
             e => {
-                println!("Unrecognised arg {e}")
+                if !file_name_next {
+                    println!("Unrecognised arg {e}");
+                    break;
+                }
+
+                file_name = e;
             }
         };
     }
 
-    if let Some(ref mut stdout) = parse_input_file("test/first.cberk".into(), COMPILE_MODE, RUN_PROGRAM, false) {
+    if let Some(ref mut stdout) = parse_input_file(file_name.into(), COMPILE_MODE, RUN_PROGRAM, false) {
         let mut str = String::new();
         stdout.read_to_string(&mut str);
         println!("{:?}", str);

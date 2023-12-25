@@ -11,7 +11,9 @@ section .data
 	string_2 db 108,111,108,32,110,111,116,32,104,101,114,101,10
 	string_3 db 104,105,10
 	string_4 db 98,121,101,10
-	string_5 db 52,32,62,32,50,10
+	string_5 db 52,32,60,32,50,10
+	string_6 db 52,32,62,32,50,10
+	string_7 db 108,111,111,112,32,119,105,116,104,32,115,116,101,112,32,111,102,32,50,10
 
 section .text
 	global _start
@@ -206,7 +208,7 @@ _start:
 	pop rbx
 	pop rax
 	cmp rax, rbx
-	jg .skip_3
+	jl .skip_3
 	mov rax, 0
 	jmp .skip_next3
 	.skip_3:
@@ -218,7 +220,7 @@ _start:
 	pop rcx
 	cmp rcx, 0
 	;; if the comparison value is false, jump to the next label altogether
-	je .if_end_2
+	je .else_2
 	mov rax, string_5
 	push rax
 	push 6
@@ -231,9 +233,54 @@ _start:
 	mov rsi, r9
 	mov rdx, r8
 	syscall
-	jmp .if_end_2
+	jmp .else_end_2
 	.if_end_2:
+	.else_2:
+	mov rax, string_6
+	push rax
+	push 6
+	;; Assuming length is pushed last
+	pop r8
+	;; Assuming string address is pushed first
+	pop r9
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, r9
+	mov rdx, r8
+	syscall
+	.else_end_2:
 	jmp .loop_2
 	.loop_end_2:
+	push 1
+	push 11
+	push 2
+	.loop_3:
+	pop rcx
+	pop rbx
+	pop rax
+	add rax, rcx
+	dec rax
+	dec rbx
+	cmp rax, rbx
+	jg .loop_end_3
+	inc rax
+	inc rbx
+	push rax
+	push rbx
+	push rcx
+	mov rax, string_7
+	push rax
+	push 20
+	;; Assuming length is pushed last
+	pop r8
+	;; Assuming string address is pushed first
+	pop r9
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, r9
+	mov rdx, r8
+	syscall
+	jmp .loop_3
+	.loop_end_3:
 	exit 0
 
