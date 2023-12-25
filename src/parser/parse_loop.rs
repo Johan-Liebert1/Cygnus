@@ -71,7 +71,11 @@ impl<'a> Parser<'a> {
 
         // TODO: Handle (with VAR_NAME)* here
         self.validate_token(TokenEnum::Bracket(Bracket::LCurly));
-        let block = self.parse_program(true);
+
+        self.inside_loop_depth += 1;
+        let block = self.parse_program();
+        self.inside_loop_depth -= 1;
+
         self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
 
         return Rc::new(Box::new(Loop::new(from_range, to_range, step, block)));

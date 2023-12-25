@@ -123,8 +123,6 @@ impl ASM {
             }
         };
 
-        println!("var_name = {var_name}. instructions {:?}", instructions);
-
         let current_label = self.current_label();
 
         for label in &mut self.labels {

@@ -14,11 +14,16 @@ use crate::{
 
 pub type ParserFunctions = Rc<RefCell<Functions>>;
 
+#[derive(Debug)]
 pub struct Parser<'a> {
     pub lexer: Box<Lexer<'a>>,
     parsed_tokens: Vec<Token>,
     pub bracket_stack: Vec<Bracket>,
     pub functions: ParserFunctions,
+
+    pub inside_loop_depth: usize,
+    pub inside_function_depth: usize,
+    pub inside_if_else_depth: usize,
 }
 
 impl<'a> Parser<'a> {
@@ -30,6 +35,10 @@ impl<'a> Parser<'a> {
             parsed_tokens: vec![],
             bracket_stack: vec![],
             functions: Rc::new(RefCell::new(HashMap::new())),
+
+            inside_loop_depth: 0,
+            inside_function_depth: 0,
+            inside_if_else_depth: 0,
         }
     }
 
@@ -133,7 +142,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse_program(&mut self, inside_function: bool) -> Rc<Box<dyn AST>> {
+    pub fn parse_program(&mut self) -> Rc<Box<dyn AST>> {
         let mut statements: Vec<Rc<Box<dyn AST>>> = vec![];
 
         loop {
@@ -146,12 +155,15 @@ impl<'a> Parser<'a> {
 
                 TokenEnum::SemiColon => {
                     self.get_next_token();
-                    continue
+                    continue;
                 }
 
                 TokenEnum::Bracket(b) => match b {
                     Bracket::RCurly => {
-                        if inside_function {
+                        if self.inside_function_depth > 0
+                            || self.inside_loop_depth > 0
+                            || self.inside_if_else_depth > 0
+                        {
                             return Rc::new(Box::new(Program::new(statements)));
                         } else {
                             statements.push(self.parse_statements())

@@ -72,7 +72,9 @@ impl<'a> Parser<'a> {
                 Bracket::LCurly => {
                     self.get_next_token();
 
-                    let statements = self.parse_program(true);
+                    self.inside_if_else_depth += 1;
+                    let statements = self.parse_program();
+                    self.inside_if_else_depth -= 1;
 
                     self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
 
@@ -97,7 +99,9 @@ impl<'a> Parser<'a> {
                 Bracket::LCurly => {
                     self.get_next_token();
 
-                    let statements = self.parse_statements();
+                    self.inside_if_else_depth += 1;
+                    let statements = self.parse_program();
+                    self.inside_if_else_depth -= 1;
 
                     self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
 

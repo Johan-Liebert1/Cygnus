@@ -22,6 +22,7 @@ impl Display for Token {
     }
 }
 
+#[derive(Debug)]
 pub struct Lexer<'a> {
     pub line_number: usize,
     pub col_number: usize,

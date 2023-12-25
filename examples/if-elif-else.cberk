@@ -1,3 +1,5 @@
+def a: int = 1;
+
 loop from 1 to 5 {
     if 5 <= 8 {
         write("hello\n")
