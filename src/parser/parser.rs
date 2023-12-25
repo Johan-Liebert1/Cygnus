@@ -106,8 +106,8 @@ impl<'a> Parser<'a> {
                         self.parse_assignment_statement(var.to_string())
                     }
 
-                    _ => {
-                        unimplemented!("TokenEnum::Variable not ")
+                    e => {
+                        panic!("Expected `)` or `=` after {}, got {:?}", var, e)
                     }
                 }
             }

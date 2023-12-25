@@ -21,8 +21,9 @@ impl AssignmentStatement {
 }
 
 impl AST for AssignmentStatement {
-    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        todo!()
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        self.right.visit_com(v, f, asm);
+        asm.variable_assignment(&self.var_name);
     }
 
     // TODO: change this so that the expression is stored here and we need to visit the varible

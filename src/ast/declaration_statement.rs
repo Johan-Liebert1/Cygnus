@@ -27,8 +27,10 @@ impl DeclarationStatement {
 }
 
 impl AST for DeclarationStatement {
-    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        todo!()
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        asm.variable_declaration(&self.left.var_name);
+        self.right.visit_com(v, f, asm);
+        asm.variable_assignment(&self.left.var_name);
     }
 
     fn visit(&self, vars: &mut Variables, functions: Rc<RefCell<Functions>>) -> VisitResult {
