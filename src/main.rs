@@ -118,14 +118,16 @@ pub fn parse_input_file(
 fn main() {
     #[allow(non_snake_case)]
     let mut COMPILE_MODE = false;
+    #[allow(non_snake_case)]
+    let mut RUN_PROGRAM = false;
 
     let cmd_args = std::env::args().collect::<Vec<String>>();
 
     for arg in cmd_args.into_iter().skip(1) {
         match arg.as_str() {
             "com" => COMPILE_MODE = true,
-
             "int" => COMPILE_MODE = false,
+            "-r" => RUN_PROGRAM = true,
 
             e => {
                 println!("Unrecognised arg {e}")
@@ -133,10 +135,9 @@ fn main() {
         };
     }
 
-    if let Some(stdout) = parse_input_file("test/first.cberk".into(), COMPILE_MODE, false, false) {
-        let mut reader = BufReader::new(stdout);
-        let mut buf = vec![];
-        reader.read_to_end(&mut buf);
-        println!("{:?}", buf);
+    if let Some(ref mut stdout) = parse_input_file("test/first.cberk".into(), COMPILE_MODE, RUN_PROGRAM, false) {
+        let mut str = String::new();
+        stdout.read_to_string(&mut str);
+        println!("{:?}", str);
     }
 }

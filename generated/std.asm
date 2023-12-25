@@ -38,6 +38,9 @@ _printRAXLoop:
 
     jne _printRAXLoop
 
+    dec rcx
+    mov [digitSpacePos], rcx
+
     call _printRAXLoop2
 
     ret
