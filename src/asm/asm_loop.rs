@@ -1,7 +1,7 @@
 use super::asm::ASM;
 
 impl ASM {
-    pub fn gen_loop_start(&mut self) {
+    pub fn gen_loop_start(&mut self, loop_number: usize) {
         // we should have in the stack
         //
         // step <- stack top
@@ -13,7 +13,7 @@ impl ASM {
         // 3. Just before .loop_end: there's an unconditional jump to .loop:
 
         let loop_start = vec![
-            format!(".loop_{}:", self.num_loops),
+            format!(".loop_{}:", loop_number),
             format!("pop rcx"), // step
             format!("pop rbx"), // to
             format!("pop rax"), // from
@@ -22,7 +22,7 @@ impl ASM {
             // now compare rax to rbx - 1 and if they're equal jump to the end
             format!("dec rbx"),
             format!("cmp rax, rbx"),
-            format!("jg .loop_end_{}", self.num_loops),
+            format!("jg .loop_end_{}", loop_number),
             format!("inc rax"),
             format!("inc rbx"),
             format!("push rax"),
@@ -40,12 +40,12 @@ impl ASM {
         }
     }
 
-    pub fn gen_loop_end(&mut self) {
+    pub fn gen_loop_end(&mut self, loop_number: usize) {
         let loop_end = vec![
             // unconditional jump to loop start
-            format!("jmp .loop_{}", self.num_loops),
+            format!("jmp .loop_{}", loop_number),
             // we jump here when the loop ends
-            format!(".loop_end_{}:", self.num_loops),
+            format!(".loop_end_{}:", loop_number),
         ];
 
         let current_label = self.current_label();
@@ -56,7 +56,5 @@ impl ASM {
                 break;
             }
         }
-
-        self.num_loops += 1;
     }
 }

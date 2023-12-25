@@ -1,6 +1,15 @@
 loop from 1 to 5 {
-    if 5 == 8 {
+    if 5 <= 8 {
         write("hello\n")
+
+        loop from 1 to 4 {
+            if 3 != 3 {
+                write("lol here\n")
+            } else {
+                write("lol not here\n")
+            }
+        }
+
     } elif 6 == 2 {
         write("hi\n")
     } else {

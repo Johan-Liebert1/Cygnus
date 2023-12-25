@@ -73,4 +73,12 @@ impl ASM {
     pub fn current_label(&self) -> String {
         return self.current_label.clone();
     }
+
+    pub fn inc_num_ifs(&mut self) {
+        self.num_ifs += 1;
+    } 
+
+    pub fn inc_num_loops(&mut self) {
+        self.num_loops += 1;
+    } 
 }

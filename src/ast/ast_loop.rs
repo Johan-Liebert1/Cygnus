@@ -44,13 +44,16 @@ impl AST for Loop {
         // 3. Compare if the current addition value is equal to the `to` value, and if they are
         //    equal break the loop
 
+        let current_num_loop = asm.num_loops;
+        asm.inc_num_loops();
+
         self.from_range.visit_com(v, Rc::clone(&f), asm);
         self.to_range.visit_com(v, Rc::clone(&f), asm);
         self.step_by.visit_com(v, Rc::clone(&f), asm);
 
-        asm.gen_loop_start();
+        asm.gen_loop_start(current_num_loop);
         self.block.visit_com(v, Rc::clone(&f), asm);
-        asm.gen_loop_end();
+        asm.gen_loop_end(current_num_loop);
     }
 
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {

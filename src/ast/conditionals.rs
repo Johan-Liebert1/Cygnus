@@ -53,16 +53,22 @@ impl ConditionalStatement {
 
 impl AST for ConditionalStatement {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        let current_num_if = asm.num_ifs;
+        asm.inc_num_ifs();
+
         self.if_statement.condition.visit_com(v, Rc::clone(&f), asm);
 
-        asm.if_start(if self.elif_ladder.len() > 0 {
-            // we jump to IfEnd as IfEnd label contains the comparison expression for elif
-            ConditionalJumpTo::IfEnd
-        } else if let Some(_) = &self.else_statement {
-            ConditionalJumpTo::Else
-        } else {
-            ConditionalJumpTo::IfEnd
-        });
+        asm.if_start(
+            if self.elif_ladder.len() > 0 {
+                // we jump to IfEnd as IfEnd label contains the comparison expression for elif
+                ConditionalJumpTo::IfEnd
+            } else if let Some(_) = &self.else_statement {
+                ConditionalJumpTo::Else
+            } else {
+                ConditionalJumpTo::IfEnd
+            },
+            current_num_if,
+        );
 
         self.if_statement.block.visit_com(v, Rc::clone(&f), asm);
 
@@ -75,6 +81,7 @@ impl AST for ConditionalStatement {
                 ConditionalJumpTo::IfEnd
             },
             self.elif_ladder.len(),
+            current_num_if,
         );
 
         for (index, elif) in self.elif_ladder.iter().enumerate() {
@@ -90,6 +97,7 @@ impl AST for ConditionalStatement {
                 } else {
                     ConditionalJumpTo::ElifEnd
                 },
+                current_num_if,
             );
 
             elif.block.visit_com(v, Rc::clone(&f), asm);
@@ -103,18 +111,17 @@ impl AST for ConditionalStatement {
                 } else {
                     ConditionalJumpTo::Else
                 },
+                current_num_if,
             );
         }
 
         if let Some(e) = &self.else_statement {
-            asm.else_start();
+            asm.else_start(current_num_if);
 
             e.block.visit_com(v, Rc::clone(&f), asm);
 
-            asm.else_end();
+            asm.else_end(current_num_if);
         }
-
-        asm.inc_num_ifs();
     }
 
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
