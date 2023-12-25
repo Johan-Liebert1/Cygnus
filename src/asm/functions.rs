@@ -2,9 +2,7 @@ use super::asm::ASM;
 
 impl ASM {
     pub fn function_call(&mut self, function_name: &String) {
-        let instructions = vec![
-            format!("call _{function_name}"),
-        ];
+        let instructions = vec![format!("call _{function_name}")];
 
         let current_label = self.current_label();
 
@@ -21,9 +19,7 @@ impl ASM {
     }
 
     pub fn function_def_end(&mut self, function_name: &String) {
-        let instructions = vec![
-            format!("ret"),
-        ];
+        let instructions = vec![format!("ret")];
 
         let current_label = self.current_label();
 

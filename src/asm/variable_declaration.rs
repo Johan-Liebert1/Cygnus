@@ -15,10 +15,9 @@ impl ASM {
 
         for label in &mut self.labels {
             if label.name == current_label {
-                label.code.extend(vec![
-                    format!("pop rax"),
-                    format!("mov [{}], rax", var_name),
-                ]);
+                label
+                    .code
+                    .extend(vec![format!("pop rax"), format!("mov [{}], rax", var_name)]);
 
                 break;
             }

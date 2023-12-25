@@ -46,7 +46,7 @@ pub fn parse_input_file(
         Err(err) => {
             println!("Failed to open `{path}` with err {:?}", err);
             return None;
-        },
+        }
     };
 
     let mut parser = Parser::new(&file);
@@ -147,7 +147,9 @@ fn main() {
         };
     }
 
-    if let Some(ref mut stdout) = parse_input_file(file_name.into(), COMPILE_MODE, RUN_PROGRAM, false) {
+    if let Some(ref mut stdout) =
+        parse_input_file(file_name.into(), COMPILE_MODE, RUN_PROGRAM, false)
+    {
         let mut str = String::new();
         stdout.read_to_string(&mut str);
         println!("{:?}", str);
