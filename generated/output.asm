@@ -6,10 +6,10 @@ section .bss
 	argc resb 8
 
 section .data
-	string_0 db 53,32,62,32,56
-	string_1 db 54,32,62,32,50
-	string_2 db 53,32,60,32,56,32,97,110,100,32,54,32,60,32,50
-	string_3 db 52,32,62,32,50
+	string_0 db 104,101,108,108,111,10
+	string_1 db 104,105,10
+	string_2 db 98,121,101,10
+	string_3 db 52,32,62,32,50,10
 
 section .text
 	global _start
@@ -54,7 +54,7 @@ _start:
 	je .if_end_0
 	mov rax, string_0
 	push rax
-	push 5
+	push 6
 	;; Assuming length is pushed last
 	pop r8
 	;; Assuming string address is pushed first
@@ -87,7 +87,7 @@ _start:
 	je .else_0
 	mov rax, string_1
 	push rax
-	push 5
+	push 3
 	;; Assuming length is pushed last
 	pop r8
 	;; Assuming string address is pushed first
@@ -102,7 +102,7 @@ _start:
 	.else_0:
 	mov rax, string_2
 	push rax
-	push 15
+	push 4
 	;; Assuming length is pushed last
 	pop r8
 	;; Assuming string address is pushed first
@@ -153,7 +153,7 @@ _start:
 	je .if_end_1
 	mov rax, string_3
 	push rax
-	push 5
+	push 6
 	;; Assuming length is pushed last
 	pop r8
 	;; Assuming string address is pushed first

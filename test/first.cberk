@@ -1,15 +1,15 @@
 loop from 1 to 5 {
     if 5 == 8 {
-        write("5 > 8")
+        write("hello\n")
     } elif 6 == 2 {
-        write("6 > 2")
+        write("hi\n")
     } else {
-        write("5 < 8 and 6 < 2")
+        write("bye\n")
     }
 }
 
 loop from 1 to 3 {
     if 4 > 2 {
-        write("4 > 2")
+        write("4 > 2\n")
     }
 }

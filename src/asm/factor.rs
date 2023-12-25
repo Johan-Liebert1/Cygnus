@@ -17,21 +17,46 @@ impl ASM {
             },
 
             TokenEnum::StringLiteral(s) => {
+                let mut chars = vec![];
+
+
+                let mut char_iter = s.chars();
+
+                loop {
+                    match char_iter.next() {
+                        Some(c) => match c {
+                            '\\' => {
+                                match char_iter.next() {
+                                    Some(c) => {
+                                        // TODO: Handle all escape sequences
+                                        chars.push(('\n' as u8).to_string())
+                                    }
+
+                                    // string literal ends with a backslash
+                                    None => panic!("String cannot end with a \\"),
+                                }
+                            }
+
+                            _ => {
+                                chars.push((c as u8).to_string());
+                            }
+                        },
+
+                        None => break,
+                    }
+                }
+
                 // add the string literal in the data segement
                 self.data.push(format!(
                     "string_{} db {}",
                     self.num_strings,
-                    s.as_bytes()
-                        .iter()
-                        .map(|x| { x.to_string() })
-                        .collect::<Vec<String>>()
-                        .join(",")
+                    chars.join(",")
                 ));
 
                 instructions.extend(vec![
                     format!("mov rax, string_{}", self.num_strings),
                     format!("push rax"),
-                    format!("push {}", s.len()),
+                    format!("push {}", chars.len()),
                 ]);
 
                 self.num_strings += 1;
