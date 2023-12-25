@@ -145,6 +145,7 @@ impl<'a> Parser<'a> {
                 }
 
                 TokenEnum::SemiColon => {
+                    self.get_next_token();
                     continue
                 }
 

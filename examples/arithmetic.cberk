@@ -1,35 +1,35 @@
--- addition
-write(3 + 2)
-write(4 + (2 + 3))
-write((5 + 3) + 2)
-write(1 + 1)
-write(0 + (3 + 2))
-
--- subtraction
-write(9 - 5)
+-- addition;
+write(3 + 2);
+write(4 + (2 + 3));
+write((5 + 3) + 2);
+write(1 + 1);
+write(0 + (3 + 2));
+;
+-- subtraction;
+write(9 - 5);
 write(10 - (3 + 2))
-write((15 - 5) - 3)
-write(6 - 1)
-write(8 - (3 + 1))
-
--- multiplication
+write((15 - 5) - 3);
+write(6 - 1);
+write(8 - (3 + 1));
+;
+-- multiplication;
 write(3 * 2)
-write(2 * (3 * 2))
+write(2 * (3 * 2));
 write((5 * 3) * 2)
-write(4 * 3)
-write(5 * (2 * 2))
-
--- division
-write(8 / 2)
-write(18 / (2 + 1))
-write((12 / 3) / 2)
-write(15 / 5)
-write(20 / (5 + 1))
-
--- all
+write(4 * 3);
+write(5 * (2 * 2));
+;
+-- division;
+write(8 / 2);
+write(18 / (2 + 1));
+write((12 / 3) / 2);
+write(15 / 5);
+write(20 / (5 + 1));
+;
+-- all;
 write(5 + 3 * 2)
-write((6 + 2) * 3 - 6 / 2)
-write((12 + 3) / 3 * 2)
+write((6 + 2) * 3 - 6 / 2);
+write((12 + 3) / 3 * 2);
 write(5 + 2 * (3 - 1))
-write((5 + 3) * 2 / 4)
+write((5 + 3) * 2 / 4);
 write((3 + (4 * (6 - 5))) * ((7 + (8 / (9 + 10))) / 11) + (12 * 13) + (1434 / (15 + (142 - 16))))
