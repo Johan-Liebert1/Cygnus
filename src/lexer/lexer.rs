@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
 use super::{
-    keywords,
-    tokens::{Number, Operations, TokenEnum},
+    keywords::{self, LOGICAL_AND, LOGICAL_OR},
+    tokens::{Number, Operations, TokenEnum, LogicalOps},
 };
 
 #[derive(Debug)]
@@ -90,6 +90,14 @@ impl<'a> Lexer<'a> {
         self.index -= 1;
 
         if keywords::KEYWORDS.contains(&word.as_str()) {
+            if word.as_str() == LOGICAL_AND {
+                return TokenEnum::LogicalOp(LogicalOps::And);
+            }
+
+            if word.as_str() == LOGICAL_OR {
+                return TokenEnum::LogicalOp(LogicalOps::Or);
+            }
+
             return TokenEnum::Keyword(word);
         }
 

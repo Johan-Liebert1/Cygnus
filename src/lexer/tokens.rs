@@ -54,6 +54,12 @@ pub enum Operand {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum LogicalOps {
+    Or,
+    And,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum TokenEnum {
     Equals,
     Comma,
@@ -64,6 +70,7 @@ pub enum TokenEnum {
     Bracket(Bracket),
     Op(Operations),
     Comparator(Comparators),
+    LogicalOp(LogicalOps),
 
     Bool(bool),
     Keyword(String),

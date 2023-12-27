@@ -1,17 +1,1 @@
-def a: int = 1;
-
-fun hello() {
-    loop from 0 to 3 {
-        a = a + 1;
-        
-        write("here\n")
-
-        if a > 1 {
-            break
-        }
-    }
-
-    write(69)
-}
-
-hello()
+or
