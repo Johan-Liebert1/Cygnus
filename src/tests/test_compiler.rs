@@ -41,3 +41,15 @@ fn fibonacci() {
     let (stdout_str, file_result) = get_stdout_and_actual_result("fibonacci.cberk");
     assert_eq!(stdout_str, file_result);
 }
+
+#[test]
+fn loop_break() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("loop_break.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
+fn early_return() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("early_return.cberk");
+    assert_eq!(stdout_str, file_result);
+}
