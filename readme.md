@@ -9,7 +9,7 @@
 - [x] Add ==, != and other comparison ops
 - [ ] Add bitwise operations
     - [x] shl, shr
-    - [ ] or, and, xor
+    - [x] or, and, xor
 - [x] `return` and `break` statements
 - [x] Functions in Compilation mode
 - [x] Variables in Compilation mode
