@@ -1,11 +1,15 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::{
-    ast::{abstract_syntax_tree::AST, program::Program},
+    ast::{
+        abstract_syntax_tree::AST,
+        jump::{Jump, JumpType},
+        program::Program,
+    },
     interpreter::interpreter::Functions,
     lexer::{
         keywords::{
-            ELIF_STATEMENT, ELSE_STATEMENT, FUNCTION_DEFINE, IF_STATEMENT, LOOP, VAR_DEFINE,
+            BREAK, ELIF_STATEMENT, ELSE_STATEMENT, FUNCTION_DEFINE, IF_STATEMENT, LOOP, VAR_DEFINE, RETURN,
         },
         lexer::{Lexer, Token},
         tokens::{Bracket, TokenEnum},
@@ -71,6 +75,22 @@ impl<'a> Parser<'a> {
 
                     FUNCTION_DEFINE => self.parse_function_definition(Rc::clone(&self.functions)),
 
+                    BREAK => {
+                        if self.inside_loop_depth == 0 {
+                            panic!("Found `break` outside of a loop");
+                        }
+
+                        Rc::new(Box::new(Jump::new(JumpType::Break)))
+                    }
+
+                    RETURN => {
+                        if self.inside_function_depth == 0 {
+                            panic!("Found `return` outside of a function");
+                        }
+
+                        Rc::new(Box::new(Jump::new(JumpType::Return)))
+                    }
+
                     ELSE_STATEMENT => {
                         panic!("Found 'else' without an 'if' {:?}", current_token)
                     }
@@ -80,6 +100,12 @@ impl<'a> Parser<'a> {
                     }
 
                     _ => {
+                        println!(
+                            "loop {}, func {}, if {}",
+                            self.inside_loop_depth,
+                            self.inside_function_depth,
+                            self.inside_if_else_depth
+                        );
                         panic!("Keyword '{}' not recognised", keyword);
                     }
                 }

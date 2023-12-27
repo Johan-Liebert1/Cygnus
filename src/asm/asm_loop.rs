@@ -57,4 +57,21 @@ impl ASM {
             }
         }
     }
+
+    pub fn loop_break(&mut self) {
+        let current_label = self.current_label();
+
+        for label in &mut self.labels {
+            if label.name == current_label {
+                // encountered a break, so an unconditional jump to the end of the loop
+                // self.num_loops - 1 as we increment the loop number as soon as we enter the loop
+                // and break statement is outside of the loop
+                label.code.extend(vec![
+                    format!(";; --- break ----"),
+                    format!("jmp .loop_end_{}", self.num_loops - 1),
+                ]);
+                break;
+            }
+        }
+    }
 }
