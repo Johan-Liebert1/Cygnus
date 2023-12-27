@@ -30,14 +30,7 @@ impl ASM {
             format!("push rcx"),
         ];
 
-        let current_label = self.current_label();
-
-        for label in &mut self.labels {
-            if label.name == current_label {
-                label.code.extend(loop_start);
-                break;
-            }
-        }
+        self.extend_current_label(loop_start);
     }
 
     pub fn gen_loop_end(&mut self, loop_number: usize) {
@@ -48,30 +41,18 @@ impl ASM {
             format!(".loop_end_{}:", loop_number),
         ];
 
-        let current_label = self.current_label();
-
-        for label in &mut self.labels {
-            if label.name == current_label {
-                label.code.extend(loop_end);
-                break;
-            }
-        }
+        self.extend_current_label(loop_end);
     }
 
     pub fn loop_break(&mut self) {
-        let current_label = self.current_label();
+        // encountered a break, so an unconditional jump to the end of the loop
+        // self.num_loops - 1 as we increment the loop number as soon as we enter the loop
+        // and break statement is outside of the loop
+        let instructions = vec![
+            format!(";; --- break ----"),
+            format!("jmp .loop_end_{}", self.num_loops - 1),
+        ];
 
-        for label in &mut self.labels {
-            if label.name == current_label {
-                // encountered a break, so an unconditional jump to the end of the loop
-                // self.num_loops - 1 as we increment the loop number as soon as we enter the loop
-                // and break statement is outside of the loop
-                label.code.extend(vec![
-                    format!(";; --- break ----"),
-                    format!("jmp .loop_end_{}", self.num_loops - 1),
-                ]);
-                break;
-            }
-        }
+        self.extend_current_label(instructions);
     }
 }

@@ -70,6 +70,24 @@ impl ASM {
         });
     }
 
+    pub fn extend_current_label(&mut self, vec: Vec<String>) {
+        for label in &mut self.labels {
+            if label.name == self.current_label {
+                label.code.extend(vec);
+                break;
+            }
+        }
+    }
+
+    pub fn add_to_current_label(&mut self, line: String) {
+        for label in &mut self.labels {
+            if label.name == self.current_label {
+                label.code.push(line);
+                break;
+            }
+        }
+    }
+
     pub fn current_label(&self) -> String {
         return self.current_label.clone();
     }

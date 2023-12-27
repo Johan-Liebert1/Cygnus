@@ -1,5 +1,7 @@
 use crate::{
-    ast::variable::Variable, interpreter::interpreter::Variables, lexer::tokens::VariableEnum,
+    ast::{conditionals::IfStatement, variable::Variable},
+    interpreter::interpreter::Variables,
+    lexer::tokens::VariableEnum,
 };
 
 use super::asm::ASM;
@@ -18,43 +20,25 @@ const WRITE_STRING_ASM_INSTRUCTIONS: [&str; 9] = [
 
 impl ASM {
     pub fn func_write_number(&mut self) {
-        let current_label = self.current_label();
-
-        for label in &mut self.labels {
-            if label.name == current_label {
-                label.code.push(String::from("pop rax"));
-                label.code.push(String::from("call _printRAX"));
-            }
-        }
+        self.extend_current_label(vec![
+            String::from("pop rax"),
+            String::from("call _printRAX"),
+        ]);
     }
 
     pub fn func_exit(&mut self) {
-        let current_label = self.current_label();
-
-        for label in &mut self.labels {
-            if label.name == current_label {
-                label.code.extend(vec![
-                    format!("pop rdi"),
-                    format!("mov rax, 60"),
-                    format!("syscall"),
-                ]);
-            }
-        }
+        self.extend_current_label(vec![
+            format!("pop rdi"),
+            format!("mov rax, 60"),
+            format!("syscall"),
+        ]);
     }
 
     pub fn func_write_string(&mut self) {
-        let current_label = self.current_label();
-
-        for label in &mut self.labels {
-            if label.name == current_label {
-                // TODO: There's some weird stack alloc issue when I try to do this. So this takes a
-                // backseat for now
-                // label.code.push(String::from("call _printString"));
-                label
-                    .code
-                    .extend(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()));
-            }
-        }
+        // TODO: There's some weird stack alloc issue when I try to do this. So this takes a
+        // backseat for now
+        // label.code.push(String::from("call _printString"));
+        self.extend_current_label(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec());
     }
 
     pub fn func_write_var(&mut self, var_name: &String, variables: &Variables) {
@@ -123,13 +107,6 @@ impl ASM {
             }
         };
 
-        let current_label = self.current_label();
-
-        for label in &mut self.labels {
-            if label.name == current_label {
-                label.code.extend(instructions);
-                break;
-            }
-        }
+        self.extend_current_label(instructions);
     }
 }

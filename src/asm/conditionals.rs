@@ -28,20 +28,11 @@ impl ASM {
             format!("je {}", jump_to_label),
         ];
 
-        let current_label = self.current_label();
-
-        for label in &mut self.labels {
-            if label.name == current_label {
-                label.code.extend(instructions);
-                break;
-            }
-        }
+        self.extend_current_label(instructions);
     }
 
     pub fn if_end(&mut self, jump_to: ConditionalJumpTo, elif_len: usize, if_num: usize) {
         // println!("if_end jump_to {:?}", jump_to);
-
-        let current_label = self.current_label();
 
         let jump_to_label = match jump_to {
             // we simply jump to the very next label here as this means that there is a single if block without any elif
@@ -58,12 +49,7 @@ impl ASM {
             format!(".if_end_{}:", if_num),
         ];
 
-        for label in &mut self.labels {
-            if label.name == current_label {
-                label.code.extend(instructions);
-                break;
-            }
-        }
+        self.extend_current_label(instructions);
     }
 
     /// The label names for all elifs will be of the same format, i.e. <elif label name>_<elif_number>
@@ -87,14 +73,7 @@ impl ASM {
             format!("je {}", jump_to_label),
         ];
 
-        let current_label = self.current_label();
-
-        for label in &mut self.labels {
-            if label.name == current_label {
-                label.code.extend(instructions);
-                break;
-            }
-        }
+        self.extend_current_label(instructions);
     }
 
     // we need jump_to in case there is not else
@@ -112,38 +91,15 @@ impl ASM {
             format!(".elif_{}_{}_end:", if_num, elif_number),
         ];
 
-        let current_label = self.current_label();
-
-        for label in &mut self.labels {
-            if label.name == current_label {
-                label.code.extend(instructions);
-                break;
-            }
-        }
+        self.extend_current_label(instructions);
     }
 
     /// The label name for else will be unique
     pub fn else_start(&mut self, if_num: usize) {
-        let current_label = self.current_label();
-
-        for label in &mut self.labels {
-            if label.name == current_label {
-                label.code.push(format!(".else_{}:", if_num));
-                break;
-            }
-        }
+        self.add_to_current_label(format!(".else_{}:", if_num));
     }
 
     pub fn else_end(&mut self, if_num: usize) {
-        // self.change_current_label(format!(".{}_end", label_name));
-
-        let current_label = self.current_label();
-
-        for label in &mut self.labels {
-            if label.name == current_label {
-                label.code.push(format!(".else_end_{}:", if_num));
-                break;
-            }
-        }
+        self.add_to_current_label(format!(".else_end_{}:", if_num));
     }
 }

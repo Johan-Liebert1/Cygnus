@@ -33,14 +33,7 @@ impl ASM {
             format!("push rax"),
         ]);
 
-        let current_label = self.current_label();
-
-        for label in &mut self.labels {
-            if label.name == current_label {
-                label.code.extend(instructions);
-                break;
-            }
-        }
+        self.extend_current_label(instructions);
 
         self.comparison_num += 1;
     }
