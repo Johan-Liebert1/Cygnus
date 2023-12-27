@@ -64,7 +64,7 @@ impl<'a> Parser<'a> {
         // TODO: handle function calls and strings and stuff here
         return Rc::new(Box::new(DeclarationStatement::new(
             left,
-            self.parse_comparison_expression(),
+            self.parse_logical_expression(),
         )));
     }
 }

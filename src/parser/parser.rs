@@ -113,7 +113,7 @@ impl<'a> Parser<'a> {
             }
 
             // FIXME: This cannot be any bracket, example { is not correct
-            TokenEnum::Number(..) | TokenEnum::Bracket(..) => self.parse_comparison_expression(),
+            TokenEnum::Number(..) | TokenEnum::Bracket(..) => self.parse_logical_expression(),
 
             TokenEnum::Variable(var) => {
                 // 2 here as we haven't consumed the `var` token

@@ -8,7 +8,7 @@ use crate::{
 use super::parser::Parser;
 
 impl<'a> Parser<'a> {
-    /// COMPARISON -> EXPRESSION (> | < | >= | <=) EXPRESSION
+    /// COMPARISON_EXPRESSION -> EXPRESSION ((> | < | >= | <= | == | !=) EXPRESSION)*
     pub fn parse_comparison_expression(&mut self) -> Rc<Box<dyn AST>> {
         let left_expression = self.parse_expression();
 

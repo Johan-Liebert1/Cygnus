@@ -27,7 +27,7 @@ impl<'a> Parser<'a> {
                     }
 
                     Bracket::LParen => {
-                        let factor = self.parse_comparison_expression();
+                        let factor = self.parse_logical_expression();
                         arguments.push(factor);
                     }
 
@@ -40,7 +40,7 @@ impl<'a> Parser<'a> {
                 }
 
                 _ => {
-                    let factor = self.parse_comparison_expression();
+                    let factor = self.parse_logical_expression();
                     arguments.push(factor);
                 }
             };
