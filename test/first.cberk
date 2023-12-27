@@ -1,1 +1,7 @@
-write(5 > 6 or 5 < 8 and 5 > 9)
+if 33 == 34 {
+    write("Test 5: in first if\n");
+} elif 32 > 31 or 33 == 34 {
+    write("Test 5: in first elif\n");
+} else {
+    write("Test 5: in else\n");
+}
