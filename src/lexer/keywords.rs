@@ -10,8 +10,10 @@ pub const USING: &str = "using";
 pub const FROM: &str = "from";
 pub const TO: &str = "to";
 pub const STEP: &str = "step";
+pub const RETURN: &str = "return";
+pub const BREAK: &str = "break";
 
-pub const KEYWORDS: [&str; 10] = [
+pub const KEYWORDS: [&str; 12] = [
     VAR_DEFINE,
     IF_STATEMENT,
     ELSE_STATEMENT,
@@ -22,6 +24,8 @@ pub const KEYWORDS: [&str; 10] = [
     TO,
     STEP,
     FUNCTION_DEFINE,
+    RETURN,
+    BREAK,
 ];
 
 // Predefined functions

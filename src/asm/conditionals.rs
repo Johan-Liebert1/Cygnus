@@ -45,7 +45,7 @@ impl ASM {
 
         let jump_to_label = match jump_to {
             // we simply jump to the very next label here as this means that there is a single if block without any elif
-            // or else 
+            // or else
             ConditionalJumpTo::IfEnd => format!(".if_end_{}", if_num),
             ConditionalJumpTo::ElifEnd => format!(".elif_{}_{}_end", if_num, elif_len - 1),
             ConditionalJumpTo::Elif => panic!("Cannot jump to elif start from if end"),

@@ -8,7 +8,9 @@ use crate::{generate_asm, parse_input_file};
 fn get_stdout_and_actual_result(file_name: &str) -> (String, String) {
     let mut stdout_str = String::new();
 
-    if let Some(ref mut stdout) = parse_input_file(format!("./examples/{}", file_name), true, true, true) {
+    if let Some(ref mut stdout) =
+        parse_input_file(format!("./examples/{}", file_name), true, true, true)
+    {
         stdout.read_to_string(&mut stdout_str);
     }
 
@@ -16,9 +18,10 @@ fn get_stdout_and_actual_result(file_name: &str) -> (String, String) {
 
     println!("file_name_wo_ext {:?}", file_name_wo_ext);
 
-    let file_result = fs::read_to_string(format!("./examples/output/{}", file_name_wo_ext[0])).unwrap();
+    let file_result =
+        fs::read_to_string(format!("./examples/output/{}", file_name_wo_ext[0])).unwrap();
 
-    return (stdout_str, file_result)
+    return (stdout_str, file_result);
 }
 
 #[test]

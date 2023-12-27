@@ -19,7 +19,6 @@ impl ASM {
             TokenEnum::StringLiteral(s) => {
                 let mut chars = vec![];
 
-
                 let mut char_iter = s.chars();
 
                 loop {
@@ -65,15 +64,13 @@ impl ASM {
             TokenEnum::Variable(var_name) => {
                 match vars.get(var_name) {
                     Some(..) => {
-                        instructions.extend(vec![
-                            format!("mov rax, [{var_name}]"),
-                            format!("push rax"),
-                        ]);
-                    },
+                        instructions
+                            .extend(vec![format!("mov rax, [{var_name}]"), format!("push rax")]);
+                    }
 
                     None => {
                         println!("Variable {var_name} is not defined")
-                    },
+                    }
                 };
             }
 

@@ -79,7 +79,9 @@ impl<'a> Parser<'a> {
 
         // As we can fit an entire program inside a function
         // TODO: This introduces function and variable scoping issues
-        let block = self.parse_program(true);
+        self.inside_function_depth += 1;
+        let block = self.parse_program();
+        self.inside_function_depth -= 1;
 
         // println!("next token after parse_statements in parse_function_definition {:?}", self.peek_next_token().token);
 

@@ -9,7 +9,7 @@ use crate::{
 fn run_the_test(file: &Vec<u8>) -> VisitResult {
     let mut parser = Parser::new(&file);
 
-    let ast = parser.parse_program(false);
+    let ast = parser.parse_program();
 
     let mut interpreter = Interpreter::new(ast, parser.functions);
     let result = interpreter.interpret();
