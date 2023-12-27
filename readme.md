@@ -10,7 +10,7 @@
 - [ ] Add bitwise operations
     - [x] shl, shr
     - [ ] or, and, xor
-- [ ] `return` and `break` statements
+- [x] `return` and `break` statements
 - [x] Functions in Compilation mode
 - [x] Variables in Compilation mode
 - [ ] Variable scoping
@@ -28,11 +28,12 @@
     FUNCTION_DEF             -> fun VAR_NAME LPAREN (VAR_NAME : VAR_TYPE)* RPAREN LCURLY STATEMENT[] RCURLY
     FUNCTION_CALL            -> VAR_NAME LPAREN (COMPARISON_EXPRESSION)* RPAREN
     LOOP                     -> loop from LPAREN* EXPRESSION to EXPRESSION (step EXPRESSION)* RPAREN* (with VAR_NAME)* LCURLY STATEMENT[] RCURLY
-    CONDITIONAL_STATEMENT    -> if LPAREN* COMPARISON_EXPRESSION RPAREN* LCURLY STATEMENT[]* RCURLY ELSE_STATEMENT*
+    CONDITIONAL_STATEMENT    -> if LPAREN* LOGICAL_EXPRESSION RPAREN* LCURLY STATEMENT[]* RCURLY ELSE_STATEMENT*
     ASSIGNMENT_STATEMENT     -> VAR_NAME = (COMPARISON_EXPRESSION)*
     ELSE_STATEMENT           -> else LCURLY STATEMENT[]* RCURLY
-    VARIABLE_DECLARATION     -> def VAR_NAME: VAR_TYPE (= COMPARISON_EXPRESSION)*
+    VARIABLE_DECLARATION     -> def VAR_NAME: VAR_TYPE (= LOGICAL_EXPRESSION)*
     VAR_TYPE                 -> int | float
+    LOGICAL_EXPRESSION       -> COMPARISON_EXPRESSION ((and | or) COMPARISON_EXPRESSION)*
     COMPARISON_EXPRESSION    -> EXPRESSION ((> | < | >= | <= | == | !=) EXPRESSION)*
     EXPRESSION               -> TERM (( + | - ) TERM)*                      # for precedence as term will be calculated first
     TERM                     -> FACTOR (( * | /  | << | >> | % ) FACTOR)*

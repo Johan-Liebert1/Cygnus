@@ -65,7 +65,7 @@ impl<'a> Parser<'a> {
     pub fn parse_if_elif(&mut self) -> IfStatement {
         // Parse if statements and any and all elif and else statements
         // store them all in one AST
-        let condition = self.parse_comparison_expression();
+        let condition = self.parse_logical_expression();
 
         match self.peek_next_token().token {
             TokenEnum::Bracket(b) => match b {

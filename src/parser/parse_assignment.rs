@@ -13,7 +13,7 @@ impl<'a> Parser<'a> {
 
         self.validate_token(TokenEnum::Equals);
 
-        let right = self.parse_comparison_expression();
+        let right = self.parse_logical_expression();
 
         return Rc::new(Box::new(AssignmentStatement::new(var_name, right)));
     }

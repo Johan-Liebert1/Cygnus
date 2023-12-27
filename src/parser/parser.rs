@@ -9,7 +9,8 @@ use crate::{
     interpreter::interpreter::Functions,
     lexer::{
         keywords::{
-            BREAK, ELIF_STATEMENT, ELSE_STATEMENT, FUNCTION_DEFINE, IF_STATEMENT, LOOP, VAR_DEFINE, RETURN,
+            BREAK, ELIF_STATEMENT, ELSE_STATEMENT, FUNCTION_DEFINE, IF_STATEMENT, LOOP, RETURN,
+            VAR_DEFINE,
         },
         lexer::{Lexer, Token},
         tokens::{Bracket, TokenEnum},
@@ -112,7 +113,7 @@ impl<'a> Parser<'a> {
             }
 
             // FIXME: This cannot be any bracket, example { is not correct
-            TokenEnum::Number(..) | TokenEnum::Bracket(..) => self.parse_comparison_expression(),
+            TokenEnum::Number(..) | TokenEnum::Bracket(..) => self.parse_logical_expression(),
 
             TokenEnum::Variable(var) => {
                 // 2 here as we haven't consumed the `var` token
@@ -145,6 +146,10 @@ impl<'a> Parser<'a> {
                         panic!("Expected `)` or `=` after {}, got {:?}", var, e)
                     }
                 }
+            }
+
+            TokenEnum::LogicalOp(op) => {
+                panic!("Expected statement, found {:?}", op)
             }
 
             TokenEnum::StringLiteral(_) => todo!(),

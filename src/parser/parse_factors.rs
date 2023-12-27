@@ -28,13 +28,13 @@ impl<'a> Parser<'a> {
             TokenEnum::Bracket(paren) => match paren {
                 Bracket::LParen => {
                     self.get_next_token();
-                    let return_value = self.parse_comparison_expression();
+                    let return_value = self.parse_logical_expression();
 
                     let next_next_token = self.peek_next_token();
 
                     match &next_next_token.token {
                         TokenEnum::Bracket(b) => match b {
-                            Bracket::LParen => self.parse_comparison_expression(),
+                            Bracket::LParen => self.parse_logical_expression(),
 
                             Bracket::RParen => {
                                 self.get_next_token();

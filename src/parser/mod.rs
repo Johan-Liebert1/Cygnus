@@ -1,4 +1,5 @@
 pub mod parse_assignment;
+pub mod parse_logical_exp;
 pub mod parse_comparison;
 pub mod parse_conditionals;
 pub mod parse_declaration;

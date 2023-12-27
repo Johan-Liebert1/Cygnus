@@ -1,17 +1,7 @@
-def a: int = 1;
-
-fun hello() {
-    loop from 0 to 3 {
-        a = a + 1;
-        
-        write("here\n")
-
-        if a > 1 {
-            break
-        }
-    }
-
-    write(69)
+if 33 == 34 {
+    write("Test 5: in first if\n");
+} elif 32 > 31 or 33 == 34 {
+    write("Test 5: in first elif\n");
+} else {
+    write("Test 5: in else\n");
 }
-
-hello()
