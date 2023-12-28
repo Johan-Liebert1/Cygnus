@@ -2,17 +2,18 @@
 
 ### Todo, to do, tu du, tu du, tu du, tu du, tu duuuuuu, tu du du
 
-- [ ] Write tests
+- [x] Write tests
 
 - [x] Command line args for the compiler, to turn on/off various features
 - [x] Implement all binary ops
 - [x] Add ==, != and other comparison ops
-- [ ] Add bitwise operations
+- [x] Add bitwise operations
     - [x] shl, shr
     - [x] or, and, xor
 - [x] `return` and `break` statements
 - [x] Functions in Compilation mode
 - [x] Variables in Compilation mode
+- [ ] Make sure nothing is left on the stack when we break out of a loop
 - [ ] Variable scoping
 - [ ] Pointer deref
 - [ ] Command link arguments
