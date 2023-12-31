@@ -1,0 +1,7 @@
+Ways to type check
+
+1. Semantic analyzer that is between parsing and interpreting. Put all type checking stuff here. 
+Handle local variable, call stack scoping here.
+There should be no type checking binary op or comparison op. Asm should not be generated if types are incorrect
+
+2. 

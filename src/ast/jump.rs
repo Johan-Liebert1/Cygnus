@@ -2,7 +2,8 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     asm::asm::ASM,
-    interpreter::interpreter::{Functions, Variables}, lexer::tokens::TokenEnum,
+    interpreter::interpreter::{Functions, Variables},
+    lexer::tokens::TokenEnum,
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};
@@ -28,7 +29,7 @@ impl AST for Jump {
 
         // this is pretty straightforward. We simply return
         return VisitResult {
-            token: Box::new(TokenEnum::Unknown("".into()))
+            token: Box::new(TokenEnum::Unknown("".into())),
         };
     }
 
@@ -44,6 +45,10 @@ impl AST for Jump {
     }
 
     fn print(&self) {
+        todo!()
+    }
+
+    fn type_check(&self, call_stack: &crate::semantic::semantic_analyzer::CallStackRecord) {
         todo!()
     }
 }

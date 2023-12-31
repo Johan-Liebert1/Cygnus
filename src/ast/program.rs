@@ -49,4 +49,8 @@ impl AST for Program {
     fn print(&self) {
         println!("{:#?}", self);
     }
+
+    fn type_check(&self, call_stack: &crate::semantic::semantic_analyzer::CallStackRecord) {
+        todo!()
+    }
 }

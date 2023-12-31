@@ -22,13 +22,12 @@ impl<'a> Parser<'a> {
                         self.get_next_token(),
                         self.parse_logical_expression(),
                     )));
-                },
+                }
 
                 _ => {
                     return left;
                 }
             };
         }
-
     }
 }

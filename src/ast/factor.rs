@@ -60,6 +60,10 @@ impl AST for Factor {
     fn print(&self) {
         println!("{:#?}", self);
     }
+
+    fn type_check(&self, call_stack: &crate::semantic::semantic_analyzer::CallStackRecord) {
+        todo!()
+    }
 }
 
 // fn thing() -> Box<Rc<dyn AST>> {

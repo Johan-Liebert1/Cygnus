@@ -17,6 +17,7 @@ mod helpers;
 mod interpreter;
 mod lexer;
 mod parser;
+mod semantic;
 mod tests;
 
 pub fn generate_asm() -> io::Result<()> {

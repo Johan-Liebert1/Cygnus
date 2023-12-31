@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use super::{
     keywords::{self, LOGICAL_AND, LOGICAL_OR},
-    tokens::{Number, Operations, TokenEnum, LogicalOps},
+    tokens::{LogicalOps, Number, Operations, TokenEnum},
 };
 
 #[derive(Debug)]
