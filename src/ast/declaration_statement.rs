@@ -6,22 +6,22 @@ use crate::{
     lexer::{
         lexer::Token,
         tokens::{Number, TokenEnum, VariableEnum},
-    },
+    }, trace,
 };
 
 use super::{
     abstract_syntax_tree::{VisitResult, AST},
-    variable::Variable,
+    variable::VariableAST,
 };
 
 #[derive(Debug)]
 pub struct DeclarationStatement {
-    left: Variable,
+    left: VariableAST,
     right: Rc<Box<dyn AST>>,
 }
 
 impl DeclarationStatement {
-    pub fn new(left: Variable, right: Rc<Box<dyn AST>>) -> Self {
+    pub fn new(left: VariableAST, right: Rc<Box<dyn AST>>) -> Self {
         Self { left, right }
     }
 }
@@ -45,7 +45,6 @@ impl AST for DeclarationStatement {
 
         // TODO: change this so that the expression is stored here and we need to visit the varible
         // to evaluate the value
-        //
         match &*right_visit.token {
             TokenEnum::StringLiteral(s) => {
                 vars.insert(var_name.clone(), VariableEnum::String(s.into()));
@@ -72,7 +71,7 @@ impl AST for DeclarationStatement {
     }
 
     fn print(&self) {
-        println!("{:#?}", self);
+        trace!("{:#?}", self);
     }
 
     fn type_check(&self, call_stack: &crate::semantic::semantic_analyzer::CallStackRecord) {

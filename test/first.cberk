@@ -1,7 +1,7 @@
-if 33 == 34 {
-    write("Test 5: in first if\n");
-} elif 32 > 31 or 33 == 34 {
-    write("Test 5: in first elif\n");
-} else {
-    write("Test 5: in else\n");
+def global_var: int = 23;
+
+fun hello() {
+    def a: int = 12;
 }
+
+write(global_var)

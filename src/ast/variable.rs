@@ -7,19 +7,19 @@ use crate::{
         keywords::{TYPE_FLOAT, TYPE_INT, TYPE_STRING},
         lexer::Token,
         tokens::{Number, VariableEnum},
-    },
+    }, trace,
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};
 
 #[derive(Debug)]
-pub struct Variable {
+pub struct VariableAST {
     token: Box<Token>,
     pub var_name: String,
     pub var_type: String,
 }
 
-impl Variable {
+impl VariableAST {
     pub fn new(token: Box<Token>, var_type: String, var_name: String) -> Self {
         Self {
             token,
@@ -38,7 +38,7 @@ impl Variable {
     }
 }
 
-impl AST for Variable {
+impl AST for VariableAST {
     fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
         todo!()
     }
@@ -52,7 +52,7 @@ impl AST for Variable {
     }
 
     fn print(&self) {
-        println!("{:#?}", self);
+        trace!("{:#?}", self);
     }
 
     fn type_check(&self, call_stack: &crate::semantic::semantic_analyzer::CallStackRecord) {

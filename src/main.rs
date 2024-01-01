@@ -3,12 +3,12 @@
 use std::{
     char,
     io::{self, BufReader, Read},
-    process::{ChildStdout, Stdio},
+    process::{ChildStdout, Stdio}, rc::Rc,
 };
 
 use parser::parser::Parser;
 
-use crate::interpreter::interpreter::Interpreter;
+use crate::{interpreter::interpreter::Interpreter, semantic::semantic_analyzer::SemanticAnalyzer};
 
 mod asm;
 mod ast;
@@ -40,18 +40,21 @@ pub fn parse_input_file(
     run_asm: bool,
     is_test: bool,
 ) -> Option<ChildStdout> {
-    println!("Parsing file {path}");
+    trace!("Parsing file {path}");
 
     let file = match std::fs::read(&path) {
         Ok(file) => file,
         Err(err) => {
-            println!("Failed to open `{path}` with err {:?}", err);
+            trace!("Failed to open `{path}` with err {:?}", err);
             return None;
         }
     };
 
     let mut parser = Parser::new(&file);
     let ast = parser.parse_program();
+
+    let semantic_analyzer = SemanticAnalyzer::new(Rc::clone(&ast));
+    semantic_analyzer.analyze(&parser.variables, &parser.function_variables.borrow());
 
     let mut interpreter = Interpreter::new(ast, parser.functions);
 
@@ -63,7 +66,7 @@ pub fn parse_input_file(
 
         match generate_asm() {
             Ok(_) => {
-                println!(
+                trace!(
                     "Successful!{}",
                     if run_asm {
                         ""
@@ -74,7 +77,7 @@ pub fn parse_input_file(
             }
 
             Err(e) => {
-                println!("Failed to generate asm: {:?}", e);
+                trace!("Failed to generate asm: {:?}", e);
                 std::env::set_current_dir(current_dir).unwrap();
                 return None;
             }
@@ -92,18 +95,18 @@ pub fn parse_input_file(
             Ok(ref mut child) => match child.wait() {
                 Ok(exit_status) => {
                     if !is_test {
-                        println!("Exited with status {exit_status}")
+                        trace!("Exited with status {exit_status}")
                     }
 
                     std::env::set_current_dir(current_dir).unwrap();
                     return Some(child.stdout.take().unwrap());
                 }
 
-                Err(err) => println!("Error while waiting for child {:?}", err),
+                Err(err) => trace!("Error while waiting for child {:?}", err),
             },
 
             Err(e) => {
-                println!("Failed to spawn run process: {:?}", e);
+                trace!("Failed to spawn run process: {:?}", e);
             }
         }
 
@@ -113,7 +116,7 @@ pub fn parse_input_file(
 
     let result = interpreter.interpret();
 
-    println!("{:#?}", result);
+    trace!("{:#?}", result);
 
     return None;
 }
@@ -139,7 +142,7 @@ fn main() {
 
             e => {
                 if !file_name_next {
-                    println!("Unrecognised arg {e}");
+                    trace!("Unrecognised arg {e}");
                     break;
                 }
 
@@ -153,6 +156,6 @@ fn main() {
     {
         let mut str = String::new();
         stdout.read_to_string(&mut str);
-        println!("{:?}", str);
+        trace!("{:?}", str);
     }
 }

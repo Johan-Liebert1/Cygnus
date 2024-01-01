@@ -44,7 +44,7 @@ impl<'a> Lexer<'a> {
             let char = self.file[self.index] as char;
 
             // if !peek {
-            //     println!("Current char '{}' Peek: {}", char, peek);
+            //     trace!("Current char '{}' Peek: {}", char, peek);
             // }
 
             let token = match char {

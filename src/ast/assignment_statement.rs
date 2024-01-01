@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::{TokenEnum, VariableEnum},
+    lexer::tokens::{TokenEnum, VariableEnum}, trace,
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};
@@ -57,7 +57,7 @@ impl AST for AssignmentStatement {
     }
 
     fn print(&self) {
-        println!("{:#?}", self)
+        trace!("{:#?}", self)
     }
 
     fn type_check(&self, call_stack: &crate::semantic::semantic_analyzer::CallStackRecord) {

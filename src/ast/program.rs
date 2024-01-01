@@ -1,7 +1,7 @@
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::TokenEnum,
+    lexer::tokens::TokenEnum, trace,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -47,7 +47,7 @@ impl AST for Program {
     }
 
     fn print(&self) {
-        println!("{:#?}", self);
+        trace!("{:#?}", self);
     }
 
     fn type_check(&self, call_stack: &crate::semantic::semantic_analyzer::CallStackRecord) {

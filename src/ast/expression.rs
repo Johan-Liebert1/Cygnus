@@ -1,7 +1,7 @@
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::lexer::Token,
+    lexer::lexer::Token, trace,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -20,7 +20,7 @@ impl AST for Expression {
     }
 
     fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
-        println!("Expression visit");
+        trace!("Expression visit");
         VisitResult {
             token: Box::new(self.operand.token.clone()),
         }
@@ -31,7 +31,7 @@ impl AST for Expression {
     }
 
     fn print(&self) {
-        println!("{:#?}", self);
+        trace!("{:#?}", self);
     }
 
     fn type_check(&self, call_stack: &crate::semantic::semantic_analyzer::CallStackRecord) {

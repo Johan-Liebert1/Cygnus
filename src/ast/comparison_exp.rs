@@ -5,7 +5,7 @@ use crate::{
     lexer::{
         lexer::Token,
         tokens::{Comparators, Number, Operand, TokenEnum, VariableEnum},
-    },
+    }, trace,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -136,8 +136,8 @@ impl AST for ComparisonExp {
 
     fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
         if constants::DEBUG_AST {
-            println!("{:#?}", &self);
-            println!("===============================================");
+            trace!("{:#?}", &self);
+            trace!("===============================================");
         }
 
         let visit_left = self.left.visit(i, Rc::clone(&f));
@@ -169,7 +169,7 @@ impl AST for ComparisonExp {
     }
 
     fn print(&self) {
-        println!("{:#?}", self);
+        trace!("{:#?}", self);
     }
 
     fn type_check(&self, call_stack: &crate::semantic::semantic_analyzer::CallStackRecord) {

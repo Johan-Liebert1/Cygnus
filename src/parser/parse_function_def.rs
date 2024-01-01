@@ -1,14 +1,14 @@
 use std::rc::Rc;
 
 use crate::{
-    ast::{abstract_syntax_tree::AST, function_def::FunctionDefinition, variable::Variable},
+    ast::{abstract_syntax_tree::AST, function_def::FunctionDefinition, variable::VariableAST},
     lexer::tokens::{Bracket, TokenEnum},
 };
 
 use super::parser::{Parser, ParserFunctions};
 
 impl<'a> Parser<'a> {
-    fn parse_function_definition_parameters(&mut self) -> Vec<Variable> {
+    fn parse_function_definition_parameters(&mut self) -> Vec<VariableAST> {
         let mut parameters = vec![];
 
         loop {
@@ -36,7 +36,7 @@ impl<'a> Parser<'a> {
             };
         }
 
-        // println!("parameters {:?}", parameters);
+        // trace!("parameters {:?}", parameters);
 
         return parameters;
     }
@@ -80,10 +80,12 @@ impl<'a> Parser<'a> {
         // As we can fit an entire program inside a function
         // TODO: This introduces function and variable scoping issues
         self.inside_function_depth += 1;
+        self.function_name = Some(function_name.clone());
         let block = self.parse_program();
+        self.function_name = None;
         self.inside_function_depth -= 1;
 
-        // println!("next token after parse_statements in parse_function_definition {:?}", self.peek_next_token().token);
+        // trace!("next token after parse_statements in parse_function_definition {:?}", self.peek_next_token().token);
 
         match self.get_next_token().token {
             TokenEnum::Bracket(b) => match b {
@@ -98,8 +100,14 @@ impl<'a> Parser<'a> {
 
         let ff = function_name.clone();
 
+        let local_vars = self.function_variables.borrow().get(&ff);
+
+        // let function_variables = std::mem::take(&mut self.function_variables);
+
         // Create an Rc from the Box
-        let function_def = FunctionDefinition::new(function_name, parameters, block);
+        // TODO: Fix local variables
+        let function_def =
+            FunctionDefinition::new(function_name, parameters, Rc::clone(&self.function_variables), block);
 
         let fdef: Rc<Box<dyn AST>> = Rc::new(Box::new(function_def));
 

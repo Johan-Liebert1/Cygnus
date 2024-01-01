@@ -1,4 +1,4 @@
-use crate::ast::variable::Variable;
+use crate::ast::variable::VariableAST;
 
 use super::asm::ASM;
 

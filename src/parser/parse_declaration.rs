@@ -2,7 +2,8 @@ use std::rc::Rc;
 
 use crate::{
     ast::{
-        abstract_syntax_tree::AST, declaration_statement::DeclarationStatement, variable::Variable,
+        abstract_syntax_tree::AST, declaration_statement::DeclarationStatement,
+        variable::VariableAST,
     },
     lexer::tokens::TokenEnum,
 };
@@ -11,7 +12,7 @@ use super::parser::Parser;
 
 impl<'a> Parser<'a> {
     /// VARIABLE_DECLARATION -> def VAR_NAME: VAR_TYPE (= COMPARISON_EXPRESSION)*
-    pub fn parse_variable(&mut self) -> Variable {
+    pub fn parse_variable(&mut self) -> VariableAST {
         let token = self.get_next_token();
 
         match token.token {
@@ -27,7 +28,7 @@ impl<'a> Parser<'a> {
                             TokenEnum::Type(var_type) => {
                                 let token = self.get_next_token();
 
-                                return Variable::new(
+                                return VariableAST::new(
                                     Box::new(token),
                                     var_type.to_string(),
                                     var_name,
@@ -48,8 +49,18 @@ impl<'a> Parser<'a> {
 
     pub fn parse_declaration_statement(&mut self) -> Rc<Box<dyn AST>> {
         // we get here after consuming 'def'
-
         let left = self.parse_variable();
+
+        match self.function_name {
+            Some(_) => {
+                self.function_variables.borrow_mut().insert(left.var_name.clone(), left.get_var_enum_from_type());
+            }
+
+            None => {
+                self.variables
+                    .insert(left.var_name.clone(), left.get_var_enum_from_type());
+            }
+        }
 
         match self.get_next_token().token {
             TokenEnum::Equals => {

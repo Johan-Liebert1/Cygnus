@@ -5,34 +5,45 @@ use crate::{
         keywords::{TYPE_FLOAT, TYPE_INT},
         lexer::Token,
         tokens::{Number, TokenEnum, VariableEnum},
-    },
+    }, trace,
 };
 use std::{cell::RefCell, rc::Rc};
 
 use super::{
     abstract_syntax_tree::{VisitResult, AST},
-    variable::Variable,
+    variable::VariableAST,
 };
 
 #[derive(Debug)]
 pub struct FunctionDefinition {
     name: String,
-    parameters: Vec<Variable>,
+    parameters: Vec<VariableAST>,
+    local_variables: Rc<RefCell<Variables>>,
     block: Rc<Box<dyn AST>>,
 }
 
 impl FunctionDefinition {
-    pub fn new(name: String, arguments: Vec<Variable>, block: Rc<Box<dyn AST>>) -> Self {
+    pub fn new(
+        name: String,
+        arguments: Vec<VariableAST>,
+        local_variables: Rc<RefCell<Variables>>,
+        block: Rc<Box<dyn AST>>,
+    ) -> Self {
+        trace!("{:?}", local_variables);
+
         Self {
             name,
             parameters: arguments,
             block,
+            local_variables,
         }
     }
 }
 
 impl AST for FunctionDefinition {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+        trace!("{} Function '{}', local vars: {:#?}", file!(), self.name, self.local_variables);
+
         asm.function_def(&self.name);
         self.block.visit_com(v, f, asm);
         asm.function_def_end(&self.name);
@@ -68,7 +79,7 @@ impl AST for FunctionDefinition {
     }
 
     fn print(&self) {
-        println!("{:?}", &self);
+        trace!("{:?}", &self);
     }
 
     fn type_check(&self, call_stack: &crate::semantic::semantic_analyzer::CallStackRecord) {

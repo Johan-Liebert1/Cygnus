@@ -10,7 +10,7 @@ pub enum ConditionalJumpTo {
 
 impl ASM {
     pub fn if_start(&mut self, jump_to: ConditionalJumpTo, if_num: usize) {
-        // println!("if_start jump_to {:?}", jump_to);
+        // trace!("if_start jump_to {:?}", jump_to);
 
         let jump_to_label = match jump_to {
             ConditionalJumpTo::IfEnd => format!(".if_end_{}", if_num),
@@ -32,7 +32,7 @@ impl ASM {
     }
 
     pub fn if_end(&mut self, jump_to: ConditionalJumpTo, elif_len: usize, if_num: usize) {
-        // println!("if_end jump_to {:?}", jump_to);
+        // trace!("if_end jump_to {:?}", jump_to);
 
         let jump_to_label = match jump_to {
             // we simply jump to the very next label here as this means that there is a single if block without any elif

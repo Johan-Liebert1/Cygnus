@@ -7,7 +7,7 @@ use crate::{
         keywords::{FUNC_EXIT, FUNC_STRLEN, FUNC_WRITE},
         lexer::Token,
         tokens::{Number, TokenEnum},
-    },
+    }, trace,
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};
@@ -29,7 +29,7 @@ impl AST for FunctionCall {
         match self.name.as_str() {
             FUNC_WRITE => {
                 for arg in &self.arguments {
-                    // println!("FunctionCall visit_com arg: {:#?}", arg);
+                    // trace!("FunctionCall visit_com arg: {:#?}", arg);
 
                     // this will generate everything and put in rax
                     arg.visit_com(v, Rc::clone(&f), asm);
@@ -66,7 +66,7 @@ impl AST for FunctionCall {
 
             name => match f.borrow().get(name) {
                 Some(function_ast) => {
-                    println!("Visiting func {name}");
+                    trace!("Visiting func {name}");
                     asm.function_call(&String::from(name));
                 }
 
@@ -79,8 +79,8 @@ impl AST for FunctionCall {
         match self.name.as_str() {
             FUNC_WRITE => {
                 for arg in &self.arguments {
-                    // println!("Visiting func write. Arg {:?}", arg);
-                    println!("{:?}", arg.visit(v, Rc::clone(&f)));
+                    // trace!("Visiting func write. Arg {:?}", arg);
+                    trace!("{:?}", arg.visit(v, Rc::clone(&f)));
                 }
 
                 return VisitResult {
@@ -94,8 +94,8 @@ impl AST for FunctionCall {
                 }
 
                 for arg in &self.arguments {
-                    // println!("Visiting func write. Arg {:?}", arg);
-                    // println!("{:?}", arg.visit(v, Rc::clone(&f)));
+                    // trace!("Visiting func write. Arg {:?}", arg);
+                    // trace!("{:?}", arg.visit(v, Rc::clone(&f)));
 
                     let arg = arg.visit(v, Rc::clone(&f));
 
@@ -118,7 +118,7 @@ impl AST for FunctionCall {
 
             name => match f.borrow().get(name) {
                 Some(function_ast) => {
-                    println!("Visiting func {name}");
+                    trace!("Visiting func {name}");
 
                     function_ast.visit(v, Rc::clone(&f))
                 }
@@ -133,7 +133,7 @@ impl AST for FunctionCall {
     }
 
     fn print(&self) {
-        println!("{:?}", &self);
+        trace!("{:?}", &self);
     }
 
     fn type_check(&self, call_stack: &crate::semantic::semantic_analyzer::CallStackRecord) {

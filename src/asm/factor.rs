@@ -1,6 +1,6 @@
 use crate::{
     interpreter::interpreter::Variables,
-    lexer::tokens::{Number, TokenEnum},
+    lexer::tokens::{Number, TokenEnum}, trace,
 };
 
 use super::asm::ASM;
@@ -69,7 +69,7 @@ impl ASM {
                     }
 
                     None => {
-                        println!("Variable {var_name} is not defined")
+                        trace!("Variable {var_name} is not defined")
                     }
                 };
             }

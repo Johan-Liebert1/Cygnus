@@ -2,6 +2,7 @@ use std::io::prelude::*;
 use std::{cell::RefCell, collections::HashMap, fs::File, rc::Rc};
 
 use crate::lexer::tokens::VariableEnum;
+use crate::trace;
 use crate::{
     asm::asm::ASM,
     ast::abstract_syntax_tree::{VisitResult, AST},
@@ -34,7 +35,7 @@ impl Interpreter {
     fn write_nasm(&self) -> Result<(), std::io::Error> {
         let file_name = "generated/output.asm";
 
-        println!("pwd {:?}", std::env::current_dir());
+        trace!("pwd {:?}", std::env::current_dir());
 
         let mut file = File::create(&file_name);
 
@@ -76,7 +77,7 @@ impl Interpreter {
             }
 
             Err(e) => {
-                println!("Failed to open file `{file_name}` in interpreter: {}", e);
+                trace!("Failed to open file `{file_name}` in interpreter: {}", e);
             }
         }
 

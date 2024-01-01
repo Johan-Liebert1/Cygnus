@@ -3,7 +3,7 @@ use std::{
     io::{BufReader, Read, Write},
 };
 
-use crate::{generate_asm, parse_input_file};
+use crate::{generate_asm, parse_input_file, trace};
 
 fn get_stdout_and_actual_result(file_name: &str) -> (String, String) {
     let mut stdout_str = String::new();
@@ -16,7 +16,7 @@ fn get_stdout_and_actual_result(file_name: &str) -> (String, String) {
 
     let file_name_wo_ext = file_name.split('.').collect::<Vec<&str>>();
 
-    println!("file_name_wo_ext {:?}", file_name_wo_ext);
+    trace!("file_name_wo_ext {:?}", file_name_wo_ext);
 
     let file_result =
         fs::read_to_string(format!("./examples/output/{}", file_name_wo_ext[0])).unwrap();

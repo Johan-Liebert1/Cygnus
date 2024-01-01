@@ -5,7 +5,7 @@ use crate::{
     lexer::{
         lexer::Token,
         tokens::{TokenEnum, VariableEnum},
-    },
+    }, trace,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -30,7 +30,7 @@ impl AST for Factor {
 
     fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
         if constants::DEBUG_AST {
-            println!("{:?}", &self);
+            trace!("{:?}", &self);
         }
 
         let token_enum = match &self.token.token {
@@ -58,7 +58,7 @@ impl AST for Factor {
     }
 
     fn print(&self) {
-        println!("{:#?}", self);
+        trace!("{:#?}", self);
     }
 
     fn type_check(&self, call_stack: &crate::semantic::semantic_analyzer::CallStackRecord) {

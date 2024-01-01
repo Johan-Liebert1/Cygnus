@@ -1,5 +1,5 @@
 use crate::{
-    ast::{conditionals::IfStatement, variable::Variable},
+    ast::{conditionals::IfStatement, variable::VariableAST},
     interpreter::interpreter::Variables,
     lexer::tokens::VariableEnum,
 };

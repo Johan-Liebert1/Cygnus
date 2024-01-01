@@ -3,7 +3,7 @@ use std::rc::Rc;
 use crate::{
     ast::{abstract_syntax_tree::AST, binary_op::BinaryOP},
     constants,
-    lexer::tokens::{Operations, TokenEnum},
+    lexer::tokens::{Operations, TokenEnum}, trace,
 };
 
 use super::parser::Parser;
@@ -17,7 +17,7 @@ impl<'a> Parser<'a> {
             let next_token = self.peek_next_token();
 
             if constants::PARSER_DEBUG {
-                println!("parse_term next_token {:#?}", next_token);
+                trace!("parse_term next_token {:#?}", next_token);
             }
 
             match &next_token.token {

@@ -6,7 +6,7 @@ use crate::{
         jump::{Jump, JumpType},
         program::Program,
     },
-    interpreter::interpreter::Functions,
+    interpreter::interpreter::{Functions, Variables},
     lexer::{
         keywords::{
             BREAK, ELIF_STATEMENT, ELSE_STATEMENT, FUNCTION_DEFINE, IF_STATEMENT, LOOP, RETURN,
@@ -14,7 +14,7 @@ use crate::{
         },
         lexer::{Lexer, Token},
         tokens::{Bracket, TokenEnum},
-    },
+    }, trace,
 };
 
 pub type ParserFunctions = Rc<RefCell<Functions>>;
@@ -25,10 +25,14 @@ pub struct Parser<'a> {
     parsed_tokens: Vec<Token>,
     pub bracket_stack: Vec<Bracket>,
     pub functions: ParserFunctions,
+    pub variables: Variables,
+    pub function_variables: Rc<RefCell<Variables>>,
 
     pub inside_loop_depth: usize,
     pub inside_function_depth: usize,
     pub inside_if_else_depth: usize,
+
+    pub function_name: Option<String>,
 }
 
 impl<'a> Parser<'a> {
@@ -40,10 +44,13 @@ impl<'a> Parser<'a> {
             parsed_tokens: vec![],
             bracket_stack: vec![],
             functions: Rc::new(RefCell::new(HashMap::new())),
+            variables: HashMap::new(),
+            function_variables: Rc::new(RefCell::new(HashMap::new())),
 
             inside_loop_depth: 0,
             inside_function_depth: 0,
             inside_if_else_depth: 0,
+            function_name: None,
         }
     }
 
@@ -61,7 +68,7 @@ impl<'a> Parser<'a> {
     pub fn parse_statements(&mut self) -> Rc<Box<dyn AST>> {
         let current_token = self.peek_next_token();
 
-        // println!("parse_statements current_token {:#?}", current_token);
+        // trace!("parse_statements current_token {:#?}", current_token);
 
         match &current_token.token {
             TokenEnum::Keyword(keyword) => {
@@ -101,7 +108,7 @@ impl<'a> Parser<'a> {
                     }
 
                     _ => {
-                        println!(
+                        trace!(
                             "loop {}, func {}, if {}",
                             self.inside_loop_depth,
                             self.inside_function_depth,
@@ -119,7 +126,7 @@ impl<'a> Parser<'a> {
                 // 2 here as we haven't consumed the `var` token
                 let nth_token = self.peek_nth_token(2);
 
-                // println!("parse_statements variable nth_token {:#?}", current_token);
+                // trace!("parse_statements variable nth_token {:#?}", current_token);
 
                 match nth_token.token {
                     TokenEnum::Bracket(b) => {

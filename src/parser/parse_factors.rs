@@ -3,7 +3,7 @@ use std::{process::exit, rc::Rc};
 use crate::{
     ast::{abstract_syntax_tree::AST, factor::Factor},
     constants, helpers,
-    lexer::tokens::{Bracket, Number, TokenEnum},
+    lexer::tokens::{Bracket, Number, TokenEnum}, trace,
 };
 
 use super::parser::Parser;
@@ -14,12 +14,12 @@ impl<'a> Parser<'a> {
         let next_token = self.peek_next_token();
 
         if constants::PARSER_DEBUG {
-            println!("parse_factor next_token {:#?}", next_token);
+            trace!("parse_factor next_token {:#?}", next_token);
         }
 
         match &next_token.token {
             TokenEnum::Number(..) | TokenEnum::Variable(..) | TokenEnum::StringLiteral(..) => {
-                // println!("Inside the Number Variable thing {:?}", &next_token.token);
+                // trace!("Inside the Number Variable thing {:?}", &next_token.token);
 
                 self.get_next_token();
                 return Rc::new(Box::new(Factor::new(Box::new(next_token))));
@@ -64,7 +64,7 @@ impl<'a> Parser<'a> {
                             }
 
                             Bracket::RParen => {
-                                println!(") never opened");
+                                trace!(") never opened");
                                 exit(1);
                             }
 
@@ -75,7 +75,7 @@ impl<'a> Parser<'a> {
                     }
 
                     None => {
-                        println!(") never opened");
+                        trace!(") never opened");
                         exit(1);
                     }
                 },
