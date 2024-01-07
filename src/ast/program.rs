@@ -1,7 +1,8 @@
 use crate::{
     asm::asm::ASM,
-    interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::TokenEnum, trace,
+    interpreter::interpreter::{Functions, VariableHashMap},
+    lexer::tokens::TokenEnum,
+    trace,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -19,13 +20,13 @@ impl Program {
 }
 
 impl AST for Program {
-    fn visit_com(&self, x: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, x: &mut VariableHashMap, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
         for statement in &self.statements {
             statement.visit_com(x, Rc::clone(&f), asm);
         }
     }
 
-    fn visit(&self, x: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, x: &mut VariableHashMap, f: Rc<RefCell<Functions>>) -> VisitResult {
         let mut last: Option<VisitResult> = None;
 
         for statement in &self.statements {

@@ -2,11 +2,12 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     asm::asm::ASM,
-    interpreter::interpreter::{Functions, Variables},
+    interpreter::interpreter::{Functions, VarScope, VariableHashMap, VariableHashMapValue},
     lexer::{
         lexer::Token,
         tokens::{Number, TokenEnum, VariableEnum},
-    }, trace,
+    },
+    trace,
 };
 
 use super::{
@@ -27,10 +28,14 @@ impl DeclarationStatement {
 }
 
 impl AST for DeclarationStatement {
-    fn visit_com(&self, vars: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, vars: &mut VariableHashMap, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
         vars.insert(
             self.left.var_name.clone(),
-            self.left.get_var_enum_from_type(),
+            VariableHashMapValue {
+                var: self.left.get_var_enum_from_type(),
+                scope: VarScope::Global,
+                index: 0,
+            },
         );
 
         asm.variable_declaration(&self.left.var_name);
@@ -38,7 +43,7 @@ impl AST for DeclarationStatement {
         asm.variable_assignment(&self.left.var_name);
     }
 
-    fn visit(&self, vars: &mut Variables, functions: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, vars: &mut VariableHashMap, functions: Rc<RefCell<Functions>>) -> VisitResult {
         let right_visit = self.right.visit(vars, functions);
 
         let var_name = String::from(self.left.var_name.as_str());
@@ -47,11 +52,25 @@ impl AST for DeclarationStatement {
         // to evaluate the value
         match &*right_visit.token {
             TokenEnum::StringLiteral(s) => {
-                vars.insert(var_name.clone(), VariableEnum::String(s.into()));
+                vars.insert(
+                    var_name.clone(),
+                    VariableHashMapValue {
+                        var: VariableEnum::String(s.into()),
+                        scope: VarScope::Global,
+                        index: 0,
+                    },
+                );
             }
 
             TokenEnum::Number(n) => {
-                vars.insert(var_name.clone(), VariableEnum::Number(n.clone()));
+                vars.insert(
+                    var_name.clone(),
+                    VariableHashMapValue {
+                        var: VariableEnum::Number(n.clone()),
+                        scope: VarScope::Global,
+                        index: 0,
+                    },
+                );
             }
 
             TokenEnum::Variable(_) => todo!(),

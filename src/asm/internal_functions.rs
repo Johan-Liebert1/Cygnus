@@ -1,6 +1,6 @@
 use crate::{
     ast::{conditionals::IfStatement, variable::VariableAST},
-    interpreter::interpreter::Variables,
+    interpreter::interpreter::VariableHashMap,
     lexer::tokens::VariableEnum,
 };
 
@@ -41,7 +41,7 @@ impl ASM {
         self.extend_current_label(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec());
     }
 
-    pub fn func_write_var(&mut self, var_name: &String, variables: &Variables) {
+    pub fn func_write_var(&mut self, var_name: &String, variables: &VariableHashMap) {
         // TODO: Un-hardcode this
 
         let instructions = match var_name.as_str() {
@@ -87,7 +87,7 @@ impl ASM {
             _ => {
                 match variables.get(var_name) {
                     Some(var_enum) => {
-                        match var_enum {
+                        match var_enum.var {
                             VariableEnum::Number(..) => {
                                 vec![
                                     format!("pop rax"),

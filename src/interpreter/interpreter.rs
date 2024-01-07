@@ -9,12 +9,25 @@ use crate::{
     lexer::tokens::Number,
 };
 
-pub type Variables = HashMap<String, VariableEnum>;
+#[derive(Debug)]
+pub enum VarScope {
+    Local,
+    Global,
+}
+
+#[derive(Debug)]
+pub struct VariableHashMapValue {
+    pub var: VariableEnum,
+    pub scope: VarScope,
+    pub index: usize,
+}
+
+pub type VariableHashMap = HashMap<String, VariableHashMapValue>;
 pub type Functions = HashMap<String, Rc<Box<dyn AST>>>;
 
 pub struct Interpreter {
     ast: Rc<Box<dyn AST>>,
-    pub variables: Variables,
+    pub variables: VariableHashMap,
     pub functions: Rc<RefCell<Functions>>,
     pub asm: ASM,
 }
@@ -24,8 +37,22 @@ impl Interpreter {
         Self {
             ast,
             variables: HashMap::from([
-                ("argc".into(), VariableEnum::Number(Number::Integer(0))),
-                ("argv".into(), VariableEnum::String("".into())),
+                (
+                    "argc".into(),
+                    VariableHashMapValue {
+                        var: VariableEnum::Number(Number::Integer(0)),
+                        scope: VarScope::Global,
+                        index: 0,
+                    },
+                ),
+                (
+                    "argv".into(),
+                    VariableHashMapValue {
+                        var: VariableEnum::String("".into()),
+                        scope: VarScope::Global,
+                        index: 0,
+                    },
+                ),
             ]),
             functions,
             asm: ASM::default(),

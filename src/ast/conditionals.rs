@@ -1,7 +1,8 @@
 use crate::{
     asm::{asm::ASM, conditionals::ConditionalJumpTo},
-    interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::TokenEnum, trace,
+    interpreter::interpreter::{Functions, VariableHashMap},
+    lexer::tokens::TokenEnum,
+    trace,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -52,7 +53,7 @@ impl ConditionalStatement {
 }
 
 impl AST for ConditionalStatement {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, v: &mut VariableHashMap, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
         let current_num_if = asm.num_ifs;
         asm.inc_num_ifs();
 
@@ -124,7 +125,7 @@ impl AST for ConditionalStatement {
         }
     }
 
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, v: &mut VariableHashMap, f: Rc<RefCell<Functions>>) -> VisitResult {
         if let TokenEnum::Bool(value) = *self.if_statement.condition.visit(v, Rc::clone(&f)).token {
             if value {
                 return self.if_statement.block.visit(v, Rc::clone(&f));

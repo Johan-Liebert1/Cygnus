@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     asm::asm::ASM,
-    interpreter::interpreter::{Functions, Variables},
+    interpreter::interpreter::{Functions, VariableHashMap},
     lexer::{lexer::Token, tokens::TokenEnum},
 };
 
@@ -21,14 +21,14 @@ impl LogicalExpression {
 }
 
 impl AST for LogicalExpression {
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, v: &mut VariableHashMap, f: Rc<RefCell<Functions>>) -> VisitResult {
         let left = self.left.visit(v, Rc::clone(&f));
         let right = self.right.visit(v, Rc::clone(&f));
 
         todo!()
     }
 
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, v: &mut VariableHashMap, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
         self.left.visit_com(v, Rc::clone(&f), asm);
         self.right.visit_com(v, Rc::clone(&f), asm);
 

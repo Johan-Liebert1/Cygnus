@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     asm::asm::ASM,
-    interpreter::interpreter::{Functions, Variables},
+    interpreter::interpreter::{Functions, VariableHashMap},
     lexer::tokens::TokenEnum,
 };
 
@@ -24,7 +24,7 @@ impl Jump {
 }
 
 impl AST for Jump {
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, v: &mut VariableHashMap, f: Rc<RefCell<Functions>>) -> VisitResult {
         todo!();
 
         // this is pretty straightforward. We simply return
@@ -33,7 +33,7 @@ impl AST for Jump {
         };
     }
 
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, v: &mut VariableHashMap, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
         match self.typ {
             JumpType::Return => asm.function_return(),
             JumpType::Break => asm.loop_break(),

@@ -3,7 +3,8 @@
 use std::{
     char,
     io::{self, BufReader, Read},
-    process::{ChildStdout, Stdio}, rc::Rc,
+    process::{ChildStdout, Stdio},
+    rc::Rc,
 };
 
 use parser::parser::Parser;
@@ -66,6 +67,7 @@ pub fn parse_input_file(
 
         match generate_asm() {
             Ok(_) => {
+                println!();
                 trace!(
                     "Successful!{}",
                     if run_asm {

@@ -1,10 +1,10 @@
-use std::{rc::Rc, cell::RefCell};
+use std::{cell::RefCell, rc::Rc};
 
-use crate::{ast::abstract_syntax_tree::AST, interpreter::interpreter::Variables};
+use crate::{ast::abstract_syntax_tree::AST, interpreter::interpreter::VariableHashMap};
 
 #[derive(Debug)]
 pub struct CallStackRecord {
-    variables: Rc<RefCell<Variables>>,
+    variables: Rc<RefCell<VariableHashMap>>,
 }
 
 #[derive(Debug)]
@@ -21,7 +21,7 @@ impl SemanticAnalyzer {
         }
     }
 
-    pub fn analyze(&self, variables: &Variables, function_variables: &Variables) {
+    pub fn analyze(&self, variables: &VariableHashMap, function_variables: &VariableHashMap) {
         // trace!("Variables: {:#?}", variables);
         // trace!("Func Variables: {:#?}", function_variables);
     }

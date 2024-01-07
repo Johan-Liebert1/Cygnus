@@ -7,14 +7,18 @@ impl ASM {
         self.add_to_current_label(format!("call _{function_name}"));
     }
 
-    pub fn function_def(&mut self, function_name: &String) {
+    pub fn function_def(&mut self, function_name: &String, local_var_size: usize) {
         self.change_current_label(format!("_{function_name}"));
 
         // push rbp            ; Save old base pointer
         // mov rbp, rsp        ; Set base pointer to current stack pointer
         // sub rsp, 16         ; Allocate 16 bytes for local variables
 
-        let instructions = vec![format!("push rbp"), format!("mov rbp, rsp")];
+        let instructions = vec![
+            format!("push rbp"),
+            format!("mov rbp, rsp"),
+            format!("sub rsp, {}", local_var_size),
+        ];
 
         self.extend_current_label(instructions);
     }

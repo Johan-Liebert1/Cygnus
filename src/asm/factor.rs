@@ -1,13 +1,14 @@
 use crate::{
-    interpreter::interpreter::Variables,
-    lexer::tokens::{Number, TokenEnum}, trace,
+    interpreter::interpreter::VariableHashMap,
+    lexer::tokens::{Number, TokenEnum},
+    trace,
 };
 
 use super::asm::ASM;
 
 impl ASM {
     /// Pushes whatever token's in here onto the stack
-    pub fn generate_asm_factor(&mut self, token: &TokenEnum, vars: &Variables) {
+    pub fn generate_asm_factor(&mut self, token: &TokenEnum, vars: &VariableHashMap) {
         let mut instructions: Vec<String> = vec![];
 
         match token {

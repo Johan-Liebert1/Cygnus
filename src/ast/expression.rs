@@ -1,7 +1,8 @@
 use crate::{
     asm::asm::ASM,
-    interpreter::interpreter::{Functions, Variables},
-    lexer::lexer::Token, trace,
+    interpreter::interpreter::{Functions, VariableHashMap},
+    lexer::lexer::Token,
+    trace,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -15,11 +16,11 @@ pub struct Expression {
 }
 
 impl AST for Expression {
-    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, x: &mut VariableHashMap, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
         todo!()
     }
 
-    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, _: &mut VariableHashMap, _: Rc<RefCell<Functions>>) -> VisitResult {
         trace!("Expression visit");
         VisitResult {
             token: Box::new(self.operand.token.clone()),

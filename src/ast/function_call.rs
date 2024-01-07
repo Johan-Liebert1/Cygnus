@@ -2,12 +2,13 @@ use std::{cell::RefCell, process::exit, rc::Rc};
 
 use crate::{
     asm::asm::ASM,
-    interpreter::interpreter::{Functions, Variables},
+    interpreter::interpreter::{Functions, VariableHashMap},
     lexer::{
         keywords::{FUNC_EXIT, FUNC_STRLEN, FUNC_WRITE},
         lexer::Token,
         tokens::{Number, TokenEnum},
-    }, trace,
+    },
+    trace,
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};
@@ -25,7 +26,7 @@ impl FunctionCall {
 }
 
 impl AST for FunctionCall {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, v: &mut VariableHashMap, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
         match self.name.as_str() {
             FUNC_WRITE => {
                 for arg in &self.arguments {
@@ -75,7 +76,7 @@ impl AST for FunctionCall {
         }
     }
 
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, v: &mut VariableHashMap, f: Rc<RefCell<Functions>>) -> VisitResult {
         match self.name.as_str() {
             FUNC_WRITE => {
                 for arg in &self.arguments {

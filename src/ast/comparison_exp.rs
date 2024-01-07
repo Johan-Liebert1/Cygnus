@@ -1,11 +1,12 @@
 use crate::{
     asm::asm::ASM,
     constants,
-    interpreter::interpreter::{Functions, Variables},
+    interpreter::interpreter::{Functions, VariableHashMap},
     lexer::{
         lexer::Token,
         tokens::{Comparators, Number, Operand, TokenEnum, VariableEnum},
-    }, trace,
+    },
+    trace,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -67,12 +68,17 @@ impl ComparisonExp {
         }
     }
 
-    fn eval_var_num(&self, number: &Number, variable: &String, i: &mut Variables) -> VisitResult {
+    fn eval_var_num(
+        &self,
+        number: &Number,
+        variable: &String,
+        i: &mut VariableHashMap,
+    ) -> VisitResult {
         let result = i.get(variable);
 
         match result {
-            Some(var_num) => match var_num {
-                VariableEnum::Number(var_num) => self.eval_number_number(number, var_num),
+            Some(var_num) => match &var_num.var {
+                VariableEnum::Number(var_num) => self.eval_number_number(number, &var_num),
                 VariableEnum::String(_) => todo!(),
             },
 
@@ -80,14 +86,14 @@ impl ComparisonExp {
         }
     }
 
-    fn eval_var_var(&self, var1: &String, var2: &String, i: &mut Variables) -> VisitResult {
+    fn eval_var_var(&self, var1: &String, var2: &String, i: &mut VariableHashMap) -> VisitResult {
         let r1 = i.get(var1);
         let r2 = i.get(var2);
 
         match (r1, r2) {
-            (Some(var1), Some(var2)) => match (var1, var2) {
+            (Some(var1), Some(var2)) => match (&var1.var, &var2.var) {
                 (VariableEnum::Number(var1), VariableEnum::Number(var2)) => {
-                    self.eval_number_number(var1, var2)
+                    self.eval_number_number(&var1, &var2)
                 }
 
                 (VariableEnum::Number(_), VariableEnum::String(_)) => todo!(),
@@ -105,7 +111,7 @@ impl ComparisonExp {
         &self,
         left_op: &Operand,
         right_op: &Operand,
-        i: &mut Variables,
+        i: &mut VariableHashMap,
     ) -> VisitResult {
         match (left_op, right_op) {
             (Operand::Number(left_op), Operand::Number(right_op)) => {
@@ -121,7 +127,7 @@ impl ComparisonExp {
 }
 
 impl AST for ComparisonExp {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, v: &mut VariableHashMap, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
         self.left.visit_com(v, Rc::clone(&f), asm);
         self.right.visit_com(v, Rc::clone(&f), asm);
 
@@ -134,7 +140,7 @@ impl AST for ComparisonExp {
         }
     }
 
-    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, i: &mut VariableHashMap, f: Rc<RefCell<Functions>>) -> VisitResult {
         if constants::DEBUG_AST {
             trace!("{:#?}", &self);
             trace!("===============================================");

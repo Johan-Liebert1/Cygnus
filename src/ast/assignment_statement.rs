@@ -2,8 +2,9 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     asm::asm::ASM,
-    interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::{TokenEnum, VariableEnum}, trace,
+    interpreter::interpreter::{Functions, VarScope, VariableHashMap, VariableHashMapValue},
+    lexer::tokens::{TokenEnum, VariableEnum},
+    trace,
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};
@@ -21,23 +22,37 @@ impl AssignmentStatement {
 }
 
 impl AST for AssignmentStatement {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, v: &mut VariableHashMap, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
         self.right.visit_com(v, f, asm);
         asm.variable_assignment(&self.var_name);
     }
 
     // TODO: change this so that the expression is stored here and we need to visit the varible
     // to evaluate the value
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
-        let right_visit = self.right.visit(v, f);
+    fn visit(&self, vars: &mut VariableHashMap, f: Rc<RefCell<Functions>>) -> VisitResult {
+        let right_visit = self.right.visit(vars, f);
 
         match &*right_visit.token {
             TokenEnum::StringLiteral(s) => {
-                v.insert(self.var_name.clone(), VariableEnum::String(s.into()));
+                vars.insert(
+                    self.var_name.clone(),
+                    VariableHashMapValue {
+                        var: VariableEnum::String(s.into()),
+                        scope: VarScope::Global,
+                        index: 0,
+                    },
+                );
             }
 
             TokenEnum::Number(n) => {
-                v.insert(self.var_name.clone(), VariableEnum::Number(n.clone()));
+                vars.insert(
+                    self.var_name.clone(),
+                    VariableHashMapValue {
+                        var: VariableEnum::Number(n.clone()),
+                        scope: VarScope::Global,
+                        index: 0,
+                    },
+                );
             }
 
             TokenEnum::Variable(_) => todo!(),

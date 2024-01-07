@@ -10,11 +10,9 @@ impl VariableEnum {
     // Gets the variable size in bytes
     pub fn get_var_size(&self) -> usize {
         match self {
-            VariableEnum::Number(n) => {
-                match n {
-                    Number::Integer(_) => 8,
-                    Number::Float(_) => todo!(),
-                }
+            VariableEnum::Number(n) => match n {
+                Number::Integer(_) => 8,
+                Number::Float(_) => todo!(),
             },
 
             // 1 byte for pointer and another for length

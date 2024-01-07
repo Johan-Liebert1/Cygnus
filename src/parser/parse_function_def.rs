@@ -106,8 +106,12 @@ impl<'a> Parser<'a> {
 
         // Create an Rc from the Box
         // TODO: Fix local variables
-        let function_def =
-            FunctionDefinition::new(function_name, parameters, Rc::clone(&self.function_variables), block);
+        let function_def = FunctionDefinition::new(
+            function_name,
+            parameters,
+            Rc::clone(&self.function_variables),
+            block,
+        );
 
         let fdef: Rc<Box<dyn AST>> = Rc::new(Box::new(function_def));
 

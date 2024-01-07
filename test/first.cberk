@@ -2,6 +2,9 @@ def global_var: int = 23;
 
 fun hello() {
     def a: int = 12;
+    write("a", a)
 }
 
 write(global_var)
+
+hello()

@@ -3,7 +3,8 @@ use std::rc::Rc;
 use crate::{
     ast::{abstract_syntax_tree::AST, binary_op::BinaryOP},
     constants,
-    lexer::tokens::{Operations, TokenEnum}, trace,
+    lexer::tokens::{Operations, TokenEnum},
+    trace,
 };
 
 use super::parser::Parser;

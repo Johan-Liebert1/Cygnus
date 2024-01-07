@@ -2,12 +2,13 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     asm::asm::ASM,
-    interpreter::interpreter::{Functions, Variables},
+    interpreter::interpreter::{Functions, VariableHashMap},
     lexer::{
         keywords::{TYPE_FLOAT, TYPE_INT, TYPE_STRING},
         lexer::Token,
         tokens::{Number, VariableEnum},
-    }, trace,
+    },
+    trace,
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};
@@ -39,11 +40,11 @@ impl VariableAST {
 }
 
 impl AST for VariableAST {
-    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, x: &mut VariableHashMap, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
         todo!()
     }
 
-    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, _: &mut VariableHashMap, _: Rc<RefCell<Functions>>) -> VisitResult {
         todo!()
     }
 

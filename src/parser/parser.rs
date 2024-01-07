@@ -6,7 +6,7 @@ use crate::{
         jump::{Jump, JumpType},
         program::Program,
     },
-    interpreter::interpreter::{Functions, Variables},
+    interpreter::interpreter::{Functions, VariableHashMap},
     lexer::{
         keywords::{
             BREAK, ELIF_STATEMENT, ELSE_STATEMENT, FUNCTION_DEFINE, IF_STATEMENT, LOOP, RETURN,
@@ -14,7 +14,8 @@ use crate::{
         },
         lexer::{Lexer, Token},
         tokens::{Bracket, TokenEnum},
-    }, trace,
+    },
+    trace,
 };
 
 pub type ParserFunctions = Rc<RefCell<Functions>>;
@@ -25,8 +26,8 @@ pub struct Parser<'a> {
     parsed_tokens: Vec<Token>,
     pub bracket_stack: Vec<Bracket>,
     pub functions: ParserFunctions,
-    pub variables: Variables,
-    pub function_variables: Rc<RefCell<Variables>>,
+    pub variables: VariableHashMap,
+    pub function_variables: Rc<RefCell<VariableHashMap>>,
 
     pub inside_loop_depth: usize,
     pub inside_function_depth: usize,

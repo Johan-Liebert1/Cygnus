@@ -1,7 +1,8 @@
 use crate::{
     asm::asm::ASM,
-    interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::{Number, TokenEnum}, trace,
+    interpreter::interpreter::{Functions, VariableHashMap},
+    lexer::tokens::{Number, TokenEnum},
+    trace,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -34,7 +35,7 @@ impl Loop {
 }
 
 impl AST for Loop {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, v: &mut VariableHashMap, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
         // 1. Visit the from expression, to expression and step expression if they exist. Push
         //    them onto the stack
         //
@@ -56,7 +57,7 @@ impl AST for Loop {
         asm.gen_loop_end(current_num_loop);
     }
 
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, v: &mut VariableHashMap, f: Rc<RefCell<Functions>>) -> VisitResult {
         let from = self.from_range.visit(v, Rc::clone(&f));
         let to = self.to_range.visit(v, Rc::clone(&f));
         let step_by = self.step_by.visit(v, Rc::clone(&f));

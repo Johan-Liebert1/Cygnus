@@ -1,11 +1,12 @@
 use crate::{
     asm::asm::ASM,
     constants,
-    interpreter::interpreter::{Functions, Variables},
+    interpreter::interpreter::{Functions, VariableHashMap},
     lexer::{
         lexer::Token,
         tokens::{TokenEnum, VariableEnum},
-    }, trace,
+    },
+    trace,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -24,11 +25,11 @@ impl Factor {
 }
 
 impl AST for Factor {
-    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, x: &mut VariableHashMap, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
         asm.generate_asm_factor(&self.token.token, x);
     }
 
-    fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, v: &mut VariableHashMap, _: Rc<RefCell<Functions>>) -> VisitResult {
         if constants::DEBUG_AST {
             trace!("{:?}", &self);
         }
@@ -36,7 +37,7 @@ impl AST for Factor {
         let token_enum = match &self.token.token {
             TokenEnum::Variable(var_name) => {
                 if let Some(n) = v.get(var_name) {
-                    match n {
+                    match &n.var {
                         VariableEnum::Number(n) => TokenEnum::Number(n.clone()),
                         VariableEnum::String(s) => TokenEnum::StringLiteral(s.to_string()),
                     }

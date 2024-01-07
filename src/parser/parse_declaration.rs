@@ -5,6 +5,7 @@ use crate::{
         abstract_syntax_tree::AST, declaration_statement::DeclarationStatement,
         variable::VariableAST,
     },
+    interpreter::interpreter::{VarScope, VariableHashMapValue},
     lexer::tokens::TokenEnum,
 };
 
@@ -53,12 +54,25 @@ impl<'a> Parser<'a> {
 
         match self.function_name {
             Some(_) => {
-                self.function_variables.borrow_mut().insert(left.var_name.clone(), left.get_var_enum_from_type());
+                self.function_variables.borrow_mut().insert(
+                    left.var_name.clone(),
+                    VariableHashMapValue {
+                        var: left.get_var_enum_from_type(),
+                        scope: VarScope::Global,
+                        index: 0,
+                    },
+                );
             }
 
             None => {
-                self.variables
-                    .insert(left.var_name.clone(), left.get_var_enum_from_type());
+                self.variables.insert(
+                    left.var_name.clone(),
+                    VariableHashMapValue {
+                        var: left.get_var_enum_from_type(),
+                        scope: VarScope::Global,
+                        index: 0,
+                    },
+                );
             }
         }
 
