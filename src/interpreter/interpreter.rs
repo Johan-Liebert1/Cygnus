@@ -22,12 +22,17 @@ pub struct VariableHashMapValue {
     pub index: usize,
 }
 
+pub struct AllVariables {
+    global_vars: VariableHashMap,
+    function_vars: VariableHashMap,
+}
+
 pub type VariableHashMap = HashMap<String, VariableHashMapValue>;
 pub type Functions = HashMap<String, Rc<Box<dyn AST>>>;
 
 pub struct Interpreter {
     ast: Rc<Box<dyn AST>>,
-    pub variables: VariableHashMap,
+    pub variables: AllVariables,
     pub functions: Rc<RefCell<Functions>>,
     pub asm: ASM,
 }

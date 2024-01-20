@@ -54,6 +54,8 @@ pub fn parse_input_file(
     let mut parser = Parser::new(&file);
     let ast = parser.parse_program();
 
+    println!("{:#?}", parser.function_variables);
+
     let semantic_analyzer = SemanticAnalyzer::new(Rc::clone(&ast));
     semantic_analyzer.analyze(&parser.variables, &parser.function_variables.borrow());
 

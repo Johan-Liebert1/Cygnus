@@ -12,12 +12,13 @@ use super::abstract_syntax_tree::{VisitResult, AST};
 #[derive(Debug)]
 pub struct AssignmentStatement {
     var_name: String,
+    var_value: Option<VariableHashMapValue>,
     right: Rc<Box<dyn AST>>,
 }
 
 impl AssignmentStatement {
-    pub fn new(var_name: String, right: Rc<Box<dyn AST>>) -> Self {
-        Self { var_name, right }
+    pub fn new(var_name: String, var_value: Option<VariableHashMapValue>, right: Rc<Box<dyn AST>>) -> Self {
+        Self { var_name, var_value, right }
     }
 }
 

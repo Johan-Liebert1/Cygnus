@@ -5,6 +5,11 @@ fun hello() {
     write("a", a)
 }
 
+fun bye() {
+    def b: int = 12;
+    write("b", b)
+}
+
 write(global_var)
 
 hello()
