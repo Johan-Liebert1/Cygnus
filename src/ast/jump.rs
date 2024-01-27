@@ -1,8 +1,11 @@
+use crate::semantic_analyzer::semantic_analyzer::CallStack;
+
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     asm::asm::ASM,
-    interpreter::interpreter::{Functions, Variables}, lexer::tokens::TokenEnum,
+    interpreter::interpreter::{Functions, Variables},
+    lexer::tokens::TokenEnum,
 };
 
 use super::abstract_syntax_tree::{VisitResult, AST};
@@ -28,7 +31,7 @@ impl AST for Jump {
 
         // this is pretty straightforward. We simply return
         return VisitResult {
-            token: Box::new(TokenEnum::Unknown("".into()))
+            token: Box::new(TokenEnum::Unknown("".into())),
         };
     }
 
@@ -47,7 +50,7 @@ impl AST for Jump {
         todo!()
     }
 
-    fn semantic_visit(&self) {
+    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         todo!()
     }
 }

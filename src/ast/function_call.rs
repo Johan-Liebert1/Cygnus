@@ -1,3 +1,5 @@
+use crate::semantic_analyzer::semantic_analyzer::{CallStack, ActivationRecord, ActivationRecordType};
+
 use std::{cell::RefCell, process::exit, rc::Rc};
 
 use crate::{
@@ -136,7 +138,24 @@ impl AST for FunctionCall {
         println!("{:?}", &self);
     }
 
-    fn semantic_visit(&self) {
-        todo!()
+    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+        println!("self.name.as_str() = {}", self.name.as_str());
+
+        match self.name.as_str() {
+            // TODO: Handle this properly
+            FUNC_WRITE | FUNC_EXIT => {}
+
+            name => match f.borrow().get(name) {
+                Some(function_ast) => {
+                    println!("Visiting func {name}");
+
+                    call_stack.insert_record(ActivationRecord::new(name.to_string(), ActivationRecordType::Function));
+
+                    function_ast.semantic_visit(call_stack, Rc::clone(&f))
+                }
+
+                None => unimplemented!("Function {} unimplemented", self.name),
+            },
+        }
     }
 }

@@ -1,3 +1,5 @@
+use crate::semantic_analyzer::semantic_analyzer::CallStack;
+
 use crate::{
     asm::asm::ASM,
     constants,
@@ -208,7 +210,8 @@ impl AST for BinaryOP {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&self) {
-        todo!()
+    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+        self.left.semantic_visit(call_stack, Rc::clone(&f));
+        self.right.semantic_visit(call_stack, f);
     }
 }

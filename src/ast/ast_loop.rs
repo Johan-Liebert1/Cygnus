@@ -1,3 +1,7 @@
+use crate::semantic_analyzer::semantic_analyzer::{
+    ActivationRecord, ActivationRecordType, CallStack,
+};
+
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
@@ -104,7 +108,7 @@ impl AST for Loop {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&self) {
-        todo!()
+    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+        call_stack.insert_record(ActivationRecord::new("".into(), ActivationRecordType::Loop));
     }
 }

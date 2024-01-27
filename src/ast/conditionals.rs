@@ -1,3 +1,5 @@
+use crate::semantic_analyzer::semantic_analyzer::CallStack;
+
 use crate::{
     asm::{asm::ASM, conditionals::ConditionalJumpTo},
     interpreter::interpreter::{Functions, Variables},
@@ -158,7 +160,7 @@ impl AST for ConditionalStatement {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&self) {
+    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         todo!()
     }
 }

@@ -1,3 +1,5 @@
+use crate::semantic_analyzer::semantic_analyzer::CallStack;
+
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
@@ -71,7 +73,7 @@ impl AST for FunctionDefinition {
         println!("{:?}", &self);
     }
 
-    fn semantic_visit(&self) {
+    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         todo!()
     }
 }

@@ -1,3 +1,5 @@
+use crate::semantic_analyzer::semantic_analyzer::CallStack;
+
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
@@ -49,7 +51,7 @@ impl AST for LogicalExpression {
         todo!()
     }
 
-    fn semantic_visit(&self) {
+    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         todo!()
     }
 }

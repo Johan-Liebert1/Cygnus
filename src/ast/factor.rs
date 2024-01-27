@@ -1,3 +1,5 @@
+use crate::semantic_analyzer::semantic_analyzer::CallStack;
+
 use crate::{
     asm::asm::ASM,
     constants,
@@ -61,15 +63,7 @@ impl AST for Factor {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&self) {
-        todo!()
+    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+        // empty
     }
 }
-
-// fn thing() -> Box<Rc<dyn AST>> {
-//     return Box::new(Factor::new(Box::new(Token {
-//         token: crate::lexer::tokens::TokenEnum::EOF,
-//         line_number: 1,
-//         col_number: 1,
-//     })));
-// }

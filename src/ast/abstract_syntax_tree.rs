@@ -8,6 +8,7 @@ use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
     lexer::{lexer::Token, tokens::TokenEnum},
+    semantic_analyzer::semantic_analyzer::CallStack,
 };
 
 #[derive(Debug)]
@@ -18,7 +19,7 @@ pub struct VisitResult {
 pub trait AST {
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult;
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM);
-    fn semantic_visit(&self);
+    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>);
     fn get_token(&self) -> &Token;
     fn print(&self);
 }

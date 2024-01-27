@@ -3,12 +3,12 @@
 use std::{
     char,
     io::{self, BufReader, Read},
-    process::{ChildStdout, Stdio},
+    process::{ChildStdout, Stdio}, rc::Rc,
 };
 
 use parser::parser::Parser;
 
-use crate::interpreter::interpreter::Interpreter;
+use crate::{interpreter::interpreter::Interpreter, semantic_analyzer::semantic_analyzer::SemanticAnalyzer};
 
 mod asm;
 mod ast;
@@ -17,8 +17,8 @@ mod helpers;
 mod interpreter;
 mod lexer;
 mod parser;
-mod tests;
 mod semantic_analyzer;
+mod tests;
 
 pub fn generate_asm() -> io::Result<()> {
     let mut nasm = std::process::Command::new("nasm");
@@ -52,6 +52,9 @@ pub fn parse_input_file(
 
     let mut parser = Parser::new(&file);
     let ast = parser.parse_program();
+
+    let mut semantic_analyzer = SemanticAnalyzer::new(ast.clone(), Rc::clone(&parser.functions));
+    semantic_analyzer.analyze();
 
     let mut interpreter = Interpreter::new(ast, parser.functions);
 
