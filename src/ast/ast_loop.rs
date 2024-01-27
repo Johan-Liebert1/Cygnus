@@ -103,4 +103,8 @@ impl AST for Loop {
     fn print(&self) {
         println!("{:#?}", self);
     }
+
+    fn semantic_visit(&self) {
+        todo!()
+    }
 }

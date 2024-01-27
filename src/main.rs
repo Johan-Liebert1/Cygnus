@@ -18,6 +18,7 @@ mod interpreter;
 mod lexer;
 mod parser;
 mod tests;
+mod semantic_analyzer;
 
 pub fn generate_asm() -> io::Result<()> {
     let mut nasm = std::process::Command::new("nasm");

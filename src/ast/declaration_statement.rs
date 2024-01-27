@@ -74,4 +74,8 @@ impl AST for DeclarationStatement {
     fn print(&self) {
         println!("{:#?}", self);
     }
+
+    fn semantic_visit(&self) {
+        todo!()
+    }
 }

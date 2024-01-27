@@ -70,4 +70,8 @@ impl AST for FunctionDefinition {
     fn print(&self) {
         println!("{:?}", &self);
     }
+
+    fn semantic_visit(&self) {
+        todo!()
+    }
 }

@@ -54,4 +54,8 @@ impl AST for Variable {
     fn print(&self) {
         println!("{:#?}", self);
     }
+
+    fn semantic_visit(&self) {
+        todo!()
+    }
 }

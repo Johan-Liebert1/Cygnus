@@ -46,4 +46,8 @@ impl AST for Jump {
     fn print(&self) {
         todo!()
     }
+
+    fn semantic_visit(&self) {
+        todo!()
+    }
 }

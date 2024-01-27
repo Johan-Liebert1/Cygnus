@@ -49,4 +49,10 @@ impl AST for Program {
     fn print(&self) {
         println!("{:#?}", self);
     }
+
+    fn semantic_visit(&self) {
+        for statement in &self.statements {
+            statement.semantic_visit();
+        }
+    }
 }

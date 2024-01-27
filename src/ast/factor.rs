@@ -60,6 +60,10 @@ impl AST for Factor {
     fn print(&self) {
         println!("{:#?}", self);
     }
+
+    fn semantic_visit(&self) {
+        todo!()
+    }
 }
 
 // fn thing() -> Box<Rc<dyn AST>> {

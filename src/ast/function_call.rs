@@ -135,4 +135,8 @@ impl AST for FunctionCall {
     fn print(&self) {
         println!("{:?}", &self);
     }
+
+    fn semantic_visit(&self) {
+        todo!()
+    }
 }
