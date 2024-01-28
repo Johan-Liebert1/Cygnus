@@ -1,7 +1,3 @@
-def x: str = 5;
-
 fun thing(a: int, b: int) {
-    def c: str = 1;
+    def c: str = "hello";
 }
-
-write(x);

@@ -70,6 +70,24 @@ impl CallStack {
             }
         }
     }
+
+    pub fn get_func_var_stack_size(&self, function_name: &String) -> usize {
+        let mut size = 0;
+
+        for record in self.call_stack.iter().rev() {
+            for (_, var_enum) in record.variable_members.iter() {
+                size += var_enum.size();
+            }
+
+            if let ActivationRecordType::Function = record.record_type {
+                if &record.name == function_name {
+                    break;
+                }
+            }
+        }
+
+        return size;
+    }
 }
 
 pub struct SemanticAnalyzer {

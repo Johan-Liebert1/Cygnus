@@ -1,3 +1,4 @@
+use core::panic;
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::{
@@ -74,7 +75,14 @@ impl<'a> Parser<'a> {
 
                     LOOP => self.parse_loop(),
 
-                    FUNCTION_DEFINE => self.parse_function_definition(Rc::clone(&self.functions)),
+                    FUNCTION_DEFINE => {
+                        if self.inside_function_depth != 0 {
+                            // don't allow function in function definitions
+                            panic!("Defining function inside functions is not allowed");
+                        }
+
+                        self.parse_function_definition(Rc::clone(&self.functions))
+                    },
 
                     BREAK => {
                         if self.inside_loop_depth == 0 {

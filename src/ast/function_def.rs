@@ -88,6 +88,8 @@ impl AST for FunctionDefinition {
 
         self.block.semantic_visit(call_stack, Rc::clone(&f));
 
+        println!("Function stack size {}", call_stack.get_func_var_stack_size(&self.name));
+
         // pop the record here
         call_stack.pop();
     }

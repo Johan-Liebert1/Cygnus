@@ -6,6 +6,21 @@ pub enum VariableEnum {
     String(String),
 }
 
+impl VariableEnum {
+    pub fn size(&self) -> usize {
+        match self {
+            VariableEnum::Number(n) => match n {
+                // 64 bit integer
+                Number::Integer(_) => 8,
+                Number::Float(_) => todo!(),
+            },
+
+            // 8 bytes for length + 8 bytes for pointer to the start of the string
+            VariableEnum::String(_) => 16,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Operations {
     Plus,

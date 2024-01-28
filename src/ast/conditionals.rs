@@ -1,4 +1,6 @@
-use crate::semantic_analyzer::semantic_analyzer::CallStack;
+use crate::semantic_analyzer::semantic_analyzer::{
+    ActivationRecord, ActivationRecordType, CallStack,
+};
 
 use crate::{
     asm::{asm::ASM, conditionals::ConditionalJumpTo},
@@ -165,19 +167,41 @@ impl AST for ConditionalStatement {
             .condition
             .semantic_visit(call_stack, Rc::clone(&f));
 
+        call_stack.push(ActivationRecord::new(
+            "".into(),
+            ActivationRecordType::IfElse,
+        ));
+
         self.if_statement
             .block
             .semantic_visit(call_stack, Rc::clone(&f));
 
+        call_stack.pop();
+
         for elif in &self.elif_ladder {
             elif.condition.semantic_visit(call_stack, Rc::clone(&f));
+
+            call_stack.push(ActivationRecord::new(
+                "".into(),
+                ActivationRecordType::IfElse,
+            ));
+
             elif.block.semantic_visit(call_stack, Rc::clone(&f));
+
+            call_stack.pop();
         }
 
         if let Some(else_statement) = &self.else_statement {
+            call_stack.push(ActivationRecord::new(
+                "".into(),
+                ActivationRecordType::IfElse,
+            ));
+
             else_statement
                 .block
                 .semantic_visit(call_stack, Rc::clone(&f));
+
+            call_stack.pop();
         }
     }
 }

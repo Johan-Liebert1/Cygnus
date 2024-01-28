@@ -41,7 +41,7 @@ impl<'a> Parser<'a> {
         return parameters;
     }
 
-    /// FUNCTION_DEF -> fun VAR_NAME LPAREN (VAR_NAME : VAR_TYPE (,*))* RPAREN LCURLY STATEMENT[] RCURLY
+    /// FUNCTION_DEF -> fun VAR_NAME LPAREN (VAR_NAME : VAR_TYPE)* RPAREN LCURLY (STATEMENT[] - FUNCTION_DEF) RCURLY
     pub fn parse_function_definition(&mut self, f: ParserFunctions) -> Rc<Box<dyn AST>> {
         // we get here after consuming 'fun'
 
