@@ -9,7 +9,7 @@ use crate::{
     interpreter::interpreter::{Functions, Variables},
     lexer::{
         lexer::Token,
-        tokens::{Number, TokenEnum, VariableEnum},
+        tokens::{TokenEnum, VariableEnum},
     },
 };
 
@@ -79,7 +79,7 @@ impl AST for DeclarationStatement {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
         call_stack.insert_variable(&self.left.var_name, self.left.get_var_enum_from_type());
     }
 }

@@ -1,9 +1,9 @@
 use crate::types::ASTNode;
 
-use std::{borrow::Borrow, cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::{abstract_syntax_tree::AST, logical_exp::LogicalExpression},
+    ast::{logical_exp::LogicalExpression},
     lexer::tokens::TokenEnum,
 };
 

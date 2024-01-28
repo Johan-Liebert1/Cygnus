@@ -4,7 +4,6 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::{
-        abstract_syntax_tree::AST,
         conditionals::{ConditionalStatement, ElseStatement, IfStatement},
     },
     lexer::{

@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+
 
 use super::asm::ASM;
 
@@ -21,7 +21,7 @@ impl ASM {
         self.extend_current_label(instructions);
     }
 
-    pub fn function_def_end(&mut self, function_name: &String) {
+    pub fn function_def_end(&mut self, _function_name: &String) {
         // mov rsp, rbp        ; Reset stack pointer
         // pop rbp             ; Restore old base pointer
 

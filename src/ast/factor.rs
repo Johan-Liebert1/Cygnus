@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
@@ -65,7 +65,7 @@ impl AST for Factor {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
         match &self.token.token {
             TokenEnum::Variable(v) => {
                 if !call_stack.var_with_name_found(v) {

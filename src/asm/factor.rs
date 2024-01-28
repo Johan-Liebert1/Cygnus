@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+
 
 use crate::{
     interpreter::interpreter::Variables,
@@ -28,7 +28,7 @@ impl ASM {
                         Some(c) => match c {
                             '\\' => {
                                 match char_iter.next() {
-                                    Some(c) => {
+                                    Some(_c) => {
                                         // TODO: Handle all escape sequences
                                         chars.push(('\n' as u8).to_string())
                                     }

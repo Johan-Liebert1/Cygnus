@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
@@ -19,7 +19,7 @@ pub struct Expression {
 }
 
 impl AST for Expression {
-    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, _x: &mut Variables, _: Rc<RefCell<Functions>>, _asm: &mut ASM) {
         todo!()
     }
 
@@ -38,7 +38,7 @@ impl AST for Expression {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&self, _call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
         todo!()
     }
 }

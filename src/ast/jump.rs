@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
@@ -28,7 +28,7 @@ impl Jump {
 }
 
 impl AST for Jump {
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, _v: &mut Variables, _f: Rc<RefCell<Functions>>) -> VisitResult {
         todo!();
 
         // this is pretty straightforward. We simply return
@@ -37,7 +37,7 @@ impl AST for Jump {
         };
     }
 
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, _v: &mut Variables, _f: Rc<RefCell<Functions>>, asm: &mut ASM) {
         match self.typ {
             JumpType::Return => asm.function_return(),
             JumpType::Break => asm.loop_break(),
@@ -52,7 +52,7 @@ impl AST for Jump {
         todo!()
     }
 
-    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
         // Since we break out of a loop or return from a function, we need to pop the call stack
         call_stack.pop();
     }

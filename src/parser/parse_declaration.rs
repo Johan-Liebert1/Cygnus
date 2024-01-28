@@ -4,7 +4,7 @@ use std::{rc::Rc, cell::RefCell};
 
 use crate::{
     ast::{
-        abstract_syntax_tree::AST, declaration_statement::DeclarationStatement, variable::Variable,
+        declaration_statement::DeclarationStatement, variable::Variable,
     },
     lexer::tokens::TokenEnum,
 };

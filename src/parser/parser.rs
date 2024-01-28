@@ -5,7 +5,6 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::{
     ast::{
-        abstract_syntax_tree::AST,
         jump::{Jump, JumpType},
         program::Program,
     },

@@ -1,7 +1,7 @@
 use crate::types::ASTNode;
 
 use core::panic;
-use std::{borrow::BorrowMut, cell::RefCell, collections::HashMap, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::{
     ast::abstract_syntax_tree::AST,

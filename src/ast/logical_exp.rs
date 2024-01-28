@@ -26,8 +26,8 @@ impl LogicalExpression {
 
 impl AST for LogicalExpression {
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
-        let left = self.left.borrow().visit(v, Rc::clone(&f));
-        let right = self.right.borrow().visit(v, Rc::clone(&f));
+        let _left = self.left.borrow().visit(v, Rc::clone(&f));
+        let _right = self.right.borrow().visit(v, Rc::clone(&f));
 
         todo!()
     }

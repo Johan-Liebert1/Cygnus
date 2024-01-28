@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
@@ -9,7 +9,7 @@ use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
     lexer::{
-        keywords::{TYPE_FLOAT, TYPE_INT, TYPE_STRING},
+        keywords::{TYPE_INT, TYPE_STRING},
         lexer::Token,
         tokens::{Number, VariableEnum},
     },
@@ -44,7 +44,7 @@ impl Variable {
 }
 
 impl AST for Variable {
-    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, _x: &mut Variables, _: Rc<RefCell<Functions>>, _asm: &mut ASM) {
         todo!()
     }
 
@@ -60,7 +60,7 @@ impl AST for Variable {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
         if !call_stack.var_with_name_found(&self.var_name) {
             print!("{:#?}", call_stack);
             panic!(

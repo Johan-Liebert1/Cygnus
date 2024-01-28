@@ -3,7 +3,7 @@ use crate::types::ASTNode;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::{abstract_syntax_tree::AST, assignment_statement::AssignmentStatement},
+    ast::{assignment_statement::AssignmentStatement},
     lexer::tokens::TokenEnum,
 };
 

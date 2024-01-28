@@ -1,7 +1,7 @@
 use crate::types::ASTNode;
 
 use crate::semantic_analyzer::semantic_analyzer::{
-    ActivationRecord, ActivationRecordType, CallStack,
+    CallStack,
 };
 
 use crate::{

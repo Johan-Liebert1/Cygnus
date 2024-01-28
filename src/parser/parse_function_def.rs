@@ -3,7 +3,7 @@ use crate::types::ASTNode;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::{abstract_syntax_tree::AST, function_def::FunctionDefinition, variable::Variable},
+    ast::{function_def::FunctionDefinition, variable::Variable},
     lexer::tokens::{Bracket, TokenEnum},
 };
 

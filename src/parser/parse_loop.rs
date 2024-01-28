@@ -3,7 +3,7 @@ use crate::types::ASTNode;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::{abstract_syntax_tree::AST, ast_loop::Loop, factor::Factor},
+    ast::{ast_loop::Loop, factor::Factor},
     lexer::{
         keywords::{FROM, STEP, TO},
         lexer::Token,

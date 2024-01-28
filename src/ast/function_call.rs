@@ -1,7 +1,7 @@
 use crate::types::ASTNode;
 
 use crate::semantic_analyzer::semantic_analyzer::{
-    ActivationRecord, ActivationRecordType, CallStack,
+    CallStack,
 };
 
 use std::{cell::RefCell, process::exit, rc::Rc};
@@ -73,7 +73,7 @@ impl AST for FunctionCall {
             FUNC_STRLEN => {}
 
             name => match f.borrow().get(name) {
-                Some(function_ast) => {
+                Some(_function_ast) => {
                     println!("Visiting func {name}");
                     asm.function_call(&String::from(name));
                 }

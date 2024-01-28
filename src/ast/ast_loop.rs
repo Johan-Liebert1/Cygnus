@@ -105,7 +105,7 @@ impl AST for Loop {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
         call_stack.push(ActivationRecord::new("".into(), ActivationRecordType::Loop));
     }
 }

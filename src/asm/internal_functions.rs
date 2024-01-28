@@ -1,7 +1,6 @@
-use crate::types::ASTNode;
+
 
 use crate::{
-    ast::{conditionals::IfStatement, variable::Variable},
     interpreter::interpreter::Variables,
     lexer::tokens::VariableEnum,
 };
