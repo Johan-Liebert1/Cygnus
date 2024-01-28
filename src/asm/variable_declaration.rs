@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use crate::ast::variable::Variable;
 
 use super::asm::ASM;

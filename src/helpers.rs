@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use crate::lexer::{lexer::Token, tokens::TokenEnum};
 
 pub fn print_only_tokens(tokens: &Vec<Token>) {

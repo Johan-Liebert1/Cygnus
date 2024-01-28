@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use core::panic;
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
@@ -59,7 +61,7 @@ impl<'a> Parser<'a> {
     }
 
     /// STATEMENT -> VARIABLE_DECLARATION | CONDITIONAL_STATEMENT | COMPARISON_EXPRESSION | LPAREN COMPARISON_EXPRESSION RPAREN
-    pub fn parse_statements(&mut self) -> Rc<Box<dyn AST>> {
+    pub fn parse_statements(&mut self) -> ASTNode {
         let current_token = self.peek_next_token();
 
         // println!("parse_statements current_token {:#?}", current_token);
@@ -82,14 +84,14 @@ impl<'a> Parser<'a> {
                         }
 
                         self.parse_function_definition(Rc::clone(&self.functions))
-                    },
+                    }
 
                     BREAK => {
                         if self.inside_loop_depth == 0 {
                             panic!("Found `break` outside of a loop");
                         }
 
-                        Rc::new(Box::new(Jump::new(JumpType::Break)))
+                        Rc::new(RefCell::new(Box::new(Jump::new(JumpType::Break))))
                     }
 
                     RETURN => {
@@ -97,7 +99,7 @@ impl<'a> Parser<'a> {
                             panic!("Found `return` outside of a function");
                         }
 
-                        Rc::new(Box::new(Jump::new(JumpType::Return)))
+                        Rc::new(RefCell::new(Box::new(Jump::new(JumpType::Return))))
                     }
 
                     ELSE_STATEMENT => {
@@ -181,8 +183,8 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse_program(&mut self) -> Rc<Box<dyn AST>> {
-        let mut statements: Vec<Rc<Box<dyn AST>>> = vec![];
+    pub fn parse_program(&mut self) -> ASTNode {
+        let mut statements: Vec<ASTNode> = vec![];
 
         loop {
             let current_token = self.peek_next_token();
@@ -203,7 +205,7 @@ impl<'a> Parser<'a> {
                             || self.inside_loop_depth > 0
                             || self.inside_if_else_depth > 0
                         {
-                            return Rc::new(Box::new(Program::new(statements)));
+                            return Rc::new(RefCell::new(Box::new(Program::new(statements))));
                         } else {
                             statements.push(self.parse_statements())
                         }
@@ -218,6 +220,6 @@ impl<'a> Parser<'a> {
             }
         }
 
-        return Rc::new(Box::new(Program::new(statements)));
+        return Rc::new(RefCell::new(Box::new(Program::new(statements))));
     }
 }

@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use std::{
     fs::{self, File},
     io::{BufReader, Read, Write},

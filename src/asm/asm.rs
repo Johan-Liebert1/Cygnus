@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 #[derive(Debug)]
 pub struct Label {
     pub name: String,

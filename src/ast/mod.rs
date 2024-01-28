@@ -1,5 +1,3 @@
-use crate::semantic_analyzer::semantic_analyzer::CallStack;
-
 pub mod abstract_syntax_tree;
 pub mod assignment_statement;
 pub mod ast_loop;

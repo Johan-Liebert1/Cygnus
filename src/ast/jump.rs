@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
 use std::{cell::RefCell, rc::Rc};

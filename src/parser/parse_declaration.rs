@@ -1,4 +1,6 @@
-use std::rc::Rc;
+use crate::types::ASTNode;
+
+use std::{rc::Rc, cell::RefCell};
 
 use crate::{
     ast::{
@@ -46,7 +48,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse_declaration_statement(&mut self) -> Rc<Box<dyn AST>> {
+    pub fn parse_declaration_statement(&mut self) -> ASTNode {
         // we get here after consuming 'def'
 
         let left = self.parse_variable();
@@ -62,9 +64,9 @@ impl<'a> Parser<'a> {
         };
 
         // TODO: handle function calls and strings and stuff here
-        return Rc::new(Box::new(DeclarationStatement::new(
+        return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(
             left,
             self.parse_logical_expression(),
-        )));
+        ))));
     }
 }

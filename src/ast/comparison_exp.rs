@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
 use crate::{
@@ -15,13 +17,13 @@ use super::abstract_syntax_tree::{VisitResult, AST};
 
 #[derive(Debug)]
 pub struct ComparisonExp {
-    left: Rc<Box<dyn AST>>,
+    left: ASTNode,
     comp_op: Box<Token>,
-    right: Rc<Box<dyn AST>>,
+    right: ASTNode,
 }
 
 impl ComparisonExp {
-    pub fn new(left: Rc<Box<dyn AST>>, comp_op: Box<Token>, right: Rc<Box<dyn AST>>) -> Self {
+    pub fn new(left: ASTNode, comp_op: Box<Token>, right: ASTNode) -> Self {
         Self {
             left,
             comp_op,
@@ -124,8 +126,8 @@ impl ComparisonExp {
 
 impl AST for ComparisonExp {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        self.left.visit_com(v, Rc::clone(&f), asm);
-        self.right.visit_com(v, Rc::clone(&f), asm);
+        self.left.borrow().visit_com(v, Rc::clone(&f), asm);
+        self.right.borrow().visit_com(v, Rc::clone(&f), asm);
 
         match &self.comp_op.token {
             TokenEnum::Comparator(c) => {
@@ -142,8 +144,8 @@ impl AST for ComparisonExp {
             println!("===============================================");
         }
 
-        let visit_left = self.left.visit(i, Rc::clone(&f));
-        let visit_right = self.right.visit(i, Rc::clone(&f));
+        let visit_left = self.left.borrow().visit(i, Rc::clone(&f));
+        let visit_right = self.right.borrow().visit(i, Rc::clone(&f));
 
         let left_operand = visit_left.token.get_operand();
         let right_operand = visit_right.token.get_operand();
@@ -175,7 +177,7 @@ impl AST for ComparisonExp {
     }
 
     fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        self.left.semantic_visit(call_stack, f.clone());
-        self.right.semantic_visit(call_stack, f);
+        self.left.borrow().semantic_visit(call_stack, f.clone());
+        self.right.borrow().semantic_visit(call_stack, f);
     }
 }

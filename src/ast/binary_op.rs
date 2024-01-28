@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
 use crate::{
@@ -15,13 +17,13 @@ use super::abstract_syntax_tree::{VisitResult, AST};
 
 #[derive(Debug)]
 pub struct BinaryOP {
-    left: Rc<Box<dyn AST>>,
+    left: ASTNode,
     operator: Box<Token>,
-    right: Rc<Box<dyn AST>>,
+    right: ASTNode,
 }
 
 impl BinaryOP {
-    pub fn new(left: Rc<Box<dyn AST>>, operator: Box<Token>, right: Rc<Box<dyn AST>>) -> Self {
+    pub fn new(left: ASTNode, operator: Box<Token>, right: ASTNode) -> Self {
         Self {
             left,
             operator,
@@ -159,8 +161,8 @@ impl BinaryOP {
 
 impl AST for BinaryOP {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        self.left.visit_com(v, Rc::clone(&f), asm);
-        self.right.visit_com(v, Rc::clone(&f), asm);
+        self.left.borrow().visit_com(v, Rc::clone(&f), asm);
+        self.right.borrow().visit_com(v, Rc::clone(&f), asm);
 
         match &self.operator.token {
             TokenEnum::Op(c) => {
@@ -177,8 +179,8 @@ impl AST for BinaryOP {
             println!("===============================================");
         }
 
-        let visit_left = self.left.visit(i, Rc::clone(&f));
-        let visit_right = self.right.visit(i, Rc::clone(&f));
+        let visit_left = self.left.borrow().visit(i, Rc::clone(&f));
+        let visit_right = self.right.borrow().visit(i, Rc::clone(&f));
 
         let left_operand = visit_left.token.get_operand();
         let right_operand = visit_right.token.get_operand();
@@ -211,7 +213,7 @@ impl AST for BinaryOP {
     }
 
     fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        self.left.semantic_visit(call_stack, Rc::clone(&f));
-        self.right.semantic_visit(call_stack, f);
+        self.left.borrow().semantic_visit(call_stack, Rc::clone(&f));
+        self.right.borrow().semantic_visit(call_stack, f);
     }
 }

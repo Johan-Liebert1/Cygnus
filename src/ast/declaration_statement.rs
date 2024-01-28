@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
 use std::{cell::RefCell, rc::Rc};
@@ -19,11 +21,11 @@ use super::{
 #[derive(Debug)]
 pub struct DeclarationStatement {
     left: Variable,
-    right: Rc<Box<dyn AST>>,
+    right: ASTNode,
 }
 
 impl DeclarationStatement {
-    pub fn new(left: Variable, right: Rc<Box<dyn AST>>) -> Self {
+    pub fn new(left: Variable, right: ASTNode) -> Self {
         Self { left, right }
     }
 }
@@ -36,12 +38,12 @@ impl AST for DeclarationStatement {
         );
 
         asm.variable_declaration(&self.left.var_name);
-        self.right.visit_com(vars, f, asm);
+        self.right.borrow().visit_com(vars, f, asm);
         asm.variable_assignment(&self.left.var_name);
     }
 
     fn visit(&self, vars: &mut Variables, functions: Rc<RefCell<Functions>>) -> VisitResult {
-        let right_visit = self.right.visit(vars, functions);
+        let right_visit = self.right.borrow().visit(vars, functions);
 
         let var_name = String::from(self.left.var_name.as_str());
 

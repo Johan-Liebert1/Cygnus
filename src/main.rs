@@ -1,5 +1,4 @@
-#![allow(dead_code, unused)]
-
+#[allow(dead_code, unused)]
 use std::{
     char,
     io::{self, BufReader, Read},
@@ -22,6 +21,7 @@ mod lexer;
 mod parser;
 mod semantic_analyzer;
 mod tests;
+mod types;
 
 pub fn generate_asm() -> io::Result<()> {
     let mut nasm = std::process::Command::new("nasm");

@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use crate::semantic_analyzer::semantic_analyzer::{
     ActivationRecord, ActivationRecordType, CallStack,
 };
@@ -22,11 +24,11 @@ use super::{
 pub struct FunctionDefinition {
     name: String,
     parameters: Vec<Variable>,
-    block: Rc<Box<dyn AST>>,
+    block: ASTNode,
 }
 
 impl FunctionDefinition {
-    pub fn new(name: String, arguments: Vec<Variable>, block: Rc<Box<dyn AST>>) -> Self {
+    pub fn new(name: String, arguments: Vec<Variable>, block: ASTNode) -> Self {
         Self {
             name,
             parameters: arguments,
@@ -38,7 +40,7 @@ impl FunctionDefinition {
 impl AST for FunctionDefinition {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
         asm.function_def(&self.name);
-        self.block.visit_com(v, f, asm);
+        self.block.borrow().visit_com(v, f, asm);
         asm.function_def_end(&self.name);
     }
 
@@ -56,7 +58,7 @@ impl AST for FunctionDefinition {
             v.insert(param.var_name.clone(), VariableEnum::Number(value));
         }
 
-        self.block.visit(v, f);
+        self.block.borrow().visit(v, f);
 
         for param in &self.parameters {
             v.remove(&param.var_name.clone());
@@ -86,9 +88,14 @@ impl AST for FunctionDefinition {
             // arg.semantic_visit(call_stack, Rc::clone(&f));
         }
 
-        self.block.semantic_visit(call_stack, Rc::clone(&f));
+        self.block
+            .borrow_mut()
+            .semantic_visit(call_stack, Rc::clone(&f));
 
-        println!("Function stack size {}", call_stack.get_func_var_stack_size(&self.name));
+        println!(
+            "Function stack size {}",
+            call_stack.get_func_var_stack_size(&self.name)
+        );
 
         // pop the record here
         call_stack.pop();

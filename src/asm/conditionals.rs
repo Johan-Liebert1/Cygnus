@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use super::asm::ASM;
 
 #[derive(Debug)]

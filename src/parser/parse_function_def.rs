@@ -1,4 +1,6 @@
-use std::rc::Rc;
+use crate::types::ASTNode;
+
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::{abstract_syntax_tree::AST, function_def::FunctionDefinition, variable::Variable},
@@ -42,7 +44,7 @@ impl<'a> Parser<'a> {
     }
 
     /// FUNCTION_DEF -> fun VAR_NAME LPAREN (VAR_NAME : VAR_TYPE)* RPAREN LCURLY (STATEMENT[] - FUNCTION_DEF) RCURLY
-    pub fn parse_function_definition(&mut self, f: ParserFunctions) -> Rc<Box<dyn AST>> {
+    pub fn parse_function_definition(&mut self, f: ParserFunctions) -> ASTNode {
         // we get here after consuming 'fun'
 
         let function_name = match self.get_next_token().token {
@@ -101,7 +103,7 @@ impl<'a> Parser<'a> {
         // Create an Rc from the Box
         let function_def = FunctionDefinition::new(function_name, parameters, block);
 
-        let fdef: Rc<Box<dyn AST>> = Rc::new(Box::new(function_def));
+        let fdef: ASTNode = Rc::new(RefCell::new(Box::new(function_def)));
 
         // Use Rc::clone to get a reference-counted clone of the Rc, not the inner value
         f.borrow_mut().insert(ff, Rc::clone(&fdef));

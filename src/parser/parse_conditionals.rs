@@ -1,4 +1,6 @@
-use std::rc::Rc;
+use crate::types::ASTNode;
+
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::{
@@ -15,7 +17,7 @@ use super::parser::Parser;
 
 impl<'a> Parser<'a> {
     /// CONDITIONAL_STATEMENT -> if LPAREN* COMPARISON_EXPRESSION RPAREN* LCURLY STATEMENT[]* RCURLY ELSE_STATEMENT*
-    pub fn parse_conditional_statement(&mut self) -> Rc<Box<dyn AST>> {
+    pub fn parse_conditional_statement(&mut self) -> ASTNode {
         // we get here after 'if' has been consumed
 
         // parse the if statements
@@ -54,11 +56,11 @@ impl<'a> Parser<'a> {
             }
         }
 
-        return Rc::new(Box::new(ConditionalStatement::new(
+        return Rc::new(RefCell::new(Box::new(ConditionalStatement::new(
             if_statement,
             elif_ladder,
             else_statement,
-        )));
+        ))));
     }
 
     /// we get here after 'if' has been consumed

@@ -1,4 +1,6 @@
-use std::rc::Rc;
+use crate::types::ASTNode;
+
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::{abstract_syntax_tree::AST, function_call::FunctionCall},
@@ -9,12 +11,12 @@ use super::parser::Parser;
 
 impl<'a> Parser<'a> {
     /// FUNCTION_CALL -> VAR_NAME LPAREN (COMPARISON_EXPRESSION)* RPAREN
-    pub fn parse_function_call(&mut self, name: String) -> Rc<Box<dyn AST>> {
+    pub fn parse_function_call(&mut self, name: String) -> ASTNode {
         // We parse from the LPAREN
         // consume the LPAREN
         self.get_next_token();
 
-        let mut arguments: Vec<Rc<Box<dyn AST>>> = vec![];
+        let mut arguments: Vec<ASTNode> = vec![];
 
         loop {
             let token = self.peek_next_token();
@@ -46,6 +48,6 @@ impl<'a> Parser<'a> {
             };
         }
 
-        return Rc::new(Box::new(FunctionCall::new(name, arguments)));
+        return Rc::new(RefCell::new(Box::new(FunctionCall::new(name, arguments))));
     }
 }

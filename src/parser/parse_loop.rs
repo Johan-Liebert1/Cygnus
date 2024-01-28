@@ -1,4 +1,6 @@
-use std::rc::Rc;
+use crate::types::ASTNode;
+
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::{abstract_syntax_tree::AST, ast_loop::Loop, factor::Factor},
@@ -13,7 +15,7 @@ use super::parser::Parser;
 
 impl<'a> Parser<'a> {
     /// LOOP -> loop from LPAREN* EXPRESSION to EXPRESSION (step EXPRESSION)* RPAREN* (with VAR_NAME)* LCURLY STATEMENT[] RCURLY
-    pub fn parse_loop(&mut self) -> Rc<Box<dyn AST>> {
+    pub fn parse_loop(&mut self) -> ASTNode {
         // we get here after consuming the 'loop' keyword
 
         self.validate_token(TokenEnum::Keyword(FROM.to_string()));
@@ -46,11 +48,11 @@ impl<'a> Parser<'a> {
             _ => self.parse_expression(),
         };
 
-        let default_step: Rc<Box<dyn AST>> = Rc::new(Box::new(Factor::new(Box::new(Token {
+        let default_step: ASTNode = Rc::new(RefCell::new(Box::new(Factor::new(Box::new(Token {
             token: TokenEnum::Number(Number::Integer(1)),
             line_number: 0,
             col_number: 0,
-        }))));
+        })))));
 
         let step = match self.peek_next_token().token {
             TokenEnum::Keyword(keyword) => {
@@ -78,6 +80,8 @@ impl<'a> Parser<'a> {
 
         self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
 
-        return Rc::new(Box::new(Loop::new(from_range, to_range, step, block)));
+        return Rc::new(RefCell::new(Box::new(Loop::new(
+            from_range, to_range, step, block,
+        ))));
     }
 }

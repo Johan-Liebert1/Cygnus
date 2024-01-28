@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 pub const FUNCTION_DEFINE: &str = "fun";
 pub const VAR_DEFINE: &str = "def";
 

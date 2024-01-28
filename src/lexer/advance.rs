@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use super::{
     lexer::{Lexer, Token},
     tokens::{Bracket, Comparators, Operations, TokenEnum},

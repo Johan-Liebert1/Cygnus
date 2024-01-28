@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use crate::semantic_analyzer::semantic_analyzer::{
     ActivationRecord, ActivationRecordType, CallStack,
 };
@@ -14,20 +16,15 @@ use super::abstract_syntax_tree::{VisitResult, AST};
 #[derive(Debug)]
 pub struct Loop {
     /// an expression
-    from_range: Rc<Box<dyn AST>>,
+    from_range: ASTNode,
     /// an expression
-    to_range: Rc<Box<dyn AST>>,
-    step_by: Rc<Box<dyn AST>>,
-    block: Rc<Box<dyn AST>>,
+    to_range: ASTNode,
+    step_by: ASTNode,
+    block: ASTNode,
 }
 
 impl Loop {
-    pub fn new(
-        from_range: Rc<Box<dyn AST>>,
-        to_range: Rc<Box<dyn AST>>,
-        step_by: Rc<Box<dyn AST>>,
-        block: Rc<Box<dyn AST>>,
-    ) -> Self {
+    pub fn new(from_range: ASTNode, to_range: ASTNode, step_by: ASTNode, block: ASTNode) -> Self {
         Self {
             from_range,
             to_range,
@@ -51,19 +48,19 @@ impl AST for Loop {
         let current_num_loop = asm.num_loops;
         asm.inc_num_loops();
 
-        self.from_range.visit_com(v, Rc::clone(&f), asm);
-        self.to_range.visit_com(v, Rc::clone(&f), asm);
-        self.step_by.visit_com(v, Rc::clone(&f), asm);
+        self.from_range.borrow().visit_com(v, Rc::clone(&f), asm);
+        self.to_range.borrow().visit_com(v, Rc::clone(&f), asm);
+        self.step_by.borrow().visit_com(v, Rc::clone(&f), asm);
 
         asm.gen_loop_start(current_num_loop);
-        self.block.visit_com(v, Rc::clone(&f), asm);
+        self.block.borrow().visit_com(v, Rc::clone(&f), asm);
         asm.gen_loop_end(current_num_loop);
     }
 
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
-        let from = self.from_range.visit(v, Rc::clone(&f));
-        let to = self.to_range.visit(v, Rc::clone(&f));
-        let step_by = self.step_by.visit(v, Rc::clone(&f));
+        let from = self.from_range.borrow().visit(v, Rc::clone(&f));
+        let to = self.to_range.borrow().visit(v, Rc::clone(&f));
+        let step_by = self.step_by.borrow().visit(v, Rc::clone(&f));
 
         if !from.token.is_integer() || !to.token.is_integer() || !step_by.token.is_integer() {
             panic!("Expected from, to and step expressions to be Integer");
@@ -92,7 +89,7 @@ impl AST for Loop {
         };
 
         for _ in (from..to).step_by(step_by) {
-            self.block.visit(v, Rc::clone(&f));
+            self.block.borrow().visit(v, Rc::clone(&f));
         }
 
         return VisitResult {

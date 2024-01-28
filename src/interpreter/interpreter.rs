@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use std::io::prelude::*;
 use std::{cell::RefCell, collections::HashMap, fs::File, rc::Rc};
 
@@ -9,17 +11,17 @@ use crate::{
 };
 
 pub type Variables = HashMap<String, VariableEnum>;
-pub type Functions = HashMap<String, Rc<Box<dyn AST>>>;
+pub type Functions = HashMap<String, ASTNode>;
 
 pub struct Interpreter {
-    ast: Rc<Box<dyn AST>>,
+    ast: ASTNode,
     pub variables: Variables,
     pub functions: Rc<RefCell<Functions>>,
     pub asm: ASM,
 }
 
 impl Interpreter {
-    pub fn new(ast: Rc<Box<dyn AST>>, functions: Rc<RefCell<Functions>>) -> Self {
+    pub fn new(ast: ASTNode, functions: Rc<RefCell<Functions>>) -> Self {
         Self {
             ast,
             variables: HashMap::from([
@@ -86,11 +88,12 @@ impl Interpreter {
     pub fn interpret(&mut self) -> VisitResult {
         return self
             .ast
+            .borrow()
             .visit(&mut self.variables, Rc::clone(&self.functions));
     }
 
     pub fn compile(&mut self) {
-        self.ast.visit_com(
+        self.ast.borrow().visit_com(
             &mut self.variables,
             Rc::clone(&self.functions),
             &mut self.asm,

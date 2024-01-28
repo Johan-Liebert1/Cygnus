@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use core::panic;
 use std::{borrow::BorrowMut, cell::RefCell, collections::HashMap, rc::Rc};
 
@@ -92,12 +94,12 @@ impl CallStack {
 
 pub struct SemanticAnalyzer {
     pub call_stack: CallStack,
-    pub ast: Rc<Box<dyn AST>>,
+    pub ast: ASTNode,
     pub functions: Rc<RefCell<Functions>>,
 }
 
 impl SemanticAnalyzer {
-    pub fn new(ast: Rc<Box<dyn AST>>, functions: Rc<RefCell<Functions>>) -> Self {
+    pub fn new(ast: ASTNode, functions: Rc<RefCell<Functions>>) -> Self {
         Self {
             call_stack: CallStack {
                 call_stack: vec![ActivationRecord::new(
@@ -111,7 +113,7 @@ impl SemanticAnalyzer {
     }
 
     pub fn analyze(&mut self) {
-        self.ast
+        self.ast.borrow()
             .semantic_visit(&mut self.call_stack, Rc::clone(&self.functions));
     }
 }

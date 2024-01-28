@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
 use std::{cell::RefCell, rc::Rc};
@@ -11,28 +13,28 @@ use crate::{
 use super::abstract_syntax_tree::{VisitResult, AST};
 
 pub struct LogicalExpression {
-    left: Rc<Box<dyn AST>>,
+    left: ASTNode,
     op: Token,
-    right: Rc<Box<dyn AST>>,
+    right: ASTNode,
 }
 
 impl LogicalExpression {
-    pub fn new(left: Rc<Box<dyn AST>>, op: Token, right: Rc<Box<dyn AST>>) -> Self {
+    pub fn new(left: ASTNode, op: Token, right: ASTNode) -> Self {
         Self { left, op, right }
     }
 }
 
 impl AST for LogicalExpression {
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
-        let left = self.left.visit(v, Rc::clone(&f));
-        let right = self.right.visit(v, Rc::clone(&f));
+        let left = self.left.borrow().visit(v, Rc::clone(&f));
+        let right = self.right.borrow().visit(v, Rc::clone(&f));
 
         todo!()
     }
 
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        self.left.visit_com(v, Rc::clone(&f), asm);
-        self.right.visit_com(v, Rc::clone(&f), asm);
+        self.left.borrow().visit_com(v, Rc::clone(&f), asm);
+        self.right.borrow().visit_com(v, Rc::clone(&f), asm);
 
         match &self.op.token {
             TokenEnum::LogicalOp(lo) => asm.gen_logical_statement(lo.clone()),
@@ -52,7 +54,7 @@ impl AST for LogicalExpression {
     }
 
     fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        self.left.semantic_visit(call_stack, f.clone());
-        self.right.semantic_visit(call_stack, f);
+        self.left.borrow().semantic_visit(call_stack, f.clone());
+        self.right.borrow().semantic_visit(call_stack, f);
     }
 }

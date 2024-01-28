@@ -1,4 +1,6 @@
-use std::{process::exit, rc::Rc};
+use crate::types::ASTNode;
+
+use std::{cell::RefCell, process::exit, rc::Rc};
 
 use crate::{
     ast::{abstract_syntax_tree::AST, factor::Factor},
@@ -10,7 +12,7 @@ use super::parser::Parser;
 
 impl<'a> Parser<'a> {
     /// FACTOR -> INTEGER | FLOAT | VARIABLE | STRING_LITERAL | LPAREN EXPRESSION RPAREN
-    pub fn parse_factor(&mut self) -> Rc<Box<dyn AST>> {
+    pub fn parse_factor(&mut self) -> ASTNode {
         let next_token = self.peek_next_token();
 
         if constants::PARSER_DEBUG {
@@ -22,7 +24,7 @@ impl<'a> Parser<'a> {
                 // println!("Inside the Number Variable thing {:?}", &next_token.token);
 
                 self.get_next_token();
-                return Rc::new(Box::new(Factor::new(Box::new(next_token))));
+                return Rc::new(RefCell::new(Box::new(Factor::new(Box::new(next_token)))));
             }
 
             TokenEnum::Bracket(paren) => match paren {
@@ -60,7 +62,9 @@ impl<'a> Parser<'a> {
                             Bracket::LParen => {
                                 // all good. A left paren was closed
                                 self.get_next_token();
-                                return Rc::new(Box::new(Factor::new(Box::new(next_token))));
+                                return Rc::new(RefCell::new(Box::new(Factor::new(Box::new(
+                                    next_token,
+                                )))));
                             }
 
                             Bracket::RParen => {

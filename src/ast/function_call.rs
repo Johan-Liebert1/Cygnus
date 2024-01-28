@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use crate::semantic_analyzer::semantic_analyzer::{
     ActivationRecord, ActivationRecordType, CallStack,
 };
@@ -19,11 +21,11 @@ use super::abstract_syntax_tree::{VisitResult, AST};
 #[derive(Debug)]
 pub struct FunctionCall {
     name: String,
-    arguments: Vec<Rc<Box<dyn AST>>>,
+    arguments: Vec<ASTNode>,
 }
 
 impl FunctionCall {
-    pub fn new(name: String, arguments: Vec<Rc<Box<dyn AST>>>) -> Self {
+    pub fn new(name: String, arguments: Vec<ASTNode>) -> Self {
         Self { name, arguments }
     }
 }
@@ -36,9 +38,11 @@ impl AST for FunctionCall {
                     // println!("FunctionCall visit_com arg: {:#?}", arg);
 
                     // this will generate everything and put in rax
-                    arg.visit_com(v, Rc::clone(&f), asm);
+                    arg.borrow().visit_com(v, Rc::clone(&f), asm);
 
-                    let arg_token = &arg.get_token().token;
+                    let arg_borrow = arg.borrow();
+
+                    let arg_token = &arg_borrow.get_token().token;
 
                     match arg_token {
                         TokenEnum::StringLiteral(_) => asm.func_write_string(),
@@ -60,7 +64,7 @@ impl AST for FunctionCall {
                 }
 
                 for arg in &self.arguments {
-                    arg.visit_com(v, Rc::clone(&f), asm);
+                    arg.borrow().visit_com(v, Rc::clone(&f), asm);
                 }
 
                 asm.func_exit();
@@ -84,7 +88,7 @@ impl AST for FunctionCall {
             FUNC_WRITE => {
                 for arg in &self.arguments {
                     // println!("Visiting func write. Arg {:?}", arg);
-                    println!("{:?}", arg.visit(v, Rc::clone(&f)));
+                    println!("{:?}", arg.borrow().visit(v, Rc::clone(&f)));
                 }
 
                 return VisitResult {
@@ -101,7 +105,7 @@ impl AST for FunctionCall {
                     // println!("Visiting func write. Arg {:?}", arg);
                     // println!("{:?}", arg.visit(v, Rc::clone(&f)));
 
-                    let arg = arg.visit(v, Rc::clone(&f));
+                    let arg = arg.borrow().visit(v, Rc::clone(&f));
 
                     match *arg.token {
                         TokenEnum::Number(n) => match n {
@@ -124,7 +128,7 @@ impl AST for FunctionCall {
                 Some(function_ast) => {
                     println!("Visiting func {name}");
 
-                    function_ast.visit(v, Rc::clone(&f))
+                    function_ast.borrow().visit(v, Rc::clone(&f))
                 }
 
                 None => unimplemented!("Function {} unimplemented", self.name),
@@ -142,7 +146,7 @@ impl AST for FunctionCall {
 
     fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         for arg in &self.arguments {
-            arg.semantic_visit(call_stack, Rc::clone(&f));
+            arg.borrow().semantic_visit(call_stack, Rc::clone(&f));
         }
     }
 }

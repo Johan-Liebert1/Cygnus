@@ -1,3 +1,5 @@
+use crate::types::ASTNode;
+
 use crate::semantic_analyzer::semantic_analyzer::{
     ActivationRecord, ActivationRecordType, CallStack,
 };
@@ -13,11 +15,11 @@ use super::abstract_syntax_tree::{VisitResult, AST};
 
 #[derive(Debug)]
 pub struct Program {
-    statements: Vec<Rc<Box<dyn AST>>>,
+    statements: Vec<ASTNode>,
 }
 
 impl Program {
-    pub fn new(statements: Vec<Rc<Box<dyn AST>>>) -> Self {
+    pub fn new(statements: Vec<ASTNode>) -> Self {
         Self { statements }
     }
 }
@@ -25,7 +27,7 @@ impl Program {
 impl AST for Program {
     fn visit_com(&self, x: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
         for statement in &self.statements {
-            statement.visit_com(x, Rc::clone(&f), asm);
+            statement.borrow().visit_com(x, Rc::clone(&f), asm);
         }
     }
 
@@ -33,7 +35,7 @@ impl AST for Program {
         let mut last: Option<VisitResult> = None;
 
         for statement in &self.statements {
-            let result = statement.visit(x, Rc::clone(&f));
+            let result = statement.borrow().visit(x, Rc::clone(&f));
             last = Some(result);
         }
 
@@ -56,7 +58,7 @@ impl AST for Program {
 
     fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         for statement in &self.statements {
-            statement.semantic_visit(call_stack, Rc::clone(&f));
+            statement.borrow().semantic_visit(call_stack, Rc::clone(&f));
         }
     }
 }

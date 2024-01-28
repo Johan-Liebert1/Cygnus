@@ -1,4 +1,6 @@
-use std::{borrow::Borrow, rc::Rc};
+use crate::types::ASTNode;
+
+use std::{borrow::Borrow, cell::RefCell, rc::Rc};
 
 use crate::{
     ast::{abstract_syntax_tree::AST, logical_exp::LogicalExpression},
@@ -9,7 +11,7 @@ use super::parser::Parser;
 
 impl<'a> Parser<'a> {
     /// LOGICAL_EXPRESSION -> COMPARISON_EXPRESSION ((and | or) COMPARISON_EXPRESSION)*
-    pub fn parse_logical_expression(&mut self) -> Rc<Box<dyn AST>> {
+    pub fn parse_logical_expression(&mut self) -> ASTNode {
         let left = self.parse_comparison_expression();
 
         loop {
@@ -17,11 +19,11 @@ impl<'a> Parser<'a> {
 
             match next_token.token {
                 TokenEnum::LogicalOp(..) => {
-                    return Rc::new(Box::new(LogicalExpression::new(
+                    return Rc::new(RefCell::new(Box::new(LogicalExpression::new(
                         left,
                         self.get_next_token(),
                         self.parse_logical_expression(),
-                    )));
+                    ))));
                 }
 
                 _ => {
