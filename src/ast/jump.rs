@@ -36,6 +36,9 @@ impl AST for Jump {
     }
 
     fn visit_com(&self, _v: &mut Variables, _f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+        // Since we break out of a loop or return from a function, we need to pop the call stack
+        call_stack.pop();
+
         match self.typ {
             JumpType::Return => asm.function_return(),
             JumpType::Break => asm.loop_break(),

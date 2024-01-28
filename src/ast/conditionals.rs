@@ -58,7 +58,13 @@ impl ConditionalStatement {
 }
 
 impl AST for ConditionalStatement {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+    fn visit_com(
+        &self,
+        v: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        asm: &mut ASM,
+        call_stack: &mut CallStack,
+    ) {
         let current_num_if = asm.num_ifs;
         asm.inc_num_ifs();
 
@@ -79,10 +85,12 @@ impl AST for ConditionalStatement {
             current_num_if,
         );
 
+        call_stack.push("".into(), ActivationRecordType::IfElse);
         self.if_statement
             .block
             .borrow()
             .visit_com(v, Rc::clone(&f), asm, call_stack);
+        call_stack.pop();
 
         asm.if_end(
             if let Some(_) = self.else_statement {
@@ -97,7 +105,11 @@ impl AST for ConditionalStatement {
         );
 
         for (index, elif) in self.elif_ladder.iter().enumerate() {
-            elif.condition.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+            call_stack.push("".into(), ActivationRecordType::IfElse);
+            elif.condition
+                .borrow()
+                .visit_com(v, Rc::clone(&f), asm, call_stack);
+            call_stack.pop();
 
             // if it's the last index, then jump to else, else jump to the next elif
             asm.elif_start(
@@ -112,7 +124,11 @@ impl AST for ConditionalStatement {
                 current_num_if,
             );
 
-            elif.block.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+            call_stack.push("".into(), ActivationRecordType::IfElse);
+            elif.block
+                .borrow()
+                .visit_com(v, Rc::clone(&f), asm, call_stack);
+            call_stack.pop();
 
             asm.elif_end(
                 index,
@@ -130,13 +146,20 @@ impl AST for ConditionalStatement {
         if let Some(e) = &self.else_statement {
             asm.else_start(current_num_if);
 
-            e.block.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+            e.block
+                .borrow()
+                .visit_com(v, Rc::clone(&f), asm, call_stack);
 
             asm.else_end(current_num_if);
         }
     }
 
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(
+        &self,
+        v: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        call_stack: &mut CallStack,
+    ) -> VisitResult {
         if let TokenEnum::Bool(value) = *self
             .if_statement
             .condition
@@ -145,12 +168,21 @@ impl AST for ConditionalStatement {
             .token
         {
             if value {
-                return self.if_statement.block.borrow().visit(v, Rc::clone(&f), call_stack);
+                return self
+                    .if_statement
+                    .block
+                    .borrow()
+                    .visit(v, Rc::clone(&f), call_stack);
             }
         }
 
         for elif in &self.elif_ladder {
-            if let TokenEnum::Bool(value) = *elif.condition.borrow().visit(v, Rc::clone(&f), call_stack).token {
+            if let TokenEnum::Bool(value) = *elif
+                .condition
+                .borrow()
+                .visit(v, Rc::clone(&f), call_stack)
+                .token
+            {
                 if value {
                     return elif.block.borrow().visit(v, Rc::clone(&f), call_stack);
                 }
@@ -182,10 +214,7 @@ impl AST for ConditionalStatement {
             .borrow_mut()
             .semantic_visit(call_stack, Rc::clone(&f));
 
-        call_stack.push(ActivationRecord::new(
-            "".into(),
-            ActivationRecordType::IfElse,
-        ));
+        call_stack.push("".into(), ActivationRecordType::IfElse);
 
         self.if_statement
             .block
@@ -199,10 +228,7 @@ impl AST for ConditionalStatement {
                 .borrow_mut()
                 .semantic_visit(call_stack, Rc::clone(&f));
 
-            call_stack.push(ActivationRecord::new(
-                "".into(),
-                ActivationRecordType::IfElse,
-            ));
+            call_stack.push("".into(), ActivationRecordType::IfElse);
 
             elif.block
                 .borrow_mut()
@@ -212,10 +238,7 @@ impl AST for ConditionalStatement {
         }
 
         if let Some(else_statement) = &self.else_statement {
-            call_stack.push(ActivationRecord::new(
-                "".into(),
-                ActivationRecordType::IfElse,
-            ));
+            call_stack.push("".into(), ActivationRecordType::IfElse);
 
             else_statement
                 .block

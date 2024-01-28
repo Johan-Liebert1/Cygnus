@@ -1,13 +1,19 @@
 use crate::{
     interpreter::interpreter::Variables,
     lexer::tokens::{Number, TokenEnum},
+    semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
 };
 
 use super::asm::ASM;
 
 impl ASM {
     /// Pushes whatever token's in here onto the stack
-    pub fn generate_asm_factor(&mut self, token: &TokenEnum, vars: &Variables) {
+    pub fn generate_asm_factor(
+        &mut self,
+        token: &TokenEnum,
+        vars: &Variables,
+        call_stack: &CallStack,
+    ) {
         let mut instructions: Vec<String> = vec![];
 
         match token {
@@ -62,15 +68,24 @@ impl ASM {
             }
 
             TokenEnum::Variable(var_name) => {
-                match vars.get(var_name) {
-                    Some(..) => {
-                        instructions
-                            .extend(vec![format!("mov rax, [{var_name}]"), format!("push rax")]);
-                    }
+                let (variable, variable_scope) = call_stack.get_var_with_name(&var_name);
 
-                    None => {
-                        println!("Variable {var_name} is not defined")
-                    }
+                match variable {
+                    Some(var) => {
+                        match variable_scope {
+                            ActivationRecordType::Global => {
+                                instructions
+                                    .extend(vec![format!("mov rax, [{var_name}]"), format!("push rax")])
+                            },
+
+                            _ => {
+                                instructions
+                                    .extend(vec![format!("mov rax, [rsp + {}]", var.offset), format!("push rax")])
+                            }
+                        }
+                    },
+
+                    None => unreachable!("Could not find variable with name '{}' in function `factor`. This is a bug in the semantic analying step.", var_name),
                 };
             }
 

@@ -2,6 +2,7 @@ use crate::types::ASTNode;
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
+use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
@@ -27,7 +28,7 @@ impl AssignmentStatement {
 impl AST for AssignmentStatement {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         self.right.borrow().visit_com(v, f, asm, call_stack);
-        asm.variable_assignment(&self.var_name);
+        asm.variable_assignment(&self.var_name, call_stack);
     }
 
     // TODO: change this so that the expression is stored here and we need to visit the varible
@@ -64,7 +65,9 @@ impl AST for AssignmentStatement {
         println!("{:#?}", self)
     }
 
-    fn semantic_visit(&mut self, _call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
-        todo!()
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
+        if !call_stack.var_with_name_found(&self.var_name) {
+            panic!("Variable '{}' not found in current scope", &self.var_name);
+        }
     }
 }

@@ -37,9 +37,13 @@ impl AST for DeclarationStatement {
             self.left.get_var_enum_from_type(),
         );
 
-        asm.variable_declaration(&self.left.var_name);
+        call_stack.insert_variable(&self.left.var_name, self.left.get_var_enum_from_type());
+
+        asm.variable_declaration(&self.left.var_name, call_stack);
+
         self.right.borrow().visit_com(vars, f, asm, call_stack);
-        asm.variable_assignment(&self.left.var_name);
+
+        asm.variable_assignment(&self.left.var_name, call_stack);
     }
 
     fn visit(&self, vars: &mut Variables, functions: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {

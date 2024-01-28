@@ -52,9 +52,13 @@ impl AST for Loop {
         self.to_range.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
         self.step_by.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
+        call_stack.push("".into(), ActivationRecordType::Loop);
+
         asm.gen_loop_start(current_num_loop);
         self.block.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
         asm.gen_loop_end(current_num_loop);
+
+        call_stack.pop();
     }
 
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
@@ -105,7 +109,11 @@ impl AST for Loop {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
-        call_stack.push(ActivationRecord::new("".into(), ActivationRecordType::Loop));
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+        call_stack.push("".into(), ActivationRecordType::Loop);
+
+        self.block.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
+        
+        call_stack.pop();
     }
 }

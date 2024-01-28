@@ -43,7 +43,21 @@ impl FunctionDefinition {
 impl AST for FunctionDefinition {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         asm.function_def(&self.name, self.stack_var_size);
+
+        call_stack.push_record(ActivationRecord::new(
+            self.name.to_string(),
+            ActivationRecordType::Function,
+        ));
+
+        for arg in &self.parameters {
+            call_stack.insert_variable(&arg.var_name, arg.get_var_enum_from_type());
+        }
+
         self.block.borrow().visit_com(v, f, asm, call_stack);
+
+        // pop the record here
+        call_stack.pop();
+
         asm.function_def_end(&self.name);
     }
 
@@ -81,7 +95,7 @@ impl AST for FunctionDefinition {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        call_stack.push(ActivationRecord::new(
+        call_stack.push_record(ActivationRecord::new(
             self.name.to_string(),
             ActivationRecordType::Function,
         ));

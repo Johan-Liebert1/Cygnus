@@ -39,7 +39,6 @@ impl AST for FunctionCall {
                     arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
                     let arg_borrow = arg.borrow();
-
                     let arg_token = &arg_borrow.get_token().token;
 
                     match arg_token {

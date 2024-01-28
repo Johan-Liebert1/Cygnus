@@ -1,7 +1,7 @@
 fun thing(a: int, b: int) {
     def c: int = 420;
 
-    loop from 1 to 10 {
+    if 1 == 2 {
         def c: int = 69;
         write(c);
     }
