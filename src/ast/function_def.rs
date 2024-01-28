@@ -25,6 +25,8 @@ pub struct FunctionDefinition {
     name: String,
     parameters: Vec<Variable>,
     block: ASTNode,
+    /// How much to allocate on the stack to make room for local variables
+    stack_var_size: usize,
 }
 
 impl FunctionDefinition {
@@ -33,13 +35,14 @@ impl FunctionDefinition {
             name,
             parameters: arguments,
             block,
+            stack_var_size: 0,
         }
     }
 }
 
 impl AST for FunctionDefinition {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        asm.function_def(&self.name);
+        asm.function_def(&self.name, self.stack_var_size);
         self.block.borrow().visit_com(v, f, asm);
         asm.function_def_end(&self.name);
     }
@@ -85,17 +88,13 @@ impl AST for FunctionDefinition {
 
         for arg in &self.parameters {
             call_stack.insert_variable(&arg.var_name, arg.get_var_enum_from_type());
-            // arg.semantic_visit(call_stack, Rc::clone(&f));
         }
 
         self.block
             .borrow_mut()
             .semantic_visit(call_stack, Rc::clone(&f));
 
-        println!(
-            "Function stack size {}",
-            call_stack.get_func_var_stack_size(&self.name)
-        );
+        self.stack_var_size = call_stack.get_func_var_stack_size(&self.name);
 
         // pop the record here
         call_stack.pop();

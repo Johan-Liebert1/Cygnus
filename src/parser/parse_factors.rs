@@ -21,8 +21,6 @@ impl<'a> Parser<'a> {
 
         match &next_token.token {
             TokenEnum::Number(..) | TokenEnum::Variable(..) | TokenEnum::StringLiteral(..) => {
-                // println!("Inside the Number Variable thing {:?}", &next_token.token);
-
                 self.get_next_token();
                 return Rc::new(RefCell::new(Box::new(Factor::new(Box::new(next_token)))));
             }

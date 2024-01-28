@@ -13,6 +13,10 @@
 - [x] `return` and `break` statements
 - [x] Functions in Compilation mode
 - [x] Variables in Compilation mode
+- [ ] Local Variables
+    - [ ] Stack variables for functions
+    - [ ] Variable Shadowing
+    - [ ] Upper stack variable access
 - [ ] Make sure nothing is left on the stack when we break out of a loop
 - [ ] Variable scoping
 - [ ] Pointer deref

@@ -5,6 +5,8 @@ impl ASM {
         // this needs to be dq, as we are assuming all integers are 64 bits
         // db will only allocate 1 byte while dq allocates a word
         self.data.push(format!("{} dq 0", var_name));
+
+        // unimplemented!("Local variables");
     }
 
     /// pops the top most element on the stack and assigns it to the variable

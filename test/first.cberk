@@ -1,3 +1,12 @@
 fun thing(a: int, b: int) {
-    def c: str = "hello";
+    def c: int = 420;
+
+    loop from 1 to 10 {
+        def c: int = 69;
+        write(c);
+    }
+
+    write(c);
 }
+
+thing()
