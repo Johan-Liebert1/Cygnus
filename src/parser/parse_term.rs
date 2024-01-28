@@ -3,7 +3,7 @@ use crate::types::ASTNode;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::{binary_op::BinaryOP},
+    ast::binary_op::BinaryOP,
     constants,
     lexer::tokens::{Operations, TokenEnum},
 };

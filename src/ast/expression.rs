@@ -1,5 +1,3 @@
-
-
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
 use crate::{
@@ -38,7 +36,7 @@ impl AST for Expression {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&self, _call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&mut self, _call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
         todo!()
     }
 }

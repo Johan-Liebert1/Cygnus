@@ -1,5 +1,3 @@
-
-
 use super::asm::ASM;
 
 pub const FUNCTION_RETURN_INSTRUCTIONS: [&str; 3] = [("mov rsp, rbp"), ("pop rbp"), ("ret")];

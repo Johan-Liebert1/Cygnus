@@ -64,7 +64,7 @@ impl AST for AssignmentStatement {
         println!("{:#?}", self)
     }
 
-    fn semantic_visit(&self, _call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&mut self, _call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
         todo!()
     }
 }

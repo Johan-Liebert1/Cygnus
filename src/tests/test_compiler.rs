@@ -1,11 +1,9 @@
-
-
 use std::{
     fs::{self},
-    io::{Read},
+    io::Read,
 };
 
-use crate::{parse_input_file};
+use crate::parse_input_file;
 
 fn get_stdout_and_actual_result(file_name: &str) -> (String, String) {
     let mut stdout_str = String::new();

@@ -1,5 +1,3 @@
-
-
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
 use std::{cell::RefCell, rc::Rc};
@@ -52,7 +50,7 @@ impl AST for Jump {
         todo!()
     }
 
-    fn semantic_visit(&self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
         // Since we break out of a loop or return from a function, we need to pop the call stack
         call_stack.pop();
     }

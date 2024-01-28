@@ -53,8 +53,8 @@ impl AST for LogicalExpression {
         todo!()
     }
 
-    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        self.left.borrow().semantic_visit(call_stack, f.clone());
-        self.right.borrow().semantic_visit(call_stack, f);
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+        self.left.borrow_mut().semantic_visit(call_stack, f.clone());
+        self.right.borrow_mut().semantic_visit(call_stack, f);
     }
 }

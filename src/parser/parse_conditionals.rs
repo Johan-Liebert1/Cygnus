@@ -3,9 +3,7 @@ use crate::types::ASTNode;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::{
-        conditionals::{ConditionalStatement, ElseStatement, IfStatement},
-    },
+    ast::conditionals::{ConditionalStatement, ElseStatement, IfStatement},
     lexer::{
         keywords::{ELIF_STATEMENT, ELSE_STATEMENT},
         tokens::{Bracket, TokenEnum},

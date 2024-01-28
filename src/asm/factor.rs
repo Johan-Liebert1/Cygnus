@@ -1,5 +1,3 @@
-
-
 use crate::{
     interpreter::interpreter::Variables,
     lexer::tokens::{Number, TokenEnum},

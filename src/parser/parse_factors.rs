@@ -3,7 +3,7 @@ use crate::types::ASTNode;
 use std::{cell::RefCell, process::exit, rc::Rc};
 
 use crate::{
-    ast::{factor::Factor},
+    ast::factor::Factor,
     constants, helpers,
     lexer::tokens::{Bracket, Number, TokenEnum},
 };

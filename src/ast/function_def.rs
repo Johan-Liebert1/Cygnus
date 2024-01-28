@@ -77,7 +77,7 @@ impl AST for FunctionDefinition {
         println!("{:?}", &self);
     }
 
-    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         call_stack.push(ActivationRecord::new(
             self.name.to_string(),
             ActivationRecordType::Function,

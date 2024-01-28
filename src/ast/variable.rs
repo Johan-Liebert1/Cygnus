@@ -1,5 +1,3 @@
-
-
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
 use core::panic;
@@ -60,7 +58,7 @@ impl AST for Variable {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
         if !call_stack.var_with_name_found(&self.var_name) {
             print!("{:#?}", call_stack);
             panic!(

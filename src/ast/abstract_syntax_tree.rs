@@ -1,5 +1,3 @@
-
-
 use std::{
     cell::RefCell,
     fmt::{Debug, Display},
@@ -21,7 +19,7 @@ pub struct VisitResult {
 pub trait AST {
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult;
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM);
-    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>);
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>);
     fn get_token(&self) -> &Token;
     fn print(&self);
 }

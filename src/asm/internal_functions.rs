@@ -1,9 +1,4 @@
-
-
-use crate::{
-    interpreter::interpreter::Variables,
-    lexer::tokens::VariableEnum,
-};
+use crate::{interpreter::interpreter::Variables, lexer::tokens::VariableEnum};
 
 use super::asm::ASM;
 

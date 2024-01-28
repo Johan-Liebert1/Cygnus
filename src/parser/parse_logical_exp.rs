@@ -2,10 +2,7 @@ use crate::types::ASTNode;
 
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{
-    ast::{logical_exp::LogicalExpression},
-    lexer::tokens::TokenEnum,
-};
+use crate::{ast::logical_exp::LogicalExpression, lexer::tokens::TokenEnum};
 
 use super::parser::Parser;
 

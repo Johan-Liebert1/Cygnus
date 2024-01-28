@@ -176,10 +176,10 @@ impl AST for ConditionalStatement {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         self.if_statement
             .condition
-            .borrow()
+            .borrow_mut()
             .semantic_visit(call_stack, Rc::clone(&f));
 
         call_stack.push(ActivationRecord::new(
@@ -189,14 +189,14 @@ impl AST for ConditionalStatement {
 
         self.if_statement
             .block
-            .borrow()
+            .borrow_mut()
             .semantic_visit(call_stack, Rc::clone(&f));
 
         call_stack.pop();
 
         for elif in &self.elif_ladder {
             elif.condition
-                .borrow()
+                .borrow_mut()
                 .semantic_visit(call_stack, Rc::clone(&f));
 
             call_stack.push(ActivationRecord::new(
@@ -205,7 +205,7 @@ impl AST for ConditionalStatement {
             ));
 
             elif.block
-                .borrow()
+                .borrow_mut()
                 .semantic_visit(call_stack, Rc::clone(&f));
 
             call_stack.pop();
@@ -219,7 +219,7 @@ impl AST for ConditionalStatement {
 
             else_statement
                 .block
-                .borrow()
+                .borrow_mut()
                 .semantic_visit(call_stack, Rc::clone(&f));
 
             call_stack.pop();

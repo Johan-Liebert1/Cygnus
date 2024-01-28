@@ -113,7 +113,8 @@ impl SemanticAnalyzer {
     }
 
     pub fn analyze(&mut self) {
-        self.ast.borrow()
+        self.ast
+            .borrow_mut()
             .semantic_visit(&mut self.call_stack, Rc::clone(&self.functions));
     }
 }

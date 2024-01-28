@@ -1,8 +1,6 @@
 use crate::types::ASTNode;
 
-use crate::semantic_analyzer::semantic_analyzer::{
-    CallStack,
-};
+use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
 use crate::{
     asm::asm::ASM,
@@ -56,9 +54,9 @@ impl AST for Program {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         for statement in &self.statements {
-            statement.borrow().semantic_visit(call_stack, Rc::clone(&f));
+            statement.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
         }
     }
 }

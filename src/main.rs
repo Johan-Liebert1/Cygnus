@@ -1,4 +1,5 @@
-#[allow(dead_code, unused)]
+#![allow(dead_code, unused)]
+
 use std::{
     char,
     io::{self, BufReader, Read},

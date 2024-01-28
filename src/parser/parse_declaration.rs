@@ -1,11 +1,9 @@
 use crate::types::ASTNode;
 
-use std::{rc::Rc, cell::RefCell};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::{
-        declaration_statement::DeclarationStatement, variable::Variable,
-    },
+    ast::{declaration_statement::DeclarationStatement, variable::Variable},
     lexer::tokens::TokenEnum,
 };
 
