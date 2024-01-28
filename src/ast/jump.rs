@@ -51,6 +51,7 @@ impl AST for Jump {
     }
 
     fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        todo!()
+        // Since we break out of a loop or return from a function, we need to pop the call stack
+        call_stack.pop();
     }
 }

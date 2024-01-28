@@ -1,4 +1,6 @@
-use crate::semantic_analyzer::semantic_analyzer::CallStack;
+use crate::semantic_analyzer::semantic_analyzer::{
+    ActivationRecord, ActivationRecordType, CallStack,
+};
 
 use crate::{
     asm::asm::ASM,
@@ -74,6 +76,19 @@ impl AST for FunctionDefinition {
     }
 
     fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        todo!()
+        call_stack.push(ActivationRecord::new(
+            self.name.to_string(),
+            ActivationRecordType::Function,
+        ));
+
+        for arg in &self.parameters {
+            call_stack.insert_variable(&arg.var_name, arg.get_var_enum_from_type());
+            // arg.semantic_visit(call_stack, Rc::clone(&f));
+        }
+
+        self.block.semantic_visit(call_stack, Rc::clone(&f));
+
+        // pop the record here
+        call_stack.pop();
     }
 }

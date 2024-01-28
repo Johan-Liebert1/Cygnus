@@ -64,6 +64,14 @@ impl AST for Factor {
     }
 
     fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        // empty
+        match &self.token.token {
+            TokenEnum::Variable(v) => {
+                if !call_stack.var_with_name_found(v) {
+                    panic!("Variable with name {v} not found in currenct scope");
+                }
+            }
+
+            _ => {}
+        }
     }
 }

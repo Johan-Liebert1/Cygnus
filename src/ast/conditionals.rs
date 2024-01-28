@@ -161,6 +161,23 @@ impl AST for ConditionalStatement {
     }
 
     fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        todo!()
+        self.if_statement
+            .condition
+            .semantic_visit(call_stack, Rc::clone(&f));
+
+        self.if_statement
+            .block
+            .semantic_visit(call_stack, Rc::clone(&f));
+
+        for elif in &self.elif_ladder {
+            elif.condition.semantic_visit(call_stack, Rc::clone(&f));
+            elif.block.semantic_visit(call_stack, Rc::clone(&f));
+        }
+
+        if let Some(else_statement) = &self.else_statement {
+            else_statement
+                .block
+                .semantic_visit(call_stack, Rc::clone(&f));
+        }
     }
 }

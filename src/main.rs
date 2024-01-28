@@ -3,12 +3,15 @@
 use std::{
     char,
     io::{self, BufReader, Read},
-    process::{ChildStdout, Stdio}, rc::Rc,
+    process::{ChildStdout, Stdio},
+    rc::Rc,
 };
 
 use parser::parser::Parser;
 
-use crate::{interpreter::interpreter::Interpreter, semantic_analyzer::semantic_analyzer::SemanticAnalyzer};
+use crate::{
+    interpreter::interpreter::Interpreter, semantic_analyzer::semantic_analyzer::SemanticAnalyzer,
+};
 
 mod asm;
 mod ast;

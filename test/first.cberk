@@ -1,1 +1,7 @@
-write(1 + 2)
+def x: str = 5;
+
+fun thing(a: int, b: int) {
+    def c: str = 1;
+}
+
+write(x);

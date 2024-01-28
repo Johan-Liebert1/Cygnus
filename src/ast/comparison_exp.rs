@@ -175,6 +175,7 @@ impl AST for ComparisonExp {
     }
 
     fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        todo!()
+        self.left.semantic_visit(call_stack, f.clone());
+        self.right.semantic_visit(call_stack, f);
     }
 }

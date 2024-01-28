@@ -1,20 +1,25 @@
+use core::panic;
 use std::{borrow::BorrowMut, cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::{
     ast::abstract_syntax_tree::AST,
     interpreter::interpreter::{Functions, Variables},
+    lexer::tokens::VariableEnum,
 };
 
+#[derive(Debug)]
 pub enum ActivationRecordType {
+    Global,
     Function,
     IfElse,
     Loop,
 }
 
+#[derive(Debug)]
 pub struct ActivationRecord {
     name: String,
     record_type: ActivationRecordType,
-    members: Variables,
+    variable_members: Variables,
 }
 
 impl ActivationRecord {
@@ -22,23 +27,28 @@ impl ActivationRecord {
         Self {
             name,
             record_type,
-            members: HashMap::new(),
+            variable_members: HashMap::new(),
         }
     }
 }
 
+#[derive(Debug)]
 pub struct CallStack {
     call_stack: Vec<ActivationRecord>,
 }
 
 impl CallStack {
-    pub fn insert_record(&mut self, record: ActivationRecord) {
+    pub fn push(&mut self, record: ActivationRecord) {
         self.call_stack.push(record);
+    }
+
+    pub fn pop(&mut self) {
+        self.call_stack.pop();
     }
 
     pub fn var_with_name_found(&self, var_name: &String) -> bool {
         for record in self.call_stack.iter().rev() {
-            match record.members.get(var_name) {
+            match record.variable_members.get(var_name) {
                 Some(_) => return true,
                 None => continue,
             }
@@ -47,7 +57,18 @@ impl CallStack {
         return false;
     }
 
-    pub fn insert_member(&mut self) {
+    pub fn insert_variable(&mut self, var_name: &String, variable_enum: VariableEnum) {
+        match self.call_stack.last_mut() {
+            Some(last_record) => {
+                last_record
+                    .variable_members
+                    .insert(var_name.into(), variable_enum);
+            }
+
+            None => {
+                panic!("Call stack is empty");
+            }
+        }
     }
 }
 
@@ -60,7 +81,12 @@ pub struct SemanticAnalyzer {
 impl SemanticAnalyzer {
     pub fn new(ast: Rc<Box<dyn AST>>, functions: Rc<RefCell<Functions>>) -> Self {
         Self {
-            call_stack: CallStack { call_stack: vec![] },
+            call_stack: CallStack {
+                call_stack: vec![ActivationRecord::new(
+                    "".into(),
+                    ActivationRecordType::Global,
+                )],
+            },
             ast,
             functions,
         }

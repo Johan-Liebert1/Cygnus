@@ -1,5 +1,6 @@
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
+use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
@@ -58,6 +59,12 @@ impl AST for Variable {
     }
 
     fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        todo!()
+        if !call_stack.var_with_name_found(&self.var_name) {
+            print!("{:#?}", call_stack);
+            panic!(
+                "Variable with name '{}' not found in current scope",
+                self.var_name
+            );
+        }
     }
 }

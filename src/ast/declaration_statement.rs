@@ -78,6 +78,6 @@ impl AST for DeclarationStatement {
     }
 
     fn semantic_visit(&self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        todo!()
+        call_stack.insert_variable(&self.left.var_name, self.left.get_var_enum_from_type());
     }
 }
