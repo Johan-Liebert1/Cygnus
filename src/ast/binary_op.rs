@@ -160,9 +160,19 @@ impl BinaryOP {
 }
 
 impl AST for BinaryOP {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        self.left.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
-        self.right.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+    fn visit_com(
+        &self,
+        v: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        asm: &mut ASM,
+        call_stack: &mut CallStack,
+    ) {
+        self.left
+            .borrow()
+            .visit_com(v, Rc::clone(&f), asm, call_stack);
+        self.right
+            .borrow()
+            .visit_com(v, Rc::clone(&f), asm, call_stack);
 
         match &self.operator.token {
             TokenEnum::Op(c) => {
@@ -173,7 +183,12 @@ impl AST for BinaryOP {
         }
     }
 
-    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(
+        &self,
+        i: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        call_stack: &mut CallStack,
+    ) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:#?}", &self);
             println!("===============================================");
@@ -213,7 +228,9 @@ impl AST for BinaryOP {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        self.left.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
+        self.left
+            .borrow_mut()
+            .semantic_visit(call_stack, Rc::clone(&f));
         self.right.borrow_mut().semantic_visit(call_stack, f);
     }
 }

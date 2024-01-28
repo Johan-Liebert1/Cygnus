@@ -26,11 +26,22 @@ impl Factor {
 }
 
 impl AST for Factor {
-    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+    fn visit_com(
+        &self,
+        x: &mut Variables,
+        _: Rc<RefCell<Functions>>,
+        asm: &mut ASM,
+        call_stack: &mut CallStack,
+    ) {
         asm.generate_asm_factor(&self.token.token, x, call_stack);
     }
 
-    fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(
+        &self,
+        v: &mut Variables,
+        _: Rc<RefCell<Functions>>,
+        call_stack: &mut CallStack,
+    ) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:?}", &self);
         }

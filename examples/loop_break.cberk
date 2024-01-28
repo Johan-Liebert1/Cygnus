@@ -9,3 +9,5 @@ loop from 1 to 10 {
         break
     }
 }
+
+def b: int = 3;

@@ -1,4 +1,4 @@
-use crate::semantic_analyzer::semantic_analyzer::CallStack;
+use crate::semantic_analyzer::semantic_analyzer::{CallStack, PopTypes};
 
 use std::{cell::RefCell, rc::Rc};
 
@@ -26,7 +26,12 @@ impl Jump {
 }
 
 impl AST for Jump {
-    fn visit(&self, _v: &mut Variables, _f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(
+        &self,
+        _v: &mut Variables,
+        _f: Rc<RefCell<Functions>>,
+        call_stack: &mut CallStack,
+    ) -> VisitResult {
         todo!();
 
         // this is pretty straightforward. We simply return
@@ -35,13 +40,24 @@ impl AST for Jump {
         };
     }
 
-    fn visit_com(&self, _v: &mut Variables, _f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        // Since we break out of a loop or return from a function, we need to pop the call stack
-        call_stack.pop();
-
+    fn visit_com(
+        &self,
+        _v: &mut Variables,
+        _f: Rc<RefCell<Functions>>,
+        asm: &mut ASM,
+        call_stack: &mut CallStack,
+    ) {
         match self.typ {
-            JumpType::Return => asm.function_return(),
-            JumpType::Break => asm.loop_break(),
+            JumpType::Return => {
+                // Since we break out of a loop or return from a function, we need to pop the call stack
+                // call_stack.pop_special(PopTypes::EarlyReturn);
+                asm.function_return()
+            }
+            JumpType::Break => {
+                // Since we break out of a loop or return from a function, we need to pop the call stack
+                // call_stack.pop_special(PopTypes::LoopBreak);
+                asm.loop_break()
+            }
         }
     }
 
@@ -53,8 +69,19 @@ impl AST for Jump {
         todo!()
     }
 
+    // TODO: Figure out if this matters
     fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
         // Since we break out of a loop or return from a function, we need to pop the call stack
-        call_stack.pop();
+        // match self.typ {
+        //     JumpType::Return => {
+        //         // Since we break out of a loop or return from a function, we need to pop the call stack
+        //         call_stack.pop_special(PopTypes::EarlyReturn);
+        //     }
+
+        //     JumpType::Break => {
+        //         // Since we break out of a loop or return from a function, we need to pop the call stack
+        //         call_stack.pop_special(PopTypes::LoopBreak);
+        //     }
+        // }
     }
 }

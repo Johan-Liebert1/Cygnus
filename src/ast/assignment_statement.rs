@@ -26,14 +26,25 @@ impl AssignmentStatement {
 }
 
 impl AST for AssignmentStatement {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+    fn visit_com(
+        &self,
+        v: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        asm: &mut ASM,
+        call_stack: &mut CallStack,
+    ) {
         self.right.borrow().visit_com(v, f, asm, call_stack);
         asm.variable_assignment(&self.var_name, call_stack);
     }
 
     // TODO: change this so that the expression is stored here and we need to visit the varible
     // to evaluate the value
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(
+        &self,
+        v: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        call_stack: &mut CallStack,
+    ) -> VisitResult {
         let right_visit = self.right.borrow().visit(v, f, call_stack);
 
         match &*right_visit.token {

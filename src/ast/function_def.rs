@@ -1,3 +1,4 @@
+use crate::trace;
 use crate::types::ASTNode;
 
 use crate::semantic_analyzer::semantic_analyzer::{
@@ -41,7 +42,13 @@ impl FunctionDefinition {
 }
 
 impl AST for FunctionDefinition {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+    fn visit_com(
+        &self,
+        v: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        asm: &mut ASM,
+        call_stack: &mut CallStack,
+    ) {
         asm.function_def(&self.name, self.stack_var_size);
 
         call_stack.push_record(ActivationRecord::new(
@@ -63,7 +70,12 @@ impl AST for FunctionDefinition {
 
     // TODO: This function will be visited twice, once when the interpreter calls visit, and
     // another when the function is actually called
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(
+        &self,
+        v: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        call_stack: &mut CallStack,
+    ) -> VisitResult {
         // TODO: handle global variables and function parameters with the same name
         for param in &self.parameters {
             let value = match param.var_type.as_str() {

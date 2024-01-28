@@ -25,16 +25,31 @@ impl LogicalExpression {
 }
 
 impl AST for LogicalExpression {
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(
+        &self,
+        v: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        call_stack: &mut CallStack,
+    ) -> VisitResult {
         let _left = self.left.borrow().visit(v, Rc::clone(&f), call_stack);
         let _right = self.right.borrow().visit(v, Rc::clone(&f), call_stack);
 
         todo!()
     }
 
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        self.left.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
-        self.right.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+    fn visit_com(
+        &self,
+        v: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        asm: &mut ASM,
+        call_stack: &mut CallStack,
+    ) {
+        self.left
+            .borrow()
+            .visit_com(v, Rc::clone(&f), asm, call_stack);
+        self.right
+            .borrow()
+            .visit_com(v, Rc::clone(&f), asm, call_stack);
 
         match &self.op.token {
             TokenEnum::LogicalOp(lo) => asm.gen_logical_statement(lo.clone()),

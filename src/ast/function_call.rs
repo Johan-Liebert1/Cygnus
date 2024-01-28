@@ -29,7 +29,13 @@ impl FunctionCall {
 }
 
 impl AST for FunctionCall {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+    fn visit_com(
+        &self,
+        v: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        asm: &mut ASM,
+        call_stack: &mut CallStack,
+    ) {
         match self.name.as_str() {
             FUNC_WRITE => {
                 for arg in &self.arguments {
@@ -80,7 +86,12 @@ impl AST for FunctionCall {
         }
     }
 
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(
+        &self,
+        v: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        call_stack: &mut CallStack,
+    ) -> VisitResult {
         match self.name.as_str() {
             FUNC_WRITE => {
                 for arg in &self.arguments {

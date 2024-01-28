@@ -60,7 +60,9 @@ pub fn parse_input_file(
     let mut semantic_analyzer = SemanticAnalyzer::new(ast.clone(), Rc::clone(&parser.functions));
     semantic_analyzer.analyze();
 
-    let mut interpreter = Interpreter::new(ast, parser.functions);
+    let mut interpreter = Interpreter::new(ast.clone(), parser.functions.clone());
+
+    let mut semantic_analyzer = SemanticAnalyzer::new(ast, parser.functions);
 
     if compile_mode {
         let _result = interpreter.compile(&mut semantic_analyzer.call_stack);

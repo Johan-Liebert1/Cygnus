@@ -1,6 +1,6 @@
 use crate::types::ASTNode;
 
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc, usize};
 
 use crate::{
     ast::abstract_syntax_tree::AST,
@@ -22,6 +22,12 @@ pub enum ActivationRecordType {
     Function,
     IfElse,
     Loop,
+}
+
+#[derive(Debug)]
+pub enum PopTypes {
+    EarlyReturn,
+    LoopBreak,
 }
 
 #[derive(Debug)]
@@ -70,6 +76,40 @@ impl CallStack {
 
             None => panic!("Pop from empty stack"),
         };
+    }
+
+    pub fn pop_special(&mut self, pop_type: PopTypes) {
+        let mut index_to_slice_from: Option<usize> = None;
+
+        for (index, record) in self.call_stack.iter().enumerate().rev() {
+            match record.record_type {
+                ActivationRecordType::Function => {
+                    if let PopTypes::EarlyReturn = pop_type {
+                        // adding 1 here as at the end of the stack we'll pop the function
+                        // stack
+                        index_to_slice_from = Some(index + 1);
+                        break;
+                    }
+                }
+
+                ActivationRecordType::Loop => {
+                    if let PopTypes::LoopBreak = pop_type {
+                        index_to_slice_from = Some(index + 1);
+                        break;
+                    }
+                }
+
+                _ => continue,
+            }
+        }
+
+        match index_to_slice_from {
+            Some(index_to_slice_from) => {
+                self.call_stack.drain(index_to_slice_from..);
+            }
+
+            None => panic!("Nothing to pop"),
+        }
     }
 
     pub fn var_with_name_found(&self, var_name: &String) -> bool {

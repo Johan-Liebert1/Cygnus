@@ -23,13 +23,26 @@ impl Program {
 }
 
 impl AST for Program {
-    fn visit_com(&self, x: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+    fn visit_com(
+        &self,
+        x: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        asm: &mut ASM,
+        call_stack: &mut CallStack,
+    ) {
         for statement in &self.statements {
-            statement.borrow().visit_com(x, Rc::clone(&f), asm, call_stack);
+            statement
+                .borrow()
+                .visit_com(x, Rc::clone(&f), asm, call_stack);
         }
     }
 
-    fn visit(&self, x: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(
+        &self,
+        x: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        call_stack: &mut CallStack,
+    ) -> VisitResult {
         let mut last: Option<VisitResult> = None;
 
         for statement in &self.statements {
@@ -56,7 +69,9 @@ impl AST for Program {
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         for statement in &self.statements {
-            statement.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
+            statement
+                .borrow_mut()
+                .semantic_visit(call_stack, Rc::clone(&f));
         }
     }
 }
