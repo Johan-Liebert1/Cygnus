@@ -17,11 +17,11 @@ pub struct Expression {
 }
 
 impl AST for Expression {
-    fn visit_com(&self, _x: &mut Variables, _: Rc<RefCell<Functions>>, _asm: &mut ASM) {
+    fn visit_com(&self, _x: &mut Variables, _: Rc<RefCell<Functions>>, _asm: &mut ASM, call_stack: &mut CallStack) {
         todo!()
     }
 
-    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         println!("Expression visit");
         VisitResult {
             token: Box::new(self.operand.token.clone()),

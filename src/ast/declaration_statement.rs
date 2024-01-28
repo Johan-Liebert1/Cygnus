@@ -31,19 +31,19 @@ impl DeclarationStatement {
 }
 
 impl AST for DeclarationStatement {
-    fn visit_com(&self, vars: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, vars: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         vars.insert(
             self.left.var_name.clone(),
             self.left.get_var_enum_from_type(),
         );
 
         asm.variable_declaration(&self.left.var_name);
-        self.right.borrow().visit_com(vars, f, asm);
+        self.right.borrow().visit_com(vars, f, asm, call_stack);
         asm.variable_assignment(&self.left.var_name);
     }
 
-    fn visit(&self, vars: &mut Variables, functions: Rc<RefCell<Functions>>) -> VisitResult {
-        let right_visit = self.right.borrow().visit(vars, functions);
+    fn visit(&self, vars: &mut Variables, functions: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+        let right_visit = self.right.borrow().visit(vars, functions, call_stack);
 
         let var_name = String::from(self.left.var_name.as_str());
 

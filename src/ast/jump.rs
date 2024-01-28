@@ -26,7 +26,7 @@ impl Jump {
 }
 
 impl AST for Jump {
-    fn visit(&self, _v: &mut Variables, _f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, _v: &mut Variables, _f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         todo!();
 
         // this is pretty straightforward. We simply return
@@ -35,7 +35,7 @@ impl AST for Jump {
         };
     }
 
-    fn visit_com(&self, _v: &mut Variables, _f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, _v: &mut Variables, _f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         match self.typ {
             JumpType::Return => asm.function_return(),
             JumpType::Break => asm.loop_break(),

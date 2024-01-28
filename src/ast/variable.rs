@@ -42,11 +42,11 @@ impl Variable {
 }
 
 impl AST for Variable {
-    fn visit_com(&self, _x: &mut Variables, _: Rc<RefCell<Functions>>, _asm: &mut ASM) {
+    fn visit_com(&self, _x: &mut Variables, _: Rc<RefCell<Functions>>, _asm: &mut ASM, call_stack: &mut CallStack) {
         todo!()
     }
 
-    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         todo!()
     }
 

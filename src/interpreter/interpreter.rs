@@ -1,3 +1,4 @@
+use crate::semantic_analyzer::semantic_analyzer::CallStack;
 use crate::types::ASTNode;
 
 use std::io::prelude::*;
@@ -85,18 +86,20 @@ impl Interpreter {
         return Ok(());
     }
 
-    pub fn interpret(&mut self) -> VisitResult {
-        return self
-            .ast
-            .borrow()
-            .visit(&mut self.variables, Rc::clone(&self.functions));
+    pub fn interpret(&mut self, call_stack: &mut CallStack) -> VisitResult {
+        return self.ast.borrow().visit(
+            &mut self.variables,
+            Rc::clone(&self.functions),
+            call_stack,
+        );
     }
 
-    pub fn compile(&mut self) {
+    pub fn compile(&mut self, call_stack: &mut CallStack) {
         self.ast.borrow().visit_com(
             &mut self.variables,
             Rc::clone(&self.functions),
             &mut self.asm,
+            call_stack,
         );
 
         self.write_nasm();

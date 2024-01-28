@@ -63,7 +63,7 @@ pub fn parse_input_file(
     let mut interpreter = Interpreter::new(ast, parser.functions);
 
     if compile_mode {
-        let _result = interpreter.compile();
+        let _result = interpreter.compile(&mut semantic_analyzer.call_stack);
 
         let current_dir = std::env::current_dir().unwrap();
         std::env::set_current_dir("./generated").unwrap();
@@ -118,7 +118,7 @@ pub fn parse_input_file(
         return None;
     }
 
-    let result = interpreter.interpret();
+    let result = interpreter.interpret(&mut semantic_analyzer.call_stack);
 
     println!("{:#?}", result);
 

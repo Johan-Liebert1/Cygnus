@@ -41,15 +41,15 @@ impl FunctionDefinition {
 }
 
 impl AST for FunctionDefinition {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         asm.function_def(&self.name, self.stack_var_size);
-        self.block.borrow().visit_com(v, f, asm);
+        self.block.borrow().visit_com(v, f, asm, call_stack);
         asm.function_def_end(&self.name);
     }
 
     // TODO: This function will be visited twice, once when the interpreter calls visit, and
     // another when the function is actually called
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         // TODO: handle global variables and function parameters with the same name
         for param in &self.parameters {
             let value = match param.var_type.as_str() {
@@ -61,7 +61,7 @@ impl AST for FunctionDefinition {
             v.insert(param.var_name.clone(), VariableEnum::Number(value));
         }
 
-        self.block.borrow().visit(v, f);
+        self.block.borrow().visit(v, f, call_stack);
 
         for param in &self.parameters {
             v.remove(&param.var_name.clone());

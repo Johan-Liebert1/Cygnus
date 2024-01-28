@@ -29,14 +29,14 @@ impl FunctionCall {
 }
 
 impl AST for FunctionCall {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         match self.name.as_str() {
             FUNC_WRITE => {
                 for arg in &self.arguments {
                     // println!("FunctionCall visit_com arg: {:#?}", arg);
 
                     // this will generate everything and put in rax
-                    arg.borrow().visit_com(v, Rc::clone(&f), asm);
+                    arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
                     let arg_borrow = arg.borrow();
 
@@ -62,7 +62,7 @@ impl AST for FunctionCall {
                 }
 
                 for arg in &self.arguments {
-                    arg.borrow().visit_com(v, Rc::clone(&f), asm);
+                    arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
                 }
 
                 asm.func_exit();
@@ -81,12 +81,12 @@ impl AST for FunctionCall {
         }
     }
 
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         match self.name.as_str() {
             FUNC_WRITE => {
                 for arg in &self.arguments {
                     // println!("Visiting func write. Arg {:?}", arg);
-                    println!("{:?}", arg.borrow().visit(v, Rc::clone(&f)));
+                    println!("{:?}", arg.borrow().visit(v, Rc::clone(&f), call_stack));
                 }
 
                 return VisitResult {
@@ -101,9 +101,9 @@ impl AST for FunctionCall {
 
                 for arg in &self.arguments {
                     // println!("Visiting func write. Arg {:?}", arg);
-                    // println!("{:?}", arg.visit(v, Rc::clone(&f)));
+                    // println!("{:?}", arg.visit(v, Rc::clone(&f)), call_stack);
 
-                    let arg = arg.borrow().visit(v, Rc::clone(&f));
+                    let arg = arg.borrow().visit(v, Rc::clone(&f), call_stack);
 
                     match *arg.token {
                         TokenEnum::Number(n) => match n {
@@ -126,7 +126,7 @@ impl AST for FunctionCall {
                 Some(function_ast) => {
                     println!("Visiting func {name}");
 
-                    function_ast.borrow().visit(v, Rc::clone(&f))
+                    function_ast.borrow().visit(v, Rc::clone(&f), call_stack)
                 }
 
                 None => unimplemented!("Function {} unimplemented", self.name),

@@ -125,9 +125,9 @@ impl ComparisonExp {
 }
 
 impl AST for ComparisonExp {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
-        self.left.borrow().visit_com(v, Rc::clone(&f), asm);
-        self.right.borrow().visit_com(v, Rc::clone(&f), asm);
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+        self.left.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+        self.right.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
         match &self.comp_op.token {
             TokenEnum::Comparator(c) => {
@@ -138,14 +138,14 @@ impl AST for ComparisonExp {
         }
     }
 
-    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:#?}", &self);
             println!("===============================================");
         }
 
-        let visit_left = self.left.borrow().visit(i, Rc::clone(&f));
-        let visit_right = self.right.borrow().visit(i, Rc::clone(&f));
+        let visit_left = self.left.borrow().visit(i, Rc::clone(&f), call_stack);
+        let visit_right = self.right.borrow().visit(i, Rc::clone(&f), call_stack);
 
         let left_operand = visit_left.token.get_operand();
         let right_operand = visit_right.token.get_operand();

@@ -23,17 +23,17 @@ impl Program {
 }
 
 impl AST for Program {
-    fn visit_com(&self, x: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, x: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         for statement in &self.statements {
-            statement.borrow().visit_com(x, Rc::clone(&f), asm);
+            statement.borrow().visit_com(x, Rc::clone(&f), asm, call_stack);
         }
     }
 
-    fn visit(&self, x: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, x: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         let mut last: Option<VisitResult> = None;
 
         for statement in &self.statements {
-            let result = statement.borrow().visit(x, Rc::clone(&f));
+            let result = statement.borrow().visit(x, Rc::clone(&f), call_stack);
             last = Some(result);
         }
 

@@ -35,7 +35,7 @@ impl Loop {
 }
 
 impl AST for Loop {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         // 1. Visit the from expression, to expression and step expression if they exist. Push
         //    them onto the stack
         //
@@ -48,19 +48,19 @@ impl AST for Loop {
         let current_num_loop = asm.num_loops;
         asm.inc_num_loops();
 
-        self.from_range.borrow().visit_com(v, Rc::clone(&f), asm);
-        self.to_range.borrow().visit_com(v, Rc::clone(&f), asm);
-        self.step_by.borrow().visit_com(v, Rc::clone(&f), asm);
+        self.from_range.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+        self.to_range.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+        self.step_by.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
         asm.gen_loop_start(current_num_loop);
-        self.block.borrow().visit_com(v, Rc::clone(&f), asm);
+        self.block.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
         asm.gen_loop_end(current_num_loop);
     }
 
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
-        let from = self.from_range.borrow().visit(v, Rc::clone(&f));
-        let to = self.to_range.borrow().visit(v, Rc::clone(&f));
-        let step_by = self.step_by.borrow().visit(v, Rc::clone(&f));
+    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+        let from = self.from_range.borrow().visit(v, Rc::clone(&f), call_stack);
+        let to = self.to_range.borrow().visit(v, Rc::clone(&f), call_stack);
+        let step_by = self.step_by.borrow().visit(v, Rc::clone(&f), call_stack);
 
         if !from.token.is_integer() || !to.token.is_integer() || !step_by.token.is_integer() {
             panic!("Expected from, to and step expressions to be Integer");
@@ -89,7 +89,7 @@ impl AST for Loop {
         };
 
         for _ in (from..to).step_by(step_by) {
-            self.block.borrow().visit(v, Rc::clone(&f));
+            self.block.borrow().visit(v, Rc::clone(&f), call_stack);
         }
 
         return VisitResult {

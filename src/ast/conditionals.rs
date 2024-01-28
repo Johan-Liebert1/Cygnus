@@ -58,14 +58,14 @@ impl ConditionalStatement {
 }
 
 impl AST for ConditionalStatement {
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM) {
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         let current_num_if = asm.num_ifs;
         asm.inc_num_ifs();
 
         self.if_statement
             .condition
             .borrow()
-            .visit_com(v, Rc::clone(&f), asm);
+            .visit_com(v, Rc::clone(&f), asm, call_stack);
 
         asm.if_start(
             if self.elif_ladder.len() > 0 {
@@ -82,7 +82,7 @@ impl AST for ConditionalStatement {
         self.if_statement
             .block
             .borrow()
-            .visit_com(v, Rc::clone(&f), asm);
+            .visit_com(v, Rc::clone(&f), asm, call_stack);
 
         asm.if_end(
             if let Some(_) = self.else_statement {
@@ -97,7 +97,7 @@ impl AST for ConditionalStatement {
         );
 
         for (index, elif) in self.elif_ladder.iter().enumerate() {
-            elif.condition.borrow().visit_com(v, Rc::clone(&f), asm);
+            elif.condition.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
             // if it's the last index, then jump to else, else jump to the next elif
             asm.elif_start(
@@ -112,7 +112,7 @@ impl AST for ConditionalStatement {
                 current_num_if,
             );
 
-            elif.block.borrow().visit_com(v, Rc::clone(&f), asm);
+            elif.block.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
             asm.elif_end(
                 index,
@@ -130,36 +130,36 @@ impl AST for ConditionalStatement {
         if let Some(e) = &self.else_statement {
             asm.else_start(current_num_if);
 
-            e.block.borrow().visit_com(v, Rc::clone(&f), asm);
+            e.block.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
             asm.else_end(current_num_if);
         }
     }
 
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>) -> VisitResult {
+    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         if let TokenEnum::Bool(value) = *self
             .if_statement
             .condition
             .borrow()
-            .visit(v, Rc::clone(&f))
+            .visit(v, Rc::clone(&f), call_stack)
             .token
         {
             if value {
-                return self.if_statement.block.borrow().visit(v, Rc::clone(&f));
+                return self.if_statement.block.borrow().visit(v, Rc::clone(&f), call_stack);
             }
         }
 
         for elif in &self.elif_ladder {
-            if let TokenEnum::Bool(value) = *elif.condition.borrow().visit(v, Rc::clone(&f)).token {
+            if let TokenEnum::Bool(value) = *elif.condition.borrow().visit(v, Rc::clone(&f), call_stack).token {
                 if value {
-                    return elif.block.borrow().visit(v, Rc::clone(&f));
+                    return elif.block.borrow().visit(v, Rc::clone(&f), call_stack);
                 }
             }
         }
 
         // TODO: Panic if not boolean
         if let Some(else_statement) = &self.else_statement {
-            return else_statement.block.borrow().visit(v, f);
+            return else_statement.block.borrow().visit(v, f, call_stack);
         }
 
         return VisitResult {
