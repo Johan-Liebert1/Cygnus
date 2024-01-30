@@ -1,5 +1,6 @@
 use crate::types::ASTNode;
 
+use core::panic;
 use std::{cell::RefCell, collections::HashMap, rc::Rc, usize};
 
 use crate::{
@@ -78,6 +79,10 @@ impl CallStack {
         };
     }
 
+    pub fn peek(&mut self) -> Option<&ActivationRecord> {
+        self.call_stack.last()
+    }
+
     pub fn pop_special(&mut self, pop_type: PopTypes) {
         let mut index_to_slice_from: Option<usize> = None;
 
@@ -146,6 +151,10 @@ impl CallStack {
 
         match self.call_stack.last_mut() {
             Some(last_record) => {
+                if last_record.variable_members.get(var_name).is_some() {
+                    panic!("Variable '{}' is already defined", var_name);
+                }
+
                 last_record.variable_members.insert(
                     var_name.into(),
                     ARVariable {

@@ -13,16 +13,19 @@
 - [x] `return` and `break` statements
 - [x] Functions in Compilation mode
 - [x] Variables in Compilation mode
-- [ ] Local Variables
-    - [ ] Stack variables for functions
-    - [ ] Variable Shadowing
-    - [ ] Upper stack variable access
-- [ ] Make sure nothing is left on the stack when we break out of a loop
-- [ ] Variable scoping
+- [x] Local Variables
+    - [x] Stack variables for functions
+    - [x] Variable Shadowing
+    - [x] Upper stack variable access
+- [x] Variable scoping
+- [ ] Function arguments and their type checking
 - [ ] Pointer deref
-- [ ] Command link arguments
-- [ ] Proper type checking
+- [ ] Floating point numbers
 - [ ] Random access to memory
+- [ ] Proper type checking
+- [ ] Enums - Use `offset` and `reset` kinda like Go's `iota`
+- [ ] Make sure nothing is left on the stack when we break out of a loop
+- [ ] Command line arguments
 - [ ] Ability to allocate and deallocate memory
 - [ ] Macros
 

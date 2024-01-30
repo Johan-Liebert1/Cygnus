@@ -1,4 +1,7 @@
-use crate::{interpreter::interpreter::Variables, lexer::tokens::VariableEnum};
+use crate::{
+    interpreter::interpreter::Variables, lexer::tokens::VariableEnum,
+    semantic_analyzer::semantic_analyzer::CallStack,
+};
 
 use super::asm::ASM;
 
@@ -37,7 +40,7 @@ impl ASM {
         self.extend_current_label(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec());
     }
 
-    pub fn func_write_var(&mut self, var_name: &String, variables: &Variables) {
+    pub fn func_write_var(&mut self, var_name: &String, call_stack: &CallStack) {
         // TODO: Un-hardcode this
 
         let instructions = match var_name.as_str() {
@@ -81,9 +84,13 @@ impl ASM {
 
             // the variable value or its address will be pushed onto the stack
             _ => {
-                match variables.get(var_name) {
-                    Some(var_enum) => {
-                        match var_enum {
+                let (variable, variable_scope) = call_stack.get_var_with_name(&var_name);
+
+                match variable {
+                    Some(var) => {
+                        // We don't need to check the scope here as the variable value is already
+                        // pushed into rax beforehand in `factor` AST
+                        match var.var {
                             VariableEnum::Number(..) => {
                                 vec![
                                     format!("pop rax"),
@@ -96,9 +103,9 @@ impl ASM {
                                 WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
                             }
                         }
-                    }
+                    },
 
-                    None => panic!("Variable {var_name} is not defined"),
+                    None => unreachable!("Could not find variable with name '{}' in function `factor`. This is a bug in the semantic analying step.", var_name),
                 }
             }
         };

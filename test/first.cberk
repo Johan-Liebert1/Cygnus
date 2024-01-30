@@ -1,7 +1,9 @@
 fun thing(a: int, b: int) {
+    write(a, b)
+
     def c: int = 420;
 
-    if 1 == 2 {
+    if 1 <= 2 {
         def c: int = 69;
         write(c);
     }
@@ -9,4 +11,4 @@ fun thing(a: int, b: int) {
     write(c);
 }
 
-thing()
+thing(1, 2)

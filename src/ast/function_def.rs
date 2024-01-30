@@ -60,6 +60,8 @@ impl AST for FunctionDefinition {
             call_stack.insert_variable(&arg.var_name, arg.get_var_enum_from_type());
         }
 
+        trace!("{:#?}", call_stack.peek());
+
         self.block.borrow().visit_com(v, f, asm, call_stack);
 
         // pop the record here
