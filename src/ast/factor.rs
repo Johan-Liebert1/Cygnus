@@ -78,7 +78,7 @@ impl AST for Factor {
         match &self.token.token {
             TokenEnum::Variable(v) => {
                 if !call_stack.var_with_name_found(v) {
-                    panic!("Variable with name {v} not found in currenct scope");
+                    panic!("Variable with name '{v}' not found in currenct scope");
                 }
             }
 

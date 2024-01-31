@@ -1,7 +1,9 @@
+use crate::semantic_analyzer::semantic_analyzer::CallStack;
+
 use super::asm::ASM;
 
 impl ASM {
-    pub fn gen_loop_start(&mut self, loop_number: usize) {
+    pub fn gen_loop_start(&mut self, loop_number: usize, call_stack: &CallStack) {
         // we should have in the stack
         //
         // step <- stack top
@@ -12,11 +14,38 @@ impl ASM {
         // 2. If it's false, we jump to .loop_end, else keep executing
         // 3. Just before .loop_end: there's an unconditional jump to .loop:
 
+        let from = call_stack.get_var_with_name(&format!("loop_{}_from", loop_number));
+        let to = call_stack.get_var_with_name(&format!("loop_{}_to", loop_number));
+        let step = call_stack.get_var_with_name(&format!("loop_{}_step", loop_number));
+
+        let (mut from_offset, mut to_offset, mut step_offset) = (0, 0, 0);
+
+        match (from, to, step) {
+            ((Some(from), _), (Some(to), _), (Some(step), _)) => {
+                from_offset = from.offset;
+                to_offset = to.offset;
+                step_offset = step.offset;
+            }
+
+            _ => {
+                panic!("'from', 'to' or 'step' not defined");
+            }
+        };
+
         let loop_start = vec![
-            format!(".loop_{}:", loop_number),
             format!("pop rcx"), // step
             format!("pop rbx"), // to
             format!("pop rax"), // from
+           
+            format!("mov [rsp + {}], rcx", step_offset),
+            format!("mov [rsp + {}], rbx", to_offset),
+            format!("mov [rsp + {}], rax", from_offset),
+
+            format!(".loop_{}:", loop_number),
+            format!("mov rcx, [rsp + {}]", step_offset), // step
+            format!("mov rbx, [rsp + {}]", to_offset), // to
+            format!("mov rax, [rsp + {}]", from_offset), // from
+
             format!("add rax, rcx"),
             format!("dec rax"),
             // now compare rax to rbx - 1 and if they're equal jump to the end
@@ -25,9 +54,9 @@ impl ASM {
             format!("jg .loop_end_{}", loop_number),
             format!("inc rax"),
             format!("inc rbx"),
-            format!("push rax"),
-            format!("push rbx"),
-            format!("push rcx"),
+
+            format!("mov [rsp + {}], rbx", to_offset),
+            format!("mov [rsp + {}], rax", from_offset),
         ];
 
         self.extend_current_label(loop_start);

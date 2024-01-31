@@ -1,13 +1,17 @@
-def a: int = 1;
+fun main() {
+    def a: int = 1;
 
-loop from 1 to 10 {
-    a = a + 1
+    loop from 1 to 10 {
+        a = a + 1
 
-    write(21)
+        write(21)
 
-    if a > 3 {
-        break
+        if a > 3 {
+            break
+        }
     }
+
+    def b: int = 3;
 }
 
-def b: int = 3;
+main()

@@ -55,6 +55,10 @@ pub struct CallStack {
 }
 
 impl CallStack {
+    pub fn length(&self) -> usize {
+        return self.call_stack.len();
+    }
+
     pub fn push_record(&mut self, record: ActivationRecord) {
         if let ActivationRecordType::Function = record.record_type {
             self.current_function_name = Some(record.name.clone());

@@ -85,7 +85,7 @@ impl ASM {
                         }
                     },
 
-                    None => unreachable!("Could not find variable with name '{}' in function `factor`. This is a bug in the semantic analying step.", var_name),
+                    None => unreachable!("Could not find variable with name '{}' in function `factor`. This is a bug in the semantic analying step or the call stacks in semantic analysis and compilation don't match.", var_name),
                 };
             }
 
