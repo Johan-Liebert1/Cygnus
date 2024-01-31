@@ -37,6 +37,8 @@ impl Loop {
         block: ASTNode,
         loop_number: usize,
     ) -> Self {
+        trace!("Constructing loop {}", loop_number);
+
         Self {
             from_range,
             to_range,
@@ -83,19 +85,19 @@ impl AST for Loop {
         let var_enum = VariableEnum::Number(Number::Integer(1));
 
         // These variables live in the outer scope not in the loop scope
-        call_stack.insert_variable(
+        call_stack.insert_variable_in_most_recent_function(
             &format!("loop_{}_from", current_num_loop).into(),
             var_enum.clone(),
         );
-        call_stack.insert_variable(
+        call_stack.insert_variable_in_most_recent_function(
             &format!("loop_{}_to", current_num_loop).into(),
             var_enum.clone(),
         );
-        call_stack.insert_variable(
+
+        call_stack.insert_variable_in_most_recent_function(
             &format!("loop_{}_step", current_num_loop).into(),
             var_enum.clone(),
         );
-
 
         call_stack.push("".into(), ActivationRecordType::Loop);
 
@@ -168,16 +170,18 @@ impl AST for Loop {
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         let var_enum = VariableEnum::Number(Number::Integer(1));
 
+        trace!("Visiting loop {}", self.loop_number);
+
         // These variables live in the outer scope not in the loop scope
-        call_stack.insert_variable(
+        call_stack.insert_variable_in_most_recent_function(
             &format!("loop_{}_from", self.loop_number).into(),
             var_enum.clone(),
         );
-        call_stack.insert_variable(
+        call_stack.insert_variable_in_most_recent_function(
             &format!("loop_{}_to", self.loop_number).into(),
             var_enum.clone(),
         );
-        call_stack.insert_variable(
+        call_stack.insert_variable_in_most_recent_function(
             &format!("loop_{}_step", self.loop_number).into(),
             var_enum.clone(),
         );

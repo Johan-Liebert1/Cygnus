@@ -146,6 +146,40 @@ impl CallStack {
         return (None, &ActivationRecordType::Global);
     }
 
+    pub fn insert_variable_in_most_recent_function(&mut self, var_name: &String, variable_enum: VariableEnum) {
+        let mut offset = 8;
+
+        if let Some(function_name) = &self.current_function_name {
+            offset = self.get_func_var_stack_size(function_name);
+        }
+
+        let mut inserted = false;
+
+        for record in self.call_stack.iter_mut().rev() {
+            if let ActivationRecordType::Function = record.record_type {
+                inserted = true;
+
+                if record.variable_members.get(var_name).is_some() {
+                    panic!("Variable '{}' is already defined", var_name);
+                }
+
+                record.variable_members.insert(
+                    var_name.into(),
+                    ARVariable {
+                        var: variable_enum,
+                        offset,
+                    },
+                );
+
+                break;
+            }
+        }
+
+        if !inserted {
+            panic!("Could not find function to insert variable");
+        }
+    }
+
     pub fn insert_variable(&mut self, var_name: &String, variable_enum: VariableEnum) {
         let mut offset = 8;
 

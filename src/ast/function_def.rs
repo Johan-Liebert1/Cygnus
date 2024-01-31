@@ -62,8 +62,6 @@ impl AST for FunctionDefinition {
 
         self.block.borrow().visit_com(v, f, asm, call_stack);
 
-        trace!("{:#?}", call_stack);
-
         // pop the record here
         call_stack.pop();
 

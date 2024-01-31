@@ -1,7 +1,7 @@
 use crate::{
     ast::variable::Variable,
     lexer::keywords::{TYPE_INT, WITH},
-    types::ASTNode,
+    types::ASTNode, trace,
 };
 
 use core::panic;
@@ -25,6 +25,9 @@ impl<'a> Parser<'a> {
         if self.inside_function_depth == 0 {
             panic!("Loop cannot be outside a function");
         }
+
+        // to not mess up nested loops
+        let current_loop_number = self.num_loops;
 
         self.num_loops += 1;
 
@@ -128,7 +131,7 @@ impl<'a> Parser<'a> {
             step,
             with_var,
             block,
-            self.num_loops,
+            current_loop_number,
         ))));
     }
 }
