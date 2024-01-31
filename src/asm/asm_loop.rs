@@ -37,14 +37,14 @@ impl ASM {
             format!("pop rbx"), // to
             format!("pop rax"), // from
            
-            format!("mov [rsp + {}], rcx", step_offset),
-            format!("mov [rsp + {}], rbx", to_offset),
-            format!("mov [rsp + {}], rax", from_offset),
+            format!("mov [rbp - {}], rcx", step_offset),
+            format!("mov [rbp - {}], rbx", to_offset),
+            format!("mov [rbp - {}], rax", from_offset),
 
             format!(".loop_{}:", loop_number),
-            format!("mov rcx, [rsp + {}]", step_offset), // step
-            format!("mov rbx, [rsp + {}]", to_offset), // to
-            format!("mov rax, [rsp + {}]", from_offset), // from
+            format!("mov rcx, [rbp - {}]", step_offset), // step
+            format!("mov rbx, [rbp - {}]", to_offset), // to
+            format!("mov rax, [rbp - {}]", from_offset), // from
 
             format!("add rax, rcx"),
             format!("dec rax"),
@@ -55,8 +55,8 @@ impl ASM {
             format!("inc rax"),
             format!("inc rbx"),
 
-            format!("mov [rsp + {}], rbx", to_offset),
-            format!("mov [rsp + {}], rax", from_offset),
+            format!("mov [rbp - {}], rbx", to_offset),
+            format!("mov [rbp - {}], rax", from_offset),
         ];
 
         self.extend_current_label(loop_start);

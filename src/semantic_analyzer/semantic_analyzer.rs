@@ -147,7 +147,7 @@ impl CallStack {
     }
 
     pub fn insert_variable(&mut self, var_name: &String, variable_enum: VariableEnum) {
-        let mut offset = 0;
+        let mut offset = 8;
 
         if let Some(function_name) = &self.current_function_name {
             offset = self.get_func_var_stack_size(function_name);

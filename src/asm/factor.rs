@@ -80,7 +80,7 @@ impl ASM {
 
                             _ => {
                                 instructions
-                                    .extend(vec![format!("mov rax, [rsp + {}]", var.offset), format!("push rax")])
+                                    .extend(vec![format!("mov rax, [rbp - {}]", var.offset), format!("push rax")])
                             }
                         }
                     },
