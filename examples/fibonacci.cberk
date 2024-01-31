@@ -1,14 +1,18 @@
-def one: int = 0
-def two: int = 1
-def three: int = 0
+fun main() {
+    def one: int = 0
+    def two: int = 1
+    def three: int = 0
 
-write(one)
-write(two)
+    write(one)
+    write(two)
 
-loop from 1 to 51 {
-    three = one + two
-    write(three)
+    loop from 1 to 51 {
+        three = one + two
+        write(three)
 
-    one = two
-    two = three
+        one = two
+        two = three
+    }
 }
+
+main()

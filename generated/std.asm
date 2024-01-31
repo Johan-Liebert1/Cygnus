@@ -9,10 +9,10 @@ SYS_EXIT equ 60
 _printRAX:
     
     mov rcx, digitSpace
-    ; mov rbx, 10 
+    mov rbx, 10 
     
-    ; mov [rcx], rbx
-    ; inc rcx
+    mov [rcx], rbx
+    inc rcx
     
     mov [digitSpacePos], rcx
 

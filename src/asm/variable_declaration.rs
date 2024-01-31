@@ -43,7 +43,7 @@ impl ASM {
                             },
 
                             _ => {
-                                    self.extend_current_label(vec![format!("pop rax"), format!("mov [rsp + {}], rax", var.offset)])
+                                    self.extend_current_label(vec![format!("pop rax"), format!("mov [rbp - {}], rax", var.offset)])
                             }
                         }
                     },

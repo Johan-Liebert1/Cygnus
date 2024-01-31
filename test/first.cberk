@@ -1,6 +1,7 @@
-loop from 1 to 5 {
-    loop from 1 to 3 {
-        write("i\n")
-        break
+fun main() {
+    loop from 1 to 5 {
+        write(1)
     }
 }
+
+main() 

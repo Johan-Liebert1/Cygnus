@@ -1,3 +1,4 @@
+use crate::lexer::tokens::VariableEnum;
 use crate::trace;
 use crate::types::ASTNode;
 
@@ -13,6 +14,7 @@ use crate::{
 use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{VisitResult, AST};
+use super::variable::Variable;
 
 #[derive(Debug)]
 pub struct Loop {
@@ -21,16 +23,27 @@ pub struct Loop {
     /// an expression
     to_range: ASTNode,
     step_by: ASTNode,
+    with_var: Option<Variable>,
     block: ASTNode,
+    loop_number: usize,
 }
 
 impl Loop {
-    pub fn new(from_range: ASTNode, to_range: ASTNode, step_by: ASTNode, block: ASTNode) -> Self {
+    pub fn new(
+        from_range: ASTNode,
+        to_range: ASTNode,
+        step_by: ASTNode,
+        with_var: Option<Variable>,
+        block: ASTNode,
+        loop_number: usize,
+    ) -> Self {
         Self {
             from_range,
             to_range,
             step_by,
             block,
+            with_var,
+            loop_number,
         }
     }
 }
@@ -58,16 +71,39 @@ impl AST for Loop {
         self.from_range
             .borrow()
             .visit_com(v, Rc::clone(&f), asm, call_stack);
+
         self.to_range
             .borrow()
             .visit_com(v, Rc::clone(&f), asm, call_stack);
+
         self.step_by
             .borrow()
             .visit_com(v, Rc::clone(&f), asm, call_stack);
 
+        let var_enum = VariableEnum::Number(Number::Integer(1));
+
+        // These variables live in the outer scope not in the loop scope
+        call_stack.insert_variable(
+            &format!("loop_{}_from", current_num_loop).into(),
+            var_enum.clone(),
+        );
+        call_stack.insert_variable(
+            &format!("loop_{}_to", current_num_loop).into(),
+            var_enum.clone(),
+        );
+        call_stack.insert_variable(
+            &format!("loop_{}_step", current_num_loop).into(),
+            var_enum.clone(),
+        );
+
+
         call_stack.push("".into(), ActivationRecordType::Loop);
 
-        asm.gen_loop_start(current_num_loop);
+        if let Some(var) = &self.with_var {
+            call_stack.insert_variable(&var.var_name, var.get_var_enum_from_type())
+        }
+
+        asm.gen_loop_start(current_num_loop, call_stack);
         self.block
             .borrow()
             .visit_com(v, Rc::clone(&f), asm, call_stack);
@@ -130,7 +166,27 @@ impl AST for Loop {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+        let var_enum = VariableEnum::Number(Number::Integer(1));
+
+        // These variables live in the outer scope not in the loop scope
+        call_stack.insert_variable(
+            &format!("loop_{}_from", self.loop_number).into(),
+            var_enum.clone(),
+        );
+        call_stack.insert_variable(
+            &format!("loop_{}_to", self.loop_number).into(),
+            var_enum.clone(),
+        );
+        call_stack.insert_variable(
+            &format!("loop_{}_step", self.loop_number).into(),
+            var_enum.clone(),
+        );
+
         call_stack.push("".into(), ActivationRecordType::Loop);
+
+        if let Some(var) = &self.with_var {
+            call_stack.insert_variable(&var.var_name, var.get_var_enum_from_type())
+        }
 
         self.block
             .borrow_mut()
