@@ -1,14 +1,6 @@
-fun thing(a: int, b: int) {
-    write(a, b)
-
-    def c: int = 420;
-
-    if 1 <= 2 {
-        def c: int = 69;
-        write(c);
+loop from 1 to 5 {
+    loop from 1 to 3 {
+        write("i\n")
+        break
     }
-
-    write(c);
 }
-
-thing(1, 2)
