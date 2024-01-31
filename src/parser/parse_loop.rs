@@ -22,10 +22,11 @@ impl<'a> Parser<'a> {
     /// LOOP -> loop from LPAREN* EXPRESSION to EXPRESSION (step EXPRESSION)* RPAREN* (with VAR_NAME)* LCURLY STATEMENT[] RCURLY
     pub fn parse_loop(&mut self) -> ASTNode {
         // we get here after consuming the 'loop' keyword
-
         if self.inside_function_depth == 0 {
             panic!("Loop cannot be outside a function");
         }
+
+        self.num_loops += 1;
 
         self.validate_token(TokenEnum::Keyword(FROM.to_string()));
 
@@ -122,7 +123,12 @@ impl<'a> Parser<'a> {
         self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
 
         return Rc::new(RefCell::new(Box::new(Loop::new(
-            from_range, to_range, step, with_var, block,
+            from_range,
+            to_range,
+            step,
+            with_var,
+            block,
+            self.num_loops,
         ))));
     }
 }

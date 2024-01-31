@@ -31,6 +31,8 @@ pub struct Parser<'a> {
     pub inside_loop_depth: usize,
     pub inside_function_depth: usize,
     pub inside_if_else_depth: usize,
+
+    pub num_loops: usize,
 }
 
 impl<'a> Parser<'a> {
@@ -46,6 +48,8 @@ impl<'a> Parser<'a> {
             inside_loop_depth: 0,
             inside_function_depth: 0,
             inside_if_else_depth: 0,
+            
+            num_loops: 0,
         }
     }
 

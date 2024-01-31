@@ -25,6 +25,7 @@ pub struct Loop {
     step_by: ASTNode,
     with_var: Option<Variable>,
     block: ASTNode,
+    loop_number: usize,
 }
 
 impl Loop {
@@ -34,6 +35,7 @@ impl Loop {
         step_by: ASTNode,
         with_var: Option<Variable>,
         block: ASTNode,
+        loop_number: usize,
     ) -> Self {
         Self {
             from_range,
@@ -41,6 +43,7 @@ impl Loop {
             step_by,
             block,
             with_var,
+            loop_number,
         }
     }
 }
@@ -167,15 +170,15 @@ impl AST for Loop {
 
         // These variables live in the outer scope not in the loop scope
         call_stack.insert_variable(
-            &format!("loop_{}_from", call_stack.length()).into(),
+            &format!("loop_{}_from", self.loop_number).into(),
             var_enum.clone(),
         );
         call_stack.insert_variable(
-            &format!("loop_{}_to", call_stack.length()).into(),
+            &format!("loop_{}_to", self.loop_number).into(),
             var_enum.clone(),
         );
         call_stack.insert_variable(
-            &format!("loop_{}_step", call_stack.length()).into(),
+            &format!("loop_{}_step", self.loop_number).into(),
             var_enum.clone(),
         );
 
