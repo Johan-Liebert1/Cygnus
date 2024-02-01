@@ -12,6 +12,7 @@ fun main() {
         loop from 2 to 11 {
             if i % divisor != 0 {
                 all_divided = 0;
+                break;
             }
 
             divisor = divisor + 1;

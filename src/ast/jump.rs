@@ -17,11 +17,12 @@ pub enum JumpType {
 
 pub struct Jump {
     typ: JumpType,
+    loop_number: usize,
 }
 
 impl Jump {
-    pub fn new(typ: JumpType) -> Self {
-        Self { typ }
+    pub fn new(typ: JumpType, loop_number: usize) -> Self {
+        Self { typ, loop_number }
     }
 }
 
@@ -56,7 +57,7 @@ impl AST for Jump {
             JumpType::Break => {
                 // Since we break out of a loop or return from a function, we need to pop the call stack
                 // call_stack.pop_special(PopTypes::LoopBreak);
-                asm.loop_break(call_stack.loop_num())
+                asm.loop_break(self.loop_number)
             }
         }
     }

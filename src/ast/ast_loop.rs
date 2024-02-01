@@ -102,11 +102,11 @@ impl AST for Loop {
             call_stack.insert_variable(&var.var_name, var.get_var_enum_from_type())
         }
 
-        asm.gen_loop_start(call_stack.loop_num(), call_stack);
+        asm.gen_loop_start(self.loop_number, call_stack);
         self.block
             .borrow()
             .visit_com(v, Rc::clone(&f), asm, call_stack);
-        asm.gen_loop_end(call_stack.loop_num());
+        asm.gen_loop_end(self.loop_number);
 
         call_stack.pop();
     }

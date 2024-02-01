@@ -28,6 +28,7 @@ impl<'a> Parser<'a> {
 
         // to not mess up nested loops
         let current_loop_number = self.num_loops;
+        self.inside_current_loop_number = current_loop_number as i32;
 
         self.num_loops += 1;
 
@@ -124,6 +125,8 @@ impl<'a> Parser<'a> {
         self.inside_loop_depth -= 1;
 
         self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
+
+        self.inside_current_loop_number -= 1;
 
         return Rc::new(RefCell::new(Box::new(Loop::new(
             from_range,

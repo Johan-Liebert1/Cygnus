@@ -33,6 +33,8 @@ pub struct Parser<'a> {
     pub inside_if_else_depth: usize,
 
     pub num_loops: usize,
+
+    pub inside_current_loop_number: i32,
 }
 
 impl<'a> Parser<'a> {
@@ -48,8 +50,9 @@ impl<'a> Parser<'a> {
             inside_loop_depth: 0,
             inside_function_depth: 0,
             inside_if_else_depth: 0,
-            
+
             num_loops: 0,
+            inside_current_loop_number: -1,
         }
     }
 
@@ -90,11 +93,14 @@ impl<'a> Parser<'a> {
                     }
 
                     BREAK => {
-                        if self.inside_loop_depth == 0 {
-                            panic!("Found `break` outside of a loop");
+                        if self.inside_loop_depth == 0 || self.inside_current_loop_number == -1 {
+                            panic!("Found `break` outside of a loop")
                         }
 
-                        Rc::new(RefCell::new(Box::new(Jump::new(JumpType::Break))))
+                        Rc::new(RefCell::new(Box::new(Jump::new(
+                            JumpType::Break,
+                            self.inside_current_loop_number as usize,
+                        ))))
                     }
 
                     RETURN => {
@@ -102,7 +108,7 @@ impl<'a> Parser<'a> {
                             panic!("Found `return` outside of a function");
                         }
 
-                        Rc::new(RefCell::new(Box::new(Jump::new(JumpType::Return))))
+                        Rc::new(RefCell::new(Box::new(Jump::new(JumpType::Return, 0))))
                     }
 
                     ELSE_STATEMENT => {
