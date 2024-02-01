@@ -73,13 +73,13 @@ impl ASM {
         self.extend_current_label(loop_end);
     }
 
-    pub fn loop_break(&mut self) {
+    pub fn loop_break(&mut self, loop_number: usize) {
         // encountered a break, so an unconditional jump to the end of the loop
         // self.num_loops - 1 as we increment the loop number as soon as we enter the loop
         // and break statement is outside of the loop
         let instructions = vec![
             format!(";; --- break ----"),
-            format!("jmp .loop_end_{}", self.num_loops - 1),
+            format!("jmp .loop_end_{}", loop_number),
         ];
 
         self.extend_current_label(instructions);

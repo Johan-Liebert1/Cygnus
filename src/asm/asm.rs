@@ -14,7 +14,6 @@ pub struct ASM {
     pub comparison_num: usize,
     pub num_strings: usize,
     pub num_ifs: usize,
-    pub num_loops: usize,
 
     current_label: String,
 }
@@ -26,7 +25,6 @@ impl Default for ASM {
             comparison_num: 0,
             current_label: "_start".to_string(),
             num_ifs: 0,
-            num_loops: 0,
 
             include: vec![r#"%include "std.asm""#],
 
@@ -94,9 +92,5 @@ impl ASM {
 
     pub fn inc_num_ifs(&mut self) {
         self.num_ifs += 1;
-    }
-
-    pub fn inc_num_loops(&mut self) {
-        self.num_loops += 1;
     }
 }

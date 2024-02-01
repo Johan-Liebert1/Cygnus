@@ -67,9 +67,6 @@ impl AST for Loop {
         // 3. Compare if the current addition value is equal to the `to` value, and if they are
         //    equal break the loop
 
-        let current_num_loop = asm.num_loops;
-        asm.inc_num_loops();
-
         self.from_range
             .borrow()
             .visit_com(v, Rc::clone(&f), asm, call_stack);
@@ -86,16 +83,16 @@ impl AST for Loop {
 
         // These variables live in the outer scope not in the loop scope
         call_stack.insert_variable_in_most_recent_function(
-            &format!("loop_{}_from", current_num_loop).into(),
+            &format!("loop_{}_from", self.loop_number).into(),
             var_enum.clone(),
         );
         call_stack.insert_variable_in_most_recent_function(
-            &format!("loop_{}_to", current_num_loop).into(),
+            &format!("loop_{}_to", self.loop_number).into(),
             var_enum.clone(),
         );
 
         call_stack.insert_variable_in_most_recent_function(
-            &format!("loop_{}_step", current_num_loop).into(),
+            &format!("loop_{}_step", self.loop_number).into(),
             var_enum.clone(),
         );
 
@@ -105,11 +102,11 @@ impl AST for Loop {
             call_stack.insert_variable(&var.var_name, var.get_var_enum_from_type())
         }
 
-        asm.gen_loop_start(current_num_loop, call_stack);
+        asm.gen_loop_start(call_stack.loop_num(), call_stack);
         self.block
             .borrow()
             .visit_com(v, Rc::clone(&f), asm, call_stack);
-        asm.gen_loop_end(current_num_loop);
+        asm.gen_loop_end(call_stack.loop_num());
 
         call_stack.pop();
     }
@@ -169,8 +166,6 @@ impl AST for Loop {
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         let var_enum = VariableEnum::Number(Number::Integer(1));
-
-        trace!("Visiting loop {}", self.loop_number);
 
         // These variables live in the outer scope not in the loop scope
         call_stack.insert_variable_in_most_recent_function(

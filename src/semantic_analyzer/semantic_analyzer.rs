@@ -36,6 +36,7 @@ pub struct ActivationRecord {
     name: String,
     record_type: ActivationRecordType,
     variable_members: ActivationRecordVariables,
+    var_size_sum: usize,
 }
 
 impl ActivationRecord {
@@ -44,6 +45,7 @@ impl ActivationRecord {
             name,
             record_type,
             variable_members: HashMap::new(),
+            var_size_sum: 0,
         }
     }
 }
@@ -52,6 +54,7 @@ impl ActivationRecord {
 pub struct CallStack {
     call_stack: Vec<ActivationRecord>,
     current_function_name: Option<String>,
+    loop_number: usize,
 }
 
 impl CallStack {
@@ -59,9 +62,17 @@ impl CallStack {
         return self.call_stack.len();
     }
 
-    pub fn push_record(&mut self, record: ActivationRecord) {
+    pub fn loop_num(&self) -> usize {
+        return self.loop_number;
+    }
+
+    fn push_record(&mut self, record: ActivationRecord) {
         if let ActivationRecordType::Function = record.record_type {
             self.current_function_name = Some(record.name.clone());
+        }
+
+        if let ActivationRecordType::Loop = record.record_type {
+            self.loop_number += 1;
         }
 
         self.call_stack.push(record);
@@ -76,6 +87,10 @@ impl CallStack {
             Some(record) => {
                 if let ActivationRecordType::Function = record.record_type {
                     self.current_function_name = None;
+                }
+
+                if let ActivationRecordType::Loop = record.record_type {
+                    self.loop_number -= 1;
                 }
             }
 
@@ -146,12 +161,12 @@ impl CallStack {
         return (None, &ActivationRecordType::Global);
     }
 
-    pub fn insert_variable_in_most_recent_function(&mut self, var_name: &String, variable_enum: VariableEnum) {
-        let mut offset = 8;
-
-        if let Some(function_name) = &self.current_function_name {
-            offset = self.get_func_var_stack_size(function_name);
-        }
+    pub fn insert_variable_in_most_recent_function(
+        &mut self,
+        var_name: &String,
+        variable_enum: VariableEnum,
+    ) {
+        let mut offset = self.update_function_variable_size_and_get_offset(&variable_enum);
 
         let mut inserted = false;
 
@@ -180,12 +195,28 @@ impl CallStack {
         }
     }
 
-    pub fn insert_variable(&mut self, var_name: &String, variable_enum: VariableEnum) {
+    fn update_function_variable_size_and_get_offset(&mut self, var_enum: &VariableEnum) -> usize {
         let mut offset = 8;
 
-        if let Some(function_name) = &self.current_function_name {
-            offset = self.get_func_var_stack_size(function_name);
+        for record in self.call_stack.iter_mut().rev() {
+            if let ActivationRecordType::Function = record.record_type {
+                match &self.current_function_name {
+                    Some(fname) => if fname == &record.name {
+                        offset += record.var_size_sum;
+
+                        record.var_size_sum += var_enum.size();
+                    },
+
+                    None => unreachable!("'self.current_function_name' is None even though there's a Function in the call stack"),
+                }
+            }
         }
+
+        return offset;
+    }
+
+    pub fn insert_variable(&mut self, var_name: &String, variable_enum: VariableEnum) {
+        let mut offset = self.update_function_variable_size_and_get_offset(&variable_enum);
 
         match self.call_stack.last_mut() {
             Some(last_record) => {
@@ -209,21 +240,15 @@ impl CallStack {
     }
 
     pub fn get_func_var_stack_size(&self, function_name: &String) -> usize {
-        let mut size = 0;
-
         for record in self.call_stack.iter().rev() {
-            for (_, ar_var) in record.variable_members.iter() {
-                size += ar_var.var.size();
-            }
-
             if let ActivationRecordType::Function = record.record_type {
                 if &record.name == function_name {
-                    break;
+                    return record.var_size_sum;
                 }
             }
         }
 
-        return size;
+        return 0;
     }
 }
 
@@ -242,6 +267,7 @@ impl SemanticAnalyzer {
                     ActivationRecordType::Global,
                 )],
                 current_function_name: None,
+                loop_number: 0,
             },
             ast,
             functions,

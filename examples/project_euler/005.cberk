@@ -5,7 +5,7 @@ fun main() {
     def i: int = 2;
     def answer: int = 0;
 
-    loop from 2 to 10 {
+    loop from 2 to 1320 {
         def all_divided: int = 1;
         def divisor: int = 2;
 
@@ -19,6 +19,7 @@ fun main() {
 
         if all_divided == 1 {
             answer = i;
+            break;
         }
 
         i = i + 2;

@@ -1,7 +1,7 @@
 fun main() {
     loop from 1 to 5 {
         loop from 1 to 5 {
-            write("hi")
+            write("hi\n")
         }
     }
 }
