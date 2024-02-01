@@ -2,20 +2,21 @@
 -- What is the smallest positive number that is evenly divisible by all of the numbers from 1 to 20?
 
 fun main() {
-    def i: int = 2;
+    def i: int = 20;
     def answer: int = 0;
 
-    loop from 2 to 1320 {
+    loop from 1 to 500000000 {
         def all_divided: int = 1;
-        def divisor: int = 2;
+        def divisor: int = 19;
 
-        loop from 2 to 11 {
+        -- loop 18 times
+        loop from 1 to 19 {
             if i % divisor != 0 {
                 all_divided = 0;
                 break;
             }
 
-            divisor = divisor + 1;
+            divisor = divisor - 1;
         }
 
         if all_divided == 1 {
@@ -23,7 +24,7 @@ fun main() {
             break;
         }
 
-        i = i + 2;
+        i = i + 20;
     }
 
     write(answer)
