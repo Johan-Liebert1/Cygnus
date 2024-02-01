@@ -37,8 +37,6 @@ impl Loop {
         block: ASTNode,
         loop_number: usize,
     ) -> Self {
-        trace!("Constructing loop {}", loop_number);
-
         Self {
             from_range,
             to_range,

@@ -1,0 +1,40 @@
+-- Find the 10001st Prime Number
+
+fun main() {
+    def prime: int = 0;
+    def num_primes_found: int = 3; -- for 2, 3 and 5
+    def i: int = 7;
+    def n: int = 3;
+
+    def is_prime: int = 1;
+
+    -- since no while loop
+    loop from 1 to 100000000 {
+        n = 3;
+        is_prime = 1;
+        
+        loop from 2 to (i / 2) {
+            if i % n == 0 {
+                is_prime = 0;
+                break;
+            }
+
+            n = n + 1;
+        }
+
+        if is_prime == 1 {
+            num_primes_found = num_primes_found + 1;
+
+            if num_primes_found == 10001 {
+                prime = i;
+                break;
+            }
+        }
+
+        i = i + 2;
+    }
+
+    write(prime)
+}
+
+main()

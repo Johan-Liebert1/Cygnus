@@ -59,3 +59,39 @@ fn logical() {
     let (stdout_str, file_result) = get_stdout_and_actual_result("logical.cberk");
     assert_eq!(stdout_str, file_result);
 }
+
+#[test]
+fn euler_001() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("project_euler/001.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
+fn euler_002() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("project_euler/002.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
+fn euler_004() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("project_euler/004.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
+fn euler_005() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("project_euler/005.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
+fn euler_006() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("project_euler/006.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
+fn euler_007() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("project_euler/007.cberk");
+    assert_eq!(stdout_str, file_result);
+}

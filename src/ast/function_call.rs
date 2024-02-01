@@ -77,7 +77,6 @@ impl AST for FunctionCall {
 
             name => match f.borrow().get(name) {
                 Some(_function_ast) => {
-                    println!("Visiting func {name}");
                     asm.function_call(&String::from(name));
                 }
 
@@ -134,8 +133,6 @@ impl AST for FunctionCall {
 
             name => match f.borrow().get(name) {
                 Some(function_ast) => {
-                    println!("Visiting func {name}");
-
                     function_ast.borrow().visit(v, Rc::clone(&f), call_stack)
                 }
 
