@@ -102,7 +102,9 @@ impl ASM {
                     format!(";; push the remainder result back onto the stack"),
                     format!("push rdx"),
                 ]
-            }
+            },
+
+            Operations::PlusEquals | Operations::MinusEquals => todo!(),
         };
 
         self.extend_current_label(first);

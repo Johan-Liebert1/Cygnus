@@ -62,14 +62,26 @@ impl<'a> Lexer<'a> {
                     continue;
                 }
 
-                '+' => TokenEnum::Op(Operations::Plus),
+                '+' => {
+                    self.index += 1;
+
+                    match self.peek_next_token().token {
+                        TokenEnum::Equals => TokenEnum::Op(Operations::PlusEquals),
+                        _ => TokenEnum::Op(Operations::Plus),
+                    }
+                }
 
                 // TODO: Handle negative integers
                 '-' => {
                     if self.is_comment() {
                         continue;
                     } else {
-                        TokenEnum::Op(Operations::Minus)
+                        self.index += 1;
+
+                        match self.peek_next_token().token {
+                            TokenEnum::Equals => TokenEnum::Op(Operations::MinusEquals),
+                            _ => TokenEnum::Op(Operations::Minus),
+                        }
                     }
                 }
 

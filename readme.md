@@ -18,10 +18,13 @@
     - [x] Variable Shadowing
     - [x] Upper stack variable access
 - [x] Variable scoping
-- [ ] Function arguments and their type checking
+- [ ] Implement `+=` and `-=`
 - [ ] Pointer deref
-- [ ] Floating point numbers
 - [ ] Random access to memory
+
+- [ ] Function returns
+- [ ] Function arguments and their type checking
+- [ ] Floating point numbers
 - [ ] Proper type checking
 - [ ] Enums - Use `offset` and `reset` kinda like Go's `iota`
 - [ ] Make sure nothing is left on the stack when we break out of a loop

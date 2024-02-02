@@ -24,7 +24,9 @@ impl VariableEnum {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Operations {
     Plus,
+    PlusEquals,
     Minus,
+    MinusEquals,
     Divide,
     Multiply,
     ShiftLeft,
