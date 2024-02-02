@@ -22,11 +22,16 @@ impl VariableEnum {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum AssignmentTypes {
+    Equals,
+    PlusEquals,
+    MinusEquals,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Operations {
     Plus,
-    PlusEquals,
     Minus,
-    MinusEquals,
     Divide,
     Multiply,
     ShiftLeft,
@@ -79,6 +84,8 @@ pub enum LogicalOps {
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenEnum {
     Equals,
+    PlusEquals,
+    MinusEquals,
     Comma,
     Colon,
     SemiColon,
@@ -152,5 +159,14 @@ impl TokenEnum {
 
     pub fn new_integer(f: i32) -> TokenEnum {
         return TokenEnum::Number(Number::Integer(f));
+    }
+
+    pub fn get_assignment_type(&self) -> AssignmentTypes {
+        return match self {
+            TokenEnum::PlusEquals => AssignmentTypes::PlusEquals,
+            TokenEnum::MinusEquals => AssignmentTypes::MinusEquals,
+            TokenEnum::Equals => AssignmentTypes::Equals,
+            _ => panic!("{:?} is not an assignment token", self)
+        };
     }
 }

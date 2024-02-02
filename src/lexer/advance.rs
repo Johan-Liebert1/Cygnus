@@ -66,7 +66,7 @@ impl<'a> Lexer<'a> {
                     self.index += 1;
 
                     match self.peek_next_token().token {
-                        TokenEnum::Equals => TokenEnum::Op(Operations::PlusEquals),
+                        TokenEnum::Equals => TokenEnum::PlusEquals,
                         _ => TokenEnum::Op(Operations::Plus),
                     }
                 }
@@ -79,7 +79,7 @@ impl<'a> Lexer<'a> {
                         self.index += 1;
 
                         match self.peek_next_token().token {
-                            TokenEnum::Equals => TokenEnum::Op(Operations::MinusEquals),
+                            TokenEnum::Equals => TokenEnum::MinusEquals,
                             _ => TokenEnum::Op(Operations::Minus),
                         }
                     }

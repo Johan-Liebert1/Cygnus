@@ -66,6 +66,27 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Validates the current token with expected token and consumes the token
+    /// panics if current token is not the same as expected token
+    pub fn validate_any_token(&mut self, tokens_expected: Vec<TokenEnum>) -> TokenEnum {
+        let token = self.get_next_token();
+
+        let mut validated_token = None;
+
+        for token_ in &tokens_expected {
+            if  *token_ == token.token {
+                validated_token = Some(token_);
+                break;
+            }
+        }
+
+
+        match validated_token {
+            Some(token) => token.clone(),
+            None => panic!("Expected {:?}, got {:?}", tokens_expected, token),
+        }
+    }
+
     /// STATEMENT -> VARIABLE_DECLARATION | CONDITIONAL_STATEMENT | COMPARISON_EXPRESSION | LPAREN COMPARISON_EXPRESSION RPAREN
     pub fn parse_statements(&mut self) -> ASTNode {
         let current_token = self.peek_next_token();
@@ -155,7 +176,7 @@ impl<'a> Parser<'a> {
                         }
                     }
 
-                    TokenEnum::Equals => {
+                    TokenEnum::Equals | TokenEnum::MinusEquals | TokenEnum::PlusEquals => {
                         // variable assignment
                         self.get_next_token();
                         self.parse_assignment_statement(var.to_string())
@@ -175,6 +196,8 @@ impl<'a> Parser<'a> {
 
             TokenEnum::Op(_) => todo!(),
             TokenEnum::Equals => todo!(),
+            TokenEnum::PlusEquals => todo!(),
+            TokenEnum::MinusEquals => todo!(),
             TokenEnum::Comparator(_) => todo!(),
             TokenEnum::Bool(_) => todo!(),
             TokenEnum::Type(_) => todo!(),

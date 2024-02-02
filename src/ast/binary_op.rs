@@ -51,8 +51,6 @@ impl BinaryOP {
                 Operations::ShiftLeft => l << r,
                 Operations::ShiftRight => l >> r,
                 Operations::Modulo => l % r,
-
-                Operations::MinusEquals | Operations::PlusEquals => todo!(),
             },
 
             _ => {
@@ -80,8 +78,6 @@ impl BinaryOP {
                     panic!("Op >> not implemented for floating point numbers")
                 }
                 Operations::Modulo => panic!("Op % not implemented for floating point numbers"),
-
-                Operations::MinusEquals | Operations::PlusEquals => todo!(),
             },
 
             _ => {
@@ -174,6 +170,7 @@ impl AST for BinaryOP {
         self.left
             .borrow()
             .visit_com(v, Rc::clone(&f), asm, call_stack);
+
         self.right
             .borrow()
             .visit_com(v, Rc::clone(&f), asm, call_stack);

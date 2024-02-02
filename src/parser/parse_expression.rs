@@ -20,10 +20,7 @@ impl<'a> Parser<'a> {
 
             match &next_token.token {
                 TokenEnum::Op(op) => match op {
-                    Operations::Plus
-                    | Operations::Minus
-                    | Operations::PlusEquals
-                    | Operations::MinusEquals => {
+                    Operations::Plus | Operations::Minus => {
                         self.get_next_token();
 
                         // reassign the result

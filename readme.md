@@ -18,7 +18,7 @@
     - [x] Variable Shadowing
     - [x] Upper stack variable access
 - [x] Variable scoping
-- [ ] Implement `+=` and `-=`
+- [x] Implement `+=` and `-=`
 - [ ] Pointer deref
 - [ ] Random access to memory
 

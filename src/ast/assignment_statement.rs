@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+use crate::{lexer::tokens::AssignmentTypes, types::ASTNode};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
@@ -16,12 +16,17 @@ use super::abstract_syntax_tree::{VisitResult, AST};
 #[derive(Debug)]
 pub struct AssignmentStatement {
     var_name: String,
+    assignment_type: AssignmentTypes,
     right: ASTNode,
 }
 
 impl AssignmentStatement {
-    pub fn new(var_name: String, right: ASTNode) -> Self {
-        Self { var_name, right }
+    pub fn new(var_name: String, assignment_type: AssignmentTypes, right: ASTNode) -> Self {
+        Self {
+            var_name,
+            assignment_type,
+            right,
+        }
     }
 }
 
@@ -34,7 +39,7 @@ impl AST for AssignmentStatement {
         call_stack: &mut CallStack,
     ) {
         self.right.borrow().visit_com(v, f, asm, call_stack);
-        asm.variable_assignment(&self.var_name, call_stack);
+        asm.variable_assignment(&self.var_name, &self.assignment_type, call_stack);
     }
 
     // TODO: change this so that the expression is stored here and we need to visit the varible

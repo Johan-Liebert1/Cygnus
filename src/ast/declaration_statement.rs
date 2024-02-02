@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+use crate::{lexer::tokens::AssignmentTypes, types::ASTNode};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
@@ -49,7 +49,7 @@ impl AST for DeclarationStatement {
 
         self.right.borrow().visit_com(vars, f, asm, call_stack);
 
-        asm.variable_assignment(&self.left.var_name, call_stack);
+        asm.variable_assignment(&self.left.var_name, &AssignmentTypes::Equals, call_stack);
     }
 
     fn visit(

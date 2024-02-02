@@ -103,8 +103,6 @@ impl ASM {
                     format!("push rdx"),
                 ]
             },
-
-            Operations::PlusEquals | Operations::MinusEquals => todo!(),
         };
 
         self.extend_current_label(first);
