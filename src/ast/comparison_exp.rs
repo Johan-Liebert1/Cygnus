@@ -78,6 +78,7 @@ impl ComparisonExp {
             Some(var_num) => match var_num {
                 VariableEnum::Number(var_num) => self.eval_number_number(number, var_num),
                 VariableEnum::String(_) => todo!(),
+                VariableEnum::Pointer(_) => todo!(),
             },
 
             None => panic!("Variable {} is not defined", variable),
@@ -97,6 +98,11 @@ impl ComparisonExp {
                 (VariableEnum::Number(_), VariableEnum::String(_)) => todo!(),
                 (VariableEnum::String(_), VariableEnum::Number(_)) => todo!(),
                 (VariableEnum::String(_), VariableEnum::String(_)) => todo!(),
+                (VariableEnum::Number(_), VariableEnum::Pointer(_)) => todo!(),
+                (VariableEnum::String(_), VariableEnum::Pointer(_)) => todo!(),
+                (VariableEnum::Pointer(_), VariableEnum::Number(_)) => todo!(),
+                (VariableEnum::Pointer(_), VariableEnum::String(_)) => todo!(),
+                (VariableEnum::Pointer(_), VariableEnum::Pointer(_)) => todo!(),
             },
 
             (None, Some(_)) => panic!("Variable {} is not defined", var1),

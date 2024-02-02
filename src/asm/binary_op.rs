@@ -102,7 +102,7 @@ impl ASM {
                     format!(";; push the remainder result back onto the stack"),
                     format!("push rdx"),
                 ]
-            },
+            }
         };
 
         self.extend_current_label(first);

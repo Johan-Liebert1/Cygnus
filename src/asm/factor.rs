@@ -1,6 +1,6 @@
 use crate::{
     interpreter::interpreter::Variables,
-    lexer::tokens::{Number, TokenEnum},
+    lexer::tokens::{Number, TokenEnum, VariableEnum},
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
 };
 
@@ -79,8 +79,16 @@ impl ASM {
                             },
 
                             _ => {
-                                instructions
-                                    .extend(vec![format!("mov rax, [rbp - {}]", var.offset), format!("push rax")])
+                                match var.var {
+                                    VariableEnum::Number(..) | VariableEnum::String(..)  => {
+                                        instructions.extend(vec![format!("mov rax, [rbp - {}]", var.offset), format!("push rax")])
+                                    },
+
+                                    VariableEnum::Pointer(..) => {
+                                        instructions.extend(vec![format!("lea rax, [rbp - {}]", var.offset), format!("push rax")])
+                                    },
+                                }
+
                             }
                         }
                     },

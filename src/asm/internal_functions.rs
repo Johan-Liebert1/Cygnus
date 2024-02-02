@@ -102,6 +102,16 @@ impl ASM {
                             VariableEnum::String(_) => {
                                 WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
                             }
+
+                            // TODO: Pointers to strings and pointers to ints should be treated
+                            // differently
+                            VariableEnum::Pointer(..) => {
+                                vec![
+                                    format!("pop rax"),
+                                    // TODO: Handle printing strings and stuff
+                                    format!("call _printRAX"),
+                                ]
+                            },
                         }
                     },
 

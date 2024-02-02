@@ -52,6 +52,7 @@ impl AST for Factor {
                     match n {
                         VariableEnum::Number(n) => TokenEnum::Number(n.clone()),
                         VariableEnum::String(s) => TokenEnum::StringLiteral(s.to_string()),
+                        VariableEnum::Pointer(_) => todo!(),
                     }
                 } else {
                     panic!("Variable '{var_name}' not defined");

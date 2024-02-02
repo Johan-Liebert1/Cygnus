@@ -4,6 +4,8 @@ use std::fmt::Display;
 pub enum VariableEnum {
     Number(Number),
     String(String),
+    /// Pointer(TypeName) -> Pointer("INT") etc..
+    Pointer(String),
 }
 
 impl VariableEnum {
@@ -17,6 +19,9 @@ impl VariableEnum {
 
             // 8 bytes for length + 8 bytes for pointer to the start of the string
             VariableEnum::String(_) => 16,
+
+            // Pointer will always consume 8 bytes
+            VariableEnum::Pointer(..) => 8,
         }
     }
 }

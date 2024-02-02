@@ -1,3 +1,5 @@
+use crate::trace;
+
 use super::{
     lexer::{Lexer, Token},
     tokens::{Bracket, Comparators, Operations, TokenEnum},
@@ -85,7 +87,29 @@ impl<'a> Lexer<'a> {
                     }
                 }
 
-                '*' => TokenEnum::Op(Operations::Multiply),
+                '*' => {
+                    // this could also be a pointer type
+                    // Ex: def a: *int = 5;
+
+                    self.index += 1;
+
+                    // FIXME: Every peek inside of advance should decrement the index after it's
+                    // done with it
+                    match self.peek_next_token().token {
+                        TokenEnum::Type(type_) => {
+                            // consume the 'type_' token
+                            self.get_next_token();
+
+                            TokenEnum::Type(format!("*{type_}"))
+                        }
+
+                        _ => {
+                            self.index -= 1;
+                            TokenEnum::Op(Operations::Multiply)
+                        }
+                    }
+                }
+
                 '/' => TokenEnum::Op(Operations::Divide),
                 '%' => TokenEnum::Op(Operations::Modulo),
 

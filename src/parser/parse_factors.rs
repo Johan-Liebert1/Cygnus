@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+use crate::{ast::variable::Variable, lexer::tokens::Operations, trace, types::ASTNode};
 
 use std::{cell::RefCell, process::exit, rc::Rc};
 
@@ -11,12 +11,12 @@ use crate::{
 use super::parser::Parser;
 
 impl<'a> Parser<'a> {
-    /// FACTOR -> INTEGER | FLOAT | VARIABLE | STRING_LITERAL | LPAREN EXPRESSION RPAREN
+    /// FACTOR -> (*|&) INTEGER | FLOAT | VARIABLE | STRING_LITERAL | LPAREN EXPRESSION RPAREN
     pub fn parse_factor(&mut self) -> ASTNode {
         let next_token = self.peek_next_token();
 
         if constants::PARSER_DEBUG {
-            println!("parse_factor next_token {:#?}", next_token);
+            trace!("parse_factor next_token {:#?}", next_token);
         }
 
         match &next_token.token {
@@ -84,6 +84,46 @@ impl<'a> Parser<'a> {
 
                 _ => {
                     panic!("Invalid token {:?}.\nInside func: {} \nInside Loop: {} \nInside If Else: {}\n", next_token, self.inside_function_depth, self.inside_loop_depth, self.inside_if_else_depth);
+                }
+            },
+
+            TokenEnum::Op(op) => match op {
+                // pointer deref
+                Operations::Multiply => {
+                    let get_next_token = self.get_next_token();
+
+                    let next_next_token = self.peek_next_token();
+
+                    // the next token has to be a variable, else this is a syntax error
+                    match next_next_token.token {
+                        TokenEnum::Variable(var_name) => {
+                            Rc::new(RefCell::new(Box::new(Variable::new(
+                                Box::new(self.get_next_token()),
+                                "some_type".into(),
+                                var_name,
+                            ))))
+                        }
+
+                        _ => {
+                            helpers::unexpected_token(
+                                "parse_factor",
+                                &next_next_token.token,
+                                &TokenEnum::Variable("".into()),
+                            );
+
+                            exit(1);
+                        }
+                    }
+                }
+
+                _ => {
+                    helpers::unexpected_token(
+                        "parse_factor",
+                        &next_token.token,
+                        &TokenEnum::Op(Operations::Multiply),
+                    );
+
+                    exit(1);
                 }
             },
 

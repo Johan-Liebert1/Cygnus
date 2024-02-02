@@ -36,16 +36,13 @@ impl ASM {
             format!("pop rcx"), // step
             format!("pop rbx"), // to
             format!("pop rax"), // from
-           
             format!("mov [rbp - {}], rcx", step_offset),
             format!("mov [rbp - {}], rbx", to_offset),
             format!("mov [rbp - {}], rax", from_offset),
-
             format!(".loop_{}:", loop_number),
             format!("mov rcx, [rbp - {}]", step_offset), // step
-            format!("mov rbx, [rbp - {}]", to_offset), // to
+            format!("mov rbx, [rbp - {}]", to_offset),   // to
             format!("mov rax, [rbp - {}]", from_offset), // from
-
             format!("add rax, rcx"),
             format!("dec rax"),
             // now compare rax to rbx - 1 and if they're equal jump to the end
@@ -54,7 +51,6 @@ impl ASM {
             format!("jg .loop_end_{}", loop_number),
             format!("inc rax"),
             format!("inc rbx"),
-
             format!("mov [rbp - {}], rbx", to_offset),
             format!("mov [rbp - {}], rax", from_offset),
         ];

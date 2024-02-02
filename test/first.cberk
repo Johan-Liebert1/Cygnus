@@ -1,13 +1,9 @@
 fun main() {
     def a: int = 5;
 
-    a += 4;
+    def b: *int = a;
 
-    write(a);
-
-    a -= 6;
-
-    write(a);
+    write(*b);
 }
 
 main() 

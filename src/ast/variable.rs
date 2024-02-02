@@ -1,4 +1,4 @@
-use crate::semantic_analyzer::semantic_analyzer::CallStack;
+use crate::{lexer::keywords::TYPE_FLOAT, semantic_analyzer::semantic_analyzer::CallStack, trace};
 
 use core::panic;
 use std::{cell::RefCell, rc::Rc};
@@ -36,7 +36,10 @@ impl Variable {
             TYPE_STRING => VariableEnum::String(String::from("")),
             TYPE_INT => VariableEnum::Number(Number::Integer(0)),
 
-            t => unimplemented!("Type {t} not known"),
+            t => match &t[1..] {
+                TYPE_INT | TYPE_STRING | TYPE_FLOAT => VariableEnum::Pointer(t[1..].into()),
+                _ => unimplemented!("Type {t} not known"),
+            },
         };
     }
 }
@@ -46,10 +49,10 @@ impl AST for Variable {
         &self,
         _x: &mut Variables,
         _: Rc<RefCell<Functions>>,
-        _asm: &mut ASM,
+        asm: &mut ASM,
         call_stack: &mut CallStack,
     ) {
-        todo!()
+        asm.gen_asm_for_var(&self.var_name, &call_stack);
     }
 
     fn visit(

@@ -9,7 +9,6 @@ use super::parser::Parser;
 impl<'a> Parser<'a> {
     pub fn parse_assignment_statement(&mut self, var_name: String) -> ASTNode {
         // we get here after parsing the variable name
-
         let validated_token = self.validate_any_token(vec![
             TokenEnum::Equals,
             TokenEnum::PlusEquals,

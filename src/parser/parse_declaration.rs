@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+use crate::{types::ASTNode, trace};
 
 use std::{cell::RefCell, rc::Rc};
 
@@ -10,7 +10,7 @@ use crate::{
 use super::parser::Parser;
 
 impl<'a> Parser<'a> {
-    /// VARIABLE_DECLARATION -> def VAR_NAME: VAR_TYPE (= COMPARISON_EXPRESSION)*
+    /// VARIABLE_DECLARATION -> def VAR_NAME: (*)* VAR_TYPE (= COMPARISON_EXPRESSION)*
     pub fn parse_variable(&mut self) -> Variable {
         let token = self.get_next_token();
 
@@ -56,8 +56,8 @@ impl<'a> Parser<'a> {
                 // fine just consume the token
             }
 
-            _ => {
-                panic!("Expected assignment")
+            tok => {
+                panic!("Expected assignment, got {:?}", tok)
             }
         };
 
