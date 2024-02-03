@@ -22,6 +22,7 @@ pub struct Variable {
     pub var_type: String,
     pub dereference: bool,
     pub store_address: bool,
+    pub string_number: usize,
 }
 
 impl Variable {
@@ -38,6 +39,7 @@ impl Variable {
             var_name,
             dereference,
             store_address,
+            string_number: 0,
         }
     }
 
@@ -55,22 +57,11 @@ impl Variable {
 }
 
 impl AST for Variable {
-    fn visit_com(
-        &self,
-        _x: &mut Variables,
-        _: Rc<RefCell<Functions>>,
-        asm: &mut ASM,
-        call_stack: &mut CallStack,
-    ) {
+    fn visit_com(&self, _x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         asm.gen_asm_for_var(&self, &call_stack);
     }
 
-    fn visit(
-        &self,
-        _: &mut Variables,
-        _: Rc<RefCell<Functions>>,
-        call_stack: &mut CallStack,
-    ) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         todo!()
     }
 
@@ -84,11 +75,7 @@ impl AST for Variable {
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
         if !call_stack.var_with_name_found(&self.var_name) {
-            print!("{:#?}", call_stack);
-            panic!(
-                "Variable with name '{}' not found in current scope",
-                self.var_name
-            );
+            panic!("Variable with name '{}' not found in current scope", self.var_name);
         }
     }
 }

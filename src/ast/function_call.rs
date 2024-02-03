@@ -39,8 +39,6 @@ impl AST for FunctionCall {
         match self.name.as_str() {
             FUNC_WRITE => {
                 for arg in &self.arguments {
-                    // println!("FunctionCall visit_com arg: {:#?}", arg);
-
                     // this will generate everything and put in rax
                     arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 

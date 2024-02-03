@@ -33,8 +33,9 @@ pub struct Parser<'a> {
     pub inside_if_else_depth: usize,
 
     pub num_loops: usize,
-
     pub inside_current_loop_number: i32,
+
+    pub num_strings: usize,
 }
 
 impl<'a> Parser<'a> {
@@ -53,6 +54,8 @@ impl<'a> Parser<'a> {
 
             num_loops: 0,
             inside_current_loop_number: -1,
+
+            num_strings: 0,
         }
     }
 

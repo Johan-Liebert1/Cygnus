@@ -1,8 +1,6 @@
 fun main() {
-    def a: int = 5;
-
-    def b: *int = a;
-    def c: int = a;
+    def a: str = "helloo\n";
+    def c: *str = &a;
 
     write(c);
 }

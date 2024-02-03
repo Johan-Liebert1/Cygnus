@@ -18,8 +18,6 @@ impl ASM {
 
         let (variable_from_stack, variable_scope) = call_stack.get_var_with_name(var_name);
 
-        trace!("variable: {:#?}", variable);
-
         match variable_from_stack {
             Some(ar_var) => {
                 match variable_scope {
@@ -40,6 +38,7 @@ impl ASM {
                             } else if variable.store_address {
                                 todo!()
                             } else {
+                                todo!("need to get the string length as well");
                                 self.extend_current_label(vec![format!("mov rax, [{var_name}]"), format!("push rax")])
                             }
                         }
@@ -49,8 +48,6 @@ impl ASM {
 
                     _ => {
                         match &ar_var.var {
-                            // TODO: Move this here, currently
-                            // this is handled in factor
                             VariableEnum::Number(_) => {
                                 if variable.dereference {
                                     panic!("Cannot dereference a number")
@@ -67,20 +64,32 @@ impl ASM {
                                 }
                             }
 
-                            // TODO: Move this here, currently
-                            // this is handled in factor
-                            VariableEnum::String(_) => todo!(),
+                            VariableEnum::String(_) => {
+                                if variable.dereference {
+                                    panic!("Cannot dereference a string")
+                                } else if variable.store_address {
+                                    self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset)]);
+                                } else {
+                                    self.extend_current_label(vec![
+                                        format!("mov rax, [rbp - {}]", ar_var.offset),
+                                        format!("push rax"),
+                                        // length is pushed last
+                                        format!("mov rax, [rbp - {}]", ar_var.offset + 8),
+                                        format!("push rax"),
+                                    ])
+                                }
+                            }
 
                             // TODO: Handle pointer to pointer to something
-
-                            // TODO: Handle &a, currently we assume it's always gonna be *a
                             VariableEnum::Pointer(var_type) => match var_type.as_str() {
                                 TYPE_INT | TYPE_FLOAT => {
                                     if variable.dereference {
                                         self.extend_current_label(vec![
                                             format!("mov rax, [rbp - {}]", ar_var.offset),
                                             format!("mov rax, [rax]"),
+
                                             format!("push rax"),
+                                            format!("push rbx"),
                                         ]);
                                     } else if variable.store_address {
                                         self.extend_current_label(vec![
@@ -95,7 +104,33 @@ impl ASM {
                                     }
                                 }
 
-                                TYPE_STRING => todo!(),
+                                TYPE_STRING => {
+                                    if variable.dereference {
+                                        self.extend_current_label(vec![
+                                            format!("mov rax, [rbp - {}]", ar_var.offset),
+                                            // now rax contains the address of the pointer to the
+                                            // string
+                                            // now we move the length of the string into rbx
+                                            format!("mov rbx, [rax - 8]"), // now rbx = length of
+                                            // the string
+                                            
+                                            format!("mov rax, [rax]"),
+
+                                            format!("push rax"),
+                                            format!("push rbx"),
+                                        ]);
+                                    } else if variable.store_address {
+                                        self.extend_current_label(vec![
+                                            format!("lea rax, [rbp - {}]", ar_var.offset),
+                                            format!("push rax"),
+                                        ]);
+                                    } else {
+                                        self.extend_current_label(vec![
+                                            format!("mov rax, [rbp - {}]", ar_var.offset),
+                                            format!("push rax"),
+                                        ]);
+                                    }
+                                }
 
                                 type_ => {
                                     todo!("var_type '{type_}' not handled")

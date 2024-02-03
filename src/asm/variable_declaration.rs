@@ -1,5 +1,5 @@
 use crate::{
-    lexer::tokens::AssignmentTypes,
+    lexer::tokens::{AssignmentTypes, VariableEnum},
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
 };
 
@@ -15,7 +15,6 @@ impl ASM {
         match variable {
             Some(_) => {
                 match variable_scope {
-
                     ActivationRecordType::Global => {
                         // this needs to be dq, as we are assuming all integers are 64 bits
                         // db will only allocate 1 byte while dq allocates a word
@@ -48,34 +47,86 @@ impl ASM {
 
         let (variable, variable_scope) = call_stack.get_var_with_name(&var_name);
 
-        let mut instructions = vec![format!("pop rax")];
+        let mut instructions = vec![];
+
+        let mut is_string = false;
 
         match variable {
             Some(var) => {
                 match variable_scope {
                     ActivationRecordType::Global => {
                         match assignment_type {
-                            AssignmentTypes::Equals => {},
-                            AssignmentTypes::PlusEquals => instructions.extend([format!("pop rbx"), format!("add rax, rbx")]),
-                            AssignmentTypes::MinusEquals => instructions.extend([format!("pop rbx"), format!("sub rax, rbx")]),
+                            AssignmentTypes::Equals => {
+                                match var.var {
+                                    VariableEnum::Number(_) => {}
+
+                                    VariableEnum::String(_) => {
+                                        // pop the string pointer into rax
+                                        // the string len should be in rbx as string len is pushed
+                                        // last
+                                        instructions.extend([format!("pop rbx"), format!("pop rax")]);
+
+                                        is_string = true;
+                                    }
+
+                                    VariableEnum::Pointer(_) => {}
+                                }
+                            }
+
+                            AssignmentTypes::PlusEquals => {
+                                instructions.extend([format!("pop rax"), format!("pop rbx"), format!("add rax, rbx")])
+                            }
+                            AssignmentTypes::MinusEquals => {
+                                instructions.extend([format!("pop rax"), format!("pop rbx"), format!("sub rax, rbx")])
+                            }
                         }
 
                         instructions.push(format!("mov [{}], rax", var_name));
-                    },
+                    }
 
                     _ => {
                         match assignment_type {
-                            AssignmentTypes::Equals => {},
-                            AssignmentTypes::PlusEquals => instructions.extend([format!("pop rbx"), format!("add rax, rbx")]),
-                            AssignmentTypes::MinusEquals => instructions.extend([format!("pop rbx"), format!("sub rax, rbx")]),
+                            AssignmentTypes::Equals => {
+                                match var.var {
+                                    VariableEnum::Number(_) => {}
+
+                                    VariableEnum::String(_) => {
+                                        // pop the string pointer into rax
+                                        // the string len should be in rbx as string len is pushed
+                                        // last
+                                        instructions.extend([format!("pop rbx"), format!("pop rax")]);
+
+                                        is_string = true;
+                                    }
+
+                                    VariableEnum::Pointer(_) => {}
+                                }
+                            }
+
+                            AssignmentTypes::PlusEquals => {
+                                instructions.extend([format!("pop rax"), format!("pop rbx"), format!("add rax, rbx")])
+                            }
+                            AssignmentTypes::MinusEquals => {
+                                instructions.extend([format!("pop rax"), format!("pop rbx"), format!("sub rax, rbx")])
+                            }
                         }
 
                         instructions.push(format!("mov [rbp - {}], rax", var.offset));
+
+                        if is_string {
+                            // Move the string length into the mem address above the addr
+                            // containing the string pointer
+                            instructions.push(format!("mov [rbp - {}], rbx", var.offset + 8));
+                        }
                     }
                 }
-            },
+            }
 
-            None => unreachable!("Could not find variable with name '{}' in function `factor`. This is a bug in the semantic analying step.", var_name),
+            None => unreachable!(
+                "Could not find variable with name '{}' in function `factor`. \
+            This is a bug in the semantic analying step.",
+                var_name
+            ),
         };
 
         self.extend_current_label(instructions);

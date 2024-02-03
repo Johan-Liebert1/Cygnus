@@ -1,6 +1,10 @@
+use core::panic;
+
 use crate::{
-    interpreter::interpreter::Variables, lexer::tokens::VariableEnum,
+    interpreter::interpreter::Variables,
+    lexer::{keywords::{TYPE_INT, TYPE_STRING}, tokens::VariableEnum},
     semantic_analyzer::semantic_analyzer::CallStack,
+    trace,
 };
 
 use super::asm::ASM;
@@ -19,30 +23,18 @@ const WRITE_STRING_ASM_INSTRUCTIONS: [&str; 9] = [
 
 impl ASM {
     pub fn func_write_number(&mut self) {
-        self.extend_current_label(vec![
-            String::from("pop rax"),
-            String::from("call _printRAX"),
-        ]);
+        self.extend_current_label(vec![String::from("pop rax"), String::from("call _printRAX")]);
     }
 
     pub fn func_exit(&mut self) {
-        self.extend_current_label(vec![
-            format!("pop rdi"),
-            format!("mov rax, 60"),
-            format!("syscall"),
-        ]);
+        self.extend_current_label(vec![format!("pop rdi"), format!("mov rax, 60"), format!("syscall")]);
     }
 
     pub fn func_write_string(&mut self) {
-        // TODO: There's some weird stack alloc issue when I try to do this. So this takes a
-        // backseat for now
-        // label.code.push(String::from("call _printString"));
         self.extend_current_label(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec());
     }
 
     pub fn func_write_var(&mut self, var_name: &String, call_stack: &CallStack) {
-        // TODO: Un-hardcode this
-
         let instructions = match var_name.as_str() {
             "argc" => vec![
                 // argc contains the address of rsp
@@ -90,27 +82,30 @@ impl ASM {
                     Some(var) => {
                         // We don't need to check the scope here as the variable value is already
                         // pushed into rax beforehand in `factor` AST
-                        match var.var {
+                        match &var.var {
                             VariableEnum::Number(..) => {
                                 vec![
                                     format!("pop rax"),
-                                    // TODO: Handle printing strings and stuff
                                     format!("call _printRAX"),
                                 ]
                             }
 
-                            VariableEnum::String(_) => {
-                                WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
-                            }
+                            VariableEnum::String(_) => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
 
-                            // TODO: Pointers to strings and pointers to ints should be treated
-                            // differently
-                            VariableEnum::Pointer(..) => {
-                                vec![
-                                    format!("pop rax"),
-                                    // TODO: Handle printing strings and stuff
-                                    format!("call _printRAX"),
-                                ]
+                            VariableEnum::Pointer(pointer_var_type) => {
+                                match pointer_var_type.as_str() {
+                                    TYPE_INT => {
+                                        vec![
+                                            format!("pop rax"),
+                                            format!("call _printRAX"),
+                                        ]
+                                    }
+
+                                    // TODO: Check here whether the pointer is dereferenced or not
+                                    TYPE_STRING => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
+
+                                    _ => panic!("Unknown type '{pointer_var_type}'")
+                                }
                             }
                         }
                     }

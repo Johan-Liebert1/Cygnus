@@ -19,7 +19,7 @@
     - [x] Upper stack variable access
 - [x] Variable scoping
 - [x] Implement `+=` and `-=`
-- [ ] Pointer deref
+- [x] Pointer deref
 - [ ] Random access to memory
 
 - [ ] Function returns
