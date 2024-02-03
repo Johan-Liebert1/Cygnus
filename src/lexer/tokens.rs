@@ -94,6 +94,7 @@ pub enum TokenEnum {
     Comma,
     Colon,
     SemiColon,
+    Ampersand,
 
     Number(Number),
     Bracket(Bracket),

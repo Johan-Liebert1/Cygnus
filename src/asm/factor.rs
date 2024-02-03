@@ -1,7 +1,7 @@
 use crate::{
     interpreter::interpreter::Variables,
     lexer::tokens::{Number, TokenEnum, VariableEnum},
-    semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
+    semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack}, trace,
 };
 
 use super::asm::ASM;
@@ -67,40 +67,12 @@ impl ASM {
                 self.num_strings += 1;
             }
 
-            TokenEnum::Variable(var_name) => {
-                let (variable, variable_scope) = call_stack.get_var_with_name(&var_name);
-
-                match variable {
-                    Some(var) => {
-                        match variable_scope {
-                            ActivationRecordType::Global => {
-                                instructions
-                                    .extend(vec![format!("mov rax, [{var_name}]"), format!("push rax")])
-                            },
-
-                            _ => {
-                                match var.var {
-                                    VariableEnum::Number(..) | VariableEnum::String(..)  => {
-                                        instructions.extend(vec![format!("mov rax, [rbp - {}]", var.offset), format!("push rax")])
-                                    },
-
-                                    VariableEnum::Pointer(..) => {
-                                        instructions.extend(vec![format!("lea rax, [rbp - {}]", var.offset), format!("push rax")])
-                                    },
-                                }
-
-                            }
-                        }
-                    },
-
-                    None => unreachable!("Could not find variable with name '{}' in function `factor`. This is a bug in the semantic analying step or the call stacks in semantic analysis and compilation don't match.", var_name),
-                };
-            }
-
+            TokenEnum::Variable(..) =>  todo!(),
             TokenEnum::LogicalOp(..) => todo!(),
             TokenEnum::Equals => todo!(),
             TokenEnum::PlusEquals => todo!(),
             TokenEnum::MinusEquals => todo!(),
+            TokenEnum::Ampersand => todo!(),
             TokenEnum::Comma => todo!(),
             TokenEnum::SemiColon => todo!(),
             TokenEnum::Colon => todo!(),

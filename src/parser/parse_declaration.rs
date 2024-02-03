@@ -1,4 +1,4 @@
-use crate::{types::ASTNode, trace};
+use crate::{trace, types::ASTNode};
 
 use std::{cell::RefCell, rc::Rc};
 
@@ -31,6 +31,8 @@ impl<'a> Parser<'a> {
                                     Box::new(token),
                                     var_type.to_string(),
                                     var_name,
+                                    false,
+                                    false,
                                 );
                             }
 
@@ -51,20 +53,14 @@ impl<'a> Parser<'a> {
 
         let left = self.parse_variable();
 
-        match self.get_next_token().token {
-            TokenEnum::Equals => {
-                // fine just consume the token
-            }
+        self.validate_token(TokenEnum::Equals);
 
-            tok => {
-                panic!("Expected assignment, got {:?}", tok)
-            }
-        };
+        let right = self.parse_logical_expression();
 
         // TODO: handle function calls and strings and stuff here
         return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(
             left,
-            self.parse_logical_expression(),
+            right,
         ))));
     }
 }

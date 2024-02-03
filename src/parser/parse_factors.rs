@@ -20,9 +20,22 @@ impl<'a> Parser<'a> {
         }
 
         match &next_token.token {
-            TokenEnum::Number(..) | TokenEnum::Variable(..) | TokenEnum::StringLiteral(..) => {
+            TokenEnum::Number(..) | TokenEnum::StringLiteral(..) => {
                 self.get_next_token();
                 return Rc::new(RefCell::new(Box::new(Factor::new(Box::new(next_token)))));
+            }
+
+            TokenEnum::Variable(var_name) => {
+                Rc::new(RefCell::new(Box::new(Variable::new(
+                    Box::new(self.get_next_token()),
+                    // this is not a variable declaration, only a variable
+                    // name so we don't have type information here
+                    // This is handled via the call stack
+                    "".into(),
+                    var_name.into(),
+                    false,
+                    false,
+                ))))
             }
 
             TokenEnum::Bracket(paren) => match paren {
@@ -99,8 +112,13 @@ impl<'a> Parser<'a> {
                         TokenEnum::Variable(var_name) => {
                             Rc::new(RefCell::new(Box::new(Variable::new(
                                 Box::new(self.get_next_token()),
-                                "some_type".into(),
+                                // this is not a variable declaration, only a variable
+                                // name so we don't have type information here
+                                // This is handled via the call stack
+                                "".into(),
                                 var_name,
+                                true,
+                                false,
                             ))))
                         }
 
@@ -126,6 +144,39 @@ impl<'a> Parser<'a> {
                     exit(1);
                 }
             },
+
+            TokenEnum::Ampersand => {
+                // consume '&'
+                let get_next_token = self.get_next_token();
+
+                let next_next_token = self.peek_next_token();
+
+                // the next token has to be a variable, else this is a syntax error
+                match next_next_token.token {
+                    TokenEnum::Variable(var_name) => {
+                        Rc::new(RefCell::new(Box::new(Variable::new(
+                            Box::new(self.get_next_token()),
+                            // this is not a variable declaration, only a variable
+                            // name so we don't have type information here
+                            // This is handled via the call stack
+                            "".into(),
+                            var_name,
+                            false,
+                            true,
+                        ))))
+                    }
+
+                    _ => {
+                        helpers::unexpected_token(
+                            "parse_factor",
+                            &next_next_token.token,
+                            &TokenEnum::Variable("".into()),
+                        );
+
+                        exit(1);
+                    }
+                }
+            }
 
             _ => {
                 helpers::unexpected_token(

@@ -198,6 +198,7 @@ impl<'a> Parser<'a> {
             TokenEnum::Equals => todo!(),
             TokenEnum::PlusEquals => todo!(),
             TokenEnum::MinusEquals => todo!(),
+            TokenEnum::Ampersand => todo!(),
             TokenEnum::Comparator(_) => todo!(),
             TokenEnum::Bool(_) => todo!(),
             TokenEnum::Type(_) => todo!(),

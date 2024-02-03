@@ -113,6 +113,8 @@ impl<'a> Lexer<'a> {
                 '/' => TokenEnum::Op(Operations::Divide),
                 '%' => TokenEnum::Op(Operations::Modulo),
 
+                '&' => TokenEnum::Ampersand,
+
                 '=' => {
                     self.index += 1;
 

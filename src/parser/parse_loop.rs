@@ -1,7 +1,8 @@
 use crate::{
     ast::variable::Variable,
     lexer::keywords::{TYPE_INT, WITH},
-    types::ASTNode, trace,
+    trace,
+    types::ASTNode,
 };
 
 use core::panic;
@@ -98,6 +99,8 @@ impl<'a> Parser<'a> {
                                 Box::new(self.get_next_token()),
                                 TYPE_INT.into(),
                                 var_name,
+                                false,
+                                false,
                             )),
 
                             t => panic!("Expected variable got '{:?}'", t),

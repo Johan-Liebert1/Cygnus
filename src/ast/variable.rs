@@ -20,14 +20,24 @@ pub struct Variable {
     token: Box<Token>,
     pub var_name: String,
     pub var_type: String,
+    pub dereference: bool,
+    pub store_address: bool,
 }
 
 impl Variable {
-    pub fn new(token: Box<Token>, var_type: String, var_name: String) -> Self {
+    pub fn new(
+        token: Box<Token>,
+        var_type: String,
+        var_name: String,
+        dereference: bool,
+        store_address: bool,
+    ) -> Self {
         Self {
             token,
             var_type,
             var_name,
+            dereference,
+            store_address,
         }
     }
 
@@ -52,7 +62,7 @@ impl AST for Variable {
         asm: &mut ASM,
         call_stack: &mut CallStack,
     ) {
-        asm.gen_asm_for_var(&self.var_name, &call_stack);
+        asm.gen_asm_for_var(&self, &call_stack);
     }
 
     fn visit(
