@@ -89,7 +89,6 @@ impl ASM {
                                             format!("mov rax, [rax]"),
 
                                             format!("push rax"),
-                                            format!("push rbx"),
                                         ]);
                                     } else if variable.store_address {
                                         self.extend_current_label(vec![

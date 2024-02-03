@@ -88,7 +88,9 @@ impl ASM {
                         match assignment_type {
                             AssignmentTypes::Equals => {
                                 match var.var {
-                                    VariableEnum::Number(_) => {}
+                                    VariableEnum::Number(_) => {
+                                        instructions.push(format!("pop rax"))
+                                    }
 
                                     VariableEnum::String(_) => {
                                         // pop the string pointer into rax
