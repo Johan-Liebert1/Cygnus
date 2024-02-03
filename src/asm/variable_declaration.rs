@@ -15,19 +15,24 @@ impl ASM {
         match variable {
             Some(_) => {
                 match variable_scope {
+
                     ActivationRecordType::Global => {
                         // this needs to be dq, as we are assuming all integers are 64 bits
                         // db will only allocate 1 byte while dq allocates a word
                         self.data.push(format!("{} dq 0", var_name));
-                    },
+                    }
 
                     _ => {
                         // 2. If global var add it to the global section, else skip
                     }
                 }
-            },
+            }
 
-            None => unreachable!("Could not find variable with name '{}' in function `variable_declaration`. This is a bug in the semantic analying step.", var_name),
+            None => unreachable!(
+                "Could not find variable with name '{}' in function `variable_declaration`. \
+                    This is a bug in the semantic analying step.",
+                var_name,
+            ),
         };
     }
 

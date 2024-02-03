@@ -55,9 +55,15 @@ impl ASM {
                                 if variable.dereference {
                                     panic!("Cannot dereference a number")
                                 } else if variable.store_address {
-                                    self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+                                    self.extend_current_label(vec![
+                                        format!("lea rax, [rbp - {}]", ar_var.offset),
+                                        format!("push rax"),
+                                    ]);
                                 } else {
-                                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+                                    self.extend_current_label(vec![
+                                        format!("mov rax, [rbp - {}]", ar_var.offset),
+                                        format!("push rax"),
+                                    ]);
                                 }
                             }
 
@@ -71,11 +77,21 @@ impl ASM {
                             VariableEnum::Pointer(var_type) => match var_type.as_str() {
                                 TYPE_INT | TYPE_FLOAT => {
                                     if variable.dereference {
-                                        self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset), format!("mov rax, [rax]"), format!("push rax")]);
+                                        self.extend_current_label(vec![
+                                            format!("mov rax, [rbp - {}]", ar_var.offset),
+                                            format!("mov rax, [rax]"),
+                                            format!("push rax"),
+                                        ]);
                                     } else if variable.store_address {
-                                        self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+                                        self.extend_current_label(vec![
+                                            format!("lea rax, [rbp - {}]", ar_var.offset),
+                                            format!("push rax"),
+                                        ]);
                                     } else {
-                                        self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+                                        self.extend_current_label(vec![
+                                            format!("mov rax, [rbp - {}]", ar_var.offset),
+                                            format!("push rax"),
+                                        ]);
                                     }
                                 }
 
@@ -90,7 +106,11 @@ impl ASM {
                 }
             }
 
-            None => unreachable!("Could not find variable with name '{}' in function `variable_declaration`. This is a bug in the semantic analying step.", var_name),
+            None => unreachable!(
+                "Could not find variable with name '{}' in function `variable_declaration`. \
+            This is a bug in the semantic analying step.",
+                var_name,
+            ),
         };
     }
 }

@@ -111,11 +111,15 @@ impl ASM {
                                     // TODO: Handle printing strings and stuff
                                     format!("call _printRAX"),
                                 ]
-                            },
+                            }
                         }
-                    },
+                    }
 
-                    None => unreachable!("Could not find variable with name '{}' in function `factor`. This is a bug in the semantic analying step.", var_name),
+                    None => unreachable!(
+                        "Could not find variable with name '{}' in function `factor`.\
+                    This is a bug in the semantic analying step.",
+                        var_name
+                    ),
                 }
             }
         };
