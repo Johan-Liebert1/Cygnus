@@ -1,4 +1,4 @@
-use crate::{ast::variable::Variable, lexer::tokens::Operations, trace, types::ASTNode};
+use crate::{ast::{variable::Variable, abstract_syntax_tree::AST}, lexer::tokens::Operations, trace, types::ASTNode};
 
 use std::{cell::RefCell, process::exit, rc::Rc};
 
@@ -103,63 +103,49 @@ impl<'a> Parser<'a> {
             },
 
             TokenEnum::Op(op) => {
-                let mut times_dereferenced = 0;
+                if let Operations::Multiply = op {
+                    self.get_next_token();
 
-                match op {
-                    // pointer deref
-                    Operations::Multiply => {
-                        loop {
-                            // consume the multiply '*' token
-                            let get_next_token = self.get_next_token();
+                    self.parsing_pointer_deref = true;
+                    self.times_dereferenced = 1;
 
-                            times_dereferenced += 1;
-
-                            let next_next_token = self.peek_next_token();
-
-                            // the next token has to be a variable, else this is a syntax error
-                            match next_next_token.token {
-                                TokenEnum::Variable(var_name) => {
-                                    return Rc::new(RefCell::new(Box::new(Variable::new(
-                                        Box::new(self.get_next_token()),
-                                        // this is not a variable declaration, only a variable
-                                        // name so we don't have type information here
-                                        // This is handled via the call stack
-                                        "".into(),
-                                        var_name,
-                                        true,
-                                        false,
-                                        times_dereferenced,
-                                    ))))
-                                }
-
-                                TokenEnum::Op(op) => match op {
-                                    Operations::Multiply => continue,
-                                    _ => panic!("lsdjflsjsdfl"),
-                                },
-
-                                _ => {
-                                    helpers::unexpected_token(
-                                        "parse_factor",
-                                        &next_next_token.token,
-                                        &TokenEnum::Variable("".into()),
-                                    );
-
-                                    exit(1);
-                                }
-                            };
-                        }
+                    while let TokenEnum::Op(Operations::Multiply) = self.peek_next_token().token {
+                        self.times_dereferenced += 1;
+                        self.get_next_token();
                     }
 
-                    _ => {
-                        helpers::unexpected_token(
-                            "parse_factor",
-                            &next_token.token,
-                            &TokenEnum::Op(Operations::Multiply),
-                        );
+                    // if let TokenEnum::Variable(var_name) = self.peek_next_token().token {
+                    //     let var: Rc<RefCell<Box<dyn AST>>> = Rc::new(RefCell::new(Box::new(Variable::new(
+                    //         Box::new(self.get_next_token()),
+                    //         // this is not a variable declaration, only a variable
+                    //         // name so we don't have type information here
+                    //         // This is handled via the call stack
+                    //         "".into(),
+                    //         var_name.into(),
+                    //         self.times_dereferenced > 0,
+                    //         false,
+                    //         self.times_dereferenced,
+                    //     ))));
 
-                        exit(1);
-                    }
+                    //     self.parsing_pointer_deref = false;
+                    //     self.times_dereferenced = 0;
+
+                    //     return var;
+                    // }
+
+                    let exp = self.parse_expression();
+
+                    trace!("{:#?}", exp);
+
+                    self.parsing_pointer_deref = false;
+                    self.times_dereferenced = 0;
+
+                    return exp;
                 }
+
+                helpers::unexpected_token("parse_factor", &next_token.token, &TokenEnum::Op(Operations::Multiply));
+
+                exit(1);
             }
 
             TokenEnum::Ampersand => {

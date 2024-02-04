@@ -41,6 +41,9 @@ impl<'a> Parser<'a> {
                             result,
                             Box::new(token),
                             self.parse_factor(),
+                            // multiplying a pointer or dividing it or shifting left/right doesn't
+                            // make any sense
+                            0,
                         ))));
                     }
 

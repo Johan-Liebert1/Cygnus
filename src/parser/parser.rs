@@ -10,10 +10,7 @@ use crate::{
     },
     interpreter::interpreter::Functions,
     lexer::{
-        keywords::{
-            BREAK, ELIF_STATEMENT, ELSE_STATEMENT, FUNCTION_DEFINE, IF_STATEMENT, LOOP, RETURN,
-            VAR_DEFINE,
-        },
+        keywords::{BREAK, ELIF_STATEMENT, ELSE_STATEMENT, FUNCTION_DEFINE, IF_STATEMENT, LOOP, RETURN, VAR_DEFINE},
         lexer::{Lexer, Token},
         tokens::{Bracket, TokenEnum},
     },
@@ -36,6 +33,8 @@ pub struct Parser<'a> {
     pub inside_current_loop_number: i32,
 
     pub num_strings: usize,
+    pub parsing_pointer_deref: bool,
+    pub times_dereferenced: usize,
 }
 
 impl<'a> Parser<'a> {
@@ -56,6 +55,9 @@ impl<'a> Parser<'a> {
             inside_current_loop_number: -1,
 
             num_strings: 0,
+
+            parsing_pointer_deref: false,
+            times_dereferenced: 0,
         }
     }
 
@@ -77,12 +79,11 @@ impl<'a> Parser<'a> {
         let mut validated_token = None;
 
         for token_ in &tokens_expected {
-            if  *token_ == token.token {
+            if *token_ == token.token {
                 validated_token = Some(token_);
                 break;
             }
         }
-
 
         match validated_token {
             Some(token) => token.clone(),
@@ -146,9 +147,7 @@ impl<'a> Parser<'a> {
                     _ => {
                         println!(
                             "loop {}, func {}, if {}",
-                            self.inside_loop_depth,
-                            self.inside_function_depth,
-                            self.inside_if_else_depth
+                            self.inside_loop_depth, self.inside_function_depth, self.inside_if_else_depth
                         );
                         panic!("Keyword '{}' not recognised", keyword);
                     }
@@ -237,9 +236,7 @@ impl<'a> Parser<'a> {
 
                 TokenEnum::Bracket(b) => match b {
                     Bracket::RCurly => {
-                        if self.inside_function_depth > 0
-                            || self.inside_loop_depth > 0
-                            || self.inside_if_else_depth > 0
+                        if self.inside_function_depth > 0 || self.inside_loop_depth > 0 || self.inside_if_else_depth > 0
                         {
                             return Rc::new(RefCell::new(Box::new(Program::new(statements))));
                         } else {

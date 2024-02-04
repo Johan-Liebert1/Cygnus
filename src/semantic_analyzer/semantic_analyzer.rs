@@ -13,6 +13,7 @@ use crate::{
 pub struct ARVariable {
     pub var: VariableEnum,
     pub offset: usize,
+    pub times_dereferenced: usize,
 }
 
 type ActivationRecordVariables = HashMap<String, ARVariable>;
@@ -147,10 +148,7 @@ impl CallStack {
         return false;
     }
 
-    pub fn get_var_with_name(
-        &self,
-        var_name: &String,
-    ) -> (Option<&ARVariable>, &ActivationRecordType) {
+    pub fn get_var_with_name(&self, var_name: &String) -> (Option<&ARVariable>, &ActivationRecordType) {
         for record in self.call_stack.iter().rev() {
             match record.variable_members.get(var_name) {
                 Some(var) => return (Some(var), &record.record_type),
@@ -165,6 +163,7 @@ impl CallStack {
         &mut self,
         var_name: &String,
         variable_enum: VariableEnum,
+        times_dereferenced: usize,
     ) {
         let mut offset = self.update_function_variable_size_and_get_offset(&variable_enum);
 
@@ -183,6 +182,7 @@ impl CallStack {
                     ARVariable {
                         var: variable_enum,
                         offset,
+                        times_dereferenced,
                     },
                 );
 
@@ -201,13 +201,17 @@ impl CallStack {
         for record in self.call_stack.iter_mut().rev() {
             if let ActivationRecordType::Function = record.record_type {
                 match &self.current_function_name {
-                    Some(fname) => if fname == &record.name {
-                        offset += record.var_size_sum;
+                    Some(fname) => {
+                        if fname == &record.name {
+                            offset += record.var_size_sum;
 
-                        record.var_size_sum += var_enum.size();
-                    },
+                            record.var_size_sum += var_enum.size();
+                        }
+                    }
 
-                    None => unreachable!("'self.current_function_name' is None even though there's a Function in the call stack"),
+                    None => unreachable!(
+                        "'self.current_function_name' is None even though there's a Function in the call stack"
+                    ),
                 }
             }
         }
@@ -215,7 +219,7 @@ impl CallStack {
         return offset;
     }
 
-    pub fn insert_variable(&mut self, var_name: &String, variable_enum: VariableEnum) {
+    pub fn insert_variable(&mut self, var_name: &String, variable_enum: VariableEnum, times_dereferenced: usize) {
         let mut offset = self.update_function_variable_size_and_get_offset(&variable_enum);
 
         match self.call_stack.last_mut() {
@@ -229,6 +233,7 @@ impl CallStack {
                     ARVariable {
                         var: variable_enum,
                         offset,
+                        times_dereferenced,
                     },
                 );
             }
@@ -262,10 +267,7 @@ impl SemanticAnalyzer {
     pub fn new(ast: ASTNode, functions: Rc<RefCell<Functions>>) -> Self {
         Self {
             call_stack: CallStack {
-                call_stack: vec![ActivationRecord::new(
-                    "".into(),
-                    ActivationRecordType::Global,
-                )],
+                call_stack: vec![ActivationRecord::new("".into(), ActivationRecordType::Global)],
                 current_function_name: None,
                 loop_number: 0,
             },

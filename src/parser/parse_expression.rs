@@ -33,6 +33,7 @@ impl<'a> Parser<'a> {
                             result,
                             Box::new(next_token),
                             self.parse_term(),
+                            self.times_dereferenced,
                         ))));
                     }
 

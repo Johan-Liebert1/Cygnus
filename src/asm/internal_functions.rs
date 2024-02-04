@@ -2,7 +2,10 @@ use core::panic;
 
 use crate::{
     interpreter::interpreter::Variables,
-    lexer::{keywords::{TYPE_INT, TYPE_STRING}, tokens::VariableEnum},
+    lexer::{
+        keywords::{TYPE_INT, TYPE_STRING},
+        tokens::VariableEnum,
+    },
     semantic_analyzer::semantic_analyzer::CallStack,
     trace,
 };
@@ -84,10 +87,7 @@ impl ASM {
                         // pushed into rax beforehand in `factor` AST
                         match &var.var {
                             VariableEnum::Number(..) => {
-                                vec![
-                                    format!("pop rax"),
-                                    format!("call _printRAX"),
-                                ]
+                                vec![format!("pop rax"), format!("call _printRAX")]
                             }
 
                             VariableEnum::String(_) => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
@@ -95,16 +95,21 @@ impl ASM {
                             VariableEnum::Pointer(pointer_var_type) => {
                                 match pointer_var_type.as_str() {
                                     TYPE_INT => {
-                                        vec![
-                                            format!("pop rax"),
-                                            format!("call _printRAX"),
-                                        ]
+                                        vec![format!("pop rax"), format!("call _printRAX")]
                                     }
 
                                     // TODO: Check here whether the pointer is dereferenced or not
-                                    TYPE_STRING => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
+                                    TYPE_STRING => {
+                                        // trace!("var: {:#?}", var);
 
-                                    _ => panic!("Unknown type '{pointer_var_type}'")
+                                        if var.times_dereferenced > 0 || true {
+                                            WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
+                                        } else {
+                                            vec![format!("pop rax"), format!("call _printRAX")]
+                                        }
+                                    }
+
+                                    _ => panic!("Unknown type '{pointer_var_type}'"),
                                 }
                             }
                         }

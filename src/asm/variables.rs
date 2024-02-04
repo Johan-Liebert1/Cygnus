@@ -66,9 +66,30 @@ impl ASM {
 
                             VariableEnum::String(_) => {
                                 if variable.dereference {
-                                    panic!("Cannot dereference a string")
+                                    let mut v = vec![
+                                        format!(";; Dereferencing variable {}", var_name),
+                                        format!("mov rax, [rbp - {}]", ar_var.offset),
+                                        // now rax contains the address of the pointer to the
+                                        // string
+                                        // now we move the length of the string into rbx
+                                        format!("mov rbx, 1"), // now rbx = length of
+                                                               // the string
+                                    ];
+                                    v.extend(
+                                        std::iter::repeat(format!("mov rax, [rax]"))
+                                            .take(variable.times_dereferenced - 1),
+                                    );
+                                    v.extend([format!("push rax"), format!("push rbx")]);
+
+                                    self.extend_current_label(v);
                                 } else if variable.store_address {
-                                    self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset + 8)]);
+                                    // the pointer to the string is stored below the length
+                                    // --- top of stack ---
+                                    // .
+                                    // .
+                                    // --- lenght ---
+                                    // --- pointer to string ---
+                                    self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset)]);
                                 } else {
                                     self.extend_current_label(vec![
                                         format!("mov rax, [rbp - {}]", ar_var.offset),
@@ -84,12 +105,18 @@ impl ASM {
                             VariableEnum::Pointer(var_type) => match var_type.as_str() {
                                 TYPE_INT | TYPE_FLOAT => {
                                     if variable.dereference {
-                                        let mut v = vec![format!("mov rax, [rbp - {}]", ar_var.offset)];
+                                        let mut v = vec![
+                                            format!(";; Dereferencing variable {}", var_name),
+                                            format!("mov rax, [rbp - {}]", ar_var.offset),
+                                        ];
                                         v.extend(
                                             std::iter::repeat(format!("mov rax, [rax]"))
                                                 .take(variable.times_dereferenced),
                                         );
-                                        v.push(format!("push rax"));
+                                        v.extend([
+                                            format!("push rax"),
+                                            format!(";; Finish dereferencing variable {}", var_name),
+                                        ]);
 
                                         self.extend_current_label(v);
                                     } else if variable.store_address {
@@ -107,15 +134,14 @@ impl ASM {
 
                                 TYPE_STRING => {
                                     if variable.dereference {
-                                        trace!("variable.dereference: {:#?}", variable);
-
                                         let mut v = vec![
+                                            format!(";; Dereferencing variable {}", var_name),
                                             format!("mov rax, [rbp - {}]", ar_var.offset),
                                             // now rax contains the address of the pointer to the
                                             // string
                                             // now we move the length of the string into rbx
                                             format!("mov rbx, [rax - 8]"), // now rbx = length of
-                                            // the string
+                                                                           // the string
                                         ];
                                         v.extend(
                                             std::iter::repeat(format!("mov rax, [rax]"))
@@ -124,8 +150,9 @@ impl ASM {
                                         v.extend([
                                             format!("push rax"),
                                             format!("push rbx"),
+                                            format!(";; Finish dereferencing variable {}", var_name),
                                         ]);
-                                        
+
                                         self.extend_current_label(v);
                                     } else if variable.store_address {
                                         self.extend_current_label(vec![
