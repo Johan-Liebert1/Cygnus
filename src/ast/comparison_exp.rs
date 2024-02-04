@@ -13,7 +13,7 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-use super::abstract_syntax_tree::{VisitResult, AST};
+use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum};
 
 #[derive(Debug)]
 pub struct ComparisonExp {
@@ -200,5 +200,9 @@ impl AST for ComparisonExp {
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         self.left.borrow_mut().semantic_visit(call_stack, f.clone());
         self.right.borrow_mut().semantic_visit(call_stack, f);
+    }
+
+    fn get_node(&self) -> ASTNodeEnum {
+        return ASTNodeEnum::ComparisonExp(&self);
     }
 }

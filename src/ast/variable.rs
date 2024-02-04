@@ -13,7 +13,7 @@ use crate::{
     },
 };
 
-use super::abstract_syntax_tree::{VisitResult, AST};
+use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum};
 
 #[derive(Debug)]
 pub struct Variable {
@@ -78,5 +78,9 @@ impl AST for Variable {
         if !call_stack.var_with_name_found(&self.var_name) {
             panic!("Variable with name '{}' not found in current scope", self.var_name);
         }
+    }
+
+    fn get_node(&self) -> ASTNodeEnum {
+        return ASTNodeEnum::Variable(&self);
     }
 }

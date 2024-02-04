@@ -9,7 +9,7 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-use super::abstract_syntax_tree::{VisitResult, AST};
+use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum};
 
 #[derive(Debug)]
 pub struct Program {
@@ -74,4 +74,9 @@ impl AST for Program {
                 .semantic_visit(call_stack, Rc::clone(&f));
         }
     }
+
+    fn get_node(&self) -> ASTNodeEnum {
+        return ASTNodeEnum::Program(&self);
+    }
+
 }

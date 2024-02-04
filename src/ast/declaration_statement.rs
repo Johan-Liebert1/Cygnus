@@ -1,3 +1,4 @@
+use crate::trace;
 use crate::{lexer::tokens::AssignmentTypes, types::ASTNode};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
@@ -13,6 +14,7 @@ use crate::{
     },
 };
 
+use super::abstract_syntax_tree::ASTNodeEnum;
 use super::{
     abstract_syntax_tree::{VisitResult, AST},
     variable::Variable,
@@ -31,19 +33,12 @@ impl DeclarationStatement {
 }
 
 impl AST for DeclarationStatement {
-    fn visit_com(
-        &self,
-        vars: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        asm: &mut ASM,
-        call_stack: &mut CallStack,
-    ) {
-        vars.insert(
-            self.left.var_name.clone(),
+    fn visit_com(&self, vars: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+        call_stack.insert_variable(
+            &self.left.var_name,
             self.left.get_var_enum_from_type(),
+            self.left.times_dereferenced,
         );
-
-        call_stack.insert_variable(&self.left.var_name, self.left.get_var_enum_from_type());
 
         asm.variable_declaration(&self.left.var_name, call_stack);
 
@@ -95,6 +90,14 @@ impl AST for DeclarationStatement {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
-        call_stack.insert_variable(&self.left.var_name, self.left.get_var_enum_from_type());
+        call_stack.insert_variable(
+            &self.left.var_name,
+            self.left.get_var_enum_from_type(),
+            self.left.times_dereferenced,
+        );
+    }
+
+    fn get_node(&self) -> ASTNodeEnum {
+        return ASTNodeEnum::DeclarationStatement(&self);
     }
 }

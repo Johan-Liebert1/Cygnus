@@ -16,6 +16,7 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
+use super::abstract_syntax_tree::ASTNodeEnum;
 use super::{
     abstract_syntax_tree::{VisitResult, AST},
     variable::Variable,
@@ -54,7 +55,8 @@ impl AST for FunctionDefinition {
         call_stack.push(self.name.to_string(), ActivationRecordType::Function);
 
         for arg in &self.parameters {
-            call_stack.insert_variable(&arg.var_name, arg.get_var_enum_from_type());
+            // params cannot be dereferenced
+            call_stack.insert_variable(&arg.var_name, arg.get_var_enum_from_type(), 0);
         }
 
         self.block.borrow().visit_com(v, f, asm, call_stack);
@@ -107,7 +109,7 @@ impl AST for FunctionDefinition {
         call_stack.push(self.name.to_string(), ActivationRecordType::Function);
 
         for arg in &self.parameters {
-            call_stack.insert_variable(&arg.var_name, arg.get_var_enum_from_type());
+            call_stack.insert_variable(&arg.var_name, arg.get_var_enum_from_type(), 0);
         }
 
         self.block
@@ -118,5 +120,9 @@ impl AST for FunctionDefinition {
 
         // pop the record here
         call_stack.pop();
+    }
+
+    fn get_node(&self) -> ASTNodeEnum {
+        return ASTNodeEnum::FunctionDef(&self);
     }
 }

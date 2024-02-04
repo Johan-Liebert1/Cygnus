@@ -11,7 +11,7 @@ use crate::{
     lexer::tokens::{TokenEnum, VariableEnum},
 };
 
-use super::abstract_syntax_tree::{VisitResult, AST};
+use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum};
 
 #[derive(Debug)]
 pub struct AssignmentStatement {
@@ -85,5 +85,9 @@ impl AST for AssignmentStatement {
         if !call_stack.var_with_name_found(&self.var_name) {
             panic!("Variable '{}' not found in current scope", &self.var_name);
         }
+    }
+
+    fn get_node(&self) -> ASTNodeEnum {
+        return ASTNodeEnum::AssignmentStatement(&self);
     }
 }

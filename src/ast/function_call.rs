@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+use crate::{types::ASTNode, trace};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
@@ -14,7 +14,7 @@ use crate::{
     },
 };
 
-use super::abstract_syntax_tree::{VisitResult, AST};
+use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum};
 
 #[derive(Debug)]
 pub struct FunctionCall {
@@ -43,6 +43,7 @@ impl AST for FunctionCall {
                     arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
                     let arg_borrow = arg.borrow();
+
                     let arg_token = &arg_borrow.get_token().token;
 
                     match arg_token {
@@ -151,5 +152,9 @@ impl AST for FunctionCall {
         for arg in &self.arguments {
             arg.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
         }
+    }
+
+    fn get_node(&self) -> ASTNodeEnum {
+        return ASTNodeEnum::FunctionCall(&self);
     }
 }

@@ -8,7 +8,7 @@ use crate::{
     lexer::tokens::TokenEnum,
 };
 
-use super::abstract_syntax_tree::{VisitResult, AST};
+use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum};
 
 pub enum JumpType {
     Return,
@@ -84,5 +84,10 @@ impl AST for Jump {
         //         call_stack.pop_special(PopTypes::LoopBreak);
         //     }
         // }
+    }
+
+
+    fn get_node(&self) -> ASTNodeEnum {
+        return ASTNodeEnum::Jump(&self);
     }
 }

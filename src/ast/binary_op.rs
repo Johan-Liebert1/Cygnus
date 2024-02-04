@@ -1,3 +1,4 @@
+use crate::trace;
 use crate::types::ASTNode;
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
@@ -13,21 +14,23 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-use super::abstract_syntax_tree::{VisitResult, AST};
+use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum};
 
 #[derive(Debug)]
 pub struct BinaryOP {
     left: ASTNode,
     operator: Box<Token>,
     right: ASTNode,
+    times_dereferenced: usize,
 }
 
 impl BinaryOP {
-    pub fn new(left: ASTNode, operator: Box<Token>, right: ASTNode) -> Self {
+    pub fn new(left: ASTNode, operator: Box<Token>, right: ASTNode, times_dereferenced: usize,) -> Self {
         Self {
             left,
             operator,
             right,
+            times_dereferenced,
         }
     }
 
@@ -239,5 +242,9 @@ impl AST for BinaryOP {
             .borrow_mut()
             .semantic_visit(call_stack, Rc::clone(&f));
         self.right.borrow_mut().semantic_visit(call_stack, f);
+    }
+
+    fn get_node(&self) -> ASTNodeEnum {
+        return ASTNodeEnum::BinaryOp(&self);
     }
 }
