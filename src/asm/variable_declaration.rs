@@ -108,6 +108,7 @@ impl ASM {
                             AssignmentTypes::PlusEquals => {
                                 instructions.extend([format!("pop rax"), format!("pop rbx"), format!("add rax, rbx")])
                             }
+
                             AssignmentTypes::MinusEquals => {
                                 instructions.extend([format!("pop rax"), format!("pop rbx"), format!("sub rax, rbx")])
                             }

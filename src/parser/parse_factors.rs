@@ -35,6 +35,7 @@ impl<'a> Parser<'a> {
                     var_name.into(),
                     false,
                     false,
+                    0,
                 ))))
             }
 
@@ -73,9 +74,7 @@ impl<'a> Parser<'a> {
                             Bracket::LParen => {
                                 // all good. A left paren was closed
                                 self.get_next_token();
-                                return Rc::new(RefCell::new(Box::new(Factor::new(Box::new(
-                                    next_token,
-                                )))));
+                                return Rc::new(RefCell::new(Box::new(Factor::new(Box::new(next_token)))));
                             }
 
                             Bracket::RParen => {
@@ -96,54 +95,72 @@ impl<'a> Parser<'a> {
                 },
 
                 _ => {
-                    panic!("Invalid token {:?}.\nInside func: {} \nInside Loop: {} \nInside If Else: {}\n", next_token, self.inside_function_depth, self.inside_loop_depth, self.inside_if_else_depth);
+                    panic!(
+                        "Invalid token {:?}.\nInside func: {} \nInside Loop: {} \nInside If Else: {}\n",
+                        next_token, self.inside_function_depth, self.inside_loop_depth, self.inside_if_else_depth
+                    );
                 }
             },
 
-            TokenEnum::Op(op) => match op {
-                // pointer deref
-                Operations::Multiply => {
-                    let get_next_token = self.get_next_token();
+            TokenEnum::Op(op) => {
+                let mut times_dereferenced = 0;
 
-                    let next_next_token = self.peek_next_token();
+                match op {
+                    // pointer deref
+                    Operations::Multiply => {
+                        loop {
+                            // consume the multiply '*' token
+                            let get_next_token = self.get_next_token();
 
-                    // the next token has to be a variable, else this is a syntax error
-                    match next_next_token.token {
-                        TokenEnum::Variable(var_name) => {
-                            Rc::new(RefCell::new(Box::new(Variable::new(
-                                Box::new(self.get_next_token()),
-                                // this is not a variable declaration, only a variable
-                                // name so we don't have type information here
-                                // This is handled via the call stack
-                                "".into(),
-                                var_name,
-                                true,
-                                false,
-                            ))))
-                        }
+                            times_dereferenced += 1;
 
-                        _ => {
-                            helpers::unexpected_token(
-                                "parse_factor",
-                                &next_next_token.token,
-                                &TokenEnum::Variable("".into()),
-                            );
+                            let next_next_token = self.peek_next_token();
 
-                            exit(1);
+                            // the next token has to be a variable, else this is a syntax error
+                            match next_next_token.token {
+                                TokenEnum::Variable(var_name) => {
+                                    return Rc::new(RefCell::new(Box::new(Variable::new(
+                                        Box::new(self.get_next_token()),
+                                        // this is not a variable declaration, only a variable
+                                        // name so we don't have type information here
+                                        // This is handled via the call stack
+                                        "".into(),
+                                        var_name,
+                                        true,
+                                        false,
+                                        times_dereferenced,
+                                    ))))
+                                }
+
+                                TokenEnum::Op(op) => match op {
+                                    Operations::Multiply => continue,
+                                    _ => panic!("lsdjflsjsdfl"),
+                                },
+
+                                _ => {
+                                    helpers::unexpected_token(
+                                        "parse_factor",
+                                        &next_next_token.token,
+                                        &TokenEnum::Variable("".into()),
+                                    );
+
+                                    exit(1);
+                                }
+                            };
                         }
                     }
-                }
 
-                _ => {
-                    helpers::unexpected_token(
-                        "parse_factor",
-                        &next_token.token,
-                        &TokenEnum::Op(Operations::Multiply),
-                    );
+                    _ => {
+                        helpers::unexpected_token(
+                            "parse_factor",
+                            &next_token.token,
+                            &TokenEnum::Op(Operations::Multiply),
+                        );
 
-                    exit(1);
+                        exit(1);
+                    }
                 }
-            },
+            }
 
             TokenEnum::Ampersand => {
                 // consume '&'
@@ -163,6 +180,7 @@ impl<'a> Parser<'a> {
                             var_name,
                             false,
                             true,
+                            0,
                         ))))
                     }
 

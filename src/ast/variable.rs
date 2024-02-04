@@ -22,7 +22,7 @@ pub struct Variable {
     pub var_type: String,
     pub dereference: bool,
     pub store_address: bool,
-    pub string_number: usize,
+    pub times_dereferenced: usize,
 }
 
 impl Variable {
@@ -32,6 +32,7 @@ impl Variable {
         var_name: String,
         dereference: bool,
         store_address: bool,
+        times_dereferenced: usize,
     ) -> Self {
         Self {
             token,
@@ -39,7 +40,7 @@ impl Variable {
             var_name,
             dereference,
             store_address,
-            string_number: 0,
+            times_dereferenced,
         }
     }
 

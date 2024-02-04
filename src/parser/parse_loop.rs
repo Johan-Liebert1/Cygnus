@@ -101,6 +101,7 @@ impl<'a> Parser<'a> {
                                 var_name,
                                 false,
                                 false,
+                                0,
                             )),
 
                             t => panic!("Expected variable got '{:?}'", t),

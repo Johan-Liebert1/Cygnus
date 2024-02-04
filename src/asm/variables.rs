@@ -68,7 +68,7 @@ impl ASM {
                                 if variable.dereference {
                                     panic!("Cannot dereference a string")
                                 } else if variable.store_address {
-                                    self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset)]);
+                                    self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset + 8)]);
                                 } else {
                                     self.extend_current_label(vec![
                                         format!("mov rax, [rbp - {}]", ar_var.offset),
@@ -84,12 +84,14 @@ impl ASM {
                             VariableEnum::Pointer(var_type) => match var_type.as_str() {
                                 TYPE_INT | TYPE_FLOAT => {
                                     if variable.dereference {
-                                        self.extend_current_label(vec![
-                                            format!("mov rax, [rbp - {}]", ar_var.offset),
-                                            format!("mov rax, [rax]"),
+                                        let mut v = vec![format!("mov rax, [rbp - {}]", ar_var.offset)];
+                                        v.extend(
+                                            std::iter::repeat(format!("mov rax, [rax]"))
+                                                .take(variable.times_dereferenced),
+                                        );
+                                        v.push(format!("push rax"));
 
-                                            format!("push rax"),
-                                        ]);
+                                        self.extend_current_label(v);
                                     } else if variable.store_address {
                                         self.extend_current_label(vec![
                                             format!("lea rax, [rbp - {}]", ar_var.offset),
@@ -105,19 +107,26 @@ impl ASM {
 
                                 TYPE_STRING => {
                                     if variable.dereference {
-                                        self.extend_current_label(vec![
+                                        trace!("variable.dereference: {:#?}", variable);
+
+                                        let mut v = vec![
                                             format!("mov rax, [rbp - {}]", ar_var.offset),
                                             // now rax contains the address of the pointer to the
                                             // string
                                             // now we move the length of the string into rbx
                                             format!("mov rbx, [rax - 8]"), // now rbx = length of
                                             // the string
-                                            
-                                            format!("mov rax, [rax]"),
-
+                                        ];
+                                        v.extend(
+                                            std::iter::repeat(format!("mov rax, [rax]"))
+                                                .take(variable.times_dereferenced),
+                                        );
+                                        v.extend([
                                             format!("push rax"),
                                             format!("push rbx"),
                                         ]);
+                                        
+                                        self.extend_current_label(v);
                                     } else if variable.store_address {
                                         self.extend_current_label(vec![
                                             format!("lea rax, [rbp - {}]", ar_var.offset),

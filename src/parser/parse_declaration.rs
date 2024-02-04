@@ -33,6 +33,7 @@ impl<'a> Parser<'a> {
                                     var_name,
                                     false,
                                     false,
+                                    0,
                                 );
                             }
 

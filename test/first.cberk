@@ -1,10 +1,10 @@
 fun main() {
-    def a: int = 69;
-    def c: *int = &a;
+    def a: str = "helo";
+    def c: *str = &a;
 
-    def d: *int = c + 1;
+    def d: *int = c - 16;
 
-    write(c, c + 1, *c, *d);
+    write(d, *d, **d, ***d, ****d, *****d, ******d, ************d);
 }
 
 main() 

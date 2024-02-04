@@ -20,6 +20,7 @@
 - [x] Variable scoping
 - [x] Implement `+=` and `-=`
 - [x] Pointer deref
+- [ ] Pointer to pointer to pointer ...
 - [ ] Random access to memory
 
 - [ ] Function returns
@@ -49,7 +50,7 @@
     EXPRESSION               -> TERM (( + | - ) TERM)*                      # for precedence as term will be calculated first
     TERM                     -> FACTOR (( * | /  | << | >> | % ) FACTOR)*
     COMMENT                  -> -- (ANY)*
-    FACTOR                   -> INTEGER | FLOAT | VARIABLE | STRING_LITERAL | LPAREN EXPRESSION RPAREN
+    FACTOR                   -> (*|&)* INTEGER | FLOAT | VARIABLE | STRING_LITERAL | LPAREN EXPRESSION RPAREN
     VAR_NAME                 -> any valid identifier
     LPAREN                   -> (
     RPAREN                   -> )
