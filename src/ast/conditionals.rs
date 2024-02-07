@@ -11,7 +11,7 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum};
+use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
 
 #[derive(Debug)]
 pub struct IfStatement {
@@ -251,5 +251,10 @@ impl AST for ConditionalStatement {
 
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::Conditionals(&self);
+    }
+
+
+    fn get_node_mut(&mut self) -> ASTNodeEnumMut {
+        return ASTNodeEnumMut::Conditionals(self);
     }
 }

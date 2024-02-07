@@ -14,7 +14,7 @@ use crate::{
     },
 };
 
-use super::abstract_syntax_tree::ASTNodeEnum;
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut};
 use super::{
     abstract_syntax_tree::{VisitResult, AST},
     variable::Variable,
@@ -99,5 +99,9 @@ impl AST for DeclarationStatement {
 
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::DeclarationStatement(&self);
+    }
+
+    fn get_node_mut(&mut self) -> ASTNodeEnumMut {
+        return ASTNodeEnumMut::DeclarationStatement(self);
     }
 }

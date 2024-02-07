@@ -11,7 +11,7 @@ use crate::{
     lexer::tokens::{TokenEnum, VariableEnum},
 };
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum};
+use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
 
 #[derive(Debug)]
 pub struct AssignmentStatement {
@@ -89,5 +89,10 @@ impl AST for AssignmentStatement {
 
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::AssignmentStatement(&self);
+    }
+
+
+    fn get_node_mut(&mut self) -> ASTNodeEnumMut {
+        return ASTNodeEnumMut::AssignmentStatement(self);
     }
 }

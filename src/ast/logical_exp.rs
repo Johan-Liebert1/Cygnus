@@ -10,7 +10,7 @@ use crate::{
     lexer::{lexer::Token, tokens::TokenEnum},
 };
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum};
+use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
 
 pub struct LogicalExpression {
     left: ASTNode,
@@ -76,5 +76,10 @@ impl AST for LogicalExpression {
 
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::LogicalExp(&self);
+    }
+
+
+    fn get_node_mut(&mut self) -> ASTNodeEnumMut {
+        return ASTNodeEnumMut::LogicalExp(self);
     }
 }

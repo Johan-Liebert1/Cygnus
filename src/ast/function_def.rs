@@ -16,7 +16,7 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-use super::abstract_syntax_tree::ASTNodeEnum;
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut};
 use super::{
     abstract_syntax_tree::{VisitResult, AST},
     variable::Variable,
@@ -124,5 +124,9 @@ impl AST for FunctionDefinition {
 
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::FunctionDef(&self);
+    }
+
+    fn get_node_mut(&mut self) -> ASTNodeEnumMut {
+        return ASTNodeEnumMut::FunctionDef(self);
     }
 }

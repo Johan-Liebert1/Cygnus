@@ -3,7 +3,7 @@ fun main() {
     def b: *int = &ii;
     def c: int = 24;
 
-    write(b, *b);
+    write(b, *( b + 0 ), *b);
 }
 
 main() 

@@ -14,7 +14,7 @@ use crate::{
     },
 };
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum};
+use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
 
 #[derive(Debug)]
 pub struct FunctionCall {
@@ -156,5 +156,10 @@ impl AST for FunctionCall {
 
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::FunctionCall(&self);
+    }
+
+
+    fn get_node_mut(&mut self) -> ASTNodeEnumMut {
+        return ASTNodeEnumMut::FunctionCall(self);
     }
 }

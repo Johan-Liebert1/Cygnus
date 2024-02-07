@@ -11,7 +11,7 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum};
+use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
 
 /// FACTOR -> INTEGER | FLOAT
 #[derive(Debug)]
@@ -89,5 +89,10 @@ impl AST for Factor {
 
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::Factor(&self);
+    }
+
+
+    fn get_node_mut(&mut self) -> ASTNodeEnumMut {
+        return ASTNodeEnumMut::Factor(self);
     }
 }

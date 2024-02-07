@@ -1,4 +1,4 @@
-use crate::{ast::{variable::Variable, abstract_syntax_tree::AST}, lexer::tokens::Operations, trace, types::ASTNode};
+use crate::{ast::{variable::Variable, abstract_syntax_tree::{AST, ASTNodeEnum, ASTNodeEnumMut}}, lexer::tokens::Operations, trace, types::ASTNode};
 
 use std::{cell::RefCell, process::exit, rc::Rc};
 
@@ -114,28 +114,16 @@ impl<'a> Parser<'a> {
                         self.get_next_token();
                     }
 
-                    // if let TokenEnum::Variable(var_name) = self.peek_next_token().token {
-                    //     let var: Rc<RefCell<Box<dyn AST>>> = Rc::new(RefCell::new(Box::new(Variable::new(
-                    //         Box::new(self.get_next_token()),
-                    //         // this is not a variable declaration, only a variable
-                    //         // name so we don't have type information here
-                    //         // This is handled via the call stack
-                    //         "".into(),
-                    //         var_name.into(),
-                    //         self.times_dereferenced > 0,
-                    //         false,
-                    //         self.times_dereferenced,
-                    //     ))));
+                    let mut exp = self.parse_expression();
 
-                    //     self.parsing_pointer_deref = false;
-                    //     self.times_dereferenced = 0;
+                    match exp.borrow_mut().get_node_mut() {
+                        ASTNodeEnumMut::Variable(ref mut var) => {
+                            var.dereference = true;
+                            var.times_dereferenced = self.times_dereferenced;
+                        },
 
-                    //     return var;
-                    // }
-
-                    let exp = self.parse_expression();
-
-                    trace!("{:#?}", exp);
+                        _ => {},
+                    };
 
                     self.parsing_pointer_deref = false;
                     self.times_dereferenced = 0;

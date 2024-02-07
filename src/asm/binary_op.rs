@@ -3,16 +3,14 @@ use crate::lexer::tokens::Operations;
 use super::asm::ASM;
 
 impl ASM {
-    pub fn binary_op_nums(&mut self, op: Operations) {
-        let first = match op {
+    pub fn binary_op_nums(&mut self, op: Operations, times_dereferenced: usize) {
+        let mut instructions = match op {
             Operations::Plus => {
                 vec![
                     format!(";; get the two operands from the stack"),
                     format!("pop rax"),
                     format!("pop rbx"),
                     format!("add rax, rbx"),
-                    format!(";; push the result back onto the stack"),
-                    format!("push rax"),
                 ]
             }
 
@@ -22,8 +20,6 @@ impl ASM {
                     format!("pop rbx"),
                     format!("pop rax"),
                     format!("sub rax, rbx"),
-                    format!(";; push the result back onto the stack"),
-                    format!("push rax"),
                 ]
             }
 
@@ -38,8 +34,6 @@ impl ASM {
                     format!("pop rbx"),
                     format!("pop rax"),
                     format!("div rbx"),
-                    format!(";; push the result back onto the stack"),
-                    format!("push rax"),
                 ]
             }
 
@@ -50,8 +44,6 @@ impl ASM {
                     format!("pop rax"),
                     format!("pop rbx"),
                     format!("mul rbx"),
-                    format!(";; push the result back onto the stack"),
-                    format!("push rax"),
                 ]
             }
 
@@ -69,8 +61,6 @@ impl ASM {
                     format!("pop rax"),
                     format!(";; We can only shift left or right by 8 bits"),
                     format!("shl rax, cl"),
-                    format!(";; push the result back onto the stack"),
-                    format!("push rax"),
                 ]
             }
 
@@ -87,8 +77,6 @@ impl ASM {
                     format!("pop rax"),
                     format!(";; We can only shift left or right by 8 bits"),
                     format!("shr rax, cl"),
-                    format!(";; push the result back onto the stack"),
-                    format!("push rax"),
                 ]
             }
 
@@ -99,12 +87,16 @@ impl ASM {
                     format!("pop rbx"),
                     format!("pop rax"),
                     format!("div rbx"),
-                    format!(";; push the remainder result back onto the stack"),
-                    format!("push rdx"),
+                    format!("mov rax, rdx"),
                 ]
             }
         };
 
-        self.extend_current_label(first);
+        // result will always be in rax
+        instructions.extend(std::iter::repeat(format!("mov rax, [rax]")).take(times_dereferenced));
+
+        instructions.push(format!("push rax"));
+
+        self.extend_current_label(instructions);
     }
 }

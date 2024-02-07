@@ -14,7 +14,7 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum};
+use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
 
 #[derive(Debug)]
 pub struct BinaryOP {
@@ -186,7 +186,7 @@ impl AST for BinaryOP {
 
         match &self.operator.token {
             TokenEnum::Op(c) => {
-                asm.binary_op_nums(c.clone());
+                asm.binary_op_nums(c.clone(), self.times_dereferenced);
             }
 
             _ => panic!("Found non operator for a Binary Expression"),
@@ -246,5 +246,10 @@ impl AST for BinaryOP {
 
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::BinaryOp(&self);
+    }
+
+
+    fn get_node_mut(&mut self) -> ASTNodeEnumMut {
+        return ASTNodeEnumMut::BinaryOp(self);
     }
 }

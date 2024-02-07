@@ -11,7 +11,7 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum};
+use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
 use super::variable::Variable;
 
 #[derive(Debug)]
@@ -178,5 +178,10 @@ impl AST for Loop {
 
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::Loop(&self);
+    }
+
+
+    fn get_node_mut(&mut self) -> ASTNodeEnumMut {
+        return ASTNodeEnumMut::Loop(self);
     }
 }
