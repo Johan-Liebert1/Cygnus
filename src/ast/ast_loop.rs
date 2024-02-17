@@ -1,4 +1,6 @@
+use crate::lexer::lexer::Token;
 use crate::lexer::tokens::VariableEnum;
+use crate::lexer::types::VarType;
 use crate::trace;
 use crate::types::ASTNode;
 
@@ -11,7 +13,7 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 use super::variable::Variable;
 
 #[derive(Debug)]
@@ -46,6 +48,56 @@ impl Loop {
     }
 }
 
+impl Loop {
+    fn add_call_stack(&self, call_stack: &mut CallStack) {
+        let from_name = format!("loop_{}_from", self.loop_number);
+        let to_name = format!("loop_{}_to", self.loop_number);
+        let step_name = format!("loop_{}_step", self.loop_number);
+
+        let token = Token {
+                token: TokenEnum::Variable(from_name.clone()),
+                col_number: 0,
+                line_number: 0,
+            };
+
+        // TODO: Fix this, this doesn't need to be done this way
+        //
+        // These variables live in the outer scope not in the loop scope
+        call_stack.insert_variable_in_most_recent_function(Variable::new(
+            Box::new(token.clone()),
+            VarType::Int,
+            from_name,
+            false,
+            false,
+            0,
+        ));
+
+        call_stack.insert_variable_in_most_recent_function(Variable::new(
+            Box::new(token.clone()),
+            VarType::Int,
+            to_name,
+            false,
+            false,
+            0,
+        ));
+
+        call_stack.insert_variable_in_most_recent_function(Variable::new(
+            Box::new(token),
+            VarType::Int,
+            step_name,
+            false,
+            false,
+            0,
+        ));
+
+        call_stack.push("".into(), ActivationRecordType::Loop);
+
+        if let Some(var) = &self.with_var {
+            call_stack.insert_variable(var.clone())
+        }
+    }
+}
+
 impl AST for Loop {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         // 1. Visit the from expression, to expression and step expression if they exist. Push
@@ -63,32 +115,7 @@ impl AST for Loop {
 
         self.step_by.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
-        // let var = Rc::new(RefCell::new(Variable::new()));
-
-        // // These variables live in the outer scope not in the loop scope
-        // call_stack.insert_variable_in_most_recent_function(
-        //     &format!("loop_{}_from", self.loop_number).into(),
-        //     var_enum.clone(),
-        //     0,
-        // );
-
-        // call_stack.insert_variable_in_most_recent_function(
-        //     &format!("loop_{}_to", self.loop_number).into(),
-        //     var_enum.clone(),
-        //     0,
-        // );
-
-        // call_stack.insert_variable_in_most_recent_function(
-        //     &format!("loop_{}_step", self.loop_number).into(),
-        //     var_enum.clone(),
-        //     0,
-        // );
-
-        // call_stack.push("".into(), ActivationRecordType::Loop);
-
-        // if let Some(var) = &self.with_var {
-        //     call_stack.insert_variable(&var.var_name, var.get_var_enum_from_type(), 0)
-        // }
+        self.add_call_stack(call_stack);
 
         asm.gen_loop_start(self.loop_number, call_stack);
         self.block.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
@@ -149,27 +176,7 @@ impl AST for Loop {
         let var_enum = VariableEnum::Number(Number::Integer(1));
 
         // These variables live in the outer scope not in the loop scope
-        // call_stack.insert_variable_in_most_recent_function(
-        //     &format!("loop_{}_from", self.loop_number).into(),
-        //     var_enum.clone(),
-        //     0,
-        // );
-        // call_stack.insert_variable_in_most_recent_function(
-        //     &format!("loop_{}_to", self.loop_number).into(),
-        //     var_enum.clone(),
-        //     0,
-        // );
-        // call_stack.insert_variable_in_most_recent_function(
-        //     &format!("loop_{}_step", self.loop_number).into(),
-        //     var_enum.clone(),
-        //     0,
-        // );
-
-        // call_stack.push("".into(), ActivationRecordType::Loop);
-
-        // if let Some(var) = &self.with_var {
-        //     call_stack.insert_variable(&var.var_name, var.get_var_enum_from_type(), 0)
-        // }
+        self.add_call_stack(call_stack);
 
         self.block.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
 
@@ -180,7 +187,6 @@ impl AST for Loop {
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::Loop(&self);
     }
-
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::Loop(self);

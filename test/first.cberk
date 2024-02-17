@@ -1,8 +1,7 @@
 fun main() {
-    def thing: str = "hello";
-    def ptr: *str = &thing;
-
-    write(thing, *ptr, *(ptr + 1));
+    loop from 1 to 10 {
+        write("hi\n");
+    }
 }
 
 main() 

@@ -1,5 +1,5 @@
 use crate::{
-    lexer::types::{TYPE_FLOAT, TYPE_INT, TYPE_STRING, VarType},
+    lexer::types::{VarType, TYPE_FLOAT, TYPE_INT, TYPE_STRING},
     semantic_analyzer::semantic_analyzer::CallStack,
     trace,
 };
@@ -49,9 +49,21 @@ impl Variable {
         }
     }
 
+    pub fn size(&self) -> usize {
+        return match self.var_type {
+            // 64 bit integer
+            VarType::Int => 8,
+            // 8 bytes for length + 8 bytes for pointer to the start of the string
+            VarType::Str => 16,
+            VarType::Float => todo!(),
+            // Pointer will always consume 8 bytes
+            VarType::Ptr(_) => 8,
+            VarType::Unknown => todo!(),
+        };
+    }
+
     pub fn get_var_enum_from_type(&self) -> VariableEnum {
         return match self.var_type {
-
             // TYPE_STRING => VariableEnum::String(String::from("")),
             // TYPE_INT => VariableEnum::Number(Number::Integer(0)),
 
@@ -59,7 +71,6 @@ impl Variable {
             //     TYPE_INT | TYPE_STRING | TYPE_FLOAT => VariableEnum::Pointer(t[1..].into()),
             //     _ => unimplemented!("Type {t} not known"),
             // },
-
             VarType::Int => VariableEnum::Number(Number::Integer(0)),
             VarType::Str => VariableEnum::String(String::from("")),
             VarType::Float => todo!(),

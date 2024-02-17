@@ -164,13 +164,8 @@ impl CallStack {
         return (None, &ActivationRecordType::Global);
     }
 
-    pub fn insert_variable_in_most_recent_function(
-        &mut self,
-        variable: ActivationRecordVariablesValue,
-        // variable_enum: VariableEnum,
-        // times_dereferenced: usize,
-    ) {
-        // let mut offset = self.update_function_variable_size_and_get_offset(&variable_enum);
+    pub fn insert_variable_in_most_recent_function(&mut self, mut variable: ActivationRecordVariablesValue) {
+        variable.offset = self.update_function_variable_size_and_get_offset(&variable);
 
         let var_name = &variable.var_name;
 
@@ -195,7 +190,7 @@ impl CallStack {
         }
     }
 
-    fn update_function_variable_size_and_get_offset(&mut self, var_enum: &VariableEnum) -> usize {
+    fn update_function_variable_size_and_get_offset(&mut self, var: &ARVariable) -> usize {
         let mut offset = 8;
 
         for record in self.call_stack.iter_mut().rev() {
@@ -205,7 +200,7 @@ impl CallStack {
                         if fname == &record.name {
                             offset += record.var_size_sum;
 
-                            record.var_size_sum += var_enum.size();
+                            record.var_size_sum += var.size();
                         }
                     }
 
@@ -219,8 +214,8 @@ impl CallStack {
         return offset;
     }
 
-    pub fn insert_variable(&mut self, variable: ActivationRecordVariablesValue) {
-        // let mut offset = self.update_function_variable_size_and_get_offset(&variable_enum);
+    pub fn insert_variable(&mut self, mut variable: ActivationRecordVariablesValue) {
+        variable.offset = self.update_function_variable_size_and_get_offset(&variable);
 
         let var_name = &variable.var_name;
 
