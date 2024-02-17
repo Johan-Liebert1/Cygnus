@@ -248,7 +248,6 @@ impl AST for BinaryOP {
         return ASTNodeEnum::BinaryOp(&self);
     }
 
-
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::BinaryOp(self);
     }

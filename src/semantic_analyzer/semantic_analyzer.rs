@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+use crate::{types::ASTNode, ast::variable::Variable};
 
 use core::panic;
 use std::{cell::RefCell, collections::HashMap, rc::Rc, usize};
@@ -17,6 +17,9 @@ pub struct ARVariable {
 }
 
 type ActivationRecordVariables = HashMap<String, ARVariable>;
+
+// pub type ARVariable = Variable;
+// type ActivationRecordVariables = HashMap<String, Rc<RefCell<ARVariable>>>;
 
 #[derive(Debug)]
 pub enum ActivationRecordType {

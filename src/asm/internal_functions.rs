@@ -1,12 +1,7 @@
 use core::panic;
 
 use crate::{
-    interpreter::interpreter::Variables,
-    lexer::{
-        keywords::{TYPE_INT, TYPE_STRING},
-        tokens::VariableEnum,
-    },
-    semantic_analyzer::semantic_analyzer::CallStack,
+    interpreter::interpreter::Variables, lexer::tokens::VariableEnum, semantic_analyzer::semantic_analyzer::CallStack,
     trace,
 };
 
@@ -93,6 +88,8 @@ impl ASM {
                             VariableEnum::String(_) => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
 
                             VariableEnum::Pointer(pointer_var_type) => {
+                                trace!("In inteernal_function: pointer_var_type = {pointer_var_type}");
+
                                 match pointer_var_type.as_str() {
                                     TYPE_INT => {
                                         vec![format!("pop rax"), format!("call _printRAX")]
@@ -101,7 +98,6 @@ impl ASM {
                                     // TODO: Check here whether the pointer is dereferenced or not
                                     TYPE_STRING => {
                                         // trace!("var: {:#?}", var);
-
                                         if var.times_dereferenced > 0 || true {
                                             WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
                                         } else {

@@ -3,6 +3,7 @@ use std::fmt::Display;
 use super::{
     keywords::{self, LOGICAL_AND, LOGICAL_OR},
     tokens::{LogicalOps, Number, Operations, TokenEnum},
+    types::{VarType, TYPES, TYPE_INT},
 };
 
 #[derive(Debug)]
@@ -101,8 +102,16 @@ impl<'a> Lexer<'a> {
             return TokenEnum::Keyword(word);
         }
 
-        if keywords::TYPES.contains(&word.as_str()) {
-            return TokenEnum::Type(word);
+        if TYPES.contains(&word.as_str()) {
+            return TokenEnum::Type(match word.as_str() {
+                TYPE_INT => VarType::Int,
+                TYPE_FLOAT => VarType::Float,
+                TYPE_STRING => VarType::Str,
+
+                _ => {
+                    panic!("Unknown type '{word}'")
+                }
+            });
         }
 
         return TokenEnum::Variable(word);

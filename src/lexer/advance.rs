@@ -3,6 +3,7 @@ use crate::trace;
 use super::{
     lexer::{Lexer, Token},
     tokens::{Bracket, Comparators, Operations, TokenEnum},
+    types::VarType,
 };
 
 impl<'a> Lexer<'a> {
@@ -99,8 +100,7 @@ impl<'a> Lexer<'a> {
                         TokenEnum::Type(type_) => {
                             // consume the 'type_' token
                             self.get_next_token();
-
-                            TokenEnum::Type(format!("*{type_}"))
+                            TokenEnum::Type(VarType::Ptr(Box::new(type_)))
                         }
 
                         _ => {

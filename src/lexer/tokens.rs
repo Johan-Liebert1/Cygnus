@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use super::types::VarType;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum VariableEnum {
     Number(Number),
@@ -105,7 +107,7 @@ pub enum TokenEnum {
     Bool(bool),
     Keyword(String),
     Variable(String),
-    Type(String),
+    Type(VarType),
 
     StringLiteral(String),
 

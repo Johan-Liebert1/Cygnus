@@ -46,6 +46,8 @@ impl AST for FunctionCall {
 
                     let arg_token = &arg_borrow.get_token().token;
 
+                    trace!("arg_token: {:#?}", arg.borrow().get_node());
+
                     match arg_token {
                         TokenEnum::StringLiteral(_) => asm.func_write_string(),
 

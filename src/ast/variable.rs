@@ -1,4 +1,8 @@
-use crate::{lexer::keywords::TYPE_FLOAT, semantic_analyzer::semantic_analyzer::CallStack, trace};
+use crate::{
+    lexer::types::{TYPE_FLOAT, TYPE_INT, TYPE_STRING, VarType},
+    semantic_analyzer::semantic_analyzer::CallStack,
+    trace,
+};
 
 use core::panic;
 use std::{cell::RefCell, rc::Rc};
@@ -7,19 +11,18 @@ use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
     lexer::{
-        keywords::{TYPE_INT, TYPE_STRING},
         lexer::Token,
         tokens::{Number, VariableEnum},
     },
 };
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 
 #[derive(Debug)]
 pub struct Variable {
     token: Box<Token>,
     pub var_name: String,
-    pub var_type: String,
+    pub var_type: VarType,
     pub dereference: bool,
     pub store_address: bool,
     pub times_dereferenced: usize,
@@ -28,7 +31,7 @@ pub struct Variable {
 impl Variable {
     pub fn new(
         token: Box<Token>,
-        var_type: String,
+        var_type: VarType,
         var_name: String,
         dereference: bool,
         store_address: bool,
@@ -45,14 +48,20 @@ impl Variable {
     }
 
     pub fn get_var_enum_from_type(&self) -> VariableEnum {
-        return match self.var_type.as_str() {
-            TYPE_STRING => VariableEnum::String(String::from("")),
-            TYPE_INT => VariableEnum::Number(Number::Integer(0)),
+        return match self.var_type {
 
-            t => match &t[1..] {
-                TYPE_INT | TYPE_STRING | TYPE_FLOAT => VariableEnum::Pointer(t[1..].into()),
-                _ => unimplemented!("Type {t} not known"),
-            },
+            // TYPE_STRING => VariableEnum::String(String::from("")),
+            // TYPE_INT => VariableEnum::Number(Number::Integer(0)),
+
+            // t => match &t[1..] {
+            //     TYPE_INT | TYPE_STRING | TYPE_FLOAT => VariableEnum::Pointer(t[1..].into()),
+            //     _ => unimplemented!("Type {t} not known"),
+            // },
+
+            VarType::Int => VariableEnum::Number(Number::Integer(0)),
+            VarType::Str => VariableEnum::String(String::from("")),
+            VarType::Float => todo!(),
+            VarType::Ptr(_) => todo!(),
         };
     }
 }
