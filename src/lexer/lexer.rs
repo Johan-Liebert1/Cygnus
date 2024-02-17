@@ -1,12 +1,14 @@
 use std::fmt::Display;
 
+use crate::lexer::types::{TYPE_FLOAT, TYPE_STRING};
+
 use super::{
     keywords::{self, LOGICAL_AND, LOGICAL_OR},
     tokens::{LogicalOps, Number, Operations, TokenEnum},
     types::{VarType, TYPES, TYPE_INT},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub token: TokenEnum,
     pub line_number: usize,
@@ -103,7 +105,7 @@ impl<'a> Lexer<'a> {
         }
 
         if TYPES.contains(&word.as_str()) {
-            return TokenEnum::Type(match word.as_str() {
+            let tok =  TokenEnum::Type(match word.as_str() {
                 TYPE_INT => VarType::Int,
                 TYPE_FLOAT => VarType::Float,
                 TYPE_STRING => VarType::Str,
@@ -112,6 +114,8 @@ impl<'a> Lexer<'a> {
                     panic!("Unknown type '{word}'")
                 }
             });
+
+            return tok;
         }
 
         return TokenEnum::Variable(word);

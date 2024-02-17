@@ -1,5 +1,5 @@
 use crate::{
-    lexer::tokens::{AssignmentTypes, VariableEnum},
+    lexer::{tokens::{AssignmentTypes, VariableEnum}, types::VarType},
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
 };
 
@@ -57,10 +57,10 @@ impl ASM {
                     ActivationRecordType::Global => {
                         match assignment_type {
                             AssignmentTypes::Equals => {
-                                match var.var {
-                                    VariableEnum::Number(_) => {}
+                                match var.var_type {
+                                    VarType::Int => {}
 
-                                    VariableEnum::String(_) => {
+                                    VarType::Str => {
                                         // pop the string pointer into rax
                                         // the string len should be in rbx as string len is pushed
                                         // last
@@ -69,7 +69,10 @@ impl ASM {
                                         is_string = true;
                                     }
 
-                                    VariableEnum::Pointer(_) => {}
+                                    VarType::Ptr(_) => {}
+
+                                    VarType::Float => todo!(),
+                                    VarType::Unknown => todo!(),
                                 }
                             }
 
@@ -87,12 +90,12 @@ impl ASM {
                     _ => {
                         match assignment_type {
                             AssignmentTypes::Equals => {
-                                match var.var {
-                                    VariableEnum::Number(_) => {
+                                match var.var_type {
+                                    VarType::Int | VarType::Float => {
                                         instructions.push(format!("pop rax"))
                                     }
 
-                                    VariableEnum::String(_) => {
+                                    VarType::Str => {
                                         // pop the string pointer into rax
                                         // the string len should be in rbx as string len is pushed
                                         // last
@@ -101,7 +104,8 @@ impl ASM {
                                         is_string = true;
                                     }
 
-                                    VariableEnum::Pointer(_) => {}
+                                    VarType::Ptr(..) => {}
+                                    VarType::Unknown => todo!(),
                                 }
                             }
 

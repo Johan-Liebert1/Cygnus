@@ -1,3 +1,4 @@
+use crate::lexer::types::VarType;
 use crate::trace;
 use crate::types::ASTNode;
 
@@ -9,7 +10,6 @@ use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
     lexer::{
-        keywords::{TYPE_FLOAT, TYPE_INT},
         lexer::Token,
         tokens::{Number, TokenEnum, VariableEnum},
     },
@@ -56,7 +56,7 @@ impl AST for FunctionDefinition {
 
         for arg in &self.parameters {
             // params cannot be dereferenced
-            call_stack.insert_variable(&arg.var_name, arg.get_var_enum_from_type(), 0);
+            call_stack.insert_variable(arg.clone());
         }
 
         self.block.borrow().visit_com(v, f, asm, call_stack);
@@ -77,10 +77,12 @@ impl AST for FunctionDefinition {
     ) -> VisitResult {
         // TODO: handle global variables and function parameters with the same name
         for param in &self.parameters {
-            let value = match param.var_type.as_str() {
-                TYPE_INT => Number::Integer(0),
-                TYPE_FLOAT => Number::Float(0.0),
-                t => unimplemented!("Variable type {t} not implemented"),
+            let value = match param.var_type {
+                VarType::Int => todo!(),
+                VarType::Str => todo!(),
+                VarType::Float => todo!(),
+                VarType::Ptr(_) => todo!(),
+                VarType::Unknown => todo!(),
             };
 
             v.insert(param.var_name.clone(), VariableEnum::Number(value));
@@ -109,7 +111,7 @@ impl AST for FunctionDefinition {
         call_stack.push(self.name.to_string(), ActivationRecordType::Function);
 
         for arg in &self.parameters {
-            call_stack.insert_variable(&arg.var_name, arg.get_var_enum_from_type(), 0);
+            call_stack.insert_variable(arg.clone());
         }
 
         self.block

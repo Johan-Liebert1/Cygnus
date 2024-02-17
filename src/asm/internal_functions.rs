@@ -1,7 +1,7 @@
 use core::panic;
 
 use crate::{
-    interpreter::interpreter::Variables, lexer::tokens::VariableEnum, semantic_analyzer::semantic_analyzer::CallStack,
+    interpreter::interpreter::Variables, lexer::{tokens::VariableEnum, types::{TYPE_INT, TYPE_STRING, VarType}}, semantic_analyzer::semantic_analyzer::CallStack,
     trace,
 };
 
@@ -80,23 +80,23 @@ impl ASM {
                     Some(var) => {
                         // We don't need to check the scope here as the variable value is already
                         // pushed into rax beforehand in `factor` AST
-                        match &var.var {
-                            VariableEnum::Number(..) => {
+                        match &var.var_type {
+                            VarType::Int => {
                                 vec![format!("pop rax"), format!("call _printRAX")]
                             }
 
-                            VariableEnum::String(_) => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
+                            VarType::Str => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
 
-                            VariableEnum::Pointer(pointer_var_type) => {
+                            VarType::Ptr(pointer_var_type) => {
                                 trace!("In inteernal_function: pointer_var_type = {pointer_var_type}");
 
-                                match pointer_var_type.as_str() {
-                                    TYPE_INT => {
+                                match **pointer_var_type {
+                                    VarType::Int => {
                                         vec![format!("pop rax"), format!("call _printRAX")]
                                     }
 
                                     // TODO: Check here whether the pointer is dereferenced or not
-                                    TYPE_STRING => {
+                                    VarType::Str => {
                                         // trace!("var: {:#?}", var);
                                         if var.times_dereferenced > 0 || true {
                                             WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
@@ -108,6 +108,9 @@ impl ASM {
                                     _ => panic!("Unknown type '{pointer_var_type}'"),
                                 }
                             }
+
+                            VarType::Float => todo!(),
+                            VarType::Unknown => todo!(),
                         }
                     }
 

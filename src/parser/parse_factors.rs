@@ -1,4 +1,12 @@
-use crate::{ast::{variable::Variable, abstract_syntax_tree::{AST, ASTNodeEnum, ASTNodeEnumMut}}, lexer::tokens::Operations, trace, types::ASTNode};
+use crate::{
+    ast::{
+        abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, AST},
+        variable::Variable,
+    },
+    lexer::{tokens::Operations, types::VarType},
+    trace,
+    types::ASTNode,
+};
 
 use std::{cell::RefCell, process::exit, rc::Rc};
 
@@ -31,7 +39,7 @@ impl<'a> Parser<'a> {
                     // this is not a variable declaration, only a variable
                     // name so we don't have type information here
                     // This is handled via the call stack
-                    "".into(),
+                    VarType::Unknown,
                     var_name.into(),
                     false,
                     false,
@@ -120,9 +128,9 @@ impl<'a> Parser<'a> {
                         ASTNodeEnumMut::Variable(ref mut var) => {
                             var.dereference = true;
                             var.times_dereferenced = self.times_dereferenced;
-                        },
+                        }
 
-                        _ => {},
+                        _ => {}
                     };
 
                     self.parsing_pointer_deref = false;
@@ -150,7 +158,7 @@ impl<'a> Parser<'a> {
                             // this is not a variable declaration, only a variable
                             // name so we don't have type information here
                             // This is handled via the call stack
-                            "".into(),
+                            VarType::Unknown,
                             var_name,
                             false,
                             true,

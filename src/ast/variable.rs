@@ -18,7 +18,7 @@ use crate::{
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Variable {
     token: Box<Token>,
     pub var_name: String,
@@ -26,6 +26,7 @@ pub struct Variable {
     pub dereference: bool,
     pub store_address: bool,
     pub times_dereferenced: usize,
+    pub offset: usize,
 }
 
 impl Variable {
@@ -44,6 +45,7 @@ impl Variable {
             dereference,
             store_address,
             times_dereferenced,
+            offset: 0,
         }
     }
 
@@ -62,6 +64,7 @@ impl Variable {
             VarType::Str => VariableEnum::String(String::from("")),
             VarType::Float => todo!(),
             VarType::Ptr(_) => todo!(),
+            VarType::Unknown => todo!(),
         };
     }
 }

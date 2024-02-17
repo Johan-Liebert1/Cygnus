@@ -3,8 +3,8 @@ use core::panic;
 use crate::{
     ast::variable::{self, Variable},
     lexer::{
-        keywords::{TYPE_FLOAT, TYPE_INT, TYPE_STRING},
         tokens::VariableEnum,
+        types::{TYPE_FLOAT, TYPE_INT, VarType},
     },
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
     trace,
@@ -21,8 +21,8 @@ impl ASM {
         match variable_from_stack {
             Some(ar_var) => {
                 match variable_scope {
-                    ActivationRecordType::Global => match ar_var.var {
-                        VariableEnum::Number(_) => {
+                    ActivationRecordType::Global => match ar_var.var_type {
+                        VarType::Int => {
                             if variable.dereference {
                                 panic!("Cannot dereference a number")
                             } else if variable.store_address {
@@ -32,7 +32,7 @@ impl ASM {
                             }
                         }
 
-                        VariableEnum::String(_) => {
+                        VarType::Str => {
                             if variable.dereference {
                                 panic!("Cannot dereference a string")
                             } else if variable.store_address {
@@ -43,12 +43,14 @@ impl ASM {
                             }
                         }
 
-                        VariableEnum::Pointer(_) => todo!(),
+                        VarType::Float => todo!(),
+                        VarType::Ptr(_) => todo!(),
+                        VarType::Unknown => todo!(),
                     },
 
                     _ => {
-                        match &ar_var.var {
-                            VariableEnum::Number(_) => {
+                        match &ar_var.var_type {
+                            VarType::Int => {
                                 if variable.dereference {
                                     panic!("Cannot dereference a number")
                                 } else if variable.store_address {
@@ -64,7 +66,7 @@ impl ASM {
                                 }
                             }
 
-                            VariableEnum::String(_) => {
+                            VarType::Str => {
                                 if variable.dereference {
                                     let mut v = vec![
                                         format!(";; Dereferencing variable {}", var_name),
@@ -102,8 +104,8 @@ impl ASM {
                             }
 
                             // TODO: Handle pointer to pointer to something
-                            VariableEnum::Pointer(var_type) => match var_type.as_str() {
-                                TYPE_INT | TYPE_FLOAT => {
+                            VarType::Ptr(var_type) => match *var_type.clone() {
+                                VarType::Int | VarType::Float => {
                                     if variable.dereference {
                                         let mut v = vec![
                                             format!(";; Dereferencing variable {}", var_name),
@@ -132,7 +134,7 @@ impl ASM {
                                     }
                                 }
 
-                                TYPE_STRING => {
+                                VarType::Str => {
                                     if variable.dereference {
                                         let mut v = vec![
                                             format!(";; Dereferencing variable {}", var_name),
@@ -171,6 +173,9 @@ impl ASM {
                                     todo!("var_type '{type_}' not handled")
                                 }
                             },
+
+                            VarType::Float => todo!(),
+                            VarType::Unknown => todo!(),
                         }
                     }
                 }

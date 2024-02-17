@@ -1,11 +1,12 @@
 use std::fmt::Display;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum VarType {
     Int,
     Str,
     Float,
-    Ptr(Box<VarType>)
+    Ptr(Box<VarType>),
+    Unknown,
 }
 
 impl Display for VarType {

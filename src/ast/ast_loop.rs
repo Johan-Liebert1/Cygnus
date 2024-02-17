@@ -63,31 +63,32 @@ impl AST for Loop {
 
         self.step_by.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
-        let var_enum = VariableEnum::Number(Number::Integer(1));
+        // let var = Rc::new(RefCell::new(Variable::new()));
 
-        // These variables live in the outer scope not in the loop scope
-        call_stack.insert_variable_in_most_recent_function(
-            &format!("loop_{}_from", self.loop_number).into(),
-            var_enum.clone(),
-            0,
-        );
-        call_stack.insert_variable_in_most_recent_function(
-            &format!("loop_{}_to", self.loop_number).into(),
-            var_enum.clone(),
-            0,
-        );
+        // // These variables live in the outer scope not in the loop scope
+        // call_stack.insert_variable_in_most_recent_function(
+        //     &format!("loop_{}_from", self.loop_number).into(),
+        //     var_enum.clone(),
+        //     0,
+        // );
 
-        call_stack.insert_variable_in_most_recent_function(
-            &format!("loop_{}_step", self.loop_number).into(),
-            var_enum.clone(),
-            0,
-        );
+        // call_stack.insert_variable_in_most_recent_function(
+        //     &format!("loop_{}_to", self.loop_number).into(),
+        //     var_enum.clone(),
+        //     0,
+        // );
 
-        call_stack.push("".into(), ActivationRecordType::Loop);
+        // call_stack.insert_variable_in_most_recent_function(
+        //     &format!("loop_{}_step", self.loop_number).into(),
+        //     var_enum.clone(),
+        //     0,
+        // );
 
-        if let Some(var) = &self.with_var {
-            call_stack.insert_variable(&var.var_name, var.get_var_enum_from_type(), 0)
-        }
+        // call_stack.push("".into(), ActivationRecordType::Loop);
+
+        // if let Some(var) = &self.with_var {
+        //     call_stack.insert_variable(&var.var_name, var.get_var_enum_from_type(), 0)
+        // }
 
         asm.gen_loop_start(self.loop_number, call_stack);
         self.block.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
@@ -148,27 +149,27 @@ impl AST for Loop {
         let var_enum = VariableEnum::Number(Number::Integer(1));
 
         // These variables live in the outer scope not in the loop scope
-        call_stack.insert_variable_in_most_recent_function(
-            &format!("loop_{}_from", self.loop_number).into(),
-            var_enum.clone(),
-            0,
-        );
-        call_stack.insert_variable_in_most_recent_function(
-            &format!("loop_{}_to", self.loop_number).into(),
-            var_enum.clone(),
-            0,
-        );
-        call_stack.insert_variable_in_most_recent_function(
-            &format!("loop_{}_step", self.loop_number).into(),
-            var_enum.clone(),
-            0,
-        );
+        // call_stack.insert_variable_in_most_recent_function(
+        //     &format!("loop_{}_from", self.loop_number).into(),
+        //     var_enum.clone(),
+        //     0,
+        // );
+        // call_stack.insert_variable_in_most_recent_function(
+        //     &format!("loop_{}_to", self.loop_number).into(),
+        //     var_enum.clone(),
+        //     0,
+        // );
+        // call_stack.insert_variable_in_most_recent_function(
+        //     &format!("loop_{}_step", self.loop_number).into(),
+        //     var_enum.clone(),
+        //     0,
+        // );
 
-        call_stack.push("".into(), ActivationRecordType::Loop);
+        // call_stack.push("".into(), ActivationRecordType::Loop);
 
-        if let Some(var) = &self.with_var {
-            call_stack.insert_variable(&var.var_name, var.get_var_enum_from_type(), 0)
-        }
+        // if let Some(var) = &self.with_var {
+        //     call_stack.insert_variable(&var.var_name, var.get_var_enum_from_type(), 0)
+        // }
 
         self.block.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
 
