@@ -1,3 +1,4 @@
+use core::fmt;
 use std::fmt::Display;
 
 use super::types::VarType;
@@ -46,6 +47,22 @@ pub enum Operations {
     Modulo,
 }
 
+impl Display for Operations {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let msg = match self {
+            Operations::Plus => "+",
+            Operations::Minus => "-",
+            Operations::Divide => "/",
+            Operations::Multiply => "*",
+            Operations::ShiftLeft => "<<",
+            Operations::ShiftRight => ">>",
+            Operations::Modulo => "%",
+        };
+
+        write!(f, "{}", msg)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Number {
     Integer(i32),
@@ -70,6 +87,21 @@ pub enum Comparators {
     GreaterThanEq,
 }
 
+impl Display for Comparators {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let msg = match self {
+            Comparators::DoubleEquals => "==",
+            Comparators::NotEquals => "!=",
+            Comparators::LessThan => "<",
+            Comparators::GreaterThan => ">",
+            Comparators::LessThanEq => "<=",
+            Comparators::GreaterThanEq => ">=",
+        };
+
+        write!(f, "{}", msg)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Boolean {
     True,
@@ -86,6 +118,34 @@ pub enum Operand {
 pub enum LogicalOps {
     Or,
     And,
+}
+
+impl Display for LogicalOps {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let msg = match self {
+            LogicalOps::Or => "or",
+            LogicalOps::And => "and",
+        };
+
+        write!(f, "{}", msg)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum AllOperations {
+    Op(Operations),
+    Comparator(Comparators),
+    LogicalOp(LogicalOps),
+}
+
+impl Display for AllOperations {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AllOperations::Op(op) => fmt::Display::fmt(&op, f),
+            AllOperations::Comparator(com) => fmt::Display::fmt(&com, f),
+            AllOperations::LogicalOp(lo) => fmt::Display::fmt(&lo, f),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -174,7 +234,7 @@ impl TokenEnum {
             TokenEnum::PlusEquals => AssignmentTypes::PlusEquals,
             TokenEnum::MinusEquals => AssignmentTypes::MinusEquals,
             TokenEnum::Equals => AssignmentTypes::Equals,
-            _ => panic!("{:?} is not an assignment token", self)
+            _ => panic!("{:?} is not an assignment token", self),
         };
     }
 }

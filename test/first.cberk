@@ -1,6 +1,6 @@
 fun main() {
     loop from 1 to 10 {
-        write("hello" - 1);
+        write(1 == 2);
     }
 }
 

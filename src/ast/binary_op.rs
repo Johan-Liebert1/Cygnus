@@ -1,3 +1,4 @@
+use crate::lexer::tokens::AllOperations;
 use crate::lexer::types::VarType;
 use crate::trace;
 use crate::types::ASTNode;
@@ -13,9 +14,10 @@ use crate::{
         tokens::{Number, Operand, Operations, TokenEnum, VariableEnum},
     },
 };
+use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 
 #[derive(Debug)]
 pub struct BinaryOP {
@@ -27,7 +29,7 @@ pub struct BinaryOP {
 }
 
 impl BinaryOP {
-    pub fn new(left: ASTNode, operator: Box<Token>, right: ASTNode, times_dereferenced: usize,) -> Self {
+    pub fn new(left: ASTNode, operator: Box<Token>, right: ASTNode, times_dereferenced: usize) -> Self {
         Self {
             left,
             operator,
@@ -132,9 +134,7 @@ impl BinaryOP {
 
         match (r1, r2) {
             (Some(var1), Some(var2)) => match (var1, var2) {
-                (VariableEnum::Number(var1), VariableEnum::Number(var2)) => {
-                    self.eval_number_number(var1, var2)
-                }
+                (VariableEnum::Number(var1), VariableEnum::Number(var2)) => self.eval_number_number(var1, var2),
 
                 (VariableEnum::Number(_), VariableEnum::String(_)) => todo!(),
                 (VariableEnum::String(_), VariableEnum::Number(_)) => todo!(),
@@ -152,16 +152,9 @@ impl BinaryOP {
         }
     }
 
-    fn evaluate_operands(
-        &self,
-        left_op: &Operand,
-        right_op: &Operand,
-        i: &mut Variables,
-    ) -> VisitResult {
+    fn evaluate_operands(&self, left_op: &Operand, right_op: &Operand, i: &mut Variables) -> VisitResult {
         match (left_op, right_op) {
-            (Operand::Number(left_op), Operand::Number(right_op)) => {
-                self.eval_number_number(left_op, right_op)
-            }
+            (Operand::Number(left_op), Operand::Number(right_op)) => self.eval_number_number(left_op, right_op),
 
             (Operand::Number(n), Operand::Variable(v)) => self.eval_var_num(n, v, i),
             (Operand::Variable(v), Operand::Number(n)) => self.eval_var_num(n, v, i),
@@ -172,20 +165,10 @@ impl BinaryOP {
 }
 
 impl AST for BinaryOP {
-    fn visit_com(
-        &self,
-        v: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        asm: &mut ASM,
-        call_stack: &mut CallStack,
-    ) {
-        self.left
-            .borrow()
-            .visit_com(v, Rc::clone(&f), asm, call_stack);
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+        self.left.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
-        self.right
-            .borrow()
-            .visit_com(v, Rc::clone(&f), asm, call_stack);
+        self.right.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
         match &self.operator.token {
             TokenEnum::Op(c) => {
@@ -196,12 +179,7 @@ impl AST for BinaryOP {
         }
     }
 
-    fn visit(
-        &self,
-        i: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        call_stack: &mut CallStack,
-    ) -> VisitResult {
+    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:#?}", &self);
             println!("===============================================");
@@ -241,52 +219,19 @@ impl AST for BinaryOP {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        self.left
-            .borrow_mut()
-            .semantic_visit(call_stack, Rc::clone(&f));
+        self.left.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
 
         self.right.borrow_mut().semantic_visit(call_stack, f);
 
-        self.result_type = match (self.left.borrow().get_node(), self.right.borrow().get_node()) {
-            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type),
-            (ASTNodeEnum::Factor(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type),
-
-            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type),
-            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type),
-            (ASTNodeEnum::Variable(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type),
-
-            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type),
-            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type),
-
-            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type),
-            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type),
-
-            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type),
-            (ASTNodeEnum::Variable(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type),
-
-            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type),
-            (ASTNodeEnum::Factor(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type),
-
-            (ASTNodeEnum::Factor(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type),
-            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type),
-
-            (ASTNodeEnum::Factor(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type),
-            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type),
-
-            (ASTNodeEnum::Factor(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type),
-            (ASTNodeEnum::Variable(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type),
-
-            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type),
-            (ASTNodeEnum::Variable(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type),
-
-            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type),
-            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type),
-
-            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type),
-            (ASTNodeEnum::Variable(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type),
-
-            _ => unreachable!("This must be a bug in the parsing step")
-        };
+        if let TokenEnum::Op(op) = &self.operator.token {
+            self.result_type = self
+                .left
+                .borrow()
+                .get_node()
+                .figure_out_type(&self.right.borrow().get_node(), AllOperations::Op(op.clone()));
+        } else {
+            panic!("Found Operation '{:?}' which is not defined for a binary operation. This must be a bug in the parsing step", self.operator.token)
+        }
 
         trace!("binary_op result_type: {:#?}", self.result_type);
     }

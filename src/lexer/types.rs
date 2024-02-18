@@ -1,6 +1,8 @@
 use core::panic;
 use std::fmt::Display;
 
+use super::tokens::AllOperations;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum VarType {
     Int,
@@ -11,28 +13,30 @@ pub enum VarType {
 }
 
 impl VarType {
-    pub fn figure_out_type(&self, other: &VarType) -> VarType {
+    pub fn figure_out_type(&self, other: &VarType, op: AllOperations) -> VarType {
         return match (self, other) {
             (VarType::Int, VarType::Int) => VarType::Int,
             (VarType::Float, VarType::Float) => VarType::Float,
 
             (VarType::Int, VarType::Ptr(p)) | (VarType::Ptr(p), VarType::Int) => VarType::Ptr(p.clone()),
 
-            (VarType::Int, VarType::Float) | (VarType::Float, VarType::Int) => panic!("Cannot add float to int"),
+            (VarType::Int, VarType::Float) | (VarType::Float, VarType::Int) => {
+                panic!("'{op}' not defined for '{self}' and '{other}'")
+            }
 
-            (VarType::Str, VarType::Float) |
-            (VarType::Str, VarType::Str) |
-            (VarType::Float, VarType::Str) => panic!("Addition for string is not defined"),
+            (VarType::Str, VarType::Float) | (VarType::Str, VarType::Str) | (VarType::Float, VarType::Str) => {
+                panic!("'{op}' not defined for '{self}' and '{other}'")
+            }
 
             (VarType::Int, VarType::Str) | (VarType::Str, VarType::Int) => {
-                panic!("Adding string and int is not allowed")
+                panic!("'{op}' not defined for '{self}' and '{other}'")
             }
 
             (VarType::Ptr(_), VarType::Str)
             | (VarType::Str, VarType::Ptr(_))
             | (VarType::Ptr(_), VarType::Float)
             | (VarType::Ptr(_), VarType::Ptr(_))
-            | (VarType::Float, VarType::Ptr(_)) => panic!("Pointers can only be added to integers"),
+            | (VarType::Float, VarType::Ptr(_)) => panic!("'{op}' not defined for '{self}' and '{other}'"),
 
             _ => VarType::Unknown,
         };
@@ -41,7 +45,15 @@ impl VarType {
 
 impl Display for VarType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        let msg = match self {
+            VarType::Int => "Integer",
+            VarType::Str => "String",
+            VarType::Float => "Floating Point",
+            VarType::Ptr(_) => "Pointer",
+            VarType::Unknown => "Unknown",
+        };
+
+        write!(f, "{}", msg)
     }
 }
 
