@@ -1,3 +1,4 @@
+use crate::lexer::types::VarType;
 use crate::trace;
 use crate::types::ASTNode;
 
@@ -22,6 +23,7 @@ pub struct BinaryOP {
     operator: Box<Token>,
     right: ASTNode,
     times_dereferenced: usize,
+    pub result_type: VarType,
 }
 
 impl BinaryOP {
@@ -31,6 +33,7 @@ impl BinaryOP {
             operator,
             right,
             times_dereferenced,
+            result_type: VarType::Unknown,
         }
     }
 
@@ -241,7 +244,51 @@ impl AST for BinaryOP {
         self.left
             .borrow_mut()
             .semantic_visit(call_stack, Rc::clone(&f));
+
         self.right.borrow_mut().semantic_visit(call_stack, f);
+
+        self.result_type = match (self.left.borrow().get_node(), self.right.borrow().get_node()) {
+            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type),
+            (ASTNodeEnum::Factor(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type),
+
+            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type),
+            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type),
+            (ASTNodeEnum::Variable(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type),
+
+            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type),
+            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type),
+
+            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type),
+            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type),
+
+            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type),
+            (ASTNodeEnum::Variable(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type),
+
+            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type),
+            (ASTNodeEnum::Factor(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type),
+
+            (ASTNodeEnum::Factor(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type),
+            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type),
+
+            (ASTNodeEnum::Factor(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type),
+            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type),
+
+            (ASTNodeEnum::Factor(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type),
+            (ASTNodeEnum::Variable(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type),
+
+            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type),
+            (ASTNodeEnum::Variable(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type),
+
+            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type),
+            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type),
+
+            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type),
+            (ASTNodeEnum::Variable(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type),
+
+            _ => unreachable!("This must be a bug in the parsing step")
+        };
+
+        trace!("binary_op result_type: {:#?}", self.result_type);
     }
 
     fn get_node(&self) -> ASTNodeEnum {

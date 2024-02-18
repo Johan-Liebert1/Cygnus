@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+use crate::{types::ASTNode, lexer::types::VarType};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
@@ -16,11 +16,12 @@ pub struct LogicalExpression {
     left: ASTNode,
     op: Token,
     right: ASTNode,
+    pub result_type: VarType,
 }
 
 impl LogicalExpression {
     pub fn new(left: ASTNode, op: Token, right: ASTNode) -> Self {
-        Self { left, op, right }
+        Self { left, op, right, result_type: VarType::Int }
     }
 }
 

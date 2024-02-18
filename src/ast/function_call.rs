@@ -1,3 +1,4 @@
+use crate::lexer::types::VarType;
 use crate::{types::ASTNode, trace};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
@@ -20,11 +21,12 @@ use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut}
 pub struct FunctionCall {
     name: String,
     arguments: Vec<ASTNode>,
+    pub result_type: VarType,
 }
 
 impl FunctionCall {
     pub fn new(name: String, arguments: Vec<ASTNode>) -> Self {
-        Self { name, arguments }
+        Self { name, arguments, result_type: VarType::Unknown }
     }
 }
 
@@ -45,8 +47,6 @@ impl AST for FunctionCall {
                     let arg_borrow = arg.borrow();
 
                     let arg_token = &arg_borrow.get_token().token;
-
-                    trace!("arg_token: {:#?}", arg.borrow().get_node());
 
                     match arg_token {
                         TokenEnum::StringLiteral(_) => asm.func_write_string(),

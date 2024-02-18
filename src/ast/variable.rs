@@ -23,6 +23,7 @@ pub struct Variable {
     token: Box<Token>,
     pub var_name: String,
     pub var_type: VarType,
+    pub result_type: VarType,
     pub dereference: bool,
     pub store_address: bool,
     pub times_dereferenced: usize,
@@ -40,6 +41,7 @@ impl Variable {
     ) -> Self {
         Self {
             token,
+            result_type: var_type.clone(),
             var_type,
             var_name,
             dereference,
