@@ -1,3 +1,5 @@
+use crate::lexer::tokens::AllOperations;
+use crate::lexer::types::VarType;
 use crate::types::ASTNode;
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
@@ -13,13 +15,14 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 
 #[derive(Debug)]
 pub struct ComparisonExp {
     left: ASTNode,
     comp_op: Box<Token>,
     right: ASTNode,
+    pub result_type: VarType,
 }
 
 impl ComparisonExp {
@@ -28,6 +31,7 @@ impl ComparisonExp {
             left,
             comp_op,
             right,
+            result_type: VarType::Int,
         }
     }
 
@@ -91,9 +95,7 @@ impl ComparisonExp {
 
         match (r1, r2) {
             (Some(var1), Some(var2)) => match (var1, var2) {
-                (VariableEnum::Number(var1), VariableEnum::Number(var2)) => {
-                    self.eval_number_number(var1, var2)
-                }
+                (VariableEnum::Number(var1), VariableEnum::Number(var2)) => self.eval_number_number(var1, var2),
 
                 (VariableEnum::Number(_), VariableEnum::String(_)) => todo!(),
                 (VariableEnum::String(_), VariableEnum::Number(_)) => todo!(),
@@ -111,16 +113,9 @@ impl ComparisonExp {
         }
     }
 
-    fn evaluate_operands(
-        &self,
-        left_op: &Operand,
-        right_op: &Operand,
-        i: &mut Variables,
-    ) -> VisitResult {
+    fn evaluate_operands(&self, left_op: &Operand, right_op: &Operand, i: &mut Variables) -> VisitResult {
         match (left_op, right_op) {
-            (Operand::Number(left_op), Operand::Number(right_op)) => {
-                self.eval_number_number(left_op, right_op)
-            }
+            (Operand::Number(left_op), Operand::Number(right_op)) => self.eval_number_number(left_op, right_op),
 
             (Operand::Number(n), Operand::Variable(v)) => self.eval_var_num(n, v, i),
             (Operand::Variable(v), Operand::Number(n)) => self.eval_var_num(n, v, i),
@@ -131,19 +126,9 @@ impl ComparisonExp {
 }
 
 impl AST for ComparisonExp {
-    fn visit_com(
-        &self,
-        v: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        asm: &mut ASM,
-        call_stack: &mut CallStack,
-    ) {
-        self.left
-            .borrow()
-            .visit_com(v, Rc::clone(&f), asm, call_stack);
-        self.right
-            .borrow()
-            .visit_com(v, Rc::clone(&f), asm, call_stack);
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+        self.left.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+        self.right.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
         match &self.comp_op.token {
             TokenEnum::Comparator(c) => {
@@ -154,12 +139,7 @@ impl AST for ComparisonExp {
         }
     }
 
-    fn visit(
-        &self,
-        i: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        call_stack: &mut CallStack,
-    ) -> VisitResult {
+    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:#?}", &self);
             println!("===============================================");
@@ -200,12 +180,25 @@ impl AST for ComparisonExp {
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         self.left.borrow_mut().semantic_visit(call_stack, f.clone());
         self.right.borrow_mut().semantic_visit(call_stack, f);
+
+        if let TokenEnum::Comparator(op) = &self.comp_op.token {
+            self.result_type = self
+                .left
+                .borrow()
+                .get_node()
+                .figure_out_type(&self.right.borrow().get_node(), AllOperations::Comparator(op.clone()));
+        } else {
+            panic!(
+                "Found Operation '{:?}' which is not defined for a comparison operation.\
+            This must be a bug in the parsing step",
+                self.comp_op.token
+            )
+        }
     }
 
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::ComparisonExp(&self);
     }
-
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::ComparisonExp(self);

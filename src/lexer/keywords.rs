@@ -41,10 +41,3 @@ pub const KEYWORDS: [&str; 15] = [
 pub const FUNC_WRITE: &str = "write";
 pub const FUNC_EXIT: &str = "exit";
 pub const FUNC_STRLEN: &str = "strlen";
-
-// types
-pub const TYPE_INT: &str = "int";
-pub const TYPE_FLOAT: &str = "float";
-pub const TYPE_STRING: &str = "str";
-
-pub const TYPES: [&str; 3] = [TYPE_INT, TYPE_FLOAT, TYPE_STRING];

@@ -34,11 +34,7 @@ impl DeclarationStatement {
 
 impl AST for DeclarationStatement {
     fn visit_com(&self, vars: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        call_stack.insert_variable(
-            &self.left.var_name,
-            self.left.get_var_enum_from_type(),
-            self.left.times_dereferenced,
-        );
+        call_stack.insert_variable(self.left.clone());
 
         asm.variable_declaration(&self.left.var_name, call_stack);
 
@@ -90,11 +86,7 @@ impl AST for DeclarationStatement {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
-        call_stack.insert_variable(
-            &self.left.var_name,
-            self.left.get_var_enum_from_type(),
-            self.left.times_dereferenced,
-        );
+        call_stack.insert_variable(self.left.clone());
     }
 
     fn get_node(&self) -> ASTNodeEnum {

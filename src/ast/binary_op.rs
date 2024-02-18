@@ -1,3 +1,5 @@
+use crate::lexer::tokens::AllOperations;
+use crate::lexer::types::VarType;
 use crate::trace;
 use crate::types::ASTNode;
 
@@ -12,25 +14,28 @@ use crate::{
         tokens::{Number, Operand, Operations, TokenEnum, VariableEnum},
     },
 };
+use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 
 #[derive(Debug)]
 pub struct BinaryOP {
     left: ASTNode,
     operator: Box<Token>,
     right: ASTNode,
-    times_dereferenced: usize,
+    pub times_dereferenced: usize,
+    pub result_type: VarType,
 }
 
 impl BinaryOP {
-    pub fn new(left: ASTNode, operator: Box<Token>, right: ASTNode, times_dereferenced: usize,) -> Self {
+    pub fn new(left: ASTNode, operator: Box<Token>, right: ASTNode, times_dereferenced: usize) -> Self {
         Self {
             left,
             operator,
             right,
             times_dereferenced,
+            result_type: VarType::Unknown,
         }
     }
 
@@ -129,9 +134,7 @@ impl BinaryOP {
 
         match (r1, r2) {
             (Some(var1), Some(var2)) => match (var1, var2) {
-                (VariableEnum::Number(var1), VariableEnum::Number(var2)) => {
-                    self.eval_number_number(var1, var2)
-                }
+                (VariableEnum::Number(var1), VariableEnum::Number(var2)) => self.eval_number_number(var1, var2),
 
                 (VariableEnum::Number(_), VariableEnum::String(_)) => todo!(),
                 (VariableEnum::String(_), VariableEnum::Number(_)) => todo!(),
@@ -149,16 +152,9 @@ impl BinaryOP {
         }
     }
 
-    fn evaluate_operands(
-        &self,
-        left_op: &Operand,
-        right_op: &Operand,
-        i: &mut Variables,
-    ) -> VisitResult {
+    fn evaluate_operands(&self, left_op: &Operand, right_op: &Operand, i: &mut Variables) -> VisitResult {
         match (left_op, right_op) {
-            (Operand::Number(left_op), Operand::Number(right_op)) => {
-                self.eval_number_number(left_op, right_op)
-            }
+            (Operand::Number(left_op), Operand::Number(right_op)) => self.eval_number_number(left_op, right_op),
 
             (Operand::Number(n), Operand::Variable(v)) => self.eval_var_num(n, v, i),
             (Operand::Variable(v), Operand::Number(n)) => self.eval_var_num(n, v, i),
@@ -169,36 +165,21 @@ impl BinaryOP {
 }
 
 impl AST for BinaryOP {
-    fn visit_com(
-        &self,
-        v: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        asm: &mut ASM,
-        call_stack: &mut CallStack,
-    ) {
-        self.left
-            .borrow()
-            .visit_com(v, Rc::clone(&f), asm, call_stack);
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+        self.left.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
-        self.right
-            .borrow()
-            .visit_com(v, Rc::clone(&f), asm, call_stack);
+        self.right.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
         match &self.operator.token {
             TokenEnum::Op(c) => {
-                asm.binary_op_nums(c.clone(), self.times_dereferenced);
+                asm.binary_op_nums(c.clone(), self.times_dereferenced, &self.result_type);
             }
 
             _ => panic!("Found non operator for a Binary Expression"),
         }
     }
 
-    fn visit(
-        &self,
-        i: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        call_stack: &mut CallStack,
-    ) -> VisitResult {
+    fn visit(&self, i: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:#?}", &self);
             println!("===============================================");
@@ -238,16 +219,26 @@ impl AST for BinaryOP {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        self.left
-            .borrow_mut()
-            .semantic_visit(call_stack, Rc::clone(&f));
+        self.left.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
+
         self.right.borrow_mut().semantic_visit(call_stack, f);
+
+        if let TokenEnum::Op(op) = &self.operator.token {
+            self.result_type = self
+                .left
+                .borrow()
+                .get_node()
+                .figure_out_type(&self.right.borrow().get_node(), AllOperations::Op(op.clone()));
+        } else {
+            panic!("Found Operation '{:?}' which is not defined for a binary operation. This must be a bug in the parsing step", self.operator.token)
+        }
+
+        trace!("binary_op result_type: {:#?}", self.result_type);
     }
 
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::BinaryOp(&self);
     }
-
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::BinaryOp(self);

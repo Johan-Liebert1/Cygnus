@@ -1,4 +1,8 @@
-use crate::{lexer::keywords::TYPE_FLOAT, semantic_analyzer::semantic_analyzer::CallStack, trace};
+use crate::{
+    lexer::types::{VarType, TYPE_FLOAT, TYPE_INT, TYPE_STRING},
+    semantic_analyzer::semantic_analyzer::CallStack,
+    trace,
+};
 
 use core::panic;
 use std::{cell::RefCell, rc::Rc};
@@ -7,28 +11,29 @@ use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
     lexer::{
-        keywords::{TYPE_INT, TYPE_STRING},
         lexer::Token,
         tokens::{Number, VariableEnum},
     },
 };
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Variable {
     token: Box<Token>,
     pub var_name: String,
-    pub var_type: String,
+    pub var_type: VarType,
+    pub result_type: VarType,
     pub dereference: bool,
     pub store_address: bool,
     pub times_dereferenced: usize,
+    pub offset: usize,
 }
 
 impl Variable {
     pub fn new(
         token: Box<Token>,
-        var_type: String,
+        var_type: VarType,
         var_name: String,
         dereference: bool,
         store_address: bool,
@@ -36,23 +41,46 @@ impl Variable {
     ) -> Self {
         Self {
             token,
+            result_type: var_type.clone(),
             var_type,
             var_name,
             dereference,
             store_address,
             times_dereferenced,
+            offset: 0,
         }
     }
 
-    pub fn get_var_enum_from_type(&self) -> VariableEnum {
-        return match self.var_type.as_str() {
-            TYPE_STRING => VariableEnum::String(String::from("")),
-            TYPE_INT => VariableEnum::Number(Number::Integer(0)),
+    pub fn size(&self) -> usize {
+        return match self.var_type {
+            // 64 bit integer
+            VarType::Int => 8,
+            // 8 bytes for length + 8 bytes for pointer to the start of the string
+            VarType::Str => 16,
+            VarType::Float => todo!(),
+            // char is only 1 byte
+            VarType::Char => 1,
+            // Pointer will always consume 8 bytes
+            VarType::Ptr(_) => 8,
+            VarType::Unknown => todo!(),
+        };
+    }
 
-            t => match &t[1..] {
-                TYPE_INT | TYPE_STRING | TYPE_FLOAT => VariableEnum::Pointer(t[1..].into()),
-                _ => unimplemented!("Type {t} not known"),
-            },
+    pub fn get_var_enum_from_type(&self) -> VariableEnum {
+        return match self.var_type {
+            // TYPE_STRING => VariableEnum::String(String::from("")),
+            // TYPE_INT => VariableEnum::Number(Number::Integer(0)),
+
+            // t => match &t[1..] {
+            //     TYPE_INT | TYPE_STRING | TYPE_FLOAT => VariableEnum::Pointer(t[1..].into()),
+            //     _ => unimplemented!("Type {t} not known"),
+            // },
+            VarType::Int => VariableEnum::Number(Number::Integer(0)),
+            VarType::Str => VariableEnum::String(String::from("")),
+            VarType::Float => todo!(),
+            VarType::Char => todo!(),
+            VarType::Ptr(_) => todo!(),
+            VarType::Unknown => todo!(),
         };
     }
 }
@@ -75,7 +103,12 @@ impl AST for Variable {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
-        if !call_stack.var_with_name_found(&self.var_name) {
+        let (variable_in_stack, _) = call_stack.get_var_with_name(&self.var_name);
+
+        if let Some(variable_in_stack) = variable_in_stack {
+            self.var_type = variable_in_stack.var_type.clone();
+            self.result_type = variable_in_stack.var_type.clone();
+        } else {
             panic!("Variable with name '{}' not found in current scope", self.var_name);
         }
     }

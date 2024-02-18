@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+use crate::{ast::variable::Variable, types::ASTNode};
 
 use core::panic;
 use std::{cell::RefCell, collections::HashMap, rc::Rc, usize};
@@ -9,14 +9,18 @@ use crate::{
     lexer::tokens::VariableEnum,
 };
 
-#[derive(Debug)]
-pub struct ARVariable {
-    pub var: VariableEnum,
-    pub offset: usize,
-    pub times_dereferenced: usize,
-}
+// #[derive(Debug)]
+// pub struct ARVariable {
+//     pub var: VariableEnum,
+//     pub offset: usize,
+//     pub times_dereferenced: usize,
+// }
+//
+// type ActivationRecordVariables = HashMap<String, ARVariable>;
 
-type ActivationRecordVariables = HashMap<String, ARVariable>;
+pub type ARVariable = Variable;
+type ActivationRecordVariablesValue = ARVariable;
+type ActivationRecordVariables = HashMap<String, ActivationRecordVariablesValue>;
 
 #[derive(Debug)]
 pub enum ActivationRecordType {
@@ -148,10 +152,11 @@ impl CallStack {
         return false;
     }
 
-    pub fn get_var_with_name(&self, var_name: &String) -> (Option<&ARVariable>, &ActivationRecordType) {
+    pub fn get_var_with_name(&self, var_name: &String) -> (Option<&Variable>, &ActivationRecordType) {
         for record in self.call_stack.iter().rev() {
             match record.variable_members.get(var_name) {
-                Some(var) => return (Some(var), &record.record_type),
+                Some(var) => return (Some(&var), &record.record_type),
+
                 None => continue,
             }
         }
@@ -159,13 +164,10 @@ impl CallStack {
         return (None, &ActivationRecordType::Global);
     }
 
-    pub fn insert_variable_in_most_recent_function(
-        &mut self,
-        var_name: &String,
-        variable_enum: VariableEnum,
-        times_dereferenced: usize,
-    ) {
-        let mut offset = self.update_function_variable_size_and_get_offset(&variable_enum);
+    pub fn insert_variable_in_most_recent_function(&mut self, mut variable: ActivationRecordVariablesValue) {
+        variable.offset = self.update_function_variable_size_and_get_offset(&variable);
+
+        let var_name = &variable.var_name;
 
         let mut inserted = false;
 
@@ -177,14 +179,7 @@ impl CallStack {
                     panic!("Variable '{}' is already defined", var_name);
                 }
 
-                record.variable_members.insert(
-                    var_name.into(),
-                    ARVariable {
-                        var: variable_enum,
-                        offset,
-                        times_dereferenced,
-                    },
-                );
+                record.variable_members.insert(var_name.into(), variable);
 
                 break;
             }
@@ -195,7 +190,7 @@ impl CallStack {
         }
     }
 
-    fn update_function_variable_size_and_get_offset(&mut self, var_enum: &VariableEnum) -> usize {
+    fn update_function_variable_size_and_get_offset(&mut self, var: &ARVariable) -> usize {
         let mut offset = 8;
 
         for record in self.call_stack.iter_mut().rev() {
@@ -205,7 +200,7 @@ impl CallStack {
                         if fname == &record.name {
                             offset += record.var_size_sum;
 
-                            record.var_size_sum += var_enum.size();
+                            record.var_size_sum += var.size();
                         }
                     }
 
@@ -219,8 +214,10 @@ impl CallStack {
         return offset;
     }
 
-    pub fn insert_variable(&mut self, var_name: &String, variable_enum: VariableEnum, times_dereferenced: usize) {
-        let mut offset = self.update_function_variable_size_and_get_offset(&variable_enum);
+    pub fn insert_variable(&mut self, mut variable: ActivationRecordVariablesValue) {
+        variable.offset = self.update_function_variable_size_and_get_offset(&variable);
+
+        let var_name = &variable.var_name;
 
         match self.call_stack.last_mut() {
             Some(last_record) => {
@@ -228,14 +225,7 @@ impl CallStack {
                     panic!("Variable '{}' is already defined", var_name);
                 }
 
-                last_record.variable_members.insert(
-                    var_name.into(),
-                    ARVariable {
-                        var: variable_enum,
-                        offset,
-                        times_dereferenced,
-                    },
-                );
+                last_record.variable_members.insert(var_name.into(), variable);
             }
 
             None => {

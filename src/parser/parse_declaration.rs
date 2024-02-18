@@ -29,7 +29,7 @@ impl<'a> Parser<'a> {
 
                                 return Variable::new(
                                     Box::new(token),
-                                    var_type.to_string(),
+                                    var_type.clone(),
                                     var_name,
                                     false,
                                     false,

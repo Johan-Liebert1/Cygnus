@@ -1,6 +1,9 @@
 use crate::{
     ast::variable::Variable,
-    lexer::keywords::{TYPE_INT, WITH},
+    lexer::{
+        keywords::WITH,
+        types::{VarType, TYPE_INT},
+    },
     trace,
     types::ASTNode,
 };
@@ -97,7 +100,7 @@ impl<'a> Parser<'a> {
                         match self.peek_next_token().token {
                             TokenEnum::Variable(var_name) => Some(Variable::new(
                                 Box::new(self.get_next_token()),
-                                TYPE_INT.into(),
+                                VarType::Int,
                                 var_name,
                                 false,
                                 false,

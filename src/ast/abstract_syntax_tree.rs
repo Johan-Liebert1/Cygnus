@@ -8,11 +8,16 @@ use std::{
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::{lexer::Token, tokens::TokenEnum},
-    semantic_analyzer::semantic_analyzer::CallStack,
+    lexer::{lexer::Token, tokens::{TokenEnum, AllOperations}, types::VarType},
+    semantic_analyzer::semantic_analyzer::CallStack, trace,
 };
 
-use super::{assignment_statement::AssignmentStatement, variable::Variable, program::Program, logical_exp::LogicalExpression, jump::Jump, function_def::FunctionDefinition, function_call::FunctionCall, factor::Factor, declaration_statement::DeclarationStatement, conditionals::ConditionalStatement, comparison_exp::ComparisonExp, binary_op::BinaryOP, ast_loop::Loop};
+use super::{
+    assignment_statement::AssignmentStatement, ast_loop::Loop, binary_op::BinaryOP, comparison_exp::ComparisonExp,
+    conditionals::ConditionalStatement, declaration_statement::DeclarationStatement, factor::Factor,
+    function_call::FunctionCall, function_def::FunctionDefinition, jump::Jump, logical_exp::LogicalExpression,
+    program::Program, variable::Variable,
+};
 
 #[derive(Debug)]
 pub struct VisitResult {
@@ -20,19 +25,8 @@ pub struct VisitResult {
 }
 
 pub trait AST {
-    fn visit(
-        &self,
-        v: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        call_stack: &mut CallStack,
-    ) -> VisitResult;
-    fn visit_com(
-        &self,
-        v: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        asm: &mut ASM,
-        call_stack: &mut CallStack,
-    );
+    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult;
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack);
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>);
     fn get_token(&self) -> &Token;
     fn get_node(&self) -> ASTNodeEnum;
@@ -47,35 +41,35 @@ impl Debug for dyn AST {
 }
 
 pub enum ASTNodeEnumMut<'a> {
-  AssignmentStatement(&'a mut AssignmentStatement),
-  Loop(&'a mut Loop),
-  BinaryOp(&'a mut BinaryOP),
-  ComparisonExp(&'a mut ComparisonExp),
-  Conditionals(&'a mut ConditionalStatement),
-  DeclarationStatement(&'a mut DeclarationStatement),
-  Factor(&'a mut Factor),
-  FunctionCall(&'a mut FunctionCall),
-  FunctionDef(&'a mut FunctionDefinition),
-  Jump(&'a mut Jump),
-  LogicalExp(&'a mut LogicalExpression),
-  Program(&'a mut Program),
-  Variable(&'a mut Variable),
+    AssignmentStatement(&'a mut AssignmentStatement),
+    Loop(&'a mut Loop),
+    BinaryOp(&'a mut BinaryOP),
+    ComparisonExp(&'a mut ComparisonExp),
+    Conditionals(&'a mut ConditionalStatement),
+    DeclarationStatement(&'a mut DeclarationStatement),
+    Factor(&'a mut Factor),
+    FunctionCall(&'a mut FunctionCall),
+    FunctionDef(&'a mut FunctionDefinition),
+    Jump(&'a mut Jump),
+    LogicalExp(&'a mut LogicalExpression),
+    Program(&'a mut Program),
+    Variable(&'a mut Variable),
 }
 
 pub enum ASTNodeEnum<'a> {
-  AssignmentStatement(&'a AssignmentStatement),
-  Loop(&'a Loop),
-  BinaryOp(&'a BinaryOP),
-  ComparisonExp(&'a ComparisonExp),
-  Conditionals(&'a ConditionalStatement),
-  DeclarationStatement(&'a DeclarationStatement),
-  Factor(&'a Factor),
-  FunctionCall(&'a FunctionCall),
-  FunctionDef(&'a FunctionDefinition),
-  Jump(&'a Jump),
-  LogicalExp(&'a LogicalExpression),
-  Program(&'a Program),
-  Variable(&'a Variable),
+    AssignmentStatement(&'a AssignmentStatement),
+    Loop(&'a Loop),
+    BinaryOp(&'a BinaryOP),
+    ComparisonExp(&'a ComparisonExp),
+    Conditionals(&'a ConditionalStatement),
+    DeclarationStatement(&'a DeclarationStatement),
+    Factor(&'a Factor),
+    FunctionCall(&'a FunctionCall),
+    FunctionDef(&'a FunctionDefinition),
+    Jump(&'a Jump),
+    LogicalExp(&'a LogicalExpression),
+    Program(&'a Program),
+    Variable(&'a Variable),
 }
 
 impl<'a> Display for ASTNodeEnumMut<'a> {
@@ -106,7 +100,6 @@ impl<'a> Debug for ASTNodeEnumMut<'a> {
     }
 }
 
-
 impl<'a> Display for ASTNodeEnum<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let name = match self {
@@ -135,3 +128,54 @@ impl<'a> Debug for ASTNodeEnum<'a> {
     }
 }
 
+impl<'a> ASTNodeEnum<'a> {
+    pub fn figure_out_type(&self, other: &ASTNodeEnum, op: AllOperations) -> VarType {
+        trace!("{self}, {other}");
+
+        match (self, other) {
+            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::Factor(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+
+            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::Variable(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
+
+            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+
+            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+
+            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::Variable(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+
+            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::Factor(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+
+            (ASTNodeEnum::Factor(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+
+            (ASTNodeEnum::Factor(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+
+            (ASTNodeEnum::Factor(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::Variable(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+
+            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::FunctionCall(b)) => {
+                a.result_type.figure_out_type(&b.result_type, op)
+            }
+            (ASTNodeEnum::Variable(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
+
+            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
+
+            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::Variable(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+
+            (ASTNodeEnum::ComparisonExp(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::Factor(a), ASTNodeEnum::ComparisonExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+
+            (a, b) => unreachable!("This must be a bug in the parsing step. {a} and {b} not handled"),
+        }
+    }
+}
