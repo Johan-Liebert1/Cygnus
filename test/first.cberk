@@ -1,7 +1,8 @@
 fun main() {
-    loop from 1 to 10 {
-        write(1 == 2);
-    }
+    def a: str = 3;
+    def b: *str = &a;
+
+    write(b + 5);
 }
 
 main() 

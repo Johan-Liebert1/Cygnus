@@ -9,7 +9,7 @@ use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
     lexer::{lexer::Token, tokens::{TokenEnum, AllOperations}, types::VarType},
-    semantic_analyzer::semantic_analyzer::CallStack,
+    semantic_analyzer::semantic_analyzer::CallStack, trace,
 };
 
 use super::{
@@ -130,6 +130,8 @@ impl<'a> Debug for ASTNodeEnum<'a> {
 
 impl<'a> ASTNodeEnum<'a> {
     pub fn figure_out_type(&self, other: &ASTNodeEnum, op: AllOperations) -> VarType {
+        trace!("{self}, {other}");
+
         match (self, other) {
             (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
             (ASTNodeEnum::Factor(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),

@@ -100,7 +100,12 @@ impl AST for Variable {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
-        if !call_stack.var_with_name_found(&self.var_name) {
+        let (variable_in_stack, _) = call_stack.get_var_with_name(&self.var_name);
+
+        if let Some(variable_in_stack) = variable_in_stack {
+            self.var_type = variable_in_stack.var_type.clone();
+            self.result_type = variable_in_stack.var_type.clone();
+        } else {
             panic!("Variable with name '{}' not found in current scope", self.var_name);
         }
     }

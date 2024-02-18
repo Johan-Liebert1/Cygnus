@@ -1,6 +1,8 @@
 use core::panic;
 use std::fmt::Display;
 
+use crate::trace;
+
 use super::tokens::AllOperations;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -14,6 +16,8 @@ pub enum VarType {
 
 impl VarType {
     pub fn figure_out_type(&self, other: &VarType, op: AllOperations) -> VarType {
+        trace!("self: {self}, other: {other}");
+
         return match (self, other) {
             (VarType::Int, VarType::Int) => VarType::Int,
             (VarType::Float, VarType::Float) => VarType::Float,
