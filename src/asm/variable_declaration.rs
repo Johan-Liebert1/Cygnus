@@ -72,6 +72,7 @@ impl ASM {
                                     VarType::Ptr(_) => {}
 
                                     VarType::Float => todo!(),
+                                    VarType::Char => todo!(),
                                     VarType::Unknown => todo!(),
                                 }
                             }
@@ -100,6 +101,16 @@ impl ASM {
                                         // the string len should be in rbx as string len is pushed
                                         // last
                                         instructions.extend([format!("pop rbx"), format!("pop rax")]);
+
+                                        is_string = true;
+                                    }
+
+                                    VarType::Char => {
+                                        // pop the string pointer into rax
+                                        // the string len should be in rbx as string len is pushed
+                                        // last
+                                        // Treat a character as a string with length of 1
+                                        instructions.extend([format!("mov rbx, 1"), format!("pop rax")]);
 
                                         is_string = true;
                                     }

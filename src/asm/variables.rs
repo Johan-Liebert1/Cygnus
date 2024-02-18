@@ -44,6 +44,7 @@ impl ASM {
                         }
 
                         VarType::Float => todo!(),
+                        VarType::Char => todo!(),
                         VarType::Ptr(_) => todo!(),
                         VarType::Unknown => todo!(),
                     },
@@ -91,7 +92,7 @@ impl ASM {
                                     // .
                                     // --- lenght ---
                                     // --- pointer to string ---
-                                    self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset)]);
+                                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset)]);
                                 } else {
                                     self.extend_current_label(vec![
                                         format!("mov rax, [rbp - {}]", ar_var.offset),
@@ -175,6 +176,7 @@ impl ASM {
                             },
 
                             VarType::Float => todo!(),
+                            VarType::Char => todo!(),
                             VarType::Unknown => todo!(),
                         }
                     }

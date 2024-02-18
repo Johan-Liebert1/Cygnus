@@ -1,9 +1,12 @@
-use crate::lexer::tokens::Operations;
+use crate::{
+    lexer::{tokens::Operations, types::VarType},
+    trace,
+};
 
 use super::asm::ASM;
 
 impl ASM {
-    pub fn binary_op_nums(&mut self, op: Operations, times_dereferenced: usize) {
+    pub fn binary_op_nums(&mut self, op: Operations, times_dereferenced: usize, result_type: &VarType) {
         let mut instructions = match op {
             Operations::Plus => {
                 vec![
@@ -93,9 +96,15 @@ impl ASM {
         };
 
         // result will always be in rax
-        instructions.extend(std::iter::repeat(format!("mov rax, [rax]")).take(times_dereferenced));
+        // We will also never dereference a string as we want the character address
+        if *result_type != VarType::Ptr(Box::new(VarType::Str)) {
+            instructions.extend(std::iter::repeat(format!("mov rax, [rax]")).take(times_dereferenced));
+            instructions.push(format!("push rax"));
+        } else if times_dereferenced > 0 {
+            instructions.push(format!("push rax"));
+            instructions.push(format!("push 1"));
+        }
 
-        instructions.push(format!("push rax"));
 
         self.extend_current_label(instructions);
     }

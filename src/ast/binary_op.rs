@@ -24,7 +24,7 @@ pub struct BinaryOP {
     left: ASTNode,
     operator: Box<Token>,
     right: ASTNode,
-    times_dereferenced: usize,
+    pub times_dereferenced: usize,
     pub result_type: VarType,
 }
 
@@ -172,7 +172,7 @@ impl AST for BinaryOP {
 
         match &self.operator.token {
             TokenEnum::Op(c) => {
-                asm.binary_op_nums(c.clone(), self.times_dereferenced);
+                asm.binary_op_nums(c.clone(), self.times_dereferenced, &self.result_type);
             }
 
             _ => panic!("Found non operator for a Binary Expression"),

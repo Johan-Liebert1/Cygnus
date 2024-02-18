@@ -1,7 +1,13 @@
 use core::panic;
 
 use crate::{
-    interpreter::interpreter::Variables, lexer::{tokens::VariableEnum, types::{TYPE_INT, TYPE_STRING, VarType}}, semantic_analyzer::semantic_analyzer::CallStack,
+    ast::variable::Variable,
+    interpreter::interpreter::Variables,
+    lexer::{
+        tokens::VariableEnum,
+        types::{VarType, TYPE_INT, TYPE_STRING},
+    },
+    semantic_analyzer::semantic_analyzer::CallStack,
     trace,
 };
 
@@ -32,7 +38,37 @@ impl ASM {
         self.extend_current_label(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec());
     }
 
-    pub fn func_write_var(&mut self, var_name: &String, call_stack: &CallStack) {
+    pub fn func_write_pointer(&mut self, pointer_var_type: &Box<VarType>, times_dereferenced: usize) {
+        let vec = self.func_write_pointer_internal(pointer_var_type, times_dereferenced);
+        self.extend_current_label(vec);
+    }
+
+    fn func_write_pointer_internal(
+        &mut self,
+        pointer_var_type: &Box<VarType>,
+        times_dereferenced: usize,
+    ) -> Vec<String> {
+        match **pointer_var_type {
+            VarType::Int => {
+                vec![format!("pop rax"), format!("call _printRAX")]
+            }
+
+            // TODO: Check here whether the pointer is dereferenced or not
+            VarType::Str => {
+                if times_dereferenced > 0 {
+                    WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
+                } else {
+                    vec![format!("pop rax"), format!("call _printRAX")]
+                }
+            }
+
+            _ => panic!("Unknown type '{pointer_var_type}'"),
+        }
+    }
+
+    pub fn func_write_var(&mut self, var: &Variable, call_stack: &CallStack) {
+        let var_name = &var.var_name;
+
         let instructions = match var_name.as_str() {
             "argc" => vec![
                 // argc contains the address of rsp
@@ -72,53 +108,30 @@ impl ASM {
                 format!("syscall"),
             ],
 
-            // the variable value or its address will be pushed onto the stack
             _ => {
-                let (variable, variable_scope) = call_stack.get_var_with_name(&var_name);
-
-                match variable {
-                    Some(var) => {
-                        // We don't need to check the scope here as the variable value is already
-                        // pushed into rax beforehand in `factor` AST
-                        match &var.var_type {
-                            VarType::Int => {
-                                vec![format!("pop rax"), format!("call _printRAX")]
-                            }
-
-                            VarType::Str => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
-
-                            VarType::Ptr(pointer_var_type) => {
-                                trace!("In inteernal_function: pointer_var_type = {pointer_var_type}");
-
-                                match **pointer_var_type {
-                                    VarType::Int => {
-                                        vec![format!("pop rax"), format!("call _printRAX")]
-                                    }
-
-                                    // TODO: Check here whether the pointer is dereferenced or not
-                                    VarType::Str => {
-                                        // trace!("var: {:#?}", var);
-                                        if var.times_dereferenced > 0 || true {
-                                            WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
-                                        } else {
-                                            vec![format!("pop rax"), format!("call _printRAX")]
-                                        }
-                                    }
-
-                                    _ => panic!("Unknown type '{pointer_var_type}'"),
-                                }
-                            }
-
-                            VarType::Float => todo!(),
-                            VarType::Unknown => todo!(),
-                        }
+                // the variable value or its address will be pushed onto the stack
+                // We don't need to check the scope here as the variable value is already
+                // pushed into rax beforehand in `factor` AST
+                match &var.var_type {
+                    VarType::Int => {
+                        vec![format!("pop rax"), format!("call _printRAX")]
                     }
 
-                    None => unreachable!(
-                        "Could not find variable with name '{}' in function `factor`.\
-                    This is a bug in the semantic analying step.",
-                        var_name
-                    ),
+                    VarType::Str => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
+
+                    VarType::Char => {
+                        let mut a = vec![format!("push 1")];
+                        a.extend(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec());
+
+                        a
+                    },
+
+                    VarType::Ptr(pointer_var_type) => {
+                        self.func_write_pointer_internal(pointer_var_type, var.times_dereferenced)
+                    }
+
+                    VarType::Float => todo!(),
+                    VarType::Unknown => todo!(),
                 }
             }
         };

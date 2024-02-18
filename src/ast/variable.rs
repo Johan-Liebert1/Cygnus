@@ -58,6 +58,8 @@ impl Variable {
             // 8 bytes for length + 8 bytes for pointer to the start of the string
             VarType::Str => 16,
             VarType::Float => todo!(),
+            // char is only 1 byte
+            VarType::Char => 1,
             // Pointer will always consume 8 bytes
             VarType::Ptr(_) => 8,
             VarType::Unknown => todo!(),
@@ -76,6 +78,7 @@ impl Variable {
             VarType::Int => VariableEnum::Number(Number::Integer(0)),
             VarType::Str => VariableEnum::String(String::from("")),
             VarType::Float => todo!(),
+            VarType::Char => todo!(),
             VarType::Ptr(_) => todo!(),
             VarType::Unknown => todo!(),
         };

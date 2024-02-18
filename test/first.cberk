@@ -1,8 +1,13 @@
 fun main() {
-    def a: str = 3;
+    def a: str = "abcdef\n";
     def b: *str = &a;
 
-    write(b + 5);
+    def i: int = 0;
+
+    loop from 1 to 7 {
+        write(i, *(b + i));
+        i = i + 1;
+    }
 }
 
 main() 

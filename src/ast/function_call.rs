@@ -1,5 +1,5 @@
 use crate::lexer::types::VarType;
-use crate::{types::ASTNode, trace};
+use crate::{trace, types::ASTNode};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
@@ -15,7 +15,7 @@ use crate::{
     },
 };
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 
 #[derive(Debug)]
 pub struct FunctionCall {
@@ -26,39 +26,47 @@ pub struct FunctionCall {
 
 impl FunctionCall {
     pub fn new(name: String, arguments: Vec<ASTNode>) -> Self {
-        Self { name, arguments, result_type: VarType::Unknown }
+        Self {
+            name,
+            arguments,
+            result_type: VarType::Unknown,
+        }
     }
 }
 
 impl AST for FunctionCall {
-    fn visit_com(
-        &self,
-        v: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        asm: &mut ASM,
-        call_stack: &mut CallStack,
-    ) {
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         match self.name.as_str() {
             FUNC_WRITE => {
                 for arg in &self.arguments {
                     // this will generate everything and put in rax
                     arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
-                    let arg_borrow = arg.borrow();
-
-                    let arg_token = &arg_borrow.get_token().token;
-
-                    match arg_token {
-                        TokenEnum::StringLiteral(_) => asm.func_write_string(),
-
-                        TokenEnum::Variable(var_name) => asm.func_write_var(var_name, call_stack),
-
-                        _ => {
-                            // TODO: Fix this thing as anything other than Sting will have a nonsense
-                            // get_token function
-                            asm.func_write_number();
+                    match arg.borrow().get_node() {
+                        ASTNodeEnum::Variable(v) => {
+                            asm.func_write_var(v, call_stack);
                         }
-                    }
+
+                        ASTNodeEnum::BinaryOp(bo) => match &bo.result_type {
+                            VarType::Int => asm.func_write_number(),
+                            VarType::Str => todo!(),
+                            VarType::Float => todo!(),
+                            VarType::Ptr(ptr_type) => asm.func_write_pointer(&ptr_type, bo.times_dereferenced),
+                            VarType::Unknown => todo!(),
+                            VarType::Char => todo!(),
+                        }
+
+                        ASTNodeEnum::Factor(f) => match &f.get_token().token {
+                            TokenEnum::Number(_) => asm.func_write_number(),
+                            TokenEnum::StringLiteral(_) => asm.func_write_string(),
+
+                            tok => unreachable!("This should be unreachable")
+                        }
+
+                        node => {
+                            trace!("{:#?}", node);
+                        }
+                    };
                 }
             }
 
@@ -86,12 +94,7 @@ impl AST for FunctionCall {
         }
     }
 
-    fn visit(
-        &self,
-        v: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        call_stack: &mut CallStack,
-    ) -> VisitResult {
+    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         match self.name.as_str() {
             FUNC_WRITE => {
                 for arg in &self.arguments {
@@ -133,9 +136,7 @@ impl AST for FunctionCall {
             }
 
             name => match f.borrow().get(name) {
-                Some(function_ast) => {
-                    function_ast.borrow().visit(v, Rc::clone(&f), call_stack)
-                }
+                Some(function_ast) => function_ast.borrow().visit(v, Rc::clone(&f), call_stack),
 
                 None => unimplemented!("Function {} unimplemented", self.name),
             },
@@ -159,7 +160,6 @@ impl AST for FunctionCall {
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::FunctionCall(&self);
     }
-
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::FunctionCall(self);
