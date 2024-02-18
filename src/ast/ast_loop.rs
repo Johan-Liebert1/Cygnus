@@ -55,10 +55,10 @@ impl Loop {
         let step_name = format!("loop_{}_step", self.loop_number);
 
         let token = Token {
-                token: TokenEnum::Variable(from_name.clone()),
-                col_number: 0,
-                line_number: 0,
-            };
+            token: TokenEnum::Variable(from_name.clone()),
+            col_number: 0,
+            line_number: 0,
+        };
 
         // TODO: Fix this, this doesn't need to be done this way
         //

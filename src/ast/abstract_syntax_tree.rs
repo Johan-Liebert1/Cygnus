@@ -8,8 +8,13 @@ use std::{
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::{lexer::Token, tokens::{TokenEnum, AllOperations}, types::VarType},
-    semantic_analyzer::semantic_analyzer::CallStack, trace,
+    lexer::{
+        lexer::Token,
+        tokens::{AllOperations, TokenEnum},
+        types::VarType,
+    },
+    semantic_analyzer::semantic_analyzer::CallStack,
+    trace,
 };
 
 use super::{
@@ -136,12 +141,20 @@ impl<'a> ASTNodeEnum<'a> {
             (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
             (ASTNodeEnum::Factor(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::Variable(b)) => {
+                a.result_type.figure_out_type(&b.result_type, op)
+            }
+            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::LogicalExp(b)) => {
+                a.result_type.figure_out_type(&b.result_type, op)
+            }
             (ASTNodeEnum::Variable(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::FunctionCall(b)) => {
+                a.result_type.figure_out_type(&b.result_type, op)
+            }
+            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::BinaryOp(b)) => {
+                a.result_type.figure_out_type(&b.result_type, op)
+            }
 
             (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
             (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
@@ -164,16 +177,26 @@ impl<'a> ASTNodeEnum<'a> {
             (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::FunctionCall(b)) => {
                 a.result_type.figure_out_type(&b.result_type, op)
             }
-            (ASTNodeEnum::Variable(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::Variable(a), ASTNodeEnum::FunctionCall(b)) => {
+                a.result_type.figure_out_type(&b.result_type, op)
+            }
 
-            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::LogicalExp(b)) => {
+                a.result_type.figure_out_type(&b.result_type, op)
+            }
+            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::FunctionCall(b)) => {
+                a.result_type.figure_out_type(&b.result_type, op)
+            }
 
             (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
             (ASTNodeEnum::Variable(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::ComparisonExp(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (ASTNodeEnum::Factor(a), ASTNodeEnum::ComparisonExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ASTNodeEnum::ComparisonExp(a), ASTNodeEnum::Factor(b)) => {
+                a.result_type.figure_out_type(&b.result_type, op)
+            }
+            (ASTNodeEnum::Factor(a), ASTNodeEnum::ComparisonExp(b)) => {
+                a.result_type.figure_out_type(&b.result_type, op)
+            }
 
             (a, b) => unreachable!("This must be a bug in the parsing step. {a} and {b} not handled"),
         }

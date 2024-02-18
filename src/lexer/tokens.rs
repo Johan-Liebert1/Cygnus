@@ -63,10 +63,17 @@ impl Display for Operations {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub enum Number {
     Integer(i32),
     Float(f32),
+}
+
+impl PartialEq for Number {
+    fn eq(&self, other: &Self) -> bool {
+        // only compare the enum variant and not the value inside it
+        std::mem::discriminant(self) == std::mem::discriminant(other)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -148,7 +155,7 @@ impl Display for AllOperations {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub enum TokenEnum {
     Equals,
     PlusEquals,
@@ -180,6 +187,22 @@ pub struct OperandConversionError(TokenEnum);
 impl Display for OperandConversionError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?} cannot be used as an operand", self.0)
+    }
+}
+
+impl PartialEq for TokenEnum {
+    fn eq(&self, other: &Self) -> bool {
+        use TokenEnum::*;
+
+        match (self, other) {
+            (Number(a), Number(b)) => a == b,
+            (Op(a), Op(b)) => a == b,
+            (Comparator(a), Comparator(b)) => a == b,
+            (LogicalOp(a), LogicalOp(b)) => a == b,
+
+            // only compare the enum variant and not the value inside it
+            _ => std::mem::discriminant(self) == std::mem::discriminant(other),
+        }
     }
 }
 

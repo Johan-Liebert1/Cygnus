@@ -28,6 +28,7 @@ pub struct Variable {
     pub store_address: bool,
     pub times_dereferenced: usize,
     pub offset: usize,
+    pub is_memory_block: bool,
 }
 
 impl Variable {
@@ -48,6 +49,7 @@ impl Variable {
             store_address,
             times_dereferenced,
             offset: 0,
+            is_memory_block: false,
         }
     }
 

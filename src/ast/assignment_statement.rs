@@ -11,7 +11,7 @@ use crate::{
     lexer::tokens::{TokenEnum, VariableEnum},
 };
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 
 #[derive(Debug)]
 pub struct AssignmentStatement {
@@ -31,25 +31,14 @@ impl AssignmentStatement {
 }
 
 impl AST for AssignmentStatement {
-    fn visit_com(
-        &self,
-        v: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        asm: &mut ASM,
-        call_stack: &mut CallStack,
-    ) {
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         self.right.borrow().visit_com(v, f, asm, call_stack);
         asm.variable_assignment(&self.var_name, &self.assignment_type, call_stack);
     }
 
     // TODO: change this so that the expression is stored here and we need to visit the varible
     // to evaluate the value
-    fn visit(
-        &self,
-        v: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        call_stack: &mut CallStack,
-    ) -> VisitResult {
+    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         let right_visit = self.right.borrow().visit(v, f, call_stack);
 
         match &*right_visit.token {
@@ -90,7 +79,6 @@ impl AST for AssignmentStatement {
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::AssignmentStatement(&self);
     }
-
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::AssignmentStatement(self);

@@ -27,14 +27,7 @@ impl<'a> Parser<'a> {
                             TokenEnum::Type(var_type) => {
                                 let token = self.get_next_token();
 
-                                return Variable::new(
-                                    Box::new(token),
-                                    var_type.clone(),
-                                    var_name,
-                                    false,
-                                    false,
-                                    0,
-                                );
+                                return Variable::new(Box::new(token), var_type.clone(), var_name, false, false, 0);
                             }
 
                             _ => panic!("Expected type found {:?}", token),
@@ -59,9 +52,6 @@ impl<'a> Parser<'a> {
         let right = self.parse_logical_expression();
 
         // TODO: handle function calls and strings and stuff here
-        return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(
-            left,
-            right,
-        ))));
+        return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(left, right))));
     }
 }

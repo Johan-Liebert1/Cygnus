@@ -1,8 +1,6 @@
 use crate::types::ASTNode;
 
-use crate::semantic_analyzer::semantic_analyzer::{
-    ActivationRecord, ActivationRecordType, CallStack,
-};
+use crate::semantic_analyzer::semantic_analyzer::{ActivationRecord, ActivationRecordType, CallStack};
 
 use crate::{
     asm::{asm::ASM, conditionals::ConditionalJumpTo},
@@ -11,7 +9,7 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 
 #[derive(Debug)]
 pub struct IfStatement {
@@ -58,13 +56,7 @@ impl ConditionalStatement {
 }
 
 impl AST for ConditionalStatement {
-    fn visit_com(
-        &self,
-        v: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        asm: &mut ASM,
-        call_stack: &mut CallStack,
-    ) {
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         let current_num_if = asm.num_ifs;
         asm.inc_num_ifs();
 
@@ -106,9 +98,7 @@ impl AST for ConditionalStatement {
 
         for (index, elif) in self.elif_ladder.iter().enumerate() {
             call_stack.push("".into(), ActivationRecordType::IfElse);
-            elif.condition
-                .borrow()
-                .visit_com(v, Rc::clone(&f), asm, call_stack);
+            elif.condition.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
             call_stack.pop();
 
             // if it's the last index, then jump to else, else jump to the next elif
@@ -125,9 +115,7 @@ impl AST for ConditionalStatement {
             );
 
             call_stack.push("".into(), ActivationRecordType::IfElse);
-            elif.block
-                .borrow()
-                .visit_com(v, Rc::clone(&f), asm, call_stack);
+            elif.block.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
             call_stack.pop();
 
             asm.elif_end(
@@ -146,20 +134,13 @@ impl AST for ConditionalStatement {
         if let Some(e) = &self.else_statement {
             asm.else_start(current_num_if);
 
-            e.block
-                .borrow()
-                .visit_com(v, Rc::clone(&f), asm, call_stack);
+            e.block.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
             asm.else_end(current_num_if);
         }
     }
 
-    fn visit(
-        &self,
-        v: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        call_stack: &mut CallStack,
-    ) -> VisitResult {
+    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         if let TokenEnum::Bool(value) = *self
             .if_statement
             .condition
@@ -168,21 +149,12 @@ impl AST for ConditionalStatement {
             .token
         {
             if value {
-                return self
-                    .if_statement
-                    .block
-                    .borrow()
-                    .visit(v, Rc::clone(&f), call_stack);
+                return self.if_statement.block.borrow().visit(v, Rc::clone(&f), call_stack);
             }
         }
 
         for elif in &self.elif_ladder {
-            if let TokenEnum::Bool(value) = *elif
-                .condition
-                .borrow()
-                .visit(v, Rc::clone(&f), call_stack)
-                .token
-            {
+            if let TokenEnum::Bool(value) = *elif.condition.borrow().visit(v, Rc::clone(&f), call_stack).token {
                 if value {
                     return elif.block.borrow().visit(v, Rc::clone(&f), call_stack);
                 }
@@ -224,15 +196,11 @@ impl AST for ConditionalStatement {
         call_stack.pop();
 
         for elif in &self.elif_ladder {
-            elif.condition
-                .borrow_mut()
-                .semantic_visit(call_stack, Rc::clone(&f));
+            elif.condition.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
 
             call_stack.push("".into(), ActivationRecordType::IfElse);
 
-            elif.block
-                .borrow_mut()
-                .semantic_visit(call_stack, Rc::clone(&f));
+            elif.block.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
 
             call_stack.pop();
         }
@@ -252,7 +220,6 @@ impl AST for ConditionalStatement {
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::Conditionals(&self);
     }
-
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::Conditionals(self);

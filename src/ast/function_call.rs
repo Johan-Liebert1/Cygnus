@@ -54,14 +54,14 @@ impl AST for FunctionCall {
                             VarType::Ptr(ptr_type) => asm.func_write_pointer(&ptr_type, bo.times_dereferenced),
                             VarType::Unknown => todo!(),
                             VarType::Char => todo!(),
-                        }
+                        },
 
                         ASTNodeEnum::Factor(f) => match &f.get_token().token {
                             TokenEnum::Number(_) => asm.func_write_number(),
                             TokenEnum::StringLiteral(_) => asm.func_write_string(),
 
-                            tok => unreachable!("This should be unreachable")
-                        }
+                            tok => unreachable!("This should be unreachable"),
+                        },
 
                         node => {
                             trace!("{:#?}", node);

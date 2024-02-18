@@ -89,7 +89,7 @@ impl AST for Factor {
             TokenEnum::Number(num) => match num {
                 Number::Integer(_) => VarType::Int,
                 Number::Float(_) => VarType::Float,
-            }
+            },
 
             TokenEnum::StringLiteral(..) => VarType::Str,
 

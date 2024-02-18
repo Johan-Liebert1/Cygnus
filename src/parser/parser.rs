@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+use crate::{lexer::keywords::MEM, types::ASTNode};
 
 use core::panic;
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
@@ -63,12 +63,14 @@ impl<'a> Parser<'a> {
 
     /// Validates the current token with expected token and consumes the token
     /// panics if current token is not the same as expected token
-    pub fn validate_token(&mut self, token_expected: TokenEnum) {
+    pub fn validate_token(&mut self, token_expected: TokenEnum) -> Token {
         let token = self.get_next_token();
 
         if token.token != token_expected {
             panic!("Expected {:?}, got {:?}", token_expected, token);
         }
+        
+        return token;
     }
 
     /// Validates the current token with expected token and consumes the token
@@ -136,6 +138,8 @@ impl<'a> Parser<'a> {
                         Rc::new(RefCell::new(Box::new(Jump::new(JumpType::Return, 0))))
                     }
 
+                    MEM => self.parse_memory_alloc(),
+
                     ELSE_STATEMENT => {
                         panic!("Found 'else' without an 'if' {:?}", current_token)
                     }
@@ -149,6 +153,7 @@ impl<'a> Parser<'a> {
                             "loop {}, func {}, if {}",
                             self.inside_loop_depth, self.inside_function_depth, self.inside_if_else_depth
                         );
+
                         panic!("Keyword '{}' not recognised", keyword);
                     }
                 }

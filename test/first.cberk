@@ -1,3 +1,5 @@
+mem array 122
+
 fun main() {
     def a: str = "abcdef\n";
     def b: *str = &a;
