@@ -10,5 +10,6 @@ pub mod function_call;
 pub mod function_def;
 pub mod jump;
 pub mod logical_exp;
+pub mod memory_alloc;
 pub mod program;
 pub mod variable;

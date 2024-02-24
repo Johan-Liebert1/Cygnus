@@ -1,15 +1,9 @@
-mem array 122
+mem array 122 + 43
 
 fun main() {
-    def a: str = "abcdef\n";
-    def b: *str = &a;
+    *(array + 1) = 1;
 
-    def i: int = 0;
-
-    loop from 1 to 7 {
-        write(i, *(b + i));
-        i = i + 1;
-    }
+    write(*array, *(array + 1));
 }
 
 main() 

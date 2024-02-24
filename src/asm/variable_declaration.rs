@@ -1,6 +1,9 @@
 use crate::{
-    lexer::{tokens::{AssignmentTypes, VariableEnum}, types::VarType},
-    semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
+    lexer::{
+        tokens::{AssignmentTypes, VariableEnum},
+        types::VarType,
+    },
+    semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack}, trace,
 };
 
 use super::asm::ASM;
@@ -41,10 +44,10 @@ impl ASM {
         var_name: &String,
         assignment_type: &AssignmentTypes,
         call_stack: &CallStack,
+        times_dereferenced: usize,
     ) {
         // 1. Check whether the variable is a local or global variable
         // 2. If global var, get it from data section, else from stack offset
-
         let (variable, variable_scope) = call_stack.get_var_with_name(&var_name);
 
         let mut instructions = vec![];
@@ -57,8 +60,8 @@ impl ASM {
                     ActivationRecordType::Global => {
                         match assignment_type {
                             AssignmentTypes::Equals => {
-                                match var.var_type {
-                                    VarType::Int => {}
+                                match &var.var_type {
+                                    VarType::Int => todo!(),
 
                                     VarType::Str => {
                                         // pop the string pointer into rax
@@ -69,7 +72,21 @@ impl ASM {
                                         is_string = true;
                                     }
 
-                                    VarType::Ptr(_) => {}
+                                    VarType::Ptr(ptr_var_type) => {
+                                        trace!("{}", var.var_type);
+
+                                        match **ptr_var_type {
+                                            VarType::Int => {
+                                            },
+
+                                            VarType::Str => todo!(),
+
+                                            VarType::Float => todo!(),
+                                            VarType::Char => todo!(),
+                                            VarType::Ptr(_) => todo!(),
+                                            VarType::Unknown => todo!(),
+                                        }
+                                    }
 
                                     VarType::Float => todo!(),
                                     VarType::Char => todo!(),
@@ -92,9 +109,7 @@ impl ASM {
                         match assignment_type {
                             AssignmentTypes::Equals => {
                                 match var.var_type {
-                                    VarType::Int | VarType::Float => {
-                                        instructions.push(format!("pop rax"))
-                                    }
+                                    VarType::Int | VarType::Float => instructions.push(format!("pop rax")),
 
                                     VarType::Str => {
                                         // pop the string pointer into rax
@@ -115,7 +130,7 @@ impl ASM {
                                         is_string = true;
                                     }
 
-                                    VarType::Ptr(..) => {}
+                                    VarType::Ptr(..) => todo!(),
                                     VarType::Unknown => todo!(),
                                 }
                             }

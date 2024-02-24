@@ -232,8 +232,6 @@ impl AST for BinaryOP {
         } else {
             panic!("Found Operation '{:?}' which is not defined for a binary operation. This must be a bug in the parsing step", self.operator.token)
         }
-
-        trace!("binary_op result_type: {:#?}", self.result_type);
     }
 
     fn get_node(&self) -> ASTNodeEnum {

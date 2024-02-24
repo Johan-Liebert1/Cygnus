@@ -18,14 +18,16 @@ pub struct AssignmentStatement {
     var_name: String,
     assignment_type: AssignmentTypes,
     right: ASTNode,
+    times_dereferenced: usize,
 }
 
 impl AssignmentStatement {
-    pub fn new(var_name: String, assignment_type: AssignmentTypes, right: ASTNode) -> Self {
+    pub fn new(var_name: String, assignment_type: AssignmentTypes, right: ASTNode, times_dereferenced: usize) -> Self {
         Self {
             var_name,
             assignment_type,
             right,
+            times_dereferenced,
         }
     }
 }
@@ -33,7 +35,7 @@ impl AssignmentStatement {
 impl AST for AssignmentStatement {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         self.right.borrow().visit_com(v, f, asm, call_stack);
-        asm.variable_assignment(&self.var_name, &self.assignment_type, call_stack);
+        asm.variable_assignment(&self.var_name, &self.assignment_type, call_stack, self.times_dereferenced);
     }
 
     // TODO: change this so that the expression is stored here and we need to visit the varible

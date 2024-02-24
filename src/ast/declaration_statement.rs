@@ -40,7 +40,7 @@ impl AST for DeclarationStatement {
 
         self.right.borrow().visit_com(vars, f, asm, call_stack);
 
-        asm.variable_assignment(&self.left.var_name, &AssignmentTypes::Equals, call_stack);
+        asm.variable_assignment(&self.left.var_name, &AssignmentTypes::Equals, call_stack, 0);
     }
 
     fn visit(

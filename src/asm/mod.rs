@@ -7,5 +7,6 @@ pub mod factor;
 pub mod functions;
 pub mod internal_functions;
 pub mod logical;
+pub mod memory_alloc;
 pub mod variable_declaration;
 pub mod variables;

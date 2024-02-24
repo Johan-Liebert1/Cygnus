@@ -21,7 +21,7 @@ use super::{
     assignment_statement::AssignmentStatement, ast_loop::Loop, binary_op::BinaryOP, comparison_exp::ComparisonExp,
     conditionals::ConditionalStatement, declaration_statement::DeclarationStatement, factor::Factor,
     function_call::FunctionCall, function_def::FunctionDefinition, jump::Jump, logical_exp::LogicalExpression,
-    program::Program, variable::Variable,
+    program::Program, variable::Variable, memory_alloc::MemoryAlloc,
 };
 
 #[derive(Debug)]
@@ -59,6 +59,7 @@ pub enum ASTNodeEnumMut<'a> {
     LogicalExp(&'a mut LogicalExpression),
     Program(&'a mut Program),
     Variable(&'a mut Variable),
+    MemoryAlloc(&'a mut MemoryAlloc),
 }
 
 pub enum ASTNodeEnum<'a> {
@@ -75,6 +76,7 @@ pub enum ASTNodeEnum<'a> {
     LogicalExp(&'a LogicalExpression),
     Program(&'a Program),
     Variable(&'a Variable),
+    MemoryAlloc(&'a MemoryAlloc),
 }
 
 impl<'a> Display for ASTNodeEnumMut<'a> {
@@ -93,6 +95,7 @@ impl<'a> Display for ASTNodeEnumMut<'a> {
             ASTNodeEnumMut::LogicalExp(_) => "LogicalExpMut",
             ASTNodeEnumMut::Program(_) => "ProgramMut",
             ASTNodeEnumMut::Variable(_) => "VariableMut",
+            ASTNodeEnumMut::MemoryAlloc(_) => "MemoryAlloc",
         };
 
         write!(f, "{}", name)
@@ -121,6 +124,7 @@ impl<'a> Display for ASTNodeEnum<'a> {
             ASTNodeEnum::LogicalExp(_) => "LogicalExp",
             ASTNodeEnum::Program(_) => "Program",
             ASTNodeEnum::Variable(_) => "Variable",
+            ASTNodeEnum::MemoryAlloc(_) => "MemoryAlloc",
         };
 
         write!(f, "{}", name)
@@ -135,8 +139,6 @@ impl<'a> Debug for ASTNodeEnum<'a> {
 
 impl<'a> ASTNodeEnum<'a> {
     pub fn figure_out_type(&self, other: &ASTNodeEnum, op: AllOperations) -> VarType {
-        trace!("{self}, {other}");
-
         match (self, other) {
             (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
             (ASTNodeEnum::Factor(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),

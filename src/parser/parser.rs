@@ -1,4 +1,4 @@
-use crate::{lexer::keywords::MEM, types::ASTNode};
+use crate::{lexer::{keywords::MEM, tokens::Operations}, types::ASTNode};
 
 use core::panic;
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
@@ -186,7 +186,7 @@ impl<'a> Parser<'a> {
                     TokenEnum::Equals | TokenEnum::MinusEquals | TokenEnum::PlusEquals => {
                         // variable assignment
                         self.get_next_token();
-                        self.parse_assignment_statement(var.to_string())
+                        self.parse_assignment_statement(var.to_string(), 0)
                     }
 
                     e => {
@@ -195,13 +195,39 @@ impl<'a> Parser<'a> {
                 }
             }
 
+            // could be something like *a = 23
+            TokenEnum::Op(op) => match op {
+                Operations::Multiply => {
+                    let mut times_dereferenced = 0;
+
+                    while let TokenEnum::Op(Operations::Multiply) = self.peek_next_token().token {
+                        self.get_next_token();
+                        times_dereferenced += 1;
+                    }
+
+                    let token = self.get_next_token().token;
+
+                    if let TokenEnum::Variable(var_name) = token {
+                        self.parse_assignment_statement(var_name, times_dereferenced)
+                    } else {
+                        panic!("Expected variable after '*' got {:#?}", token)
+                    }
+                },
+
+                Operations::Plus => todo!(),
+                Operations::Minus => todo!(),
+                Operations::Divide => todo!(),
+                Operations::ShiftLeft => todo!(),
+                Operations::ShiftRight => todo!(),
+                Operations::Modulo => todo!(),
+            },
+
             TokenEnum::LogicalOp(op) => {
                 panic!("Expected statement, found {:?}", op)
             }
 
             TokenEnum::StringLiteral(_) => todo!(),
 
-            TokenEnum::Op(_) => todo!(),
             TokenEnum::Equals => todo!(),
             TokenEnum::PlusEquals => todo!(),
             TokenEnum::MinusEquals => todo!(),

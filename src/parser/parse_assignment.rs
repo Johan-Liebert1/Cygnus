@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+use crate::{trace, types::ASTNode};
 
 use std::{cell::RefCell, rc::Rc};
 
@@ -7,7 +7,7 @@ use crate::{ast::assignment_statement::AssignmentStatement, lexer::tokens::Token
 use super::parser::Parser;
 
 impl<'a> Parser<'a> {
-    pub fn parse_assignment_statement(&mut self, var_name: String) -> ASTNode {
+    pub fn parse_assignment_statement(&mut self, var_name: String, times_dereferenced: usize) -> ASTNode {
         // we get here after parsing the variable name
         let validated_token =
             self.validate_any_token(vec![TokenEnum::Equals, TokenEnum::PlusEquals, TokenEnum::MinusEquals]);
@@ -18,6 +18,7 @@ impl<'a> Parser<'a> {
             var_name,
             validated_token.get_assignment_type(),
             right,
+            times_dereferenced,
         ))));
     }
 }

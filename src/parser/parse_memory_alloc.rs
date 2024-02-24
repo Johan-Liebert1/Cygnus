@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::variable::Variable,
+    ast::{variable::Variable, memory_alloc::MemoryAlloc},
     lexer::{
         tokens::{Number, TokenEnum},
         types::VarType,
@@ -18,9 +18,7 @@ impl<'a> Parser<'a> {
         // we get here after consuming the 'mem' token
         let var_token = self.validate_token(TokenEnum::Variable("".into()));
 
-        let memory_size = self.validate_token(TokenEnum::Number(Number::Integer(0)));
-
-        trace!("var_token {:#?}", var_token);
+        let memory_size = self.parse_expression();
 
         if let TokenEnum::Variable(var_name) = &var_token.token {
             let mut variable = Variable::new(
@@ -34,7 +32,9 @@ impl<'a> Parser<'a> {
 
             variable.is_memory_block = true;
 
-            return Rc::new(RefCell::new(Box::new(variable)));
+            let memory_alloc = MemoryAlloc::new(variable, memory_size);
+
+            return Rc::new(RefCell::new(Box::new(memory_alloc)));
         }
 
         unreachable!()
