@@ -87,11 +87,10 @@ impl Interpreter {
     }
 
     pub fn interpret(&mut self, call_stack: &mut CallStack) -> VisitResult {
-        return self.ast.borrow().visit(
-            &mut self.variables,
-            Rc::clone(&self.functions),
-            call_stack,
-        );
+        return self
+            .ast
+            .borrow()
+            .visit(&mut self.variables, Rc::clone(&self.functions), call_stack);
     }
 
     pub fn compile(&mut self, call_stack: &mut CallStack) {

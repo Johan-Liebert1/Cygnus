@@ -19,7 +19,7 @@ impl VarType {
     pub fn get_pointer_type(&self) -> VarType {
         match self {
             VarType::Ptr(inner) => inner.get_pointer_type(),
-            r => r.clone()
+            r => r.clone(),
         }
     }
 
@@ -38,7 +38,7 @@ impl VarType {
                     VarType::Ptr(_) => todo!(),
                     VarType::Unknown => todo!(),
                 }
-            },
+            }
 
             (VarType::Int, VarType::Float) | (VarType::Float, VarType::Int) => {
                 panic!("'{op}' not defined for '{self}' and '{other}'")

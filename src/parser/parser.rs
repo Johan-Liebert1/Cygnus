@@ -1,4 +1,7 @@
-use crate::{lexer::{keywords::MEM, tokens::Operations}, types::ASTNode};
+use crate::{
+    lexer::{keywords::MEM, tokens::Operations},
+    types::ASTNode,
+};
 
 use core::panic;
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
@@ -69,7 +72,7 @@ impl<'a> Parser<'a> {
         if token.token != token_expected {
             panic!("Expected {:?}, got {:?}", token_expected, token);
         }
-        
+
         return token;
     }
 
@@ -195,7 +198,7 @@ impl<'a> Parser<'a> {
                 }
             }
 
-            // could be something like *a = 23
+            // could be something like *a = 23 or *(a + 1) = 34
             TokenEnum::Op(op) => match op {
                 Operations::Multiply => {
                     let mut times_dereferenced = 0;
@@ -212,7 +215,7 @@ impl<'a> Parser<'a> {
                     } else {
                         panic!("Expected variable after '*' got {:#?}", token)
                     }
-                },
+                }
 
                 Operations::Plus => todo!(),
                 Operations::Minus => todo!(),

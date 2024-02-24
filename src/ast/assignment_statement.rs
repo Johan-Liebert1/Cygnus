@@ -35,7 +35,12 @@ impl AssignmentStatement {
 impl AST for AssignmentStatement {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         self.right.borrow().visit_com(v, f, asm, call_stack);
-        asm.variable_assignment(&self.var_name, &self.assignment_type, call_stack, self.times_dereferenced);
+        asm.variable_assignment(
+            &self.var_name,
+            &self.assignment_type,
+            call_stack,
+            self.times_dereferenced,
+        );
     }
 
     // TODO: change this so that the expression is stored here and we need to visit the varible

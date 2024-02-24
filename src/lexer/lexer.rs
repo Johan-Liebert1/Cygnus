@@ -105,7 +105,7 @@ impl<'a> Lexer<'a> {
         }
 
         if TYPES.contains(&word.as_str()) {
-            let tok =  TokenEnum::Type(match word.as_str() {
+            let tok = TokenEnum::Type(match word.as_str() {
                 TYPE_INT => VarType::Int,
                 TYPE_FLOAT => VarType::Float,
                 TYPE_STRING => VarType::Str,

@@ -3,7 +3,9 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    semantic_analyzer::semantic_analyzer::CallStack, trace, lexer::tokens::{TokenEnum, Number},
+    lexer::tokens::{Number, TokenEnum},
+    semantic_analyzer::semantic_analyzer::CallStack,
+    trace,
 };
 
 use super::{
@@ -36,7 +38,13 @@ impl AST for MemoryAlloc {
 
         let size = match *result.token {
             TokenEnum::Number(n) => match n {
-                Number::Integer(i) => if i < 0 { panic!("Memory size must be a positive integer") } else { i },
+                Number::Integer(i) => {
+                    if i < 0 {
+                        panic!("Memory size must be a positive integer")
+                    } else {
+                        i
+                    }
+                }
                 Number::Float(_) => panic!("Memory to be allocated has to be an integer"),
             },
 

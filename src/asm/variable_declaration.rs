@@ -3,7 +3,8 @@ use crate::{
         tokens::{AssignmentTypes, VariableEnum},
         types::VarType,
     },
-    semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack}, trace,
+    semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
+    trace,
 };
 
 use super::asm::ASM;
@@ -53,6 +54,7 @@ impl ASM {
         let mut instructions = vec![];
 
         let mut is_string = false;
+        let mut is_ptr_deref = false;
 
         match variable {
             Some(var) => {
@@ -77,7 +79,17 @@ impl ASM {
 
                                         match **ptr_var_type {
                                             VarType::Int => {
-                                            },
+                                                // Store whatever's on the top of the stack into
+                                                // this memory location
+                                                instructions
+                                                    .extend([format!("pop rax"), format!("mov rbx, {}", var.var_name)]);
+                                                instructions.extend(
+                                                    std::iter::repeat(format!("mov rbx, [rbx]"))
+                                                        .take(times_dereferenced),
+                                                );
+
+                                                instructions.push(format!("mov rbx, rax"));
+                                            }
 
                                             VarType::Str => todo!(),
 
@@ -97,6 +109,7 @@ impl ASM {
                             AssignmentTypes::PlusEquals => {
                                 instructions.extend([format!("pop rax"), format!("pop rbx"), format!("add rax, rbx")])
                             }
+
                             AssignmentTypes::MinusEquals => {
                                 instructions.extend([format!("pop rax"), format!("pop rbx"), format!("sub rax, rbx")])
                             }
@@ -108,7 +121,7 @@ impl ASM {
                     _ => {
                         match assignment_type {
                             AssignmentTypes::Equals => {
-                                match var.var_type {
+                                match &var.var_type {
                                     VarType::Int | VarType::Float => instructions.push(format!("pop rax")),
 
                                     VarType::Str => {
@@ -130,7 +143,55 @@ impl ASM {
                                         is_string = true;
                                     }
 
-                                    VarType::Ptr(..) => todo!(),
+                                    // Assignment to a pointer should be simple enough
+                                    VarType::Ptr(var_ptr_type) => match **var_ptr_type {
+                                        // VarType::Int => todo!(),
+                                        // VarType::Str => todo!(),
+                                        // VarType::Float => todo!(),
+                                        // VarType::Char => todo!(),
+                                        VarType::Ptr(_) => todo!(),
+                                        VarType::Unknown => todo!(),
+
+                                        _ => {
+                                            is_ptr_deref = times_dereferenced > 0;
+
+                                            trace!("times_dereferenced: {times_dereferenced}");
+
+                                            // Let's say the following code
+                                            //
+                                            // mem array 1024 --> array starts at addr 500
+                                            // def thing: *int = array + 1; --> thing is at rbp - 8
+                                            // and [rbp - 8] now contains addr 501
+                                            //
+                                            // *thing = 60;
+                                            // derefed thing should contain 60, i.e. [rbp - 8]
+                                            // should not contain 60, but addr 501 should now
+                                            // contain 60
+                                            //
+                                            // we should only deref once which can be done by
+                                            // mov rbx, [rbp - 8]
+                                            // mov [rbx], rax
+
+                                            instructions.extend([
+                                                format!("pop rax"),
+                                                format!("mov rbx, [rbp - {}]", var.offset),
+                                            ]);
+
+                                            if times_dereferenced > 1 {
+                                                instructions.extend(
+                                                    std::iter::repeat(format!("mov rbx, [rbx]"))
+                                                        .take(times_dereferenced - 1),
+                                                );
+                                            }
+
+                                            if is_ptr_deref {
+                                                instructions.push(format!("mov [rbx], rax"));
+                                            }
+
+                                            // instructions.extend(vec![format!("pop rbx"), format!("mov rax, rbx")]);
+                                        }
+                                    },
+
                                     VarType::Unknown => todo!(),
                                 }
                             }
@@ -144,12 +205,14 @@ impl ASM {
                             }
                         }
 
-                        instructions.push(format!("mov [rbp - {}], rax", var.offset));
-
                         if is_string {
                             // Move the string length into the mem address above the addr
                             // containing the string pointer
                             instructions.push(format!("mov [rbp - {}], rbx", var.offset + 8));
+                        }
+
+                        if !is_ptr_deref {
+                            instructions.push(format!("mov [rbp - {}], rax", var.offset));
                         }
                     }
                 }

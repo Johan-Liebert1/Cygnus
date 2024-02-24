@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::{variable::Variable, memory_alloc::MemoryAlloc},
+    ast::{memory_alloc::MemoryAlloc, variable::Variable},
     lexer::{
         tokens::{Number, TokenEnum},
         types::VarType,

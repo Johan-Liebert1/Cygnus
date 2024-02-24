@@ -1,9 +1,12 @@
 mem array 122 + 43
 
 fun main() {
-    *(array + 1) = 1;
-
-    write(*array, *(array + 1));
+    -- def a: int = 69;
+    -- write(a)
+    
+    def thing: *int = array + 1;
+    *thing = 2;
+    write(*thing);
 }
 
 main() 
