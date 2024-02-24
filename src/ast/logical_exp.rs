@@ -12,6 +12,7 @@ use crate::{
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 
+#[derive(Debug)]
 pub struct LogicalExpression {
     left: ASTNode,
     op: Token,

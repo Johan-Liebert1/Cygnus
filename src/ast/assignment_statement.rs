@@ -1,3 +1,4 @@
+use crate::trace;
 use crate::{lexer::tokens::AssignmentTypes, types::ASTNode};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
@@ -12,6 +13,7 @@ use crate::{
 };
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
+use super::variable::Variable;
 
 #[derive(Debug)]
 pub struct AssignmentStatement {
@@ -28,6 +30,20 @@ impl AssignmentStatement {
             assignment_type,
             right,
             times_dereferenced,
+        }
+    }
+
+    fn verify_type(&self, variable: &Variable) {
+        let node_borrow = self.right.borrow();
+        let node = node_borrow.get_node();
+
+        let (is_assignment_okay, rhs_type) = node.is_var_assignment_okay(variable);
+
+        if !is_assignment_okay {
+            panic!(
+                "Cannot assign variable (LHS) of type {} to RHS {}",
+                variable.result_type, rhs_type
+            )
         }
     }
 }
@@ -77,8 +93,14 @@ impl AST for AssignmentStatement {
         println!("{:#?}", self)
     }
 
-    fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
-        if !call_stack.var_with_name_found(&self.var_name) {
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+        self.right.borrow_mut().semantic_visit(call_stack, f);
+
+        let (variable_opt, _) = call_stack.get_var_with_name(&self.var_name);
+
+        if let Some(variable) = variable_opt {
+            self.verify_type(variable);
+        } else {
             panic!("Variable '{}' not found in current scope", &self.var_name);
         }
     }

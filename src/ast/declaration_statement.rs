@@ -3,6 +3,7 @@ use crate::{lexer::tokens::AssignmentTypes, types::ASTNode};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
+use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
@@ -29,6 +30,20 @@ pub struct DeclarationStatement {
 impl DeclarationStatement {
     pub fn new(left: Variable, right: ASTNode) -> Self {
         Self { left, right }
+    }
+
+    fn verify_type(&self) {
+        let node_borrow = self.right.borrow();
+        let node = node_borrow.get_node();
+
+        let (is_assignment_okay, rhs_type) = node.is_var_assignment_okay(&self.left);
+
+        if !is_assignment_okay {
+            panic!(
+                "Cannot assign variable (LHS) of type {} to RHS {}",
+                self.left.result_type, rhs_type
+            )
+        }
     }
 }
 
@@ -85,7 +100,11 @@ impl AST for DeclarationStatement {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+        self.right.borrow_mut().semantic_visit(call_stack, f);
+
+        self.verify_type();
+
         call_stack.insert_variable(self.left.clone());
     }
 

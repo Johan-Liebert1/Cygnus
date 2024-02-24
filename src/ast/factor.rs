@@ -2,6 +2,7 @@ use crate::lexer::tokens::Number;
 use crate::lexer::types::VarType;
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
+use crate::trace;
 use crate::{
     asm::asm::ASM,
     constants,
@@ -79,6 +80,8 @@ impl AST for Factor {
             TokenEnum::Variable(v) => {
                 let (variable, _) = call_stack.get_var_with_name(v);
 
+                trace!("variable, {:#?}", variable);
+
                 if let Some(var) = variable {
                     var.var_type.clone()
                 } else {
@@ -94,7 +97,7 @@ impl AST for Factor {
             TokenEnum::StringLiteral(..) => VarType::Str,
 
             _ => VarType::Unknown,
-        }
+        };
     }
 
     fn get_node(&self) -> ASTNodeEnum {

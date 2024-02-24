@@ -7,6 +7,7 @@ use std::{
     rc::Rc,
 };
 
+use lexer::types::VarType;
 use parser::parser::Parser;
 
 use crate::{interpreter::interpreter::Interpreter, semantic_analyzer::semantic_analyzer::SemanticAnalyzer};

@@ -1,11 +1,11 @@
 mem array 122 + 43
+mem vector 122 + 43
 
 fun main() {
-    -- def a: int = 69;
-    -- write(a)
-    
-    def thing: *int = array + 1;
-    *thing = 2;
+    def thing: *int = array;
+    *thing = 69;
+    write(*thing, *(thing + 1));
+    thing = vector;
     write(*thing);
 }
 

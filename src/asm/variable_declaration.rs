@@ -155,8 +155,6 @@ impl ASM {
                                         _ => {
                                             is_ptr_deref = times_dereferenced > 0;
 
-                                            trace!("times_dereferenced: {times_dereferenced}");
-
                                             // Let's say the following code
                                             //
                                             // mem array 1024 --> array starts at addr 500
@@ -172,10 +170,11 @@ impl ASM {
                                             // mov rbx, [rbp - 8]
                                             // mov [rbx], rax
 
-                                            instructions.extend([
-                                                format!("pop rax"),
-                                                format!("mov rbx, [rbp - {}]", var.offset),
-                                            ]);
+                                            instructions.push(format!("pop rax"));
+
+                                            if is_ptr_deref {
+                                                instructions.push(format!("mov rbx, [rbp - {}]", var.offset));
+                                            }
 
                                             if times_dereferenced > 1 {
                                                 instructions.extend(

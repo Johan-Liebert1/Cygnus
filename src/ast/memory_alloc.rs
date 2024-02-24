@@ -3,7 +3,10 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::{Number, TokenEnum},
+    lexer::{
+        tokens::{Number, TokenEnum},
+        types::VarType,
+    },
     semantic_analyzer::semantic_analyzer::CallStack,
     trace,
 };
@@ -13,14 +16,20 @@ use super::{
     variable::Variable,
 };
 
+#[derive(Debug)]
 pub struct MemoryAlloc {
     variable: Variable,
     size: Rc<RefCell<Box<dyn AST>>>,
+    pub result_type: VarType,
 }
 
 impl MemoryAlloc {
     pub fn new(variable: Variable, size: Rc<RefCell<Box<dyn AST>>>) -> Self {
-        Self { variable, size }
+        Self {
+            variable,
+            size,
+            result_type: VarType::Ptr(Box::new(VarType::Int)),
+        }
     }
 }
 

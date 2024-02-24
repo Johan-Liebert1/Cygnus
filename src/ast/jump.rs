@@ -10,11 +10,13 @@ use crate::{
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 
+#[derive(Debug)]
 pub enum JumpType {
     Return,
     Break,
 }
 
+#[derive(Debug)]
 pub struct Jump {
     typ: JumpType,
     loop_number: usize,

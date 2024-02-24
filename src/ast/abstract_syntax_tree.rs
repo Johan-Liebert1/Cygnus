@@ -1,4 +1,4 @@
-use core::fmt;
+use core::{fmt, panic};
 use std::{
     cell::RefCell,
     fmt::{Debug, Display},
@@ -133,74 +133,87 @@ impl<'a> Display for ASTNodeEnum<'a> {
 
 impl<'a> Debug for ASTNodeEnum<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        fmt::Display::fmt(&self, f)
+        match self {
+            ASTNodeEnum::AssignmentStatement(a) => write!(f, "Name: AssignmentStatement {:#?}", a),
+            ASTNodeEnum::Loop(a) => write!(f, "Name: Loop {:#?}", a),
+            ASTNodeEnum::BinaryOp(a) => write!(f, "Name: BinaryOp {:#?}", a),
+            ASTNodeEnum::ComparisonExp(a) => write!(f, "Name: ComparisonExp {:#?}", a),
+            ASTNodeEnum::Conditionals(a) => write!(f, "Name: Conditionals {:#?}", a),
+            ASTNodeEnum::DeclarationStatement(a) => write!(f, "Name: DeclarationStatement {:#?}", a),
+            ASTNodeEnum::Factor(a) => write!(f, "Name: Factor {:#?}", a),
+            ASTNodeEnum::FunctionCall(a) => write!(f, "Name: FunctionCall {:#?}", a),
+            ASTNodeEnum::FunctionDef(a) => write!(f, "Name: FunctionDef {:#?}", a),
+            ASTNodeEnum::Jump(a) => write!(f, "Name: Jump {:#?}", a),
+            ASTNodeEnum::LogicalExp(a) => write!(f, "Name: LogicalExp {:#?}", a),
+            ASTNodeEnum::Program(a) => write!(f, "Name: Program {:#?}", a),
+            ASTNodeEnum::Variable(a) => write!(f, "Name: Variable {:#?}", a),
+            ASTNodeEnum::MemoryAlloc(a) => write!(f, "Name: MemoryAlloc {:#?}", a),
+        }
     }
 }
 
 impl<'a> ASTNodeEnum<'a> {
     pub fn figure_out_type(&self, other: &ASTNodeEnum, op: AllOperations) -> VarType {
+        use ASTNodeEnum::*;
+
         match (self, other) {
-            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (ASTNodeEnum::Factor(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (BinaryOp(a), BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (Factor(a), Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::Variable(b)) => {
-                a.result_type.figure_out_type(&b.result_type, op)
-            }
-            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::LogicalExp(b)) => {
-                a.result_type.figure_out_type(&b.result_type, op)
-            }
-            (ASTNodeEnum::Variable(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (FunctionCall(a), Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (LogicalExp(a), LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (Variable(a), Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::FunctionCall(b)) => {
-                a.result_type.figure_out_type(&b.result_type, op)
-            }
-            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::BinaryOp(b)) => {
-                a.result_type.figure_out_type(&b.result_type, op)
-            }
+            (BinaryOp(a), FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (FunctionCall(a), BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (BinaryOp(a), LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (LogicalExp(a), BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (ASTNodeEnum::Variable(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (BinaryOp(a), Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (Variable(a), BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::BinaryOp(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (ASTNodeEnum::Factor(a), ASTNodeEnum::BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (BinaryOp(a), Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (Factor(a), BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::Factor(a), ASTNodeEnum::FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (Factor(a), FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (FunctionCall(a), Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::Factor(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (Factor(a), LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (LogicalExp(a), Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::Factor(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (ASTNodeEnum::Variable(a), ASTNodeEnum::Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (Factor(a), Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (Variable(a), Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::FunctionCall(b)) => {
-                a.result_type.figure_out_type(&b.result_type, op)
-            }
-            (ASTNodeEnum::Variable(a), ASTNodeEnum::FunctionCall(b)) => {
-                a.result_type.figure_out_type(&b.result_type, op)
-            }
+            (FunctionCall(a), FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (Variable(a), FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::FunctionCall(a), ASTNodeEnum::LogicalExp(b)) => {
-                a.result_type.figure_out_type(&b.result_type, op)
-            }
-            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::FunctionCall(b)) => {
-                a.result_type.figure_out_type(&b.result_type, op)
-            }
+            (FunctionCall(a), LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (LogicalExp(a), FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::LogicalExp(a), ASTNodeEnum::Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (ASTNodeEnum::Variable(a), ASTNodeEnum::LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (LogicalExp(a), Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (Variable(a), LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
-            (ASTNodeEnum::ComparisonExp(a), ASTNodeEnum::Factor(b)) => {
-                a.result_type.figure_out_type(&b.result_type, op)
-            }
-            (ASTNodeEnum::Factor(a), ASTNodeEnum::ComparisonExp(b)) => {
-                a.result_type.figure_out_type(&b.result_type, op)
-            }
+            (ComparisonExp(a), Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (Factor(a), ComparisonExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
 
             (a, b) => unreachable!("This must be a bug in the parsing step. {a} and {b} not handled"),
         }
+    }
+
+    pub fn is_var_assignment_okay(&self, variable: &Variable) -> (bool, &VarType) {
+        use ASTNodeEnum::*;
+
+        return match self {
+            Factor(f) => (f.result_type == variable.result_type, &f.result_type),
+            BinaryOp(f) => (f.result_type == variable.result_type, &f.result_type),
+            ComparisonExp(f) => (f.result_type == variable.result_type, &f.result_type),
+            FunctionCall(f) => (f.result_type == variable.result_type, &f.result_type),
+            LogicalExp(f) => (f.result_type == variable.result_type, &f.result_type),
+            Variable(f) => (f.result_type == variable.result_type, &f.result_type),
+            MemoryAlloc(f) => (f.result_type == variable.result_type, &f.result_type),
+
+            node =>  unreachable!("Cannot assign a variable to {node}. This could a bug in the parsing stage"),
+        };
     }
 }
