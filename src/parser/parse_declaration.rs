@@ -1,6 +1,11 @@
-use crate::{trace, types::ASTNode};
+use crate::{
+    helpers::unexpected_token,
+    lexer::{tokens::Bracket, types::VarType},
+    trace,
+    types::ASTNode,
+};
 
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, process::exit, rc::Rc};
 
 use crate::{
     ast::{declaration_statement::DeclarationStatement, variable::Variable},
@@ -27,25 +32,27 @@ impl<'a> Parser<'a> {
                             TokenEnum::Type(var_type) => {
                                 let token = self.get_next_token();
 
-                                return Variable::new(
-                                    Box::new(token),
-                                    var_type.clone(),
-                                    var_name,
-                                    false,
-                                    false,
-                                    0,
-                                );
+                                return Variable::new(Box::new(token), var_type.clone(), var_name, false, false, 0);
                             }
 
-                            _ => panic!("Expected type found {:?}", token),
+                            _ => {
+                                unexpected_token(&token, None);
+                                exit(1);
+                            }
                         }
                     }
 
-                    _ => panic!("Expected : found {:?}", token),
+                    _ => {
+                        unexpected_token(&token, Some(&TokenEnum::Colon));
+                        exit(1);
+                    }
                 }
             }
 
-            _ => panic!("Expected a variable found {:?}", token),
+            _ => {
+                unexpected_token(&token, Some(&TokenEnum::Colon));
+                exit(1);
+            }
         }
     }
 
@@ -59,9 +66,6 @@ impl<'a> Parser<'a> {
         let right = self.parse_logical_expression();
 
         // TODO: handle function calls and strings and stuff here
-        return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(
-            left,
-            right,
-        ))));
+        return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(left, right))));
     }
 }

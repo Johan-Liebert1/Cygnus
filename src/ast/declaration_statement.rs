@@ -1,4 +1,4 @@
-use crate::trace;
+use crate::{helpers, trace};
 use crate::{lexer::tokens::AssignmentTypes, types::ASTNode};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
@@ -30,6 +30,23 @@ impl DeclarationStatement {
     pub fn new(left: Variable, right: ASTNode) -> Self {
         Self { left, right }
     }
+
+    fn verify_type(&self) {
+        let node_borrow = self.right.borrow();
+        let node = node_borrow.get_node();
+
+        let (is_assignment_okay, rhs_type) = node.is_var_assignment_okay(&self.left);
+
+        if !is_assignment_okay {
+            helpers::compiler_error(
+                format!(
+                    "Cannot assign variable (LHS) of type {} to RHS {}",
+                    self.left.result_type, rhs_type
+                ),
+                self.left.get_token(),
+            )
+        }
+    }
 }
 
 impl AST for DeclarationStatement {
@@ -40,7 +57,7 @@ impl AST for DeclarationStatement {
 
         self.right.borrow().visit_com(vars, f, asm, call_stack);
 
-        asm.variable_assignment(&self.left.var_name, &AssignmentTypes::Equals, call_stack);
+        asm.variable_assignment(&self.left.var_name, &AssignmentTypes::Equals, call_stack, 0);
     }
 
     fn visit(
@@ -68,7 +85,10 @@ impl AST for DeclarationStatement {
             TokenEnum::Variable(_) => todo!(),
 
             _ => {
-                panic!("Variable value is not a Number, String or Variable");
+                helpers::compiler_error(
+                    "Variable value is not a Number, String or Variable",
+                    self.left.get_token(),
+                );
             }
         }
 
@@ -85,7 +105,11 @@ impl AST for DeclarationStatement {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+        self.right.borrow_mut().semantic_visit(call_stack, f);
+
+        self.verify_type();
+
         call_stack.insert_variable(self.left.clone());
     }
 

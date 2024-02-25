@@ -1,6 +1,6 @@
-use crate::types::ASTNode;
+use crate::{types::ASTNode, helpers::unexpected_token};
 
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc, process::exit};
 
 use crate::{
     ast::{function_def::FunctionDefinition, variable::Variable},
@@ -23,7 +23,9 @@ impl<'a> Parser<'a> {
                         break;
                     }
 
-                    _ => panic!("Unexpected token {:#?}", token),
+                    _ => {
+                        unexpected_token(&token, None);
+                    },
                 },
 
                 TokenEnum::Comma => {
@@ -47,37 +49,22 @@ impl<'a> Parser<'a> {
     pub fn parse_function_definition(&mut self, f: ParserFunctions) -> ASTNode {
         // we get here after consuming 'fun'
 
-        let function_name = match self.get_next_token().token {
+        let token = self.get_next_token();
+
+        let function_name = match token.token {
             TokenEnum::Variable(n) => n,
 
             _ => {
-                panic!("Expected function name")
+                unexpected_token(&token, None);
+                exit(1);
             }
         };
 
-        match self.get_next_token().token {
-            TokenEnum::Bracket(b) => match b {
-                Bracket::LParen => (),
-                _ => panic!("Expected LParen"),
-            },
-
-            _ => {
-                panic!("Expected LParen")
-            }
-        };
+        self.validate_token(TokenEnum::Bracket(Bracket::LParen));
 
         let parameters = self.parse_function_definition_parameters();
 
-        match self.get_next_token().token {
-            TokenEnum::Bracket(b) => match b {
-                Bracket::LCurly => (),
-                _ => panic!("Expected LCurly"),
-            },
-
-            _ => {
-                panic!("Expected LCurly")
-            }
-        };
+        self.validate_token(TokenEnum::Bracket(Bracket::LCurly));
 
         // As we can fit an entire program inside a function
         // TODO: This introduces function and variable scoping issues
@@ -87,16 +74,7 @@ impl<'a> Parser<'a> {
 
         // println!("next token after parse_statements in parse_function_definition {:?}", self.peek_next_token().token);
 
-        match self.get_next_token().token {
-            TokenEnum::Bracket(b) => match b {
-                Bracket::RCurly => (),
-                _ => panic!("Expected RCurly"),
-            },
-
-            _ => {
-                panic!("Expected RCurly")
-            }
-        };
+        self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
 
         let ff = function_name.clone();
 

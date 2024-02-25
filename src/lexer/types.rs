@@ -19,13 +19,31 @@ impl VarType {
     pub fn get_pointer_type(&self) -> VarType {
         match self {
             VarType::Ptr(inner) => inner.get_pointer_type(),
-            r => r.clone()
+            r => r.clone(),
         }
     }
 
-    pub fn figure_out_type(&self, other: &VarType, op: AllOperations) -> VarType {
-        trace!("self: {self}, other: {other}");
+    pub fn get_actual_type(&self, times_dereferenced: usize) -> VarType {
+        return match self {
+            VarType::Ptr(ptr_var_type) => {
+                if times_dereferenced > 0 {
+                    ptr_var_type.get_actual_type(times_dereferenced - 1)
+                } else {
+                    self.clone()
+                }
+            }
 
+            t => {
+                if times_dereferenced > 0 {
+                    panic!("Cannot dereference {self}")
+                } else {
+                    t.clone()
+                }
+            }
+        };
+    }
+
+    pub fn figure_out_type(&self, other: &VarType, op: AllOperations) -> VarType {
         return match (self, other) {
             (VarType::Int, VarType::Int) => VarType::Int,
             (VarType::Float, VarType::Float) => VarType::Float,
@@ -40,7 +58,7 @@ impl VarType {
                     VarType::Ptr(_) => todo!(),
                     VarType::Unknown => todo!(),
                 }
-            },
+            }
 
             (VarType::Int, VarType::Float) | (VarType::Float, VarType::Int) => {
                 panic!("'{op}' not defined for '{self}' and '{other}'")

@@ -1,8 +1,8 @@
 use crate::lexer::lexer::Token;
 use crate::lexer::tokens::VariableEnum;
 use crate::lexer::types::VarType;
-use crate::trace;
 use crate::types::ASTNode;
+use crate::{helpers, trace};
 
 use crate::semantic_analyzer::semantic_analyzer::{ActivationRecord, ActivationRecordType, CallStack};
 
@@ -11,6 +11,7 @@ use crate::{
     interpreter::interpreter::{Functions, Variables},
     lexer::tokens::{Number, TokenEnum},
 };
+use std::process::exit;
 use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
@@ -55,10 +56,11 @@ impl Loop {
         let step_name = format!("loop_{}_step", self.loop_number);
 
         let token = Token {
-                token: TokenEnum::Variable(from_name.clone()),
-                col_number: 0,
-                line_number: 0,
-            };
+            token: TokenEnum::Variable(from_name.clone()),
+            col_number: 0,
+            line_number: 0,
+            file: "".into(),
+        };
 
         // TODO: Fix this, this doesn't need to be done this way
         //
@@ -130,7 +132,8 @@ impl AST for Loop {
         let step_by = self.step_by.borrow().visit(v, Rc::clone(&f), call_stack);
 
         if !from.token.is_integer() || !to.token.is_integer() || !step_by.token.is_integer() {
-            panic!("Expected from, to and step expressions to be Integer");
+            helpers::compiler_error("Expected from, to and step expressions to be Integer", self.get_token());
+            exit(1);
         }
 
         let from = if let TokenEnum::Number(Number::Integer(i)) = *from.token {
@@ -147,12 +150,14 @@ impl AST for Loop {
 
         let step_by = if let TokenEnum::Number(Number::Integer(i)) = *step_by.token {
             if i < 0 {
-                panic!("Step cannot be negative");
+                helpers::compiler_error("Step cannot be negative", self.get_token());
+                exit(1);
             }
 
             i as usize
         } else {
-            panic!("Step has to be a positive integer")
+            helpers::compiler_error("Step has to be a positive integer", self.get_token());
+            exit(1);
         };
 
         for _ in (from..to).step_by(step_by) {

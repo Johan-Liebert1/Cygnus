@@ -4,7 +4,7 @@ use crate::{
     ast::variable::{self, Variable},
     lexer::{
         tokens::VariableEnum,
-        types::{TYPE_FLOAT, TYPE_INT, VarType},
+        types::{VarType, TYPE_FLOAT, TYPE_INT},
     },
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
     trace,
@@ -45,7 +45,40 @@ impl ASM {
 
                         VarType::Float => todo!(),
                         VarType::Char => todo!(),
-                        VarType::Ptr(_) => todo!(),
+
+                        VarType::Ptr(_) => {
+                            if ar_var.is_memory_block {
+                                // this will be in the bss section
+                                if variable.dereference {
+                                    let mut v = vec![
+                                        format!(";; Dereferencing variable {}", var_name),
+                                        format!("mov rax, {}", var_name),
+                                    ];
+                                    v.extend(
+                                        std::iter::repeat(format!("mov rax, [rax]")).take(variable.times_dereferenced),
+                                    );
+                                    v.extend([
+                                        format!("push rax"),
+                                        format!(";; Finish dereferencing variable {}", var_name),
+                                    ]);
+
+                                    self.extend_current_label(v);
+                                } else if variable.store_address {
+                                    self.extend_current_label(vec![
+                                        format!("lea rax, {}", var_name),
+                                        format!("push rax"),
+                                    ]);
+                                } else {
+                                    self.extend_current_label(vec![
+                                        format!("mov rax, {}", var_name),
+                                        format!("push rax"),
+                                    ]);
+                                }
+                            } else {
+                                todo!()
+                            }
+                        }
+
                         VarType::Unknown => todo!(),
                     },
 

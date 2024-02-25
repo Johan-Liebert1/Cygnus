@@ -44,10 +44,7 @@ impl ASM {
         };
 
         // if we ever enter the if block, then that's it, we can jump straight to the end of the else or the elif block
-        let instructions = vec![
-            format!("jmp {}", jump_to_label),
-            format!(".if_end_{}:", if_num),
-        ];
+        let instructions = vec![format!("jmp {}", jump_to_label), format!(".if_end_{}:", if_num)];
 
         self.extend_current_label(instructions);
     }

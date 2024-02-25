@@ -8,13 +8,15 @@ use crate::{
     lexer::tokens::TokenEnum,
 };
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 
+#[derive(Debug)]
 pub enum JumpType {
     Return,
     Break,
 }
 
+#[derive(Debug)]
 pub struct Jump {
     typ: JumpType,
     loop_number: usize,
@@ -27,12 +29,7 @@ impl Jump {
 }
 
 impl AST for Jump {
-    fn visit(
-        &self,
-        _v: &mut Variables,
-        _f: Rc<RefCell<Functions>>,
-        call_stack: &mut CallStack,
-    ) -> VisitResult {
+    fn visit(&self, _v: &mut Variables, _f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         todo!();
 
         // this is pretty straightforward. We simply return
@@ -41,13 +38,7 @@ impl AST for Jump {
         };
     }
 
-    fn visit_com(
-        &self,
-        _v: &mut Variables,
-        _f: Rc<RefCell<Functions>>,
-        asm: &mut ASM,
-        call_stack: &mut CallStack,
-    ) {
+    fn visit_com(&self, _v: &mut Variables, _f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         match self.typ {
             JumpType::Return => {
                 // Since we break out of a loop or return from a function, we need to pop the call stack
@@ -86,11 +77,9 @@ impl AST for Jump {
         // }
     }
 
-
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::Jump(&self);
     }
-
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::Jump(self);

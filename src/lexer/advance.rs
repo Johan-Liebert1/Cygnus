@@ -25,6 +25,7 @@ impl<'a> Lexer<'a> {
             token: TokenEnum::EOF,
             line_number: 0,
             col_number: 0,
+            file: self.file_name.to_string(),
         };
 
         for _ in 0..n {
@@ -216,6 +217,7 @@ impl<'a> Lexer<'a> {
                 token,
                 line_number: self.line_number,
                 col_number: self.col_number,
+                file: self.file_name.into(),
             };
 
             if peek {
@@ -231,6 +233,7 @@ impl<'a> Lexer<'a> {
             token: TokenEnum::EOF,
             line_number: self.line_number,
             col_number: self.col_number,
+            file: self.file_name.into(),
         };
     }
 }

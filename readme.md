@@ -20,13 +20,14 @@
 - [x] Variable scoping
 - [x] Implement `+=` and `-=`
 - [x] Pointer deref
-- [ ] Pointer to pointer to pointer ...
-- [ ] Random access to memory
+- [x] Pointer to pointer to pointer ...
+- [x] Random access to memory
 
+- [ ] Type Casting
+- [ ] Proper type checking
 - [ ] Function returns
 - [ ] Function arguments and their type checking
 - [ ] Floating point numbers
-- [ ] Proper type checking
 - [ ] Enums - Use `offset` and `reset` kinda like Go's `iota`
 - [ ] Make sure nothing is left on the stack when we break out of a loop
 - [ ] Command line arguments
@@ -37,6 +38,7 @@
 
     PROGRAM                  -> STATEMENT[]
     STATEMENT                -> VARIABLE_DECLARATION | CONDITIONAL_STATEMENT | COMPARISON_EXPRESSION | LPAREN COMPARISON_EXPRESSION RPAREN | LOOP | FUNCTION_CALL | FUNCTION_DEF
+    MEMORY_BLOCK             -> mem VAR_NAME (size in bytes)
     FUNCTION_DEF             -> fun VAR_NAME LPAREN (VAR_NAME : VAR_TYPE)* RPAREN LCURLY (STATEMENT[] - FUNCTION_DEF) RCURLY
     FUNCTION_CALL            -> VAR_NAME LPAREN (COMPARISON_EXPRESSION)* RPAREN
     LOOP                     -> loop from LPAREN* EXPRESSION to EXPRESSION (step EXPRESSION)* RPAREN* (with VAR_NAME)* LCURLY STATEMENT[] RCURLY

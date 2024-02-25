@@ -1,19 +1,16 @@
 use crate::{
+    helpers::compiler_error,
     interpreter::interpreter::Variables,
     lexer::tokens::{Number, TokenEnum, VariableEnum},
-    semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack}, trace,
+    semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
+    trace,
 };
 
 use super::asm::ASM;
 
 impl ASM {
     /// Pushes whatever token's in here onto the stack
-    pub fn generate_asm_factor(
-        &mut self,
-        token: &TokenEnum,
-        vars: &Variables,
-        call_stack: &CallStack,
-    ) {
+    pub fn generate_asm_factor(&mut self, token: &TokenEnum, vars: &Variables, call_stack: &CallStack) {
         let mut instructions: Vec<String> = vec![];
 
         match token {
@@ -38,7 +35,9 @@ impl ASM {
                                     }
 
                                     // string literal ends with a backslash
-                                    None => panic!("String cannot end with a \\"),
+                                    None => {
+                                        panic!("String cannot end with a \\")
+                                    }
                                 }
                             }
 
@@ -52,11 +51,8 @@ impl ASM {
                 }
 
                 // add the string literal in the data segement
-                self.data.push(format!(
-                    "string_{} db {}",
-                    self.num_strings,
-                    chars.join(",")
-                ));
+                self.data
+                    .push(format!("string_{} db {}", self.num_strings, chars.join(",")));
 
                 instructions.extend(vec![
                     format!("mov rax, string_{}", self.num_strings),
@@ -67,7 +63,7 @@ impl ASM {
                 self.num_strings += 1;
             }
 
-            TokenEnum::Variable(..) =>  todo!(),
+            TokenEnum::Variable(..) => todo!(),
             TokenEnum::LogicalOp(..) => todo!(),
             TokenEnum::Equals => todo!(),
             TokenEnum::PlusEquals => todo!(),

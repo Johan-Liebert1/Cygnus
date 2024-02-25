@@ -124,7 +124,7 @@ impl ASM {
                         a.extend(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec());
 
                         a
-                    },
+                    }
 
                     VarType::Ptr(pointer_var_type) => {
                         self.func_write_pointer_internal(pointer_var_type, var.times_dereferenced)

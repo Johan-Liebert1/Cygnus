@@ -1,7 +1,11 @@
-use crate::types::ASTNode;
+use crate::{
+    helpers::{self, compiler_error, unexpected_token},
+    lexer::{keywords::MEM, tokens::Operations},
+    types::ASTNode,
+};
 
 use core::panic;
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, process::exit, rc::Rc};
 
 use crate::{
     ast::{
@@ -38,8 +42,8 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
-    pub fn new(file: &'a Vec<u8>) -> Self {
-        let parser = Lexer::new(file);
+    pub fn new(file: &'a Vec<u8>, file_name: &'a String) -> Self {
+        let parser = Lexer::new(file, file_name);
 
         Self {
             lexer: Box::new(parser),
@@ -63,12 +67,15 @@ impl<'a> Parser<'a> {
 
     /// Validates the current token with expected token and consumes the token
     /// panics if current token is not the same as expected token
-    pub fn validate_token(&mut self, token_expected: TokenEnum) {
+    pub fn validate_token(&mut self, token_expected: TokenEnum) -> Token {
         let token = self.get_next_token();
 
         if token.token != token_expected {
-            panic!("Expected {:?}, got {:?}", token_expected, token);
+            helpers::unexpected_token(&token, Some(&token_expected));
+            exit(1);
         }
+
+        return token;
     }
 
     /// Validates the current token with expected token and consumes the token
@@ -87,7 +94,9 @@ impl<'a> Parser<'a> {
 
         match validated_token {
             Some(token) => token.clone(),
-            None => panic!("Expected {:?}, got {:?}", tokens_expected, token),
+            None => {
+                panic!("Expected {:?}, got {:?}", tokens_expected, token)
+            }
         }
     }
 
@@ -111,7 +120,7 @@ impl<'a> Parser<'a> {
                     FUNCTION_DEFINE => {
                         if self.inside_function_depth != 0 {
                             // don't allow function in function definitions
-                            panic!("Defining function inside functions is not allowed");
+                            compiler_error("Defining function inside functions is not allowed", &current_token);
                         }
 
                         self.parse_function_definition(Rc::clone(&self.functions))
@@ -119,7 +128,7 @@ impl<'a> Parser<'a> {
 
                     BREAK => {
                         if self.inside_loop_depth == 0 || self.inside_current_loop_number == -1 {
-                            panic!("Found `break` outside of a loop")
+                            compiler_error("Found `break` outside of a loop", &current_token);
                         }
 
                         Rc::new(RefCell::new(Box::new(Jump::new(
@@ -130,26 +139,27 @@ impl<'a> Parser<'a> {
 
                     RETURN => {
                         if self.inside_function_depth == 0 {
-                            panic!("Found `return` outside of a function");
+                            compiler_error("Found `return` outside of a function", &current_token);
                         }
 
                         Rc::new(RefCell::new(Box::new(Jump::new(JumpType::Return, 0))))
                     }
 
+                    MEM => self.parse_memory_alloc(),
+
                     ELSE_STATEMENT => {
-                        panic!("Found 'else' without an 'if' {:?}", current_token)
+                        compiler_error("Found 'else' without an 'if' {:?}", &current_token);
+                        exit(1);
                     }
 
                     ELIF_STATEMENT => {
-                        panic!("Found 'elif' without an 'if' {:?}", current_token)
+                        compiler_error("Found 'elif' without an 'if' {:?}", &current_token);
+                        exit(1);
                     }
 
                     _ => {
-                        println!(
-                            "loop {}, func {}, if {}",
-                            self.inside_loop_depth, self.inside_function_depth, self.inside_if_else_depth
-                        );
-                        panic!("Keyword '{}' not recognised", keyword);
+                        compiler_error(format!("Keyword '{}' not recognised", keyword), &current_token);
+                        exit(1);
                     }
                 }
             }
@@ -180,8 +190,8 @@ impl<'a> Parser<'a> {
 
                     TokenEnum::Equals | TokenEnum::MinusEquals | TokenEnum::PlusEquals => {
                         // variable assignment
-                        self.get_next_token();
-                        self.parse_assignment_statement(var.to_string())
+                        let var_token = self.get_next_token();
+                        self.parse_assignment_statement(var_token, var.to_string(), 0)
                     }
 
                     e => {
@@ -190,13 +200,41 @@ impl<'a> Parser<'a> {
                 }
             }
 
+            // could be something like *a = 23 or *(a + 1) = 34
+            TokenEnum::Op(op) => match op {
+                Operations::Multiply => {
+                    let mut times_dereferenced = 0;
+
+                    while let TokenEnum::Op(Operations::Multiply) = self.peek_next_token().token {
+                        self.get_next_token();
+                        times_dereferenced += 1;
+                    }
+
+                    let token = self.get_next_token();
+
+                    if let TokenEnum::Variable(ref var_name) = &token.token {
+                        self.parse_assignment_statement(token.clone(), var_name.into(), times_dereferenced)
+                    } else {
+                        unexpected_token(&token, Some(&TokenEnum::Variable("".into())));
+                        exit(1);
+                    }
+                }
+
+                Operations::Plus => todo!(),
+                Operations::Minus => todo!(),
+                Operations::Divide => todo!(),
+                Operations::ShiftLeft => todo!(),
+                Operations::ShiftRight => todo!(),
+                Operations::Modulo => todo!(),
+            },
+
             TokenEnum::LogicalOp(op) => {
-                panic!("Expected statement, found {:?}", op)
+                helpers::unexpected_token(&current_token, None);
+                exit(1);
             }
 
             TokenEnum::StringLiteral(_) => todo!(),
 
-            TokenEnum::Op(_) => todo!(),
             TokenEnum::Equals => todo!(),
             TokenEnum::PlusEquals => todo!(),
             TokenEnum::MinusEquals => todo!(),

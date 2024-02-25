@@ -1,4 +1,5 @@
 use crate::{
+    helpers,
     lexer::types::{VarType, TYPE_FLOAT, TYPE_INT, TYPE_STRING},
     semantic_analyzer::semantic_analyzer::CallStack,
     trace,
@@ -28,6 +29,7 @@ pub struct Variable {
     pub store_address: bool,
     pub times_dereferenced: usize,
     pub offset: usize,
+    pub is_memory_block: bool,
 }
 
 impl Variable {
@@ -48,6 +50,7 @@ impl Variable {
             store_address,
             times_dereferenced,
             offset: 0,
+            is_memory_block: false,
         }
     }
 
@@ -83,6 +86,10 @@ impl Variable {
             VarType::Unknown => todo!(),
         };
     }
+
+    pub fn store_result_type(&mut self, var_type: &VarType, times_dereferenced: usize) {
+        self.result_type = var_type.get_actual_type(times_dereferenced);
+    }
 }
 
 impl AST for Variable {
@@ -107,9 +114,12 @@ impl AST for Variable {
 
         if let Some(variable_in_stack) = variable_in_stack {
             self.var_type = variable_in_stack.var_type.clone();
-            self.result_type = variable_in_stack.var_type.clone();
+            self.result_type = self.var_type.get_actual_type(self.times_dereferenced);
         } else {
-            panic!("Variable with name '{}' not found in current scope", self.var_name);
+            helpers::compiler_error(
+                format!("Variable with name '{}' not found in current scope", self.var_name),
+                &self.token,
+            );
         }
     }
 

@@ -1,5 +1,6 @@
 use crate::{
     ast::variable::Variable,
+    helpers::{compiler_error, unexpected_token, unexpected_keyword},
     lexer::{
         keywords::WITH,
         types::{VarType, TYPE_INT},
@@ -8,8 +9,7 @@ use crate::{
     types::ASTNode,
 };
 
-use core::panic;
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, process::exit, rc::Rc};
 
 use crate::{
     ast::{ast_loop::Loop, factor::Factor},
@@ -27,7 +27,7 @@ impl<'a> Parser<'a> {
     pub fn parse_loop(&mut self) -> ASTNode {
         // we get here after consuming the 'loop' keyword
         if self.inside_function_depth == 0 {
-            panic!("Loop cannot be outside a function");
+            compiler_error("Loop cannot be outside a function", &self.peek_next_token());
         }
 
         // to not mess up nested loops
@@ -70,6 +70,7 @@ impl<'a> Parser<'a> {
             token: TokenEnum::Number(Number::Integer(1)),
             line_number: 0,
             col_number: 0,
+            file: "".into(),
         })))));
 
         let step = match self.peek_next_token().token {
@@ -89,15 +90,19 @@ impl<'a> Parser<'a> {
             _ => default_step,
         };
 
-        let with_var = match self.peek_next_token().token {
+        let next_token = self.peek_next_token();
+
+        let with_var = match &next_token.token {
             TokenEnum::Keyword(keyword) => {
                 match keyword.as_str() {
                     WITH => {
                         // consume 'with'
                         self.get_next_token();
 
+                        let peek_next_token = self.peek_next_token();
+
                         // the next token has to be a variable
-                        match self.peek_next_token().token {
+                        match peek_next_token.token {
                             TokenEnum::Variable(var_name) => Some(Variable::new(
                                 Box::new(self.get_next_token()),
                                 VarType::Int,
@@ -107,12 +112,16 @@ impl<'a> Parser<'a> {
                                 0,
                             )),
 
-                            t => panic!("Expected variable got '{:?}'", t),
+                            (ref t) => {
+                                unexpected_token(&peek_next_token, Some(&TokenEnum::Variable("".into())));
+                                exit(1);
+                            }
                         }
                     }
 
                     word => {
-                        panic!("Expected '{}' found '{}'", WITH, word);
+                        unexpected_keyword(&next_token, word, Some(WITH));
+                        exit(1);
                     }
                 }
             }

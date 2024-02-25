@@ -1,8 +1,10 @@
+use crate::{helpers, trace};
 use crate::{lexer::tokens::AssignmentTypes, types::ASTNode};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
 use core::panic;
+use std::process::exit;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
@@ -11,54 +13,67 @@ use crate::{
     lexer::tokens::{TokenEnum, VariableEnum},
 };
 
-use super::abstract_syntax_tree::{VisitResult, AST, ASTNodeEnum, ASTNodeEnumMut};
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
+use super::variable::Variable;
 
 #[derive(Debug)]
 pub struct AssignmentStatement {
-    var_name: String,
+    left: Variable,
     assignment_type: AssignmentTypes,
     right: ASTNode,
 }
 
 impl AssignmentStatement {
-    pub fn new(var_name: String, assignment_type: AssignmentTypes, right: ASTNode) -> Self {
+    pub fn new(left: Variable, assignment_type: AssignmentTypes, right: ASTNode) -> Self {
         Self {
-            var_name,
+            left,
             assignment_type,
             right,
+        }
+    }
+
+    fn verify_type(&self) {
+        let node_borrow = self.right.borrow();
+        let node = node_borrow.get_node();
+
+        let (is_assignment_okay, rhs_type) = node.is_var_assignment_okay(&self.left);
+
+        if !is_assignment_okay {
+            helpers::compiler_error(
+                format!(
+                    "Cannot assign variable (LHS) of type {} to RHS {}",
+                    self.left.result_type,
+                    rhs_type
+                ),
+                self.left.get_token(),
+            );
         }
     }
 }
 
 impl AST for AssignmentStatement {
-    fn visit_com(
-        &self,
-        v: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        asm: &mut ASM,
-        call_stack: &mut CallStack,
-    ) {
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         self.right.borrow().visit_com(v, f, asm, call_stack);
-        asm.variable_assignment(&self.var_name, &self.assignment_type, call_stack);
+        asm.variable_assignment(
+            &self.left.var_name,
+            &self.assignment_type,
+            call_stack,
+            self.left.times_dereferenced,
+        );
     }
 
     // TODO: change this so that the expression is stored here and we need to visit the varible
     // to evaluate the value
-    fn visit(
-        &self,
-        v: &mut Variables,
-        f: Rc<RefCell<Functions>>,
-        call_stack: &mut CallStack,
-    ) -> VisitResult {
+    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         let right_visit = self.right.borrow().visit(v, f, call_stack);
 
         match &*right_visit.token {
             TokenEnum::StringLiteral(s) => {
-                v.insert(self.var_name.clone(), VariableEnum::String(s.into()));
+                v.insert(self.left.var_name.clone(), VariableEnum::String(s.into()));
             }
 
             TokenEnum::Number(n) => {
-                v.insert(self.var_name.clone(), VariableEnum::Number(n.clone()));
+                v.insert(self.left.var_name.clone(), VariableEnum::Number(n.clone()));
             }
 
             TokenEnum::Variable(_) => todo!(),
@@ -81,16 +96,32 @@ impl AST for AssignmentStatement {
         println!("{:#?}", self)
     }
 
-    fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
-        if !call_stack.var_with_name_found(&self.var_name) {
-            panic!("Variable '{}' not found in current scope", &self.var_name);
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+        self.right.borrow_mut().semantic_visit(call_stack, f);
+
+        let (variable_opt, _) = call_stack.get_var_with_name(&self.left.var_name);
+
+        if let Some(variable) = variable_opt {
+            // the variable in here has type unknown, we have to fill it in here
+            self.left.var_type = variable.var_type.clone();
+
+            // not passing &self.left.var_type because borrow checker cries
+            self.left
+                .store_result_type(&variable.var_type, self.left.times_dereferenced);
+
+            self.verify_type();
+        } else {
+            helpers::compiler_error(
+                format!("Variable '{}' not found in current scope", &self.left.var_name),
+                self.left.get_token(),
+            );
+            exit(1);
         }
     }
 
     fn get_node(&self) -> ASTNodeEnum {
         return ASTNodeEnum::AssignmentStatement(&self);
     }
-
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::AssignmentStatement(self);

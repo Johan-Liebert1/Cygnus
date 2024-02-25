@@ -1,4 +1,4 @@
-#![allow(dead_code, unused, )]
+#![allow(dead_code, unused)]
 
 use std::{
     char,
@@ -7,11 +7,10 @@ use std::{
     rc::Rc,
 };
 
+use lexer::types::VarType;
 use parser::parser::Parser;
 
-use crate::{
-    interpreter::interpreter::Interpreter, semantic_analyzer::semantic_analyzer::SemanticAnalyzer,
-};
+use crate::{interpreter::interpreter::Interpreter, semantic_analyzer::semantic_analyzer::SemanticAnalyzer};
 
 mod asm;
 mod ast;
@@ -38,12 +37,7 @@ pub fn generate_asm() -> io::Result<()> {
     Ok(())
 }
 
-pub fn parse_input_file(
-    path: String,
-    compile_mode: bool,
-    run_asm: bool,
-    is_test: bool,
-) -> Option<ChildStdout> {
+pub fn parse_input_file(path: String, compile_mode: bool, run_asm: bool, is_test: bool) -> Option<ChildStdout> {
     println!("Parsing file {path}");
 
     let file = match std::fs::read(&path) {
@@ -54,7 +48,7 @@ pub fn parse_input_file(
         }
     };
 
-    let mut parser = Parser::new(&file);
+    let mut parser = Parser::new(&file, &path);
     let ast = parser.parse_program();
 
     let mut semantic_analyzer = SemanticAnalyzer::new(ast.clone(), Rc::clone(&parser.functions));
@@ -72,14 +66,7 @@ pub fn parse_input_file(
 
         match generate_asm() {
             Ok(_) => {
-                println!(
-                    "Successful!{}",
-                    if run_asm {
-                        ""
-                    } else {
-                        " Not running the program"
-                    }
-                );
+                println!("Successful!{}", if run_asm { "" } else { " Not running the program" });
             }
 
             Err(e) => {
@@ -94,10 +81,7 @@ pub fn parse_input_file(
             return None;
         }
 
-        match std::process::Command::new("./output")
-            .stdout(Stdio::piped())
-            .spawn()
-        {
+        match std::process::Command::new("./output").stdout(Stdio::piped()).spawn() {
             Ok(ref mut child) => match child.wait() {
                 Ok(exit_status) => {
                     if !is_test {
@@ -157,9 +141,7 @@ fn main() {
         };
     }
 
-    if let Some(ref mut stdout) =
-        parse_input_file(file_name.into(), COMPILE_MODE, RUN_PROGRAM, false)
-    {
+    if let Some(ref mut stdout) = parse_input_file(file_name.into(), COMPILE_MODE, RUN_PROGRAM, false) {
         let mut str = String::new();
         stdout.read_to_string(&mut str);
         println!("{:?}", str);

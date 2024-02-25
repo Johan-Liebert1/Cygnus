@@ -1,13 +1,13 @@
+mem array 5
+
 fun main() {
-    def a: str = "abcdef\n";
-    def b: *str = &a;
+    def ind: int = 22332;
 
-    def i: int = 0;
-
-    loop from 1 to 7 {
-        write(i, *(b + i));
-        i = i + 1;
+    loop from 1 to 10 {
+        ind = ind + 1;
     }
+
+    write(ind)
 }
 
 main() 

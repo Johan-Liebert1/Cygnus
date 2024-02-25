@@ -105,7 +105,6 @@ impl ASM {
             instructions.push(format!("push 1"));
         }
 
-
         self.extend_current_label(instructions);
     }
 }

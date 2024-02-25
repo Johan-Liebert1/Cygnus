@@ -17,7 +17,9 @@ pub const RETURN: &str = "return";
 pub const BREAK: &str = "break";
 pub const WITH: &str = "with";
 
-pub const KEYWORDS: [&str; 15] = [
+pub const MEM: &str = "mem";
+
+pub const KEYWORDS: [&str; 16] = [
     VAR_DEFINE,
     IF_STATEMENT,
     ELSE_STATEMENT,
@@ -33,6 +35,7 @@ pub const KEYWORDS: [&str; 15] = [
     RETURN,
     BREAK,
     WITH,
+    MEM,
 ];
 
 // Predefined functions
