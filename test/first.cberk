@@ -1,7 +1,13 @@
-mem array 122. + 23. + 1.
+mem array 5
 
 fun main() {
-    def ind = 22332;
+    def ind: int = 22332;
+
+    loop from 1 to 10 {
+        ind = ind + 1;
+    }
+
+    write(ind)
 }
 
 main() 

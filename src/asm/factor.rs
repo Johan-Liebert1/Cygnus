@@ -1,4 +1,5 @@
 use crate::{
+    helpers::compiler_error,
     interpreter::interpreter::Variables,
     lexer::tokens::{Number, TokenEnum, VariableEnum},
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
@@ -34,7 +35,9 @@ impl ASM {
                                     }
 
                                     // string literal ends with a backslash
-                                    None => panic!("String cannot end with a \\"),
+                                    None => {
+                                        panic!("String cannot end with a \\")
+                                    }
                                 }
                             }
 

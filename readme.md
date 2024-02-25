@@ -20,13 +20,14 @@
 - [x] Variable scoping
 - [x] Implement `+=` and `-=`
 - [x] Pointer deref
-- [ ] Pointer to pointer to pointer ...
-- [ ] Random access to memory
+- [x] Pointer to pointer to pointer ...
+- [x] Random access to memory
 
+- [ ] Type Casting
+- [ ] Proper type checking
 - [ ] Function returns
 - [ ] Function arguments and their type checking
 - [ ] Floating point numbers
-- [ ] Proper type checking
 - [ ] Enums - Use `offset` and `reset` kinda like Go's `iota`
 - [ ] Make sure nothing is left on the stack when we break out of a loop
 - [ ] Command line arguments

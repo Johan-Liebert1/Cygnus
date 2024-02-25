@@ -1,4 +1,4 @@
-use std::{process::exit, fmt::Display};
+use std::{fmt::Display, process::exit};
 
 use crate::lexer::{lexer::Token, tokens::TokenEnum};
 
@@ -16,6 +16,22 @@ pub fn print_only_tokens(tokens: &Vec<Token>) {
     }
 
     trace!("");
+}
+
+pub fn unexpected_keyword<S: AsRef<str> + Display>(token: &Token, unexpected: S, expected: Option<S>) {
+    println!(
+        "{}:{}:{} Unexpected Keyword: '{}'{}",
+        token.file,
+        token.line_number,
+        token.col_number,
+        unexpected,
+        match expected {
+            Some(tok) => format!(" Expected: '{tok}'"),
+            None => "".into(),
+        }
+    );
+
+    exit(1);
 }
 
 pub fn unexpected_token(unexpected: &Token, expected: Option<&TokenEnum>) {
