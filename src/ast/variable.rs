@@ -1,4 +1,5 @@
 use crate::{
+    helpers,
     lexer::types::{VarType, TYPE_FLOAT, TYPE_INT, TYPE_STRING},
     semantic_analyzer::semantic_analyzer::CallStack,
     trace,
@@ -115,7 +116,10 @@ impl AST for Variable {
             self.var_type = variable_in_stack.var_type.clone();
             self.result_type = self.var_type.get_actual_type(self.times_dereferenced);
         } else {
-            panic!("Variable with name '{}' not found in current scope", self.var_name);
+            helpers::compiler_error(
+                format!("Variable with name '{}' not found in current scope", self.var_name),
+                &self.token,
+            );
         }
     }
 

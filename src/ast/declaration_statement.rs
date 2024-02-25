@@ -1,9 +1,8 @@
-use crate::trace;
+use crate::{helpers, trace};
 use crate::{lexer::tokens::AssignmentTypes, types::ASTNode};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
-use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
@@ -39,9 +38,12 @@ impl DeclarationStatement {
         let (is_assignment_okay, rhs_type) = node.is_var_assignment_okay(&self.left);
 
         if !is_assignment_okay {
-            panic!(
-                "Cannot assign variable (LHS) of type {} to RHS {}",
-                self.left.result_type, rhs_type
+            helpers::compiler_error(
+                format!(
+                    "Cannot assign variable (LHS) of type {} to RHS {}",
+                    self.left.result_type, rhs_type
+                ),
+                self.left.get_token(),
             )
         }
     }
@@ -83,7 +85,10 @@ impl AST for DeclarationStatement {
             TokenEnum::Variable(_) => todo!(),
 
             _ => {
-                panic!("Variable value is not a Number, String or Variable");
+                helpers::compiler_error(
+                    "Variable value is not a Number, String or Variable",
+                    self.left.get_token(),
+                );
             }
         }
 

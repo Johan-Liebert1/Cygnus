@@ -1,7 +1,8 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, process::exit, rc::Rc};
 
 use crate::{
     asm::asm::ASM,
+    helpers,
     interpreter::interpreter::{Functions, Variables},
     lexer::{
         tokens::{Number, TokenEnum},
@@ -49,16 +50,31 @@ impl AST for MemoryAlloc {
             TokenEnum::Number(n) => match n {
                 Number::Integer(i) => {
                     if i < 0 {
-                        panic!("Memory size must be a positive integer")
+                        helpers::compiler_error(
+                            "Memory size must be a positive integer",
+                            self.size.borrow().get_token(),
+                        );
+                        exit(1);
                     } else {
                         i
                     }
                 }
-                Number::Float(_) => panic!("Memory to be allocated has to be an integer"),
+
+                Number::Float(_) => {
+                    helpers::compiler_error(
+                        "Memory to be allocated has to be an integer",
+                        self.size.borrow().get_token(),
+                    );
+                    exit(1);
+                }
             },
 
             _ => {
-                panic!("Memory to be allocated has to be a number")
+                helpers::compiler_error(
+                    "Memory to be allocated has to be a number",
+                    self.size.borrow().get_token(),
+                );
+                exit(1);
             }
         };
 

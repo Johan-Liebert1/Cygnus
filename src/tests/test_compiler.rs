@@ -92,3 +92,9 @@ fn euler_007() {
     let (stdout_str, file_result) = get_stdout_and_actual_result("project_euler/007.cberk");
     assert_eq!(stdout_str, file_result);
 }
+
+#[test]
+fn rule_110() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("110.cberk");
+    assert_eq!(stdout_str, file_result);
+}

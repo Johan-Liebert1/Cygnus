@@ -1,4 +1,4 @@
-use std::process::exit;
+use std::{process::exit, fmt::Display};
 
 use crate::lexer::{lexer::Token, tokens::TokenEnum};
 
@@ -20,14 +20,21 @@ pub fn print_only_tokens(tokens: &Vec<Token>) {
 
 pub fn unexpected_token(unexpected: &Token, expected: Option<&TokenEnum>) {
     println!(
-        "{}:{}:{} Unexpected Token: '{}' {}",
+        "{}:{}:{} Unexpected Token: '{}'{}",
         unexpected.file,
         unexpected.line_number,
         unexpected.col_number,
         unexpected,
         match expected {
-            Some(tok) => " Expected: {tok}",
-            None => "",
+            Some(tok) => format!(" Expected: '{tok}'"),
+            None => "".into(),
         }
     );
+
+    exit(1);
+}
+
+pub fn compiler_error<S: AsRef<str> + Display>(message: S, tok: &Token) {
+    println!("{}:{}:{} {}", tok.file, tok.line_number, tok.col_number, message);
+    exit(1);
 }

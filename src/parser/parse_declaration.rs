@@ -1,6 +1,11 @@
-use crate::{trace, types::ASTNode};
+use crate::{
+    helpers::unexpected_token,
+    lexer::{tokens::Bracket, types::VarType},
+    trace,
+    types::ASTNode,
+};
 
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, process::exit, rc::Rc};
 
 use crate::{
     ast::{declaration_statement::DeclarationStatement, variable::Variable},
@@ -30,15 +35,24 @@ impl<'a> Parser<'a> {
                                 return Variable::new(Box::new(token), var_type.clone(), var_name, false, false, 0);
                             }
 
-                            _ => panic!("Expected type found {:?}", token),
+                            _ => {
+                                unexpected_token(&token, None);
+                                exit(1);
+                            }
                         }
                     }
 
-                    _ => panic!("Expected : found {:?}", token),
+                    _ => {
+                        unexpected_token(&token, Some(&TokenEnum::Colon));
+                        exit(1);
+                    }
                 }
             }
 
-            _ => panic!("Expected a variable found {:?}", token),
+            _ => {
+                unexpected_token(&token, Some(&TokenEnum::Colon));
+                exit(1);
+            }
         }
     }
 

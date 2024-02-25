@@ -14,7 +14,7 @@ impl<'a> Parser<'a> {
     pub fn parse_function_call(&mut self, name: String) -> ASTNode {
         // We parse from the LPAREN
         // consume the LPAREN
-        self.get_next_token();
+        let tok = self.get_next_token();
 
         let mut arguments: Vec<ASTNode> = vec![];
 
@@ -48,6 +48,6 @@ impl<'a> Parser<'a> {
             };
         }
 
-        return Rc::new(RefCell::new(Box::new(FunctionCall::new(name, arguments))));
+        return Rc::new(RefCell::new(Box::new(FunctionCall::new(name, tok, arguments))));
     }
 }

@@ -175,7 +175,7 @@ impl AST for BinaryOP {
                 asm.binary_op_nums(c.clone(), self.times_dereferenced, &self.result_type);
             }
 
-            _ => panic!("Found non operator for a Binary Expression"),
+            _ => unreachable!("Found non operator for a Binary Expression"),
         }
     }
 
@@ -231,7 +231,7 @@ impl AST for BinaryOP {
                 .figure_out_type(&self.right.borrow().get_node(), AllOperations::Op(op.clone()))
                 .get_actual_type(self.times_dereferenced);
         } else {
-            panic!("Found Operation '{:?}' which is not defined for a binary operation. This must be a bug in the parsing step", self.operator.token)
+            unreachable!("Found Operation '{:?}' which is not defined for a binary operation. This must be a bug in the parsing step", self.operator.token)
         }
     }
 

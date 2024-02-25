@@ -1,3 +1,4 @@
+use crate::helpers;
 use crate::lexer::types::VarType;
 use crate::{trace, types::ASTNode};
 
@@ -20,14 +21,16 @@ use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST}
 #[derive(Debug)]
 pub struct FunctionCall {
     name: String,
+    token: Token,
     arguments: Vec<ASTNode>,
     pub result_type: VarType,
 }
 
 impl FunctionCall {
-    pub fn new(name: String, arguments: Vec<ASTNode>) -> Self {
+    pub fn new(name: String, token: Token, arguments: Vec<ASTNode>) -> Self {
         Self {
             name,
+            token,
             arguments,
             result_type: VarType::Unknown,
         }
@@ -72,7 +75,7 @@ impl AST for FunctionCall {
 
             FUNC_EXIT => {
                 if self.arguments.len() == 0 {
-                    panic!("exit needs one argument");
+                    helpers::compiler_error(format!("exit needs one argument"), &self.token);
                 }
 
                 for arg in &self.arguments {
@@ -109,7 +112,7 @@ impl AST for FunctionCall {
 
             FUNC_EXIT => {
                 if self.arguments.len() == 0 {
-                    panic!("exit needs one argument");
+                    helpers::compiler_error(format!("exit needs one argument"), &self.token);
                 }
 
                 for arg in &self.arguments {
@@ -122,12 +125,18 @@ impl AST for FunctionCall {
                         TokenEnum::Number(n) => match n {
                             Number::Integer(i) => exit(i),
                             Number::Float(_) => {
-                                panic!("exit needs an integer argument. Received float")
+                                helpers::compiler_error(
+                                    format!("exit needs an integer argument. Received float"),
+                                    &self.token,
+                                );
                             }
                         },
 
                         t => {
-                            panic!("exit needs an integer argument. Received {:?}", t);
+                            helpers::compiler_error(
+                                format!("exit needs an integer argument. Received {:?}", t),
+                                &self.token,
+                            );
                         }
                     }
                 }

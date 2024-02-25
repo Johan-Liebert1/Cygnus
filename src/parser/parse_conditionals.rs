@@ -1,6 +1,6 @@
-use crate::types::ASTNode;
+use crate::{helpers::unexpected_token, types::ASTNode};
 
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, process::exit, rc::Rc};
 
 use crate::{
     ast::conditionals::{ConditionalStatement, ElseStatement, IfStatement},
@@ -66,7 +66,9 @@ impl<'a> Parser<'a> {
         // store them all in one AST
         let condition = self.parse_logical_expression();
 
-        match self.peek_next_token().token {
+        let token = self.peek_next_token();
+
+        match &token.token {
             TokenEnum::Bracket(b) => match b {
                 Bracket::LCurly => {
                     self.get_next_token();
@@ -80,20 +82,24 @@ impl<'a> Parser<'a> {
                     return IfStatement::new(condition, statements);
                 }
 
-                token => {
-                    panic!("Expected {{, got {:?}", token);
+                found_token => {
+                    unexpected_token(&token, Some(&TokenEnum::Bracket(Bracket::LCurly)));
+                    exit(1);
                 }
             },
 
-            token => {
-                panic!("Expected {{, got {:?}", token);
+            found_token => {
+                unexpected_token(&token, Some(&TokenEnum::Bracket(Bracket::LCurly)));
+                exit(1);
             }
         };
     }
 
     /// we get here after 'else' has been consumed
     pub fn parse_else(&mut self) -> ElseStatement {
-        match self.peek_next_token().token {
+        let token = self.peek_next_token();
+
+        match &token.token {
             TokenEnum::Bracket(b) => match b {
                 Bracket::LCurly => {
                     self.get_next_token();
@@ -107,13 +113,15 @@ impl<'a> Parser<'a> {
                     return ElseStatement::new(statements);
                 }
 
-                token => {
-                    panic!("Expected {{, got {:?}", token);
+                found_token => {
+                    unexpected_token(&token, Some(&TokenEnum::Bracket(Bracket::LCurly)));
+                    exit(1);
                 }
             },
 
-            token => {
-                panic!("Expected {{, got {:?}", token);
+            found_token => {
+                unexpected_token(&token, Some(&TokenEnum::Bracket(Bracket::LCurly)));
+                exit(1);
             }
         };
     }

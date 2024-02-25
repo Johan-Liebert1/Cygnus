@@ -1,9 +1,10 @@
-use crate::trace;
+use crate::{helpers, trace};
 use crate::{lexer::tokens::AssignmentTypes, types::ASTNode};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
 use core::panic;
+use std::process::exit;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
@@ -38,13 +39,14 @@ impl AssignmentStatement {
         let (is_assignment_okay, rhs_type) = node.is_var_assignment_okay(&self.left);
 
         if !is_assignment_okay {
-            panic!(
-                "Cannot assign variable (LHS) of type {} to RHS {} at {}:{}",
-                self.left.result_type,
-                rhs_type,
-                self.left.get_token().line_number,
-                self.left.get_token().col_number
-            )
+            helpers::compiler_error(
+                format!(
+                    "Cannot assign variable (LHS) of type {} to RHS {}",
+                    self.left.result_type,
+                    rhs_type
+                ),
+                self.left.get_token(),
+            );
         }
     }
 }
@@ -109,7 +111,11 @@ impl AST for AssignmentStatement {
 
             self.verify_type();
         } else {
-            panic!("Variable '{}' not found in current scope", &self.left.var_name);
+            helpers::compiler_error(
+                format!("Variable '{}' not found in current scope", &self.left.var_name),
+                self.left.get_token(),
+            );
+            exit(1);
         }
     }
 

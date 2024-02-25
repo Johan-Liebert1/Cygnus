@@ -135,7 +135,7 @@ impl AST for ComparisonExp {
                 asm.compare_two_numbers(c.clone());
             }
 
-            _ => panic!("Found non comparator for a Comparison Expression"),
+            _ => unreachable!("Found non comparator for a Comparison Expression"),
         }
     }
 
@@ -188,7 +188,7 @@ impl AST for ComparisonExp {
                 .get_node()
                 .figure_out_type(&self.right.borrow().get_node(), AllOperations::Comparator(op.clone()));
         } else {
-            panic!(
+            unreachable!(
                 "Found Operation '{:?}' which is not defined for a comparison operation.\
             This must be a bug in the parsing step",
                 self.comp_op.token
