@@ -80,10 +80,8 @@ impl AST for Factor {
             TokenEnum::Variable(v) => {
                 let (variable, _) = call_stack.get_var_with_name(v);
 
-                trace!("variable, {:#?}", variable);
-
                 if let Some(var) = variable {
-                    var.var_type.clone()
+                    var.var_type.get_actual_type(var.times_dereferenced).clone()
                 } else {
                     panic!("Variable with name '{v}' not found in currenct scope");
                 }

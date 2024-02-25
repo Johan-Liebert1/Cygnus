@@ -39,6 +39,7 @@ impl<'a> Parser<'a> {
                     // this is not a variable declaration, only a variable
                     // name so we don't have type information here
                     // This is handled via the call stack
+                    // This is done in the assignment_statemetn
                     VarType::Unknown,
                     var_name.into(),
                     false,

@@ -23,6 +23,26 @@ impl VarType {
         }
     }
 
+    pub fn get_actual_type(&self, times_dereferenced: usize) -> VarType {
+        return match self {
+            VarType::Ptr(ptr_var_type) => {
+                if times_dereferenced > 0 {
+                    ptr_var_type.get_actual_type(times_dereferenced - 1)
+                } else {
+                    self.clone()
+                }
+            }
+
+            t => {
+                if times_dereferenced > 0 {
+                    panic!("Cannot dereference {self}")
+                } else {
+                    t.clone()
+                }
+            }
+        };
+    }
+
     pub fn figure_out_type(&self, other: &VarType, op: AllOperations) -> VarType {
         return match (self, other) {
             (VarType::Int, VarType::Int) => VarType::Int,

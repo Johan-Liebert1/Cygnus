@@ -101,7 +101,6 @@ impl AST for AssignmentStatement {
 
         if let Some(variable) = variable_opt {
             // the variable in here has type unknown, we have to fill it in here
-
             self.left.var_type = variable.var_type.clone();
 
             // not passing &self.left.var_type because borrow checker cries
