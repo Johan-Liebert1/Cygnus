@@ -85,6 +85,28 @@ impl Variable {
             VarType::Unknown => todo!(),
         };
     }
+
+    pub fn store_result_type(&mut self, var_type: &VarType, times_dereferenced: usize) -> VarType {
+        self.result_type = match var_type {
+            VarType::Ptr(ptr_var_type) => {
+                if times_dereferenced > 0 {
+                    self.store_result_type(ptr_var_type, times_dereferenced - 1)
+                } else {
+                    var_type.clone()
+                }
+            },
+
+            t => {
+                if times_dereferenced > 0 {
+                    panic!("Cannot dereference {var_type}")
+                } else {
+                    t.clone()
+                }
+            }
+        };
+
+        return self.result_type.clone();
+    }
 }
 
 impl AST for Variable {

@@ -188,8 +188,8 @@ impl<'a> Parser<'a> {
 
                     TokenEnum::Equals | TokenEnum::MinusEquals | TokenEnum::PlusEquals => {
                         // variable assignment
-                        self.get_next_token();
-                        self.parse_assignment_statement(var.to_string(), 0)
+                        let var_token = self.get_next_token();
+                        self.parse_assignment_statement(var_token, var.to_string(), 0)
                     }
 
                     e => {
@@ -208,10 +208,10 @@ impl<'a> Parser<'a> {
                         times_dereferenced += 1;
                     }
 
-                    let token = self.get_next_token().token;
+                    let token = self.get_next_token();
 
-                    if let TokenEnum::Variable(var_name) = token {
-                        self.parse_assignment_statement(var_name, times_dereferenced)
+                    if let TokenEnum::Variable(ref var_name) = &token.token {
+                        self.parse_assignment_statement(token.clone(), var_name.into(), times_dereferenced)
                     } else {
                         panic!("Expected variable after '*' got {:#?}", token)
                     }
