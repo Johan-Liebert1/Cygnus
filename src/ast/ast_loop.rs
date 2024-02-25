@@ -58,6 +58,7 @@ impl Loop {
             token: TokenEnum::Variable(from_name.clone()),
             col_number: 0,
             line_number: 0,
+            file: "".into()
         };
 
         // TODO: Fix this, this doesn't need to be done this way

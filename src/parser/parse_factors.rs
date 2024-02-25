@@ -139,7 +139,7 @@ impl<'a> Parser<'a> {
                     return exp;
                 }
 
-                helpers::unexpected_token("parse_factor", &next_token.token, &TokenEnum::Op(Operations::Multiply));
+                helpers::unexpected_token(&next_token, None);
 
                 exit(1);
             }
@@ -167,24 +167,14 @@ impl<'a> Parser<'a> {
                     }
 
                     _ => {
-                        helpers::unexpected_token(
-                            "parse_factor",
-                            &next_next_token.token,
-                            &TokenEnum::Variable("".into()),
-                        );
-
+                        helpers::unexpected_token(&next_next_token, Some(&TokenEnum::Variable("".into())));
                         exit(1);
                     }
                 }
             }
 
             _ => {
-                helpers::unexpected_token(
-                    "parse_factor",
-                    &next_token.token,
-                    &TokenEnum::Number(Number::Integer(1)),
-                );
-
+                helpers::unexpected_token(&next_token, None);
                 exit(1);
             }
         }

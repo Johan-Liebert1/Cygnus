@@ -41,8 +41,8 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
-    pub fn new(file: &'a Vec<u8>) -> Self {
-        let parser = Lexer::new(file);
+    pub fn new(file: &'a Vec<u8>, file_name: &'a String) -> Self {
+        let parser = Lexer::new(file, file_name);
 
         Self {
             lexer: Box::new(parser),

@@ -69,6 +69,15 @@ pub enum Number {
     Float(f32),
 }
 
+impl Display for Number {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Number::Integer(_) => write!(f, "{}", "Integer"),
+            Number::Float(_) => write!(f, "{}", "Float"),
+        }
+    }
+}
+
 impl PartialEq for Number {
     fn eq(&self, other: &Self) -> bool {
         // only compare the enum variant and not the value inside it
@@ -82,6 +91,17 @@ pub enum Bracket {
     RParen,
     LCurly,
     RCurly,
+}
+
+impl Display for Bracket {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Bracket::LParen => write!(f, "{}", "("),
+            Bracket::RParen => write!(f, "{}", ")"),
+            Bracket::LCurly => write!(f, "{}", "{"),
+            Bracket::RCurly => write!(f, "{}", "}"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -187,6 +207,33 @@ pub struct OperandConversionError(TokenEnum);
 impl Display for OperandConversionError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?} cannot be used as an operand", self.0)
+    }
+}
+
+impl Display for TokenEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TokenEnum::Equals => write!(f, "{}", "="),
+            TokenEnum::PlusEquals => write!(f, "{}", "+="),
+            TokenEnum::MinusEquals => write!(f, "{}", "-="),
+            TokenEnum::Comma => write!(f, "{}", ","),
+            TokenEnum::Colon => write!(f, "{}", ":"),
+            TokenEnum::SemiColon => write!(f, "{}", ";"),
+            TokenEnum::Ampersand => write!(f, "{}", "&"),
+            TokenEnum::Number(token) => write!(f, "{}", token),
+            TokenEnum::Bracket(token) => write!(f, "{}", token),
+            TokenEnum::Op(token) => write!(f, "{}", token),
+            TokenEnum::Comparator(token) => write!(f, "{}", token),
+            TokenEnum::LogicalOp(token) => write!(f, "{}", token),
+            TokenEnum::Bool(token) => write!(f, "{}", token),
+            TokenEnum::Keyword(token) => write!(f, "{}", token),
+            TokenEnum::Variable(token) => write!(f, "{}", token),
+            TokenEnum::Type(token) => write!(f, "{}", token),
+            TokenEnum::StringLiteral(token) => write!(f, "{}", token),
+            TokenEnum::Unknown(token) => write!(f, "{}", token),
+            TokenEnum::EOF => write!(f, "{}", "EOF"),
+        }
+        
     }
 }
 

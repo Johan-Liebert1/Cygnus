@@ -70,6 +70,7 @@ impl<'a> Parser<'a> {
             token: TokenEnum::Number(Number::Integer(1)),
             line_number: 0,
             col_number: 0,
+            file: "".into(),
         })))));
 
         let step = match self.peek_next_token().token {

@@ -13,15 +13,12 @@ pub struct Token {
     pub token: TokenEnum,
     pub line_number: usize,
     pub col_number: usize,
+    pub file: String,
 }
 
 impl Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "T: {:?}             , L: {:}, C: {}",
-            self.token, self.line_number, self.col_number
-        )
+        write!(f, "{}", self.token)
     }
 }
 
@@ -31,15 +28,17 @@ pub struct Lexer<'a> {
     pub col_number: usize,
     pub file: &'a Vec<u8>,
     pub index: usize,
+    pub file_name: &'a String,
 }
 
 impl<'a> Lexer<'a> {
-    pub fn new(file: &'a Vec<u8>) -> Self {
+    pub fn new(file: &'a Vec<u8>, file_name: &'a String) -> Self {
         Lexer {
             line_number: 1,
             col_number: 1,
             index: 0,
             file,
+            file_name,
         }
     }
 
