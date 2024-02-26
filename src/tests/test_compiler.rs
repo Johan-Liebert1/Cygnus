@@ -98,3 +98,9 @@ fn rule_110() {
     let (stdout_str, file_result) = get_stdout_and_actual_result("110.cberk");
     assert_eq!(stdout_str, file_result);
 }
+
+#[test]
+fn palindrome_number() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("palindrome.cberk");
+    assert_eq!(stdout_str, file_result);
+}
