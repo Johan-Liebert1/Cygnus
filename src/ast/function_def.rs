@@ -23,7 +23,7 @@ use super::{
 #[derive(Debug)]
 pub struct FunctionDefinition {
     name: String,
-    parameters: Vec<Variable>,
+    pub parameters: Vec<Variable>,
     block: ASTNode,
     /// How much to allocate on the stack to make room for local variables
     stack_var_size: usize,
@@ -42,14 +42,15 @@ impl FunctionDefinition {
 
 impl AST for FunctionDefinition {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        asm.function_def(&self.name, self.stack_var_size);
-
         call_stack.push(self.name.to_string(), ActivationRecordType::Function);
 
         for arg in &self.parameters {
             // params cannot be dereferenced
             call_stack.insert_variable(arg.clone());
         }
+
+        // args -> rax, rdi, rsi, rdx, r10, r8, r9
+        asm.function_def(call_stack, &self.name, self.stack_var_size, &self.parameters);
 
         self.block.borrow().visit_com(v, f, asm, call_stack);
 

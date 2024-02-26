@@ -44,3 +44,4 @@ pub const KEYWORDS: [&str; 16] = [
 pub const FUNC_WRITE: &str = "write";
 pub const FUNC_EXIT: &str = "exit";
 pub const FUNC_STRLEN: &str = "strlen";
+pub const FUNC_SYSCALL: &str = "syscall";

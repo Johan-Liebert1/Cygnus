@@ -1,8 +1,11 @@
-use crate::helpers;
+use crate::asm::functions::FUNCTION_ARGS_REGS;
+use crate::ast::function_def::FunctionDefinition;
+use crate::helpers::{self, compiler_error};
+use crate::lexer::keywords::FUNC_SYSCALL;
 use crate::lexer::types::VarType;
 use crate::{trace, types::ASTNode};
 
-use crate::semantic_analyzer::semantic_analyzer::CallStack;
+use crate::semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack};
 
 use std::{cell::RefCell, process::exit, rc::Rc};
 
@@ -74,10 +77,6 @@ impl AST for FunctionCall {
             }
 
             FUNC_EXIT => {
-                if self.arguments.len() == 0 {
-                    helpers::compiler_error(format!("exit needs one argument"), &self.token);
-                }
-
                 for arg in &self.arguments {
                     arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
                 }
@@ -88,11 +87,17 @@ impl AST for FunctionCall {
             FUNC_STRLEN => {}
 
             name => match f.borrow().get(name) {
-                Some(_function_ast) => {
-                    asm.function_call(&String::from(name));
+                // args -> rax, rdi, rsi, rdx, r10, r8, r9
+                Some(..) => {
+                    // we reverse here as we want to push into the stack backwards
+                    for argument in self.arguments.iter().rev() {
+                        argument.borrow().visit_com(v, f.clone(), asm, call_stack);
+                    }
+
+                    asm.function_call(&String::from(name), self.arguments.len());
                 }
 
-                None => unimplemented!("Function {} unimplemented", self.name),
+                None => compiler_error(format!("Function {} unimplemented", self.name), &self.token),
             },
         }
     }
@@ -161,9 +166,70 @@ impl AST for FunctionCall {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+        // need to do this first to compute resulting types
         for arg in &self.arguments {
             arg.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
         }
+
+        let binding = f.borrow();
+
+        match self.name.as_str() {
+            FUNC_WRITE => {}
+            FUNC_EXIT => {}
+
+            FUNC_SYSCALL => {
+                // not type checked
+            }
+
+            _ => {
+                if self.arguments.len() > FUNCTION_ARGS_REGS.len() {
+                    todo!("Functions with more than {} args not handled", FUNCTION_ARGS_REGS.len())
+                }
+
+                let function_definition = match binding.get(&self.name) {
+                    Some(f) => f,
+                    None => {
+                        compiler_error(format!("Function '{}' is not defined", &self.name), &self.token);
+                        exit(1);
+                    }
+                };
+
+                if let ASTNodeEnum::FunctionDef(fd) = function_definition.borrow().get_node() {
+                    if fd.parameters.len() != self.arguments.len() {
+                        compiler_error(
+                            format!(
+                                "Function '{}' expects {} arguments but got {}",
+                                &self.name,
+                                fd.parameters.len(),
+                                self.arguments.len()
+                            ),
+                            &self.token,
+                        );
+
+                        exit(1);
+                    }
+
+                    for (actual_param, formal_param) in fd.parameters.iter().zip(&self.arguments) {
+                        let binding = formal_param.borrow();
+                        let binding = binding.get_node();
+
+                        let (is_var_assignment_okay, rhs_type) = binding.is_var_assignment_okay(actual_param);
+
+                        if !is_var_assignment_okay {
+                            compiler_error(
+                                format!(
+                                    "Cannot assign param of type {} to '{}', as '{}' is defined as type {}",
+                                    rhs_type, actual_param.var_name, actual_param.var_name, actual_param.result_type
+                                ),
+                                &self.token,
+                            )
+                        }
+                    }
+                } else {
+                    unreachable!("Found non function_definition node inside functions hash map")
+                }
+            }
+        };
     }
 
     fn get_node(&self) -> ASTNodeEnum {
