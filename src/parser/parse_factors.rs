@@ -1,8 +1,10 @@
 use crate::{
     ast::{
         abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, AST},
+        function_call::FunctionCall,
         variable::Variable,
     },
+    helpers::unexpected_token,
     lexer::{tokens::Operations, types::VarType},
     trace,
     types::ASTNode,
@@ -19,13 +21,9 @@ use crate::{
 use super::parser::Parser;
 
 impl<'a> Parser<'a> {
-    /// FACTOR -> (*|&) INTEGER | FLOAT | VARIABLE | STRING_LITERAL | LPAREN EXPRESSION RPAREN
+    /// FACTOR -> (*|&)* INTEGER | FLOAT | VARIABLE | STRING_LITERAL | LPAREN EXPRESSION RPAREN | FUNCTION_CALL
     pub fn parse_factor(&mut self) -> ASTNode {
         let next_token = self.peek_next_token();
-
-        if constants::PARSER_DEBUG {
-            trace!("parse_factor next_token {:#?}", next_token);
-        }
 
         match &next_token.token {
             TokenEnum::Number(..) | TokenEnum::StringLiteral(..) => {
@@ -33,19 +31,43 @@ impl<'a> Parser<'a> {
                 return Rc::new(RefCell::new(Box::new(Factor::new(Box::new(next_token)))));
             }
 
+            // This could also be a function call
             TokenEnum::Variable(var_name) => {
-                Rc::new(RefCell::new(Box::new(Variable::new(
-                    Box::new(self.get_next_token()),
-                    // this is not a variable declaration, only a variable
-                    // name so we don't have type information here
-                    // This is handled via the call stack
-                    // This is done in the assignment_statemetn
-                    VarType::Unknown,
-                    var_name.into(),
-                    false,
-                    false,
-                    0,
-                ))))
+                // this is not a variable declaration, only a variable
+                // name so we don't have type information here
+                // This is handled via the call stack
+                // This is done in the assignment_statemetn
+
+                let var_token = self.get_next_token();
+
+                let peeked_token = self.peek_next_token();
+
+                match &peeked_token.token {
+                    TokenEnum::Bracket(b) => match b {
+                        Bracket::LParen => self.parse_function_call(var_name.into()),
+
+                        // WE cannot check for other type of parenthesis here as
+                        // write(variable) will result in error as there's a ')' following the
+                        // variable, but it should be perfectly fine
+                        _ => Rc::new(RefCell::new(Box::new(Variable::new(
+                            Box::new(var_token),
+                            VarType::Unknown,
+                            var_name.into(),
+                            false,
+                            false,
+                            0,
+                        )))),
+                    },
+
+                    _ => Rc::new(RefCell::new(Box::new(Variable::new(
+                        Box::new(var_token),
+                        VarType::Unknown,
+                        var_name.into(),
+                        false,
+                        false,
+                        0,
+                    )))),
+                }
             }
 
             TokenEnum::Bracket(paren) => match paren {
@@ -87,8 +109,7 @@ impl<'a> Parser<'a> {
                             }
 
                             Bracket::RParen => {
-                                println!(") never opened");
-                                exit(1);
+                                panic!(") never opened");
                             }
 
                             _ => {
@@ -98,8 +119,7 @@ impl<'a> Parser<'a> {
                     }
 
                     None => {
-                        println!(") never opened");
-                        exit(1);
+                        panic!(") never opened");
                     }
                 },
 

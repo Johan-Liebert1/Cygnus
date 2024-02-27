@@ -1,6 +1,6 @@
-use crate::{types::ASTNode, helpers::unexpected_token};
+use crate::{helpers::unexpected_token, types::ASTNode};
 
-use std::{cell::RefCell, rc::Rc, process::exit};
+use std::{cell::RefCell, process::exit, rc::Rc};
 
 use crate::{
     ast::{function_def::FunctionDefinition, variable::Variable},
@@ -25,7 +25,7 @@ impl<'a> Parser<'a> {
 
                     _ => {
                         unexpected_token(&token, None);
-                    },
+                    }
                 },
 
                 TokenEnum::Comma => {

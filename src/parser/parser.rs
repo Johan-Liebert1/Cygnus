@@ -1,6 +1,8 @@
 use crate::{
+    ast::abstract_syntax_tree::AST,
     helpers::{self, compiler_error, unexpected_token},
     lexer::{keywords::MEM, tokens::Operations},
+    trace,
     types::ASTNode,
 };
 
@@ -142,7 +144,45 @@ impl<'a> Parser<'a> {
                             compiler_error("Found `return` outside of a function", &current_token);
                         }
 
-                        Rc::new(RefCell::new(Box::new(Jump::new(JumpType::Return, 0))))
+                        let peek_next = self.peek_next_token();
+
+                        match &peek_next.token {
+                            TokenEnum::Number(..) | TokenEnum::Variable(..) => self.parse_logical_expression(),
+
+                            TokenEnum::Bracket(b) => match b {
+                                Bracket::LParen => self.parse_logical_expression(),
+
+                                Bracket::RCurly => {
+                                    // this is fine as
+                                    // fun test() { return } is fine
+                                    // and the next token after return is '}'
+                                    let jump_statement: Rc<RefCell<Box<(dyn AST)>>> =
+                                        Rc::new(RefCell::new(Box::new(Jump::new(JumpType::Return, 0))));
+
+                                    jump_statement
+                                }
+
+                                _ => {
+                                    unexpected_token(&peek_next, None);
+                                    exit(1);
+                                }
+                            },
+
+                            TokenEnum::Bool(_) => todo!(),
+                            TokenEnum::StringLiteral(_) => todo!(),
+
+                            TokenEnum::SemiColon => {
+                                let jump_statement: Rc<RefCell<Box<(dyn AST)>>> =
+                                    Rc::new(RefCell::new(Box::new(Jump::new(JumpType::Return, 0))));
+
+                                jump_statement
+                            }
+
+                            _ => {
+                                unexpected_token(&peek_next, None);
+                                exit(1);
+                            }
+                        }
                     }
 
                     MEM => self.parse_memory_alloc(),

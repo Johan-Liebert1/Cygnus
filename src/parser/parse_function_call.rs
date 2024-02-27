@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+use crate::{types::ASTNode, trace};
 
 use std::{cell::RefCell, rc::Rc};
 
@@ -12,6 +12,7 @@ use super::parser::Parser;
 impl<'a> Parser<'a> {
     /// FUNCTION_CALL -> VAR_NAME LPAREN (COMPARISON_EXPRESSION)* RPAREN
     pub fn parse_function_call(&mut self, name: String) -> ASTNode {
+
         // We parse from the LPAREN
         // consume the LPAREN
         let tok = self.get_next_token();
