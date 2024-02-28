@@ -27,15 +27,17 @@ pub struct FunctionDefinition {
     block: ASTNode,
     /// How much to allocate on the stack to make room for local variables
     stack_var_size: usize,
+    pub return_type: VarType,
 }
 
 impl FunctionDefinition {
-    pub fn new(name: String, arguments: Vec<Variable>, block: ASTNode) -> Self {
+    pub fn new(name: String, arguments: Vec<Variable>, block: ASTNode, return_type: VarType) -> Self {
         Self {
             name,
             parameters: arguments,
             block,
             stack_var_size: 0,
+            return_type,
         }
     }
 }

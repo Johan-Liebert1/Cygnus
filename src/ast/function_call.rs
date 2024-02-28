@@ -26,6 +26,7 @@ pub struct FunctionCall {
     name: String,
     token: Token,
     arguments: Vec<ASTNode>,
+    /// This is basically the return type for this function
     pub result_type: VarType,
 }
 
@@ -208,6 +209,8 @@ impl AST for FunctionCall {
 
                         exit(1);
                     }
+
+                    self.result_type = fd.return_type.clone();
 
                     for (actual_param, formal_param) in fd.parameters.iter().zip(&self.arguments) {
                         let binding = formal_param.borrow();

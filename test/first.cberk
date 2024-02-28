@@ -1,11 +1,13 @@
-fun test() {
-    return
+fun test() -> int {
+    return 3
+}
+
+fun testing() -> int {
+    return 3
 }
 
 fun main() {
-    -- def a: int = test();
-
-    def a: int = 12;
+    def a: int = test();
     write(a)
 }
 

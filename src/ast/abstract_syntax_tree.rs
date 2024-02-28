@@ -216,4 +216,24 @@ impl<'a> ASTNodeEnum<'a> {
             node =>  unreachable!("Cannot assign a variable to {node}. This could a bug in the parsing stage"),
         };
     }
+
+    pub fn get_result_type(&self) -> &VarType {
+        match self {
+            ASTNodeEnum::Factor(node) => &node.result_type,
+            ASTNodeEnum::BinaryOp(node) => &node.result_type,
+            ASTNodeEnum::ComparisonExp(node) => &node.result_type,
+            ASTNodeEnum::FunctionCall(node) => &node.result_type,
+            ASTNodeEnum::LogicalExp(node) => &node.result_type,
+            ASTNodeEnum::Variable(node) => &node.result_type,
+            ASTNodeEnum::MemoryAlloc(node) => &node.result_type,
+            ASTNodeEnum::Jump(node) => &node.result_type,
+
+            ASTNodeEnum::AssignmentStatement(_) => todo!(),
+            ASTNodeEnum::Loop(_) => todo!(),
+            ASTNodeEnum::Conditionals(_) => todo!(),
+            ASTNodeEnum::DeclarationStatement(_) => todo!(),
+            ASTNodeEnum::FunctionDef(_) => todo!(),
+            ASTNodeEnum::Program(_) => todo!(),
+        }
+    }
 }

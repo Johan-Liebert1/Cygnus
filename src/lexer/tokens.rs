@@ -184,6 +184,7 @@ pub enum TokenEnum {
     Colon,
     SemiColon,
     Ampersand,
+    FunctionReturnIndicator,
 
     Number(Number),
     Bracket(Bracket),
@@ -220,6 +221,7 @@ impl Display for TokenEnum {
             TokenEnum::Colon => write!(f, "{}", ":"),
             TokenEnum::SemiColon => write!(f, "{}", ";"),
             TokenEnum::Ampersand => write!(f, "{}", "&"),
+            TokenEnum::FunctionReturnIndicator => write!(f, "{}", "->"),
             TokenEnum::Number(token) => write!(f, "{}", token),
             TokenEnum::Bracket(token) => write!(f, "{}", token),
             TokenEnum::Op(token) => write!(f, "{}", token),

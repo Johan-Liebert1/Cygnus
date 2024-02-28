@@ -1,4 +1,4 @@
-use crate::{helpers::unexpected_token, types::ASTNode};
+use crate::{helpers::unexpected_token, lexer::types::VarType, types::ASTNode};
 
 use std::{cell::RefCell, process::exit, rc::Rc};
 
@@ -45,10 +45,9 @@ impl<'a> Parser<'a> {
         return parameters;
     }
 
-    /// FUNCTION_DEF -> fun VAR_NAME LPAREN (VAR_NAME : VAR_TYPE)* RPAREN LCURLY (STATEMENT[] - FUNCTION_DEF) RCURLY
+    /// FUNCTION_DEF -> fun VAR_NAME LPAREN (VAR_NAME : VAR_TYPE)* RPAREN (-> VarType)* LCURLY (STATEMENT[] - FUNCTION_DEF) RCURLY
     pub fn parse_function_definition(&mut self, f: ParserFunctions) -> ASTNode {
         // we get here after consuming 'fun'
-
         let token = self.get_next_token();
 
         let function_name = match token.token {
@@ -60,9 +59,31 @@ impl<'a> Parser<'a> {
             }
         };
 
+        self.current_function_being_parsed = Some(function_name.clone());
+
         self.validate_token(TokenEnum::Bracket(Bracket::LParen));
 
         let parameters = self.parse_function_definition_parameters();
+
+        let mut return_type = VarType::Unknown;
+
+        if let TokenEnum::FunctionReturnIndicator = self.peek_next_token().token {
+            self.get_next_token();
+
+            let peeked_token = self.peek_next_token();
+
+            match peeked_token.token {
+                TokenEnum::Type(var_type) => {
+                    self.get_next_token();
+                    return_type = var_type;
+                }
+
+                _ => {
+                    unexpected_token(&peeked_token, None);
+                    exit(1);
+                }
+            }
+        };
 
         self.validate_token(TokenEnum::Bracket(Bracket::LCurly));
 
@@ -79,12 +100,14 @@ impl<'a> Parser<'a> {
         let ff = function_name.clone();
 
         // Create an Rc from the Box
-        let function_def = FunctionDefinition::new(function_name, parameters, block);
+        let function_def = FunctionDefinition::new(function_name, parameters, block, return_type);
 
         let fdef: ASTNode = Rc::new(RefCell::new(Box::new(function_def)));
 
         // Use Rc::clone to get a reference-counted clone of the Rc, not the inner value
         f.borrow_mut().insert(ff, Rc::clone(&fdef));
+
+        self.current_function_being_parsed = None;
 
         // Convert Rc back to Box for the return value
         return Rc::clone(&fdef);
