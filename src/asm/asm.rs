@@ -1,3 +1,5 @@
+use core::panic;
+
 #[derive(Debug)]
 pub struct Label {
     pub name: String,
@@ -14,6 +16,8 @@ pub struct ASM {
     pub comparison_num: usize,
     pub num_strings: usize,
     pub num_ifs: usize,
+
+    function_argument_number: Option<usize>,
 
     current_label: String,
 }
@@ -48,6 +52,8 @@ impl Default for ASM {
                     format!("mov [argc], rsp"),
                 ],
             }],
+
+            function_argument_number: None,
         }
     }
 }
@@ -94,5 +100,29 @@ impl ASM {
 
     pub fn inc_num_ifs(&mut self) {
         self.num_ifs += 1;
+    }
+
+    pub fn start_parsing_function_args(&mut self) {
+        match self.function_argument_number {
+            Some(_) => panic!("Already parsing function arguments"),
+
+            None => self.function_argument_number = Some(0),
+        }
+    }
+
+    pub fn end_parsing_function_args(&mut self) {
+        match self.function_argument_number {
+            Some(_) => self.function_argument_number = None,
+
+            None => panic!("Not parsing function args"),
+        }
+    }
+
+    pub fn parsing_next_function_arg(&mut self) {
+        match self.function_argument_number {
+            Some(num) => self.function_argument_number = Some(num + 1),
+
+            None => panic!("Cannot call `parsing_next_function_arg` when not parsing function args"),
+        }
     }
 }

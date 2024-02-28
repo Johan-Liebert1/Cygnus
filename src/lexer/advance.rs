@@ -84,6 +84,7 @@ impl<'a> Lexer<'a> {
 
                         match self.peek_next_token().token {
                             TokenEnum::Equals => TokenEnum::MinusEquals,
+                            TokenEnum::Comparator(Comparators::GreaterThan) => TokenEnum::FunctionReturnIndicator,
                             _ => TokenEnum::Op(Operations::Minus),
                         }
                     }

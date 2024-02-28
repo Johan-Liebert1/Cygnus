@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+use crate::{trace, types::ASTNode};
 
 use std::{cell::RefCell, rc::Rc};
 

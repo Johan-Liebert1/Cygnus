@@ -46,6 +46,7 @@ impl ASM {
         assignment_type: &AssignmentTypes,
         call_stack: &CallStack,
         times_dereferenced: usize,
+        is_function_call_assign: bool,
     ) {
         // 1. Check whether the variable is a local or global variable
         // 2. If global var, get it from data section, else from stack offset
@@ -122,7 +123,13 @@ impl ASM {
                         match assignment_type {
                             AssignmentTypes::Equals => {
                                 match &var.var_type {
-                                    VarType::Int | VarType::Float => instructions.push(format!("pop rax")),
+                                    VarType::Int | VarType::Float => {
+                                        // if it is a function call assignment, then the value is
+                                        // already in rax
+                                        if !is_function_call_assign {
+                                            instructions.push(format!("pop rax"))
+                                        }
+                                    }
 
                                     VarType::Str => {
                                         // pop the string pointer into rax

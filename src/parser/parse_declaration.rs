@@ -15,7 +15,7 @@ use crate::{
 use super::parser::Parser;
 
 impl<'a> Parser<'a> {
-    /// VARIABLE_DECLARATION -> def VAR_NAME: (*)* VAR_TYPE (= COMPARISON_EXPRESSION)*
+    /// VARIABLE_DECLARATION -> def VAR_NAME: (*)* VAR_TYPE
     pub fn parse_variable(&mut self) -> Variable {
         let token = self.get_next_token();
 
@@ -56,6 +56,7 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// VARIABLE_DECLARATION -> def VAR_NAME: (*)* VAR_TYPE (= ASSIGNED_STATEMENT)*
     pub fn parse_declaration_statement(&mut self) -> ASTNode {
         // we get here after consuming 'def'
 
@@ -63,9 +64,9 @@ impl<'a> Parser<'a> {
 
         self.validate_token(TokenEnum::Equals);
 
+        // TODO: handle function calls and strings and stuff here
         let right = self.parse_logical_expression();
 
-        // TODO: handle function calls and strings and stuff here
         return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(left, right))));
     }
 }

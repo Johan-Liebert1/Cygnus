@@ -42,8 +42,7 @@ impl AssignmentStatement {
             helpers::compiler_error(
                 format!(
                     "Cannot assign variable (LHS) of type {} to RHS {}",
-                    self.left.result_type,
-                    rhs_type
+                    self.left.result_type, rhs_type
                 ),
                 self.left.get_token(),
             );
@@ -54,11 +53,17 @@ impl AssignmentStatement {
 impl AST for AssignmentStatement {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         self.right.borrow().visit_com(v, f, asm, call_stack);
+
         asm.variable_assignment(
             &self.left.var_name,
             &self.assignment_type,
             call_stack,
             self.left.times_dereferenced,
+            if let ASTNodeEnum::FunctionCall(..) = self.right.borrow().get_node() {
+                true
+            } else {
+                false
+            },
         );
     }
 

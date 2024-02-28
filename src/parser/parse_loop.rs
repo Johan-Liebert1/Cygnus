@@ -1,6 +1,6 @@
 use crate::{
     ast::variable::Variable,
-    helpers::{compiler_error, unexpected_token, unexpected_keyword},
+    helpers::{compiler_error, unexpected_keyword, unexpected_token},
     lexer::{
         keywords::WITH,
         types::{VarType, TYPE_INT},

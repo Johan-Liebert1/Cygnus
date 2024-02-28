@@ -1,13 +1,16 @@
-mem array 5
+mem buffer 1024
 
 fun main() {
-    def ind: int = 22332;
+    def read_ret: int = syscall(0, 0, buffer, 10)
+    def write_ret: int = syscall(1, 1, buffer, 3)
 
-    loop from 1 to 10 {
-        ind = ind + 1;
-    }
+    write(read_ret, write_ret)
 
-    write(ind)
+    -- def i: int = 0;
+    -- loop from 1 to 10 {
+    --     write(*(buffer + i));
+    --     i = i + 1
+    -- }
 }
 
 main() 

@@ -1,7 +1,7 @@
-use crate::{ast::variable::Variable, types::ASTNode};
+use crate::{ast::variable::Variable, helpers::compiler_error, types::ASTNode};
 
 use core::panic;
-use std::{cell::RefCell, collections::HashMap, rc::Rc, usize};
+use std::{cell::RefCell, collections::HashMap, process::exit, rc::Rc, usize};
 
 use crate::{
     ast::abstract_syntax_tree::AST,
@@ -221,11 +221,21 @@ impl CallStack {
 
         match self.call_stack.last_mut() {
             Some(last_record) => {
-                if last_record.variable_members.get(var_name).is_some() {
-                    panic!("Variable '{}' is already defined", var_name);
-                }
+                match last_record.variable_members.get(var_name) {
+                    Some(var) => {
+                        compiler_error(
+                            format!(
+                                "Variable '{}' is already defined on line {}",
+                                var_name,
+                                var.get_token().line_number
+                            ),
+                            variable.get_token(),
+                        );
+                        exit(1);
+                    }
 
-                last_record.variable_members.insert(var_name.into(), variable);
+                    None => last_record.variable_members.insert(var_name.into(), variable),
+                };
             }
 
             None => {

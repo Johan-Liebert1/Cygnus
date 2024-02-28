@@ -57,7 +57,13 @@ impl AST for DeclarationStatement {
 
         self.right.borrow().visit_com(vars, f, asm, call_stack);
 
-        asm.variable_assignment(&self.left.var_name, &AssignmentTypes::Equals, call_stack, 0);
+        let function_call_assign = if let ASTNodeEnum::FunctionCall(..) = self.right.borrow().get_node() {
+            true
+        } else {
+            false
+        };
+
+        asm.variable_assignment(&self.left.var_name, &AssignmentTypes::Equals, call_stack, 0, function_call_assign);
     }
 
     fn visit(

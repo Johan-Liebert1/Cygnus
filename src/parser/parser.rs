@@ -1,6 +1,8 @@
 use crate::{
+    ast::abstract_syntax_tree::AST,
     helpers::{self, compiler_error, unexpected_token},
     lexer::{keywords::MEM, tokens::Operations},
+    trace,
     types::ASTNode,
 };
 
@@ -25,7 +27,6 @@ pub type ParserFunctions = Rc<RefCell<Functions>>;
 #[derive(Debug)]
 pub struct Parser<'a> {
     pub lexer: Box<Lexer<'a>>,
-    parsed_tokens: Vec<Token>,
     pub bracket_stack: Vec<Bracket>,
     pub functions: ParserFunctions,
 
@@ -39,6 +40,8 @@ pub struct Parser<'a> {
     pub num_strings: usize,
     pub parsing_pointer_deref: bool,
     pub times_dereferenced: usize,
+
+    pub current_function_being_parsed: Option<String>,
 }
 
 impl<'a> Parser<'a> {
@@ -47,7 +50,6 @@ impl<'a> Parser<'a> {
 
         Self {
             lexer: Box::new(parser),
-            parsed_tokens: vec![],
             bracket_stack: vec![],
             functions: Rc::new(RefCell::new(HashMap::new())),
 
@@ -62,6 +64,8 @@ impl<'a> Parser<'a> {
 
             parsing_pointer_deref: false,
             times_dereferenced: 0,
+
+            current_function_being_parsed: None,
         }
     }
 
@@ -134,16 +138,13 @@ impl<'a> Parser<'a> {
                         Rc::new(RefCell::new(Box::new(Jump::new(
                             JumpType::Break,
                             self.inside_current_loop_number as usize,
+                            None,
+                            None,
+                            current_token.clone(),
                         ))))
                     }
 
-                    RETURN => {
-                        if self.inside_function_depth == 0 {
-                            compiler_error("Found `return` outside of a function", &current_token);
-                        }
-
-                        Rc::new(RefCell::new(Box::new(Jump::new(JumpType::Return, 0))))
-                    }
+                    RETURN => self.parse_return_statement(&current_token),
 
                     MEM => self.parse_memory_alloc(),
 
@@ -245,6 +246,7 @@ impl<'a> Parser<'a> {
             TokenEnum::Colon => todo!(),
             TokenEnum::Comma => todo!(),
             TokenEnum::SemiColon => todo!(),
+            TokenEnum::FunctionReturnIndicator => todo!(),
 
             TokenEnum::Unknown(..) => {
                 panic!("Unknown token: {:?}", &current_token);

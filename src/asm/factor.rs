@@ -79,6 +79,7 @@ impl ASM {
             TokenEnum::Keyword(_) => todo!(),
             TokenEnum::Type(_) => todo!(),
             TokenEnum::Unknown(_) => todo!(),
+            TokenEnum::FunctionReturnIndicator => todo!(),
             TokenEnum::EOF => todo!(),
         }
 
