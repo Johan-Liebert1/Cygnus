@@ -61,12 +61,19 @@ impl AST for Jump {
         };
     }
 
-    fn visit_com(&self, _v: &mut Variables, _f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+        let mut return_value_exists = false;
+
+        if let Some(ast_node) = &self.return_node {
+            ast_node.borrow_mut().visit_com(v, f, asm, call_stack);
+            return_value_exists = true;
+        }
+
         match self.typ {
             JumpType::Return => {
                 // Since we break out of a loop or return from a function, we need to pop the call stack
                 // call_stack.pop_special(PopTypes::EarlyReturn);
-                asm.function_return()
+                asm.function_return(return_value_exists)
             }
 
             JumpType::Break => {

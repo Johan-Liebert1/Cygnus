@@ -1,4 +1,4 @@
-fun test() -> str {
+fun test() -> int {
     return 1
 }
 

@@ -70,7 +70,8 @@ impl ASM {
         self.change_current_label("_start".into());
     }
 
-    pub fn function_return(&mut self) {
+    pub fn function_return(&mut self, return_value_exists: bool) {
+        self.add_to_current_label(format!("pop rax"));
         self.extend_current_label(FUNCTION_RETURN_INSTRUCTIONS.map(|x| x.into()).to_vec());
     }
 }
