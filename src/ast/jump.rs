@@ -87,43 +87,34 @@ impl AST for Jump {
 
     // TODO: Figure out if this matters
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        trace!("Retrun in func name: {:#?}", self.function_name);
-
         if let JumpType::Return = self.typ {
             // Handle return
 
             // This unwrap should be fine as the function definition will have checked for it
             let name: String = self.function_name.as_ref().unwrap().into();
 
-            // FIXME: This will always panic as semantic_visit needs a mutable reference 
-            // and this is called by semantic_visit of function_def which holds the mutable ref
-            match f.borrow().get(&name).unwrap().to_owned().borrow().get_node() {
-                ASTNodeEnum::FunctionDef(fd) => {
-                    let mut ast_node_type = VarType::Unknown;
+            if let Some(ast_node) = &self.return_node {
+                let func_struct = f.borrow();
+                let func_struct = func_struct.get(&name).unwrap();
 
-                    if let Some(ast_node) = &self.return_node {
-                        ast_node.borrow_mut().semantic_visit(call_stack, f.clone());
+                ast_node.borrow_mut().semantic_visit(call_stack, f.clone());
 
-                        ast_node_type = ast_node.borrow().get_node().get_result_type().clone();
+                let ast_node_type = ast_node.borrow().get_node().get_result_type().clone();
 
-                        if fd.return_type != ast_node_type {
-                            compiler_error(
-                                format!(
-                                    "Function '{}' return type is defined as '{}', this return expression evaluates to\
+                if func_struct.return_type != ast_node_type {
+                    compiler_error(
+                        format!(
+                            "Function '{}' return type is defined as '{}', this return expression evaluates to\
                                 '{}'",
-                                    name, fd.return_type, ast_node_type
-                                ),
-                                &self.token,
-                            );
-                            exit(1);
-                        }
-                    } else {
-                        return;
-                    }
+                            name, func_struct.return_type, ast_node_type
+                        ),
+                        &self.token,
+                    );
+                    exit(1);
                 }
-
-                _ => unreachable!("Value in functions map was not a function definition"),
-            };
+            } else {
+                return;
+            }
         }
 
         // Since we break out of a loop or return from a function, we need to pop the call stack

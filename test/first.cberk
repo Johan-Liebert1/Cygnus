@@ -1,5 +1,5 @@
-fun test() -> int {
-    return 3
+fun test() -> str {
+    return 1
 }
 
 fun testing() -> int {

@@ -1,4 +1,6 @@
-use crate::{helpers::unexpected_token, lexer::types::VarType, types::ASTNode};
+use crate::{
+    helpers::unexpected_token, interpreter::interpreter::FunctionHashMapValue, lexer::types::VarType, types::ASTNode,
+};
 
 use std::{cell::RefCell, process::exit, rc::Rc};
 
@@ -100,12 +102,18 @@ impl<'a> Parser<'a> {
         let ff = function_name.clone();
 
         // Create an Rc from the Box
-        let function_def = FunctionDefinition::new(function_name, parameters, block, return_type);
+        let function_def = FunctionDefinition::new(function_name, parameters, block, return_type.clone());
 
         let fdef: ASTNode = Rc::new(RefCell::new(Box::new(function_def)));
 
         // Use Rc::clone to get a reference-counted clone of the Rc, not the inner value
-        f.borrow_mut().insert(ff, Rc::clone(&fdef));
+        f.borrow_mut().insert(
+            ff,
+            FunctionHashMapValue {
+                func: Rc::clone(&fdef),
+                return_type
+            },
+        );
 
         self.current_function_being_parsed = None;
 

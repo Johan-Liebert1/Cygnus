@@ -151,7 +151,7 @@ impl AST for FunctionCall {
             }
 
             name => match f.borrow().get(name) {
-                Some(function_ast) => function_ast.borrow().visit(v, Rc::clone(&f), call_stack),
+                Some(function_ast) => function_ast.func.borrow().visit(v, Rc::clone(&f), call_stack),
 
                 None => unimplemented!("Function {} unimplemented", self.name),
             },
@@ -195,7 +195,7 @@ impl AST for FunctionCall {
                     }
                 };
 
-                if let ASTNodeEnum::FunctionDef(fd) = function_definition.borrow().get_node() {
+                if let ASTNodeEnum::FunctionDef(fd) = function_definition.func.borrow().get_node() {
                     if fd.parameters.len() != self.arguments.len() {
                         compiler_error(
                             format!(

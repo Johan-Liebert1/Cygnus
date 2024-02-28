@@ -1,3 +1,4 @@
+use crate::lexer::types::VarType;
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 use crate::types::ASTNode;
 
@@ -11,8 +12,17 @@ use crate::{
     lexer::tokens::Number,
 };
 
+// This is a struct because
+// This will always panic on semantic_visit of a `return` node as semantic_visit needs a mutable reference
+// and this is called by semantic_visit of function_def which holds the mutable ref
+#[derive(Debug)]
+pub struct FunctionHashMapValue {
+    pub func: ASTNode,
+    pub return_type: VarType,
+}
+
 pub type Variables = HashMap<String, VariableEnum>;
-pub type Functions = HashMap<String, ASTNode>;
+pub type Functions = HashMap<String, FunctionHashMapValue>;
 
 pub struct Interpreter {
     ast: ASTNode,
