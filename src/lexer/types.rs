@@ -5,7 +5,7 @@ use crate::trace;
 
 use super::tokens::AllOperations;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub enum VarType {
     Int,
     Str,
@@ -13,6 +13,27 @@ pub enum VarType {
     Char,
     Ptr(Box<VarType>),
     Unknown,
+}
+
+impl PartialEq for VarType {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (VarType::Int, VarType::Int)
+            | (VarType::Float, VarType::Float)
+            | (VarType::Char, VarType::Char)
+            | (VarType::Unknown, VarType::Unknown) => true,
+
+            (VarType::Str, VarType::Str) => true,
+
+            (VarType::Str, VarType::Ptr(boxed)) | (VarType::Ptr(boxed), VarType::Str) => {
+                matches!(**boxed, VarType::Char)
+            }
+
+            (VarType::Ptr(a), VarType::Ptr(b)) => a == b,
+
+            _ => false,
+        }
+    }
 }
 
 impl VarType {
@@ -102,5 +123,6 @@ impl Display for VarType {
 pub const TYPE_INT: &str = "int";
 pub const TYPE_FLOAT: &str = "float";
 pub const TYPE_STRING: &str = "str";
+pub const TYPE_CHAR: &str = "char";
 
-pub const TYPES: [&str; 3] = [TYPE_INT, TYPE_FLOAT, TYPE_STRING];
+pub const TYPES: [&str; 4] = [TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_CHAR];

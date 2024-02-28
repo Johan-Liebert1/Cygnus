@@ -5,7 +5,7 @@ use crate::lexer::types::{TYPE_FLOAT, TYPE_STRING};
 use super::{
     keywords::{self, LOGICAL_AND, LOGICAL_OR},
     tokens::{LogicalOps, Number, Operations, TokenEnum},
-    types::{VarType, TYPES, TYPE_INT},
+    types::{VarType, TYPES, TYPE_INT, TYPE_CHAR},
 };
 
 #[derive(Debug, Clone)]
@@ -108,6 +108,7 @@ impl<'a> Lexer<'a> {
                 TYPE_INT => VarType::Int,
                 TYPE_FLOAT => VarType::Float,
                 TYPE_STRING => VarType::Str,
+                TYPE_CHAR => VarType::Char,
 
                 _ => {
                     panic!("Unknown type '{word}'")

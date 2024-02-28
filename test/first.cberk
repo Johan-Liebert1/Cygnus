@@ -1,16 +1,9 @@
 mem buffer 1024
 
 fun main() {
-    def read_ret: int = syscall(0, 0, buffer, 10)
-    def write_ret: int = syscall(1, 1, buffer, 3)
+    def file_name: *char =  "./test/first.cberk\0";
 
-    write(read_ret, write_ret)
-
-    -- def i: int = 0;
-    -- loop from 1 to 10 {
-    --     write(*(buffer + i));
-    --     i = i + 1
-    -- }
+    write(*file_name);
 }
 
 main() 

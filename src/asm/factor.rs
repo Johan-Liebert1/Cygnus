@@ -29,9 +29,11 @@ impl ASM {
                         Some(c) => match c {
                             '\\' => {
                                 match char_iter.next() {
-                                    Some(_c) => {
-                                        // TODO: Handle all escape sequences
-                                        chars.push(('\n' as u8).to_string())
+                                    Some(c) => match c {
+                                        'n' => chars.push(('\n' as u8).to_string()),
+                                        '0' => chars.push('0'.into()),
+
+                                        _ => unimplemented!(),
                                     }
 
                                     // string literal ends with a backslash

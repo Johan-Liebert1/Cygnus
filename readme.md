@@ -22,11 +22,11 @@
 - [x] Pointer deref
 - [x] Pointer to pointer to pointer ...
 - [x] Random access to memory
+- [x] Function returns
+- [x] Function arguments and their type checking
+- [x] Proper type checking
 
 - [ ] Type Casting
-- [ ] Proper type checking
-- [ ] Function returns
-- [ ] Function arguments and their type checking
 - [ ] Floating point numbers
 - [ ] Enums - Use `offset` and `reset` kinda like Go's `iota`
 - [ ] Make sure nothing is left on the stack when we break out of a loop
