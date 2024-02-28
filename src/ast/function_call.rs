@@ -186,6 +186,7 @@ impl AST for FunctionCall {
 
             FUNC_SYSCALL => {
                 // not type checked
+                self.result_type = VarType::Int
             }
 
             _ => {

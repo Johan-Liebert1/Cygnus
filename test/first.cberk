@@ -1,9 +1,10 @@
 mem buffer 1024
 
 fun main() {
-    syscall(0, 0, buffer, 10)
+    def read_ret: int = syscall(0, 0, buffer, 10)
+    def write_ret: int = syscall(1, 1, buffer, 3)
 
-    syscall(1, 1, buffer, 10)
+    write(read_ret, write_ret)
 
     -- def i: int = 0;
     -- loop from 1 to 10 {
