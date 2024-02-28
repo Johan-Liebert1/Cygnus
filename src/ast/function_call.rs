@@ -51,7 +51,7 @@ impl AST for FunctionCall {
 
                     match arg.borrow().get_node() {
                         ASTNodeEnum::Variable(v) => {
-                            asm.func_write_var(v, call_stack);
+                            asm.func_write_var(v);
                         }
 
                         ASTNodeEnum::BinaryOp(bo) => match &bo.result_type {
@@ -85,7 +85,13 @@ impl AST for FunctionCall {
                 asm.func_exit();
             }
 
-            FUNC_STRLEN => {}
+            FUNC_SYSCALL => {
+                for arg in self.arguments.iter().rev() {
+                    arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+                }
+
+                asm.func_syscall(self.arguments.len());
+            }
 
             name => match f.borrow().get(name) {
                 // args -> rax, rdi, rsi, rdx, r10, r8, r9

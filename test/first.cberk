@@ -1,14 +1,15 @@
-fun test() -> int {
-    return 1
-}
-
-fun testing() -> int {
-    return 3
-}
+mem buffer 1024
 
 fun main() {
-    def a: int = test();
-    write(a)
+    syscall(0, 0, buffer, 10)
+
+    syscall(1, 1, buffer, 10)
+
+    -- def i: int = 0;
+    -- loop from 1 to 10 {
+    --     write(*(buffer + i));
+    --     i = i + 1
+    -- }
 }
 
 main() 

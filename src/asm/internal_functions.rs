@@ -11,7 +11,7 @@ use crate::{
     trace,
 };
 
-use super::asm::ASM;
+use super::{asm::ASM, functions::FUNCTION_ARGS_REGS};
 
 const WRITE_STRING_ASM_INSTRUCTIONS: [&str; 9] = [
     ";; Assuming length is pushed last",
@@ -66,7 +66,19 @@ impl ASM {
         }
     }
 
-    pub fn func_write_var(&mut self, var: &Variable, call_stack: &CallStack) {
+    pub fn func_syscall(&mut self, num_args: usize) {
+        let mut instructions = vec![];
+
+        for i in 0..num_args {
+            instructions.push(format!("pop {}", FUNCTION_ARGS_REGS[i]));
+        }
+
+        instructions.push("syscall".into());
+
+        self.extend_current_label(instructions);
+    }
+
+    pub fn func_write_var(&mut self, var: &Variable) {
         let var_name = &var.var_name;
 
         let instructions = match var_name.as_str() {
