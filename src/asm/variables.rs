@@ -203,10 +203,23 @@ impl ASM {
                                     }
                                 }
 
+                                VarType::Char => {
+                                    if variable.dereference {
+                                        todo!()
+                                    } else if variable.store_address {
+                                        todo!()
+                                    } else {
+                                        self.extend_current_label(vec![
+                                            format!("mov rax, [rbp - {}]", ar_var.offset),
+                                            format!("push rax")
+                                        ]);
+                                    }
+                                }
+
                                 type_ => {
                                     todo!("var_type '{type_}' not handled")
                                 }
-                            },
+                            }, // ptr -> type match end
 
                             VarType::Float => todo!(),
                             VarType::Char => todo!(),

@@ -5,7 +5,7 @@ use crate::{
         variable::Variable,
     },
     helpers::unexpected_token,
-    lexer::{tokens::Operations, types::VarType},
+    lexer::{keywords::AS, lexer::Token, tokens::Operations, types::VarType},
     trace,
     types::ASTNode,
 };
@@ -21,7 +21,39 @@ use crate::{
 use super::parser::Parser;
 
 impl<'a> Parser<'a> {
-    /// FACTOR -> (*|&)* INTEGER | FLOAT | VARIABLE | STRING_LITERAL | LPAREN EXPRESSION RPAREN | FUNCTION_CALL
+    /// VARIABLE (as type)*
+    fn parse_variable_factor(&mut self, var_token: &Token, var_name: &String) -> ASTNode {
+        let mut variable = Variable::new(
+            Box::new(var_token.clone()),
+            VarType::Unknown,
+            var_name.into(),
+            false,
+            false,
+            0,
+        );
+
+        if let TokenEnum::Keyword(word) = self.peek_next_token().token {
+            if word == AS {
+                // consume 'as'
+                self.get_next_token();
+
+                // the next token HAS to be a type
+                let type_cast = self.validate_token(TokenEnum::Type(VarType::Unknown));
+
+                let var_type = if let TokenEnum::Type(var_type) = type_cast.token {
+                    var_type
+                } else {
+                    unreachable!("Validate token failed")
+                };
+
+                variable.type_cast = Some(var_type);
+            }
+        }
+
+        return Rc::new(RefCell::new(Box::new(variable)));
+    }
+
+    /// FACTOR -> (*|&)* INTEGER | FLOAT | VARIABLE (as type)* | STRING_LITERAL | LPAREN EXPRESSION RPAREN | FUNCTION_CALL
     pub fn parse_factor(&mut self) -> ASTNode {
         let next_token = self.peek_next_token();
 
@@ -49,30 +81,17 @@ impl<'a> Parser<'a> {
                         // WE cannot check for other type of parenthesis here as
                         // write(variable) will result in error as there's a ')' following the
                         // variable, but it should be perfectly fine
-                        _ => Rc::new(RefCell::new(Box::new(Variable::new(
-                            Box::new(var_token),
-                            VarType::Unknown,
-                            var_name.into(),
-                            false,
-                            false,
-                            0,
-                        )))),
+                        _ => self.parse_variable_factor(&var_token, var_name),
                     },
 
-                    _ => Rc::new(RefCell::new(Box::new(Variable::new(
-                        Box::new(var_token),
-                        VarType::Unknown,
-                        var_name.into(),
-                        false,
-                        false,
-                        0,
-                    )))),
+                    _ => self.parse_variable_factor(&var_token, var_name),
                 }
             }
 
             TokenEnum::Bracket(paren) => match paren {
                 Bracket::LParen => {
                     self.get_next_token();
+
                     let return_value = self.parse_logical_expression();
 
                     let next_next_token = self.peek_next_token();

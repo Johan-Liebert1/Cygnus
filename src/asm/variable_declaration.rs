@@ -119,6 +119,7 @@ impl ASM {
                         instructions.push(format!("mov [{}], rax", var_name));
                     }
 
+                    // local variable
                     _ => {
                         match assignment_type {
                             AssignmentTypes::Equals => {
@@ -141,6 +142,8 @@ impl ASM {
                                     }
 
                                     VarType::Char => {
+                                        // TODO: Update this
+                                        //
                                         // pop the string pointer into rax
                                         // the string len should be in rbx as string len is pushed
                                         // last
@@ -152,11 +155,17 @@ impl ASM {
 
                                     // Assignment to a pointer should be simple enough
                                     VarType::Ptr(var_ptr_type) => match **var_ptr_type {
-                                        // VarType::Int => todo!(),
-                                        // VarType::Str => todo!(),
-                                        // VarType::Float => todo!(),
-                                        // VarType::Char => todo!(),
                                         VarType::Ptr(_) => todo!(),
+
+                                        // assignment to ptr to a character
+                                        // basically a CStr
+                                        //
+                                        // TODO: Also handle things like
+                                        // def ch: char = 'a';
+                                        // def ch_ptr: *char = &ch;
+                                        VarType::Char => {
+                                        },
+
                                         VarType::Unknown => todo!(),
 
                                         _ => {

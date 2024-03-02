@@ -1,9 +1,9 @@
 mem buffer 1024
 
 fun main() {
-    def file_name: *char =  "./test/first.cberk\0";
+    def file_name: *char = "./test/first.cberk\0";
 
-    write(*file_name);
+    def hi: str = file_name as *int;
 }
 
 main() 

@@ -30,6 +30,7 @@ pub struct Variable {
     pub times_dereferenced: usize,
     pub offset: usize,
     pub is_memory_block: bool,
+    pub type_cast: Option<VarType>,
 }
 
 impl Variable {
@@ -51,6 +52,7 @@ impl Variable {
             times_dereferenced,
             offset: 0,
             is_memory_block: false,
+            type_cast: None,
         }
     }
 
@@ -113,7 +115,12 @@ impl AST for Variable {
         let (variable_in_stack, _) = call_stack.get_var_with_name(&self.var_name);
 
         if let Some(variable_in_stack) = variable_in_stack {
-            self.var_type = variable_in_stack.var_type.clone();
+            self.var_type = if let Some(casted_type) = &self.type_cast {
+                casted_type.clone()
+            } else {
+                variable_in_stack.var_type.clone()
+            };
+
             self.result_type = self.var_type.get_actual_type(self.times_dereferenced);
         } else {
             helpers::compiler_error(

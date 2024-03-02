@@ -52,7 +52,7 @@
     EXPRESSION               -> TERM (( + | - ) TERM)*                      # for precedence as term will be calculated first
     TERM                     -> FACTOR (( * | /  | << | >> | % ) FACTOR)*
     COMMENT                  -> -- (ANY)*
-    FACTOR                   -> (*|&)* INTEGER | FLOAT | VARIABLE | STRING_LITERAL | LPAREN EXPRESSION RPAREN | FUNCTION_CALL
+    FACTOR                   -> (*|&)* INTEGER | FLOAT | VARIABLE (as type)* | STRING_LITERAL | LPAREN EXPRESSION RPAREN | FUNCTION_CALL
     VAR_NAME                 -> any valid identifier
     LPAREN                   -> (
     RPAREN                   -> )
