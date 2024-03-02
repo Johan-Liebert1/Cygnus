@@ -77,6 +77,42 @@ impl ASM {
         }
     }
 
+    fn handle_asm_for_array(&mut self, var_type: &Box<VarType>, variable: &Variable, ar_var: &Variable) {
+        if variable.array_aceess_index.is_none() {
+            // if it's just printing the array, then print the address
+            self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+            return;
+        }
+
+        match *var_type.clone() {
+            VarType::Int => {
+                trace!(
+                    "get_underlying_type_size: {}, ar_var.offset: {}, array_aceess_index: {}",
+                    variable.result_type.get_underlying_type_size(),
+                    ar_var.offset,
+                    variable.array_aceess_index.unwrap()
+                );
+
+                self.extend_current_label(vec![
+                    format!(
+                        "mov rax, [rbp - {}]",
+                        ar_var.offset
+                            + variable.result_type.get_underlying_type_size() * variable.array_aceess_index.unwrap()
+                    ),
+                    format!("push rax"),
+                ]);
+            }
+
+            VarType::Float => todo!(),
+
+            VarType::Str => todo!(),
+            VarType::Char => todo!(),
+            VarType::Ptr(_) => todo!(),
+            VarType::Array(_, _) => todo!(),
+            VarType::Unknown => todo!(),
+        }
+    }
+
     pub fn gen_asm_for_var(&mut self, variable: &Variable, call_stack: &CallStack) {
         let var_name = &variable.var_name;
 
@@ -208,7 +244,8 @@ impl ASM {
                             VarType::Float => todo!(),
                             VarType::Char => todo!(),
 
-                            VarType::Array(..) => todo!(),
+                            VarType::Array(var_type, _) => self.handle_asm_for_array(var_type, variable, ar_var),
+
                             VarType::Unknown => todo!(),
                         }
                     }

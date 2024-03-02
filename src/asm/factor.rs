@@ -34,7 +34,7 @@ impl ASM {
                                         '0' => chars.push('0'.into()),
 
                                         _ => unimplemented!(),
-                                    }
+                                    },
 
                                     // string literal ends with a backslash
                                     None => {

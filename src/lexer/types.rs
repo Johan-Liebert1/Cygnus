@@ -1,9 +1,9 @@
 use core::panic;
-use std::fmt::Display;
+use std::{fmt::Display, process::exit};
 
-use crate::trace;
+use crate::{trace, helpers::compiler_error};
 
-use super::tokens::AllOperations;
+use super::{tokens::AllOperations, lexer::Token};
 
 #[derive(Debug, Clone)]
 pub enum VarType {
@@ -47,11 +47,11 @@ impl VarType {
         }
     }
 
-    pub fn get_actual_type(&self, times_dereferenced: usize) -> VarType {
+    pub fn get_actual_type(&self, times_dereferenced: usize, token: &Token) -> VarType {
         return match self {
             VarType::Ptr(ptr_var_type) => {
                 if times_dereferenced > 0 {
-                    ptr_var_type.get_actual_type(times_dereferenced - 1)
+                    ptr_var_type.get_actual_type(times_dereferenced - 1, token)
                 } else {
                     self.clone()
                 }
@@ -59,7 +59,8 @@ impl VarType {
 
             t => {
                 if times_dereferenced > 0 {
-                    panic!("Cannot dereference {self}")
+                    compiler_error(format!("Cannot dereference {self}"), token);
+                    exit(1);
                 } else {
                     t.clone()
                 }
@@ -106,6 +107,32 @@ impl VarType {
             _ => VarType::Unknown,
         };
     }
+
+    pub fn get_size(&self) -> usize {
+        return match self {
+            // 64 bit integer
+            VarType::Int => 8,
+            // 8 bytes for length + 8 bytes for pointer to the start of the string
+            VarType::Str => 16,
+            VarType::Float => todo!(),
+            // char is only 1 byte
+            VarType::Char => 1,
+            // Pointer will always consume 8 bytes
+            VarType::Ptr(_) => 8,
+            VarType::Unknown => todo!(),
+
+            VarType::Array(type_, elements) => type_.get_size() * elements,
+        };
+    }
+
+    pub fn get_underlying_type_size(&self) -> usize {
+        return match self {
+            VarType::Ptr(type_) => type_.get_size(),
+            VarType::Array(type_, _) => type_.get_size(),
+
+            _ => self.get_size()
+        };
+    }
 }
 
 impl Display for VarType {
@@ -117,7 +144,7 @@ impl Display for VarType {
             VarType::Ptr(var_type) => format!("Pointer -> {}", *var_type),
             VarType::Char => "Character".to_string(),
             VarType::Unknown => "Unknown".to_string(),
-            VarType::Array(var_type, _) => format!("Array of {}", *var_type),
+            VarType::Array(var_type, sz) => format!("Array of {} of size {sz}", *var_type),
         };
 
         write!(f, "{}", msg)

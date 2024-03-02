@@ -143,7 +143,11 @@ impl ASM {
                     }
 
                     VarType::Float => todo!(),
-                    VarType::Array(..) => todo!(),
+
+                    VarType::Array(..) => {
+                        vec![format!("pop rax"), format!("call _printRAX")]
+                    }
+
                     VarType::Unknown => todo!(),
                 }
             }

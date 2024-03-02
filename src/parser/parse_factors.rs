@@ -51,6 +51,20 @@ impl<'a> Parser<'a> {
             }
         }
 
+        // check if this is an array access
+        if let TokenEnum::Bracket(Bracket::LSquare) = self.peek_next_token().token {
+            self.get_next_token();
+
+            let peeked_token = self.peek_next_token();
+
+            if let TokenEnum::Number(Number::Integer(index)) = peeked_token.token {
+                self.get_next_token();
+                variable.array_aceess_index = Some(index as usize)
+            }
+
+            self.validate_token(TokenEnum::Bracket(Bracket::RSquare));
+        }
+
         return Rc::new(RefCell::new(Box::new(variable)));
     }
 

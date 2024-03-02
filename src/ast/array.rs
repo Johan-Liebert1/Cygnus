@@ -7,7 +7,7 @@ use crate::{
     interpreter::interpreter::{Functions, Variables},
     lexer::{lexer::Token, types::VarType},
     semantic_analyzer::semantic_analyzer::CallStack,
-    types::ASTNode,
+    types::ASTNode, trace,
 };
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
@@ -53,7 +53,9 @@ impl AST for Array {
     }
 
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        todo!()
+        for member in self.members.iter().rev() {
+            member.borrow().visit_com(v, f.clone(), asm, call_stack);
+        }
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {

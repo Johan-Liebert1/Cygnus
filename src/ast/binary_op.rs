@@ -229,7 +229,7 @@ impl AST for BinaryOP {
                 .borrow()
                 .get_node()
                 .figure_out_type(&self.right.borrow().get_node(), AllOperations::Op(op.clone()))
-                .get_actual_type(self.times_dereferenced);
+                .get_actual_type(self.times_dereferenced, self.right.borrow().get_token());
         } else {
             unreachable!("Found Operation '{:?}' which is not defined for a binary operation. This must be a bug in the parsing step", self.operator.token)
         }

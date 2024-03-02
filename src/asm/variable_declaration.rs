@@ -56,6 +56,7 @@ impl ASM {
 
         let mut is_string = false;
         let mut is_ptr_deref = false;
+        let mut is_array = false;
 
         match variable {
             Some(var) => {
@@ -208,7 +209,20 @@ impl ASM {
                                         }
                                     },
 
-                                    VarType::Array(..) => todo!(),
+                                    VarType::Array(type_, size) => {
+                                        is_array = true;
+
+                                        for i in 0..*size {
+                                            instructions.extend([
+                                                format!("pop rax"),
+                                                format!(
+                                                    "mov [rbp - {}], rax",
+                                                    var.offset + type_.get_underlying_type_size() * i
+                                                ),
+                                            ]);
+                                        }
+                                    }
+
                                     VarType::Unknown => todo!(),
                                 }
                             }
@@ -228,7 +242,7 @@ impl ASM {
                             instructions.push(format!("mov [rbp - {}], rbx", var.offset + 8));
                         }
 
-                        if !is_ptr_deref {
+                        if !is_ptr_deref && !is_array {
                             instructions.push(format!("mov [rbp - {}], rax", var.offset));
                         }
                     }
