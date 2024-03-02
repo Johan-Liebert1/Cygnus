@@ -102,26 +102,9 @@ impl AST for AssignmentStatement {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        self.right.borrow_mut().semantic_visit(call_stack, f);
-
-        let (variable_opt, _) = call_stack.get_var_with_name(&self.left.var_name);
-
-        if let Some(variable) = variable_opt {
-            // the variable in here has type unknown, we have to fill it in here
-            self.left.var_type = variable.var_type.clone();
-
-            // not passing &self.left.var_type because borrow checker cries
-            self.left
-                .store_result_type(&variable.var_type, self.left.times_dereferenced);
-
-            self.verify_type();
-        } else {
-            helpers::compiler_error(
-                format!("Variable '{}' not found in current scope", &self.left.var_name),
-                self.left.get_token(),
-            );
-            exit(1);
-        }
+        self.right.borrow_mut().semantic_visit(call_stack, f.clone());
+        self.left.semantic_visit(call_stack, f);
+        self.verify_type();
     }
 
     fn get_node(&self) -> ASTNodeEnum {

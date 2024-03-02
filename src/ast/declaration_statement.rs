@@ -118,11 +118,10 @@ impl AST for DeclarationStatement {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        self.right.borrow_mut().semantic_visit(call_stack, f);
-
-        self.verify_type();
-
+        self.right.borrow_mut().semantic_visit(call_stack, f.clone());
         call_stack.insert_variable(self.left.clone());
+        self.left.semantic_visit(call_stack, f);
+        self.verify_type();
     }
 
     fn get_node(&self) -> ASTNodeEnum {

@@ -22,6 +22,7 @@ use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST}
 #[derive(Debug, Clone)]
 pub struct Variable {
     token: Box<Token>,
+
     pub var_name: String,
     pub var_type: VarType,
     pub result_type: VarType,
@@ -31,6 +32,7 @@ pub struct Variable {
     pub offset: usize,
     pub is_memory_block: bool,
     pub type_cast: Option<VarType>,
+    pub array_aceess_index: Option<usize>,
 }
 
 impl Variable {
@@ -53,23 +55,12 @@ impl Variable {
             offset: 0,
             is_memory_block: false,
             type_cast: None,
+            array_aceess_index: None,
         }
     }
 
     pub fn size(&self) -> usize {
-        return match self.var_type {
-            // 64 bit integer
-            VarType::Int => 8,
-            // 8 bytes for length + 8 bytes for pointer to the start of the string
-            VarType::Str => 16,
-            VarType::Float => todo!(),
-            // char is only 1 byte
-            VarType::Char => 1,
-            // Pointer will always consume 8 bytes
-            VarType::Ptr(_) => 8,
-            VarType::Unknown => todo!(),
-            VarType::Array(..) => todo!(),
-        };
+        self.result_type.get_size()
     }
 
     pub fn get_var_enum_from_type(&self) -> VariableEnum {
@@ -91,8 +82,8 @@ impl Variable {
         };
     }
 
-    pub fn store_result_type(&mut self, var_type: &VarType, times_dereferenced: usize) {
-        self.result_type = var_type.get_actual_type(times_dereferenced);
+    pub fn store_result_type(&mut self) {
+        self.result_type = self.result_type.get_actual_type(self.times_dereferenced, &self.token);
     }
 }
 
@@ -123,7 +114,19 @@ impl AST for Variable {
                 variable_in_stack.var_type.clone()
             };
 
-            self.result_type = self.var_type.get_actual_type(self.times_dereferenced);
+            self.result_type = self.var_type.get_actual_type(self.times_dereferenced, &self.token);
+
+            if let Some(index) = self.array_aceess_index {
+                if let VarType::Array(type_, _) = &self.result_type {
+                    // if an index is being accessed, then we have to get the underlying type
+                    self.result_type = *type_.clone();
+                } else {
+                    helpers::compiler_error(
+                        format!("Cannot index into a variable of type {}", self.result_type),
+                        &self.token,
+                    );
+                }
+            }
         } else {
             helpers::compiler_error(
                 format!("Variable with name '{}' not found in current scope", self.var_name),
