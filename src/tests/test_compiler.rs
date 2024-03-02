@@ -104,3 +104,11 @@ fn palindrome_number() {
     let (stdout_str, file_result) = get_stdout_and_actual_result("palindrome.cberk");
     assert_eq!(stdout_str, file_result);
 }
+
+// This has issues with parent -> child stdout
+//
+// #[test]
+// fn read_write_syscalls() {
+//     let (stdout_str, file_result) = get_stdout_and_actual_result("read_write_syscalls.cberk");
+//     assert_eq!(stdout_str, file_result);
+// }

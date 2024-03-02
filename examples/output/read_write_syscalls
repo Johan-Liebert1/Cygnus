@@ -1,16 +1,10 @@
 mem buffer 1024
 
 fun main() {
-    def file_name: str = "./.gitignore\0";
-
+    def file_name: str = "./examples/read_write_syscalls.cberk\0";
     def ret: int = syscall(2, file_name as *char, 0, 0);
-    write(ret);
-
     def read_fd: int = syscall(0, ret, buffer, 1024);
-    write(read_fd);
-
     def wr: int = syscall(1, 1, buffer, 1024);
-    write(wr);
 }
 
 main() 

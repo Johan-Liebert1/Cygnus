@@ -183,6 +183,10 @@ impl AST for Loop {
         // These variables live in the outer scope not in the loop scope
         self.add_call_stack(call_stack);
 
+        self.from_range.borrow_mut().semantic_visit(call_stack, f.clone());
+        self.to_range.borrow_mut().semantic_visit(call_stack, f.clone());
+        self.step_by.borrow_mut().semantic_visit(call_stack, f.clone());
+
         self.block.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
 
         // pop the record here

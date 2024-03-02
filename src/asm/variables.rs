@@ -13,6 +13,70 @@ use crate::{
 use super::asm::ASM;
 
 impl ASM {
+    fn handle_asm_for_ptr(&mut self, var_type: &Box<VarType>, variable: &Variable, ar_var: &Variable) {
+        match *var_type.clone() {
+            VarType::Int | VarType::Float => {
+                if variable.dereference {
+                    let mut v = vec![
+                        format!(";; Dereferencing variable {}", variable.var_name),
+                        format!("mov rax, [rbp - {}]", ar_var.offset),
+                    ];
+                    v.extend(std::iter::repeat(format!("mov rax, [rax]")).take(variable.times_dereferenced));
+                    v.extend([
+                        format!("push rax"),
+                        format!(";; Finish dereferencing variable {}", variable.var_name),
+                    ]);
+
+                    self.extend_current_label(v);
+                } else if variable.store_address {
+                    self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+                } else {
+                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+                }
+            }
+
+            VarType::Str => {
+                if variable.dereference {
+                    let mut v = vec![
+                        format!(";; Dereferencing variable {}", variable.var_name),
+                        format!("mov rax, [rbp - {}]", ar_var.offset),
+                        // now rax contains the address of the pointer to the
+                        // string
+                        // now we move the length of the string into rbx
+                        format!("mov rbx, [rax - 8]"), // now rbx = length of
+                                                       // the string
+                    ];
+                    v.extend(std::iter::repeat(format!("mov rax, [rax]")).take(variable.times_dereferenced));
+                    v.extend([
+                        format!("push rax"),
+                        format!("push rbx"),
+                        format!(";; Finish dereferencing variable {}", variable.var_name),
+                    ]);
+
+                    self.extend_current_label(v);
+                } else if variable.store_address {
+                    self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+                } else {
+                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+                }
+            }
+
+            VarType::Char => {
+                if variable.dereference {
+                    todo!()
+                } else if variable.store_address {
+                    todo!()
+                } else {
+                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+                }
+            }
+
+            type_ => {
+                todo!("var_type '{type_}' not handled")
+            }
+        }
+    }
+
     pub fn gen_asm_for_var(&mut self, variable: &Variable, call_stack: &CallStack) {
         let var_name = &variable.var_name;
 
@@ -21,7 +85,7 @@ impl ASM {
         match variable_from_stack {
             Some(ar_var) => {
                 match variable_scope {
-                    ActivationRecordType::Global => match ar_var.var_type {
+                    ActivationRecordType::Global => match variable.var_type {
                         VarType::Int => {
                             if variable.dereference {
                                 panic!("Cannot dereference a number")
@@ -80,10 +144,10 @@ impl ASM {
                         }
 
                         VarType::Unknown => todo!(),
-                    },
+                    }, // global scope end
 
                     _ => {
-                        match &ar_var.var_type {
+                        match &variable.var_type {
                             VarType::Int => {
                                 if variable.dereference {
                                     panic!("Cannot dereference a number")
@@ -123,7 +187,7 @@ impl ASM {
                                     // --- top of stack ---
                                     // .
                                     // .
-                                    // --- lenght ---
+                                    // --- length ---
                                     // --- pointer to string ---
                                     self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset)]);
                                 } else {
@@ -138,91 +202,11 @@ impl ASM {
                             }
 
                             // TODO: Handle pointer to pointer to something
-                            VarType::Ptr(var_type) => match *var_type.clone() {
-                                VarType::Int | VarType::Float => {
-                                    if variable.dereference {
-                                        let mut v = vec![
-                                            format!(";; Dereferencing variable {}", var_name),
-                                            format!("mov rax, [rbp - {}]", ar_var.offset),
-                                        ];
-                                        v.extend(
-                                            std::iter::repeat(format!("mov rax, [rax]"))
-                                                .take(variable.times_dereferenced),
-                                        );
-                                        v.extend([
-                                            format!("push rax"),
-                                            format!(";; Finish dereferencing variable {}", var_name),
-                                        ]);
-
-                                        self.extend_current_label(v);
-                                    } else if variable.store_address {
-                                        self.extend_current_label(vec![
-                                            format!("lea rax, [rbp - {}]", ar_var.offset),
-                                            format!("push rax"),
-                                        ]);
-                                    } else {
-                                        self.extend_current_label(vec![
-                                            format!("mov rax, [rbp - {}]", ar_var.offset),
-                                            format!("push rax"),
-                                        ]);
-                                    }
-                                }
-
-                                VarType::Str => {
-                                    if variable.dereference {
-                                        let mut v = vec![
-                                            format!(";; Dereferencing variable {}", var_name),
-                                            format!("mov rax, [rbp - {}]", ar_var.offset),
-                                            // now rax contains the address of the pointer to the
-                                            // string
-                                            // now we move the length of the string into rbx
-                                            format!("mov rbx, [rax - 8]"), // now rbx = length of
-                                                                           // the string
-                                        ];
-                                        v.extend(
-                                            std::iter::repeat(format!("mov rax, [rax]"))
-                                                .take(variable.times_dereferenced),
-                                        );
-                                        v.extend([
-                                            format!("push rax"),
-                                            format!("push rbx"),
-                                            format!(";; Finish dereferencing variable {}", var_name),
-                                        ]);
-
-                                        self.extend_current_label(v);
-                                    } else if variable.store_address {
-                                        self.extend_current_label(vec![
-                                            format!("lea rax, [rbp - {}]", ar_var.offset),
-                                            format!("push rax"),
-                                        ]);
-                                    } else {
-                                        self.extend_current_label(vec![
-                                            format!("mov rax, [rbp - {}]", ar_var.offset),
-                                            format!("push rax"),
-                                        ]);
-                                    }
-                                }
-
-                                VarType::Char => {
-                                    if variable.dereference {
-                                        todo!()
-                                    } else if variable.store_address {
-                                        todo!()
-                                    } else {
-                                        self.extend_current_label(vec![
-                                            format!("mov rax, [rbp - {}]", ar_var.offset),
-                                            format!("push rax")
-                                        ]);
-                                    }
-                                }
-
-                                type_ => {
-                                    todo!("var_type '{type_}' not handled")
-                                }
-                            }, // ptr -> type match end
+                            VarType::Ptr(var_type) => self.handle_asm_for_ptr(var_type, variable, ar_var),
 
                             VarType::Float => todo!(),
                             VarType::Char => todo!(),
+
                             VarType::Unknown => todo!(),
                         }
                     }
