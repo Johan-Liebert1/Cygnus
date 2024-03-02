@@ -68,6 +68,7 @@ impl Variable {
             // Pointer will always consume 8 bytes
             VarType::Ptr(_) => 8,
             VarType::Unknown => todo!(),
+            VarType::Array(..) => todo!(),
         };
     }
 
@@ -86,6 +87,7 @@ impl Variable {
             VarType::Char => todo!(),
             VarType::Ptr(_) => todo!(),
             VarType::Unknown => todo!(),
+            VarType::Array(..) => todo!(),
         };
     }
 

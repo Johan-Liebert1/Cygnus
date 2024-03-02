@@ -1,11 +1,14 @@
 use std::fmt::Display;
 
-use crate::lexer::types::{TYPE_FLOAT, TYPE_STRING};
+use crate::{
+    lexer::types::{TYPE_FLOAT, TYPE_STRING},
+    trace,
+};
 
 use super::{
     keywords::{self, LOGICAL_AND, LOGICAL_OR},
-    tokens::{LogicalOps, Number, Operations, TokenEnum},
-    types::{VarType, TYPES, TYPE_INT, TYPE_CHAR},
+    tokens::{Bracket, LogicalOps, Number, Operations, TokenEnum},
+    types::{VarType, TYPES, TYPE_CHAR, TYPE_INT},
 };
 
 #[derive(Debug, Clone)]

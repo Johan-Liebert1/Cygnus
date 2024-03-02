@@ -147,6 +147,9 @@ impl<'a> Lexer<'a> {
                 '{' => TokenEnum::Bracket(Bracket::LCurly),
                 '}' => TokenEnum::Bracket(Bracket::RCurly),
 
+                '[' => TokenEnum::Bracket(Bracket::LSquare),
+                ']' => TokenEnum::Bracket(Bracket::RSquare),
+
                 ':' => TokenEnum::Colon,
                 ';' => TokenEnum::SemiColon,
                 ',' => TokenEnum::Comma,

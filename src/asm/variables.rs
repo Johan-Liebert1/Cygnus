@@ -143,6 +143,7 @@ impl ASM {
                             }
                         }
 
+                        VarType::Array(..) => todo!(),
                         VarType::Unknown => todo!(),
                     }, // global scope end
 
@@ -207,6 +208,7 @@ impl ASM {
                             VarType::Float => todo!(),
                             VarType::Char => todo!(),
 
+                            VarType::Array(..) => todo!(),
                             VarType::Unknown => todo!(),
                         }
                     }

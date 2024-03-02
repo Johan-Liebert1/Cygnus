@@ -69,6 +69,7 @@ impl AST for FunctionDefinition {
         for param in &self.parameters {
             let value = match param.var_type {
                 VarType::Int => todo!(),
+                VarType::Array(..) => todo!(),
                 VarType::Str => todo!(),
                 VarType::Float => todo!(),
                 VarType::Ptr(_) => todo!(),

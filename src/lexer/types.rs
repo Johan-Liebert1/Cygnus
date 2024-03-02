@@ -12,6 +12,7 @@ pub enum VarType {
     Float,
     Char,
     Ptr(Box<VarType>),
+    Array(Box<VarType>, usize),
     Unknown,
 }
 
@@ -30,6 +31,8 @@ impl PartialEq for VarType {
             }
 
             (VarType::Ptr(a), VarType::Ptr(b)) => a == b,
+
+            (VarType::Array(a, s1), VarType::Array(b, s2)) => a == b && s1 == s2,
 
             _ => false,
         }
@@ -77,6 +80,7 @@ impl VarType {
                     VarType::Float => todo!(),
                     VarType::Char => todo!(),
                     VarType::Ptr(_) => todo!(),
+                    VarType::Array(..) => todo!(),
                     VarType::Unknown => todo!(),
                 }
             }
@@ -113,6 +117,7 @@ impl Display for VarType {
             VarType::Ptr(var_type) => format!("Pointer -> {}", *var_type),
             VarType::Char => "Character".to_string(),
             VarType::Unknown => "Unknown".to_string(),
+            VarType::Array(var_type, _) => format!("Array of {}", *var_type),
         };
 
         write!(f, "{}", msg)

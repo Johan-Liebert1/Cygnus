@@ -89,6 +89,8 @@ impl PartialEq for Number {
 pub enum Bracket {
     LParen,
     RParen,
+    LSquare,
+    RSquare,
     LCurly,
     RCurly,
 }
@@ -100,6 +102,8 @@ impl Display for Bracket {
             Bracket::RParen => write!(f, "{}", ")"),
             Bracket::LCurly => write!(f, "{}", "{"),
             Bracket::RCurly => write!(f, "{}", "}"),
+            Bracket::LSquare => write!(f, "{}", "["),
+            Bracket::RSquare => write!(f, "{}", "]"),
         }
     }
 }

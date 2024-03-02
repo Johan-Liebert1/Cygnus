@@ -143,6 +143,7 @@ impl ASM {
                     }
 
                     VarType::Float => todo!(),
+                    VarType::Array(..) => todo!(),
                     VarType::Unknown => todo!(),
                 }
             }

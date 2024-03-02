@@ -1,4 +1,4 @@
-use std::{fmt::Display, process::exit};
+use std::{fmt::Display, process::exit, backtrace::Backtrace};
 
 use crate::lexer::{lexer::Token, tokens::TokenEnum};
 
@@ -31,6 +31,9 @@ pub fn unexpected_keyword<S: AsRef<str> + Display>(token: &Token, unexpected: S,
         }
     );
 
+    let backtrace = std::backtrace::Backtrace::capture();
+    println!("{:#?}", backtrace);
+
     exit(1);
 }
 
@@ -47,10 +50,15 @@ pub fn unexpected_token(unexpected: &Token, expected: Option<&TokenEnum>) {
         }
     );
 
+    let backtrace = std::backtrace::Backtrace::capture();
+    println!("{:#?}", backtrace);
+
     exit(1);
 }
 
 pub fn compiler_error<S: AsRef<str> + Display>(message: S, tok: &Token) {
     println!("{}:{}:{} {}", tok.file, tok.line_number, tok.col_number, message);
+    let backtrace = std::backtrace::Backtrace::capture();
+    println!("{:#?}", backtrace);
     exit(1);
 }

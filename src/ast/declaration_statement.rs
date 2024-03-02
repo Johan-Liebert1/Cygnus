@@ -63,7 +63,13 @@ impl AST for DeclarationStatement {
             false
         };
 
-        asm.variable_assignment(&self.left.var_name, &AssignmentTypes::Equals, call_stack, 0, function_call_assign);
+        asm.variable_assignment(
+            &self.left.var_name,
+            &AssignmentTypes::Equals,
+            call_stack,
+            0,
+            function_call_assign,
+        );
     }
 
     fn visit(

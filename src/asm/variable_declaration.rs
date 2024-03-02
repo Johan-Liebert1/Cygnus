@@ -94,6 +94,7 @@ impl ASM {
 
                                             VarType::Str => todo!(),
 
+                                            VarType::Array(..) => todo!(),
                                             VarType::Float => todo!(),
                                             VarType::Char => todo!(),
                                             VarType::Ptr(_) => todo!(),
@@ -101,6 +102,7 @@ impl ASM {
                                         }
                                     }
 
+                                    VarType::Array(..) => todo!(),
                                     VarType::Float => todo!(),
                                     VarType::Char => todo!(),
                                     VarType::Unknown => todo!(),
@@ -163,8 +165,7 @@ impl ASM {
                                         // TODO: Also handle things like
                                         // def ch: char = 'a';
                                         // def ch_ptr: *char = &ch;
-                                        VarType::Char => {
-                                        },
+                                        VarType::Char => {}
 
                                         VarType::Unknown => todo!(),
 
@@ -207,6 +208,7 @@ impl ASM {
                                         }
                                     },
 
+                                    VarType::Array(..) => todo!(),
                                     VarType::Unknown => todo!(),
                                 }
                             }

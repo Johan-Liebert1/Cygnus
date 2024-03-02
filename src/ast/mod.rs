@@ -1,4 +1,5 @@
 pub mod abstract_syntax_tree;
+pub mod array;
 pub mod assignment_statement;
 pub mod ast_loop;
 pub mod binary_op;

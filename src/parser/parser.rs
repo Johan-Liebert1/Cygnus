@@ -186,6 +186,8 @@ impl<'a> Parser<'a> {
                             Bracket::RParen => todo!(),
                             Bracket::LCurly => todo!(),
                             Bracket::RCurly => todo!(),
+                            Bracket::RSquare => todo!(),
+                            Bracket::LSquare => todo!(),
                         }
                     }
 
