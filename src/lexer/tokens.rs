@@ -189,6 +189,7 @@ pub enum TokenEnum {
     SemiColon,
     Ampersand,
     FunctionReturnIndicator,
+    Comment,
 
     Number(Number),
     Bracket(Bracket),
@@ -238,6 +239,7 @@ impl Display for TokenEnum {
             TokenEnum::StringLiteral(token) => write!(f, "{}", token),
             TokenEnum::Unknown(token) => write!(f, "{}", token),
             TokenEnum::EOF => write!(f, "{}", "EOF"),
+            TokenEnum::Comment => write!(f, "{}", "Comment"),
         }
         
     }

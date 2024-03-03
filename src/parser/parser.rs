@@ -49,10 +49,10 @@ pub struct Parser<'a> {
 
 impl<'a> Parser<'a> {
     pub fn new(file: &'a Vec<u8>, file_name: &'a String) -> Self {
-        let parser = Lexer::new(file, file_name);
+        let lexer = Lexer::new(file, file_name);
 
         Self {
-            lexer: Box::new(parser),
+            lexer: Box::new(lexer),
             bracket_stack: vec![],
             functions: Rc::new(RefCell::new(HashMap::new())),
 
@@ -265,6 +265,7 @@ impl<'a> Parser<'a> {
             TokenEnum::Comma => todo!(),
             TokenEnum::SemiColon => todo!(),
             TokenEnum::FunctionReturnIndicator => todo!(),
+            TokenEnum::Comment => todo!(),
 
             TokenEnum::Unknown(..) => {
                 panic!("Unknown token: {:?}", &current_token);
@@ -304,6 +305,8 @@ impl<'a> Parser<'a> {
 
                     _ => statements.push(self.parse_statements()),
                 },
+
+                TokenEnum::Comment => continue,
 
                 _ => {
                     statements.push(self.parse_statements());

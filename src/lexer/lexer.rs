@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, thread::sleep, time::Duration};
 
 use crate::{
     lexer::types::{TYPE_FLOAT, TYPE_STRING},
@@ -121,6 +121,7 @@ impl<'a> Lexer<'a> {
             return tok;
         }
 
+
         return TokenEnum::Variable(word);
     }
 
@@ -151,46 +152,27 @@ impl<'a> Lexer<'a> {
     }
 
     fn parse_comment(&mut self) {
-        while self.index < self.file.len() {
-            match self.file[self.index] {
-                b'\n' => {
-                    // not incrementing line number here as that's aready done inside of self.advance
-                    self.col_number = 1;
-                    break;
-                }
-
-                _ => {
-                    self.index += 1;
-                    self.col_number += 1;
-                }
-            }
+        while self.index < self.file.len() && self.file[self.index] != b'\n' {
+            self.index += 1;
         }
     }
 
     pub fn is_comment(&mut self) -> bool {
         self.index += 1;
 
-        match self.peek_next_token().token {
-            TokenEnum::Op(op) => match op {
-                Operations::Minus => {
-                    self.get_next_token();
+        if self.file[self.index] == b'-' {
+            self.index += 1;
 
-                    // we have found a comment
-                    self.parse_comment();
+            // sleep(Duration::from_millis(100));
 
-                    return true;
-                }
+            // we have found a comment
+            self.parse_comment();
 
-                _ => {
-                    self.index -= 1;
-                    return false;
-                }
-            },
-
-            _ => {
-                self.index -= 1;
-                return false;
-            }
+            return true;
         }
+
+        println!("Subtracing index");
+        self.index -= 1;
+        return false;
     }
 }
