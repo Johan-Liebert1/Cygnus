@@ -111,6 +111,12 @@ fn bubble_sort() {
     assert_eq!(stdout_str, file_result);
 }
 
+#[test]
+fn game_of_life() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("game_of_life.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
 // This has issues with parent -> child stdout
 //
 // #[test]

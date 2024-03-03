@@ -171,7 +171,6 @@ impl<'a> Lexer<'a> {
             return true;
         }
 
-        println!("Subtracing index");
         self.index -= 1;
         return false;
     }

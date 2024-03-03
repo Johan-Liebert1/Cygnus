@@ -1,9 +1,9 @@
 use core::panic;
 use std::{fmt::Display, process::exit};
 
-use crate::{trace, helpers::compiler_error};
+use crate::{helpers::compiler_error, trace};
 
-use super::{tokens::AllOperations, lexer::Token};
+use super::{lexer::Token, tokens::AllOperations};
 
 #[derive(Debug, Clone)]
 pub enum VarType {
@@ -76,8 +76,10 @@ impl VarType {
             (VarType::Int, VarType::Ptr(p)) | (VarType::Ptr(p), VarType::Int) => {
                 match **p {
                     VarType::Int => VarType::Ptr(p.clone()),
+
                     // if a string ptr is added to an integer, it's now a pointer to a character
                     VarType::Str => VarType::Ptr(p.clone()), // VarType::Ptr(Box::new(VarType::Char)),
+
                     VarType::Float => todo!(),
                     VarType::Char => todo!(),
                     VarType::Ptr(_) => todo!(),
@@ -98,10 +100,11 @@ impl VarType {
                 panic!("'{op}' not defined for '{self}' and '{other}'")
             }
 
+            (VarType::Ptr(ptr1), VarType::Ptr(ptr2)) => ptr1.figure_out_type(ptr2, op),
+
             (VarType::Ptr(_), VarType::Str)
             | (VarType::Str, VarType::Ptr(_))
             | (VarType::Ptr(_), VarType::Float)
-            | (VarType::Ptr(_), VarType::Ptr(_))
             | (VarType::Float, VarType::Ptr(_)) => panic!("'{op}' not defined for '{self}' and '{other}'"),
 
             _ => VarType::Unknown,
@@ -130,7 +133,7 @@ impl VarType {
             VarType::Ptr(type_) => type_.get_size(),
             VarType::Array(type_, _) => type_.get_size(),
 
-            _ => self.get_size()
+            _ => self.get_size(),
         };
     }
 }

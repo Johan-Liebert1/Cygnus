@@ -1,4 +1,5 @@
 use crate::{
+    asm::binary_op,
     ast::{
         abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, AST},
         array::Array,
@@ -28,9 +29,13 @@ impl<'a> Parser<'a> {
             Box::new(var_token.clone()),
             VarType::Unknown,
             var_name.into(),
+            self.parsing_pointer_deref,
             false,
-            false,
-            0,
+            if self.parsing_pointer_deref {
+                self.times_dereferenced
+            } else {
+                0
+            },
         );
 
         if let TokenEnum::Keyword(word) = self.peek_next_token().token {
@@ -194,12 +199,19 @@ impl<'a> Parser<'a> {
                 if let Operations::Multiply = op {
                     self.get_next_token();
 
-                    self.parsing_pointer_deref = true;
+                    self.parsing_pointer_deref = false;
                     self.times_dereferenced = 1;
 
                     while let TokenEnum::Op(Operations::Multiply) = self.peek_next_token().token {
                         self.times_dereferenced += 1;
                         self.get_next_token();
+                    }
+
+                    if let TokenEnum::Variable(..) = self.peek_next_token().token {
+                        // to fix things like *a + *b as we consume the first '*'
+                        // and start parsing expression, the fact that 'a' was dereferenced
+                        // is lost
+                        self.parsing_pointer_deref = true;
                     }
 
                     let mut exp = self.parse_expression();

@@ -166,7 +166,7 @@ impl AST for FunctionCall {
     }
 
     fn get_token(&self) -> &Token {
-        todo!()
+        return &self.token;
     }
 
     fn print(&self) {

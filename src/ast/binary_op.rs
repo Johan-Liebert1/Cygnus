@@ -220,7 +220,6 @@ impl AST for BinaryOP {
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         self.left.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
-
         self.right.borrow_mut().semantic_visit(call_stack, f);
 
         if let TokenEnum::Op(op) = &self.operator.token {
@@ -230,6 +229,10 @@ impl AST for BinaryOP {
                 .get_node()
                 .figure_out_type(&self.right.borrow().get_node(), AllOperations::Op(op.clone()))
                 .get_actual_type(self.times_dereferenced, self.right.borrow().get_token());
+
+            // trace!("left: {:#?}", self.left.borrow());
+            // trace!("right: {:#?}", self.right.borrow());
+            // trace!("self.result_type: {:#?}", self.result_type);
         } else {
             unreachable!("Found Operation '{:?}' which is not defined for a binary operation. This must be a bug in the parsing step", self.operator.token)
         }
