@@ -1,6 +1,7 @@
 use crate::{
     ast::{
         abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, AST},
+        array::Array,
         function_call::FunctionCall,
         variable::Variable,
     },
@@ -48,6 +49,15 @@ impl<'a> Parser<'a> {
 
                 variable.type_cast = Some(var_type);
             }
+        }
+
+        // check if this is an array access
+        if let TokenEnum::Bracket(Bracket::LSquare) = self.peek_next_token().token {
+            self.get_next_token();
+
+            variable.array_aceess_index = Some(self.parse_logical_expression());
+
+            self.validate_token(TokenEnum::Bracket(Bracket::RSquare));
         }
 
         return Rc::new(RefCell::new(Box::new(variable)));
@@ -141,6 +151,36 @@ impl<'a> Parser<'a> {
                         panic!(") never opened");
                     }
                 },
+
+                // Array definition, the RHS bit
+                // def a: int[3] = [1, 2, 3];
+                Bracket::LSquare => {
+                    let bracket_token = self.get_next_token();
+
+                    let mut members = vec![];
+
+                    loop {
+                        members.push(self.parse_logical_expression());
+
+                        let peeked_token = self.peek_next_token();
+
+                        match peeked_token.token {
+                            TokenEnum::Comma => {
+                                self.get_next_token();
+                                continue;
+                            }
+
+                            TokenEnum::Bracket(Bracket::RSquare) => {
+                                self.get_next_token();
+                                break;
+                            }
+
+                            _ => unexpected_token(&peeked_token, None),
+                        }
+                    }
+
+                    return Rc::new(RefCell::new(Box::new(Array::new(members, bracket_token))));
+                }
 
                 _ => {
                     panic!(

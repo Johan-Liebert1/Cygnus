@@ -1,7 +1,10 @@
 use crate::{
     ast::abstract_syntax_tree::AST,
     helpers::{self, compiler_error, unexpected_token},
-    lexer::{keywords::MEM, tokens::Operations},
+    lexer::{
+        keywords::MEM,
+        tokens::{Number, Operations},
+    },
     trace,
     types::ASTNode,
 };
@@ -46,10 +49,10 @@ pub struct Parser<'a> {
 
 impl<'a> Parser<'a> {
     pub fn new(file: &'a Vec<u8>, file_name: &'a String) -> Self {
-        let parser = Lexer::new(file, file_name);
+        let lexer = Lexer::new(file, file_name);
 
         Self {
-            lexer: Box::new(parser),
+            lexer: Box::new(lexer),
             bracket_stack: vec![],
             functions: Rc::new(RefCell::new(HashMap::new())),
 
@@ -183,16 +186,31 @@ impl<'a> Parser<'a> {
                                 self.parse_function_call(var.to_string())
                             }
 
+                            Bracket::LSquare => {
+                                // array index assignment
+                                // array[7] = 43
+                                let var_token = self.get_next_token();
+
+                                let next_token = self.get_next_token();
+
+                                let array_access_index = self.parse_logical_expression();
+
+                                self.validate_token(TokenEnum::Bracket(Bracket::RSquare));
+
+                                self.parse_assignment_statement(var_token, var.to_string(), 0, Some(array_access_index))
+                            }
+
                             Bracket::RParen => todo!(),
                             Bracket::LCurly => todo!(),
                             Bracket::RCurly => todo!(),
+                            Bracket::RSquare => todo!(),
                         }
                     }
 
                     TokenEnum::Equals | TokenEnum::MinusEquals | TokenEnum::PlusEquals => {
                         // variable assignment
                         let var_token = self.get_next_token();
-                        self.parse_assignment_statement(var_token, var.to_string(), 0)
+                        self.parse_assignment_statement(var_token, var.to_string(), 0, None)
                     }
 
                     e => {
@@ -214,7 +232,7 @@ impl<'a> Parser<'a> {
                     let token = self.get_next_token();
 
                     if let TokenEnum::Variable(ref var_name) = &token.token {
-                        self.parse_assignment_statement(token.clone(), var_name.into(), times_dereferenced)
+                        self.parse_assignment_statement(token.clone(), var_name.into(), times_dereferenced, None)
                     } else {
                         unexpected_token(&token, Some(&TokenEnum::Variable("".into())));
                         exit(1);
@@ -247,6 +265,7 @@ impl<'a> Parser<'a> {
             TokenEnum::Comma => todo!(),
             TokenEnum::SemiColon => todo!(),
             TokenEnum::FunctionReturnIndicator => todo!(),
+            TokenEnum::Comment => todo!(),
 
             TokenEnum::Unknown(..) => {
                 panic!("Unknown token: {:?}", &current_token);
@@ -286,6 +305,8 @@ impl<'a> Parser<'a> {
 
                     _ => statements.push(self.parse_statements()),
                 },
+
+                TokenEnum::Comment => continue,
 
                 _ => {
                     statements.push(self.parse_statements());

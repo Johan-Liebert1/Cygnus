@@ -34,7 +34,7 @@ impl ASM {
                                         '0' => chars.push('0'.into()),
 
                                         _ => unimplemented!(),
-                                    }
+                                    },
 
                                     // string literal ends with a backslash
                                     None => {
@@ -82,6 +82,7 @@ impl ASM {
             TokenEnum::Type(_) => todo!(),
             TokenEnum::Unknown(_) => todo!(),
             TokenEnum::FunctionReturnIndicator => todo!(),
+            TokenEnum::Comment => todo!(),
             TokenEnum::EOF => todo!(),
         }
 

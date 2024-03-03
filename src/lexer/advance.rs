@@ -1,3 +1,5 @@
+use std::{thread::sleep, time::Duration};
+
 use crate::trace;
 
 use super::{
@@ -12,14 +14,13 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn get_next_token(&mut self) -> Token {
-        let token = self.advance_to_next_token(false);
-        return token;
+        return self.advance_to_next_token();
     }
 
     pub fn peek_nth_token(&mut self, n: usize) -> Token {
-        let index = self.index;
-        let col_number = self.col_number;
-        let line_number = self.line_number;
+        let mut index = self.index;
+        let mut col_number = self.col_number;
+        let mut line_number = self.line_number;
 
         let mut token: Token = Token {
             token: TokenEnum::EOF,
@@ -28,8 +29,18 @@ impl<'a> Lexer<'a> {
             file: self.file_name.to_string(),
         };
 
-        for _ in 0..n {
-            token = self.advance_to_next_token(false);
+        let mut i = 0;
+
+        while i < n {
+            token = self.advance_to_next_token();
+
+            if let TokenEnum::Comment = token.token {
+                index = self.index;
+                col_number = self.col_number;
+                line_number = self.line_number;
+            }
+
+            i += 1;
         }
 
         self.index = index;
@@ -39,19 +50,15 @@ impl<'a> Lexer<'a> {
         return token;
     }
 
-    fn advance_to_next_token(&mut self, peek: bool) -> Token {
+    fn advance_to_next_token(&mut self) -> Token {
         let index = self.index;
         let col_number = self.col_number;
         let line_number = self.line_number;
 
         while self.index < self.file.len() {
-            let char = self.file[self.index] as char;
+            let character = self.file[self.index] as char;
 
-            // if !peek {
-            //     println!("Current char '{}' Peek: {}", char, peek);
-            // }
-
-            let token = match char {
+            let token = match character {
                 ' ' | '\t' => {
                     self.index += 1;
                     self.col_number += 1;
@@ -78,7 +85,12 @@ impl<'a> Lexer<'a> {
                 // TODO: Handle negative integers
                 '-' => {
                     if self.is_comment() {
-                        continue;
+                        return Token {
+                            token: TokenEnum::Comment,
+                            line_number: self.line_number,
+                            col_number: self.col_number,
+                            file: self.file_name.into(),
+                        };
                     } else {
                         self.index += 1;
 
@@ -147,6 +159,9 @@ impl<'a> Lexer<'a> {
                 '{' => TokenEnum::Bracket(Bracket::LCurly),
                 '}' => TokenEnum::Bracket(Bracket::RCurly),
 
+                '[' => TokenEnum::Bracket(Bracket::LSquare),
+                ']' => TokenEnum::Bracket(Bracket::RSquare),
+
                 ':' => TokenEnum::Colon,
                 ';' => TokenEnum::SemiColon,
                 ',' => TokenEnum::Comma,
@@ -208,7 +223,7 @@ impl<'a> Lexer<'a> {
 
                     48..=57 => self.construct_number(),
 
-                    _ => TokenEnum::Unknown(char.to_string()),
+                    _ => TokenEnum::Unknown(character.to_string()),
                 },
             };
 
@@ -220,12 +235,6 @@ impl<'a> Lexer<'a> {
                 col_number: self.col_number,
                 file: self.file_name.into(),
             };
-
-            if peek {
-                self.index = index;
-                self.col_number = col_number;
-                self.line_number = line_number;
-            }
 
             return token;
         }

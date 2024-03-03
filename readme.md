@@ -25,8 +25,8 @@
 - [x] Function returns
 - [x] Function arguments and their type checking
 - [x] Proper type checking
+- [x] Type Casting
 
-- [ ] Type Casting
 - [ ] Floating point numbers
 - [ ] Enums - Use `offset` and `reset` kinda like Go's `iota`
 - [ ] Make sure nothing is left on the stack when we break out of a loop

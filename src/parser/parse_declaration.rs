@@ -1,6 +1,9 @@
 use crate::{
     helpers::unexpected_token,
-    lexer::{tokens::Bracket, types::VarType},
+    lexer::{
+        tokens::{Bracket, Number},
+        types::VarType,
+    },
     trace,
     types::ASTNode,
 };
@@ -30,9 +33,35 @@ impl<'a> Parser<'a> {
 
                         match &token.token {
                             TokenEnum::Type(var_type) => {
-                                let token = self.get_next_token();
+                                let mut actual_var_type = var_type.clone();
 
-                                return Variable::new(Box::new(token), var_type.clone(), var_name, false, false, 0);
+                                let type_token = self.get_next_token();
+
+                                if let TokenEnum::Bracket(Bracket::LSquare) = self.peek_next_token().token {
+                                    // is of type int[4]
+                                    self.get_next_token();
+
+                                    let peeked_token = self.peek_next_token();
+
+                                    if let TokenEnum::Number(Number::Integer(int)) = peeked_token.token {
+                                        let size = self.validate_token(TokenEnum::Number(Number::Integer(0)));
+                                        self.validate_token(TokenEnum::Bracket(Bracket::RSquare));
+
+                                        actual_var_type = VarType::Array(Box::new(var_type.clone()), int as usize);
+                                    } else {
+                                        unexpected_token(&peeked_token, Some(&TokenEnum::Number(Number::Integer(0))));
+                                        exit(1);
+                                    }
+                                }
+
+                                return Variable::new(
+                                    Box::new(type_token),
+                                    actual_var_type.clone(),
+                                    var_name,
+                                    false,
+                                    false,
+                                    0,
+                                );
                             }
 
                             _ => {

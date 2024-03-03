@@ -63,7 +63,14 @@ impl AST for DeclarationStatement {
             false
         };
 
-        asm.variable_assignment(&self.left.var_name, &AssignmentTypes::Equals, call_stack, 0, function_call_assign);
+        asm.variable_assignment(
+            &self.left.var_name,
+            &AssignmentTypes::Equals,
+            call_stack,
+            0,
+            function_call_assign,
+            &None,
+        );
     }
 
     fn visit(
@@ -112,11 +119,10 @@ impl AST for DeclarationStatement {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        self.right.borrow_mut().semantic_visit(call_stack, f);
-
-        self.verify_type();
-
+        self.right.borrow_mut().semantic_visit(call_stack, f.clone());
         call_stack.insert_variable(self.left.clone());
+        self.left.semantic_visit(call_stack, f);
+        self.verify_type();
     }
 
     fn get_node(&self) -> ASTNodeEnum {

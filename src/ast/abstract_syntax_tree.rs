@@ -21,7 +21,7 @@ use super::{
     assignment_statement::AssignmentStatement, ast_loop::Loop, binary_op::BinaryOP, comparison_exp::ComparisonExp,
     conditionals::ConditionalStatement, declaration_statement::DeclarationStatement, factor::Factor,
     function_call::FunctionCall, function_def::FunctionDefinition, jump::Jump, logical_exp::LogicalExpression,
-    memory_alloc::MemoryAlloc, program::Program, variable::Variable,
+    memory_alloc::MemoryAlloc, program::Program, variable::Variable, array::Array,
 };
 
 #[derive(Debug)]
@@ -60,6 +60,7 @@ pub enum ASTNodeEnumMut<'a> {
     Program(&'a mut Program),
     Variable(&'a mut Variable),
     MemoryAlloc(&'a mut MemoryAlloc),
+    Array(&'a mut Array),
 }
 
 pub enum ASTNodeEnum<'a> {
@@ -77,6 +78,7 @@ pub enum ASTNodeEnum<'a> {
     Program(&'a Program),
     Variable(&'a Variable),
     MemoryAlloc(&'a MemoryAlloc),
+    Array(&'a Array),
 }
 
 impl<'a> Display for ASTNodeEnumMut<'a> {
@@ -96,6 +98,7 @@ impl<'a> Display for ASTNodeEnumMut<'a> {
             ASTNodeEnumMut::Program(_) => "ProgramMut",
             ASTNodeEnumMut::Variable(_) => "VariableMut",
             ASTNodeEnumMut::MemoryAlloc(_) => "MemoryAlloc",
+            ASTNodeEnumMut::Array(_) => "Array",
         };
 
         write!(f, "{}", name)
@@ -125,6 +128,7 @@ impl<'a> Display for ASTNodeEnum<'a> {
             ASTNodeEnum::Program(_) => "Program",
             ASTNodeEnum::Variable(_) => "Variable",
             ASTNodeEnum::MemoryAlloc(_) => "MemoryAlloc",
+            ASTNodeEnum::Array(_) => "Array",
         };
 
         write!(f, "{}", name)
@@ -148,6 +152,7 @@ impl<'a> Debug for ASTNodeEnum<'a> {
             ASTNodeEnum::Program(a) => write!(f, "Name: Program {:#?}", a),
             ASTNodeEnum::Variable(a) => write!(f, "Name: Variable {:#?}", a),
             ASTNodeEnum::MemoryAlloc(a) => write!(f, "Name: MemoryAlloc {:#?}", a),
+            ASTNodeEnum::Array(a) => write!(f, "Name: Array {:#?}", a),
         }
     }
 }
@@ -212,8 +217,9 @@ impl<'a> ASTNodeEnum<'a> {
             LogicalExp(f) => (f.result_type == variable.result_type, &f.result_type),
             Variable(f) => (f.result_type == variable.result_type, &f.result_type),
             MemoryAlloc(f) => (f.result_type == variable.result_type, &f.result_type),
+            Array(f) => (f.result_type == variable.result_type, &f.result_type),
 
-            node =>  unreachable!("Cannot assign a variable to {node}. This could a bug in the parsing stage"),
+            node => unreachable!("Cannot assign a variable to {node}. This could a bug in the parsing stage"),
         };
     }
 
@@ -227,6 +233,7 @@ impl<'a> ASTNodeEnum<'a> {
             ASTNodeEnum::Variable(node) => &node.result_type,
             ASTNodeEnum::MemoryAlloc(node) => &node.result_type,
             ASTNodeEnum::Jump(node) => &node.result_type,
+            ASTNodeEnum::Array(node) => &node.result_type,
 
             ASTNodeEnum::AssignmentStatement(_) => todo!(),
             ASTNodeEnum::Loop(_) => todo!(),

@@ -1,16 +1,30 @@
-mem buffer 1024
-
 fun main() {
-    def file_name: str = "./.gitignore\0";
+  def array: int[15] = [12, 8, 9, 13, 5, 4, 3, 1, 11, 6, 2, 14, 15, 7, 10];
 
-    def ret: int = syscall(2, file_name as *char, 0, 0);
-    write(ret);
+  def i: int = 0;
+  def j: int = 0;
 
-    def read_fd: int = syscall(0, ret, buffer, 1024);
-    write(read_fd);
+  loop from 0 to 15 {
+      j = 0
+      loop from 0 to 14 {
+          if array[j] > array[j + 1] {
+              def temp: int = array[j];
+              array[j] = array[j + 1];
+              array[j + 1] = temp;
+          }
 
-    def wr: int = syscall(1, 1, buffer, 1024);
-    write(wr);
+          j = j + 1
+      }
+
+      i = i + 1
+  }
+
+  i = 0
+
+  loop from 0 to 15 {
+      write(array[i])
+      i = i + 1
+  }
 }
 
 main() 

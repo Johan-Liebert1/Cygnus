@@ -3,6 +3,7 @@ use crate::{
     lexer::types::{VarType, TYPE_FLOAT, TYPE_INT, TYPE_STRING},
     semantic_analyzer::semantic_analyzer::CallStack,
     trace,
+    types::ASTNode,
 };
 
 use core::panic;
@@ -22,6 +23,7 @@ use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST}
 #[derive(Debug, Clone)]
 pub struct Variable {
     token: Box<Token>,
+
     pub var_name: String,
     pub var_type: VarType,
     pub result_type: VarType,
@@ -31,6 +33,7 @@ pub struct Variable {
     pub offset: usize,
     pub is_memory_block: bool,
     pub type_cast: Option<VarType>,
+    pub array_aceess_index: Option<ASTNode>,
 }
 
 impl Variable {
@@ -53,22 +56,12 @@ impl Variable {
             offset: 0,
             is_memory_block: false,
             type_cast: None,
+            array_aceess_index: None,
         }
     }
 
     pub fn size(&self) -> usize {
-        return match self.var_type {
-            // 64 bit integer
-            VarType::Int => 8,
-            // 8 bytes for length + 8 bytes for pointer to the start of the string
-            VarType::Str => 16,
-            VarType::Float => todo!(),
-            // char is only 1 byte
-            VarType::Char => 1,
-            // Pointer will always consume 8 bytes
-            VarType::Ptr(_) => 8,
-            VarType::Unknown => todo!(),
-        };
+        self.result_type.get_size()
     }
 
     pub fn get_var_enum_from_type(&self) -> VariableEnum {
@@ -86,16 +79,21 @@ impl Variable {
             VarType::Char => todo!(),
             VarType::Ptr(_) => todo!(),
             VarType::Unknown => todo!(),
+            VarType::Array(..) => todo!(),
         };
     }
 
-    pub fn store_result_type(&mut self, var_type: &VarType, times_dereferenced: usize) {
-        self.result_type = var_type.get_actual_type(times_dereferenced);
+    pub fn store_result_type(&mut self) {
+        self.result_type = self.result_type.get_actual_type(self.times_dereferenced, &self.token);
     }
 }
 
 impl AST for Variable {
-    fn visit_com(&self, _x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+    fn visit_com(&self, x: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+        if let Some(ast_node) = &self.array_aceess_index {
+            ast_node.borrow().visit_com(x, f, asm, call_stack);
+        }
+
         asm.gen_asm_for_var(&self, &call_stack);
     }
 
@@ -111,7 +109,7 @@ impl AST for Variable {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         let (variable_in_stack, _) = call_stack.get_var_with_name(&self.var_name);
 
         if let Some(variable_in_stack) = variable_in_stack {
@@ -121,7 +119,21 @@ impl AST for Variable {
                 variable_in_stack.var_type.clone()
             };
 
-            self.result_type = self.var_type.get_actual_type(self.times_dereferenced);
+            self.result_type = self.var_type.get_actual_type(self.times_dereferenced, &self.token);
+
+            if let Some(ast_node) = &self.array_aceess_index {
+                ast_node.borrow_mut().semantic_visit(call_stack, f);
+
+                if let VarType::Array(type_, _) = &self.result_type {
+                    // if an index is being accessed, then we have to get the underlying type
+                    self.result_type = *type_.clone();
+                } else {
+                    helpers::compiler_error(
+                        format!("Cannot index into a variable of type {}", self.result_type),
+                        &self.token,
+                    );
+                }
+            }
         } else {
             helpers::compiler_error(
                 format!("Variable with name '{}' not found in current scope", self.var_name),

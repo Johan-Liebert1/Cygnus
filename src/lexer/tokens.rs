@@ -89,6 +89,8 @@ impl PartialEq for Number {
 pub enum Bracket {
     LParen,
     RParen,
+    LSquare,
+    RSquare,
     LCurly,
     RCurly,
 }
@@ -100,6 +102,8 @@ impl Display for Bracket {
             Bracket::RParen => write!(f, "{}", ")"),
             Bracket::LCurly => write!(f, "{}", "{"),
             Bracket::RCurly => write!(f, "{}", "}"),
+            Bracket::LSquare => write!(f, "{}", "["),
+            Bracket::RSquare => write!(f, "{}", "]"),
         }
     }
 }
@@ -185,6 +189,7 @@ pub enum TokenEnum {
     SemiColon,
     Ampersand,
     FunctionReturnIndicator,
+    Comment,
 
     Number(Number),
     Bracket(Bracket),
@@ -234,6 +239,7 @@ impl Display for TokenEnum {
             TokenEnum::StringLiteral(token) => write!(f, "{}", token),
             TokenEnum::Unknown(token) => write!(f, "{}", token),
             TokenEnum::EOF => write!(f, "{}", "EOF"),
+            TokenEnum::Comment => write!(f, "{}", "Comment"),
         }
         
     }

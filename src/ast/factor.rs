@@ -57,7 +57,10 @@ impl AST for Factor {
                         VariableEnum::Pointer(_) => todo!(),
                     }
                 } else {
-                    compiler_error(format!("Variable with name '{var_name}' not found in current scope"), &self.token);
+                    compiler_error(
+                        format!("Variable with name '{var_name}' not found in current scope"),
+                        &self.token,
+                    );
                     exit(1);
                 }
             }
@@ -84,9 +87,12 @@ impl AST for Factor {
                 let (variable, _) = call_stack.get_var_with_name(v);
 
                 if let Some(var) = variable {
-                    var.var_type.get_actual_type(var.times_dereferenced).clone()
+                    var.var_type.get_actual_type(var.times_dereferenced, &self.token).clone()
                 } else {
-                    compiler_error(format!("Variable with name '{v}' not found in current scope"), &self.token);
+                    compiler_error(
+                        format!("Variable with name '{v}' not found in current scope"),
+                        &self.token,
+                    );
                     exit(1);
                 }
             }

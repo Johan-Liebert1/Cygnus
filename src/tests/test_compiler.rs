@@ -105,6 +105,12 @@ fn palindrome_number() {
     assert_eq!(stdout_str, file_result);
 }
 
+#[test]
+fn bubble_sort() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("bubble_sort.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
 // This has issues with parent -> child stdout
 //
 // #[test]
