@@ -55,6 +55,7 @@ impl ASM {
 
                     self.extend_current_label(v);
                 } else if variable.store_address {
+                    trace!("variable.store_address for {}", variable.var_name);
                     self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
                 } else {
                     self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
@@ -223,7 +224,10 @@ impl ASM {
                                     // .
                                     // --- length ---
                                     // --- pointer to string ---
-                                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset)]);
+                                    self.extend_current_label(vec![
+                                        format!("lea rax, [rbp - {}]", ar_var.offset),
+                                        format!("push rax"),
+                                    ]);
                                 } else {
                                     self.extend_current_label(vec![
                                         format!("mov rax, [rbp - {}]", ar_var.offset),

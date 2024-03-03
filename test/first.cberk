@@ -1,16 +1,10 @@
-mem array 1000
-
-fun swap(l: *int, r: *int) {
-    def temp: *int = l;
-    *l = *r;
-    *r = *temp;
-}
+mem buffer 1024
 
 fun main() {
-    def i: int = 1;
-    def x: int = 2;
+    def a: str = "hello\n";
+    def b: *str = &a;
 
-    swap(&i, &x);
+    write(*b);
 }
 
 main()

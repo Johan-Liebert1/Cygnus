@@ -140,6 +140,10 @@ impl AST for Variable {
                 &self.token,
             );
         }
+
+        if self.store_address {
+            self.result_type = VarType::Ptr(Box::new(self.var_type.clone()))
+        }
     }
 
     fn get_node(&self) -> ASTNodeEnum {
