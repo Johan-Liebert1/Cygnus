@@ -17,7 +17,7 @@ impl<'a> Parser<'a> {
         var_token: Token,
         var_name: String,
         times_dereferenced: usize,
-        array_access_index: Option<usize>,
+        array_access_index: Option<ASTNode>,
     ) -> ASTNode {
         // we get here after parsing the variable name
         let validated_token =

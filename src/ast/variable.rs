@@ -3,6 +3,7 @@ use crate::{
     lexer::types::{VarType, TYPE_FLOAT, TYPE_INT, TYPE_STRING},
     semantic_analyzer::semantic_analyzer::CallStack,
     trace,
+    types::ASTNode,
 };
 
 use core::panic;
@@ -32,7 +33,7 @@ pub struct Variable {
     pub offset: usize,
     pub is_memory_block: bool,
     pub type_cast: Option<VarType>,
-    pub array_aceess_index: Option<usize>,
+    pub array_aceess_index: Option<ASTNode>,
 }
 
 impl Variable {
@@ -88,7 +89,11 @@ impl Variable {
 }
 
 impl AST for Variable {
-    fn visit_com(&self, _x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+    fn visit_com(&self, x: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+        if let Some(ast_node) = &self.array_aceess_index {
+            ast_node.borrow().visit_com(x, f, asm, call_stack);
+        }
+
         asm.gen_asm_for_var(&self, &call_stack);
     }
 
@@ -104,7 +109,7 @@ impl AST for Variable {
         println!("{:#?}", self);
     }
 
-    fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         let (variable_in_stack, _) = call_stack.get_var_with_name(&self.var_name);
 
         if let Some(variable_in_stack) = variable_in_stack {
@@ -116,7 +121,9 @@ impl AST for Variable {
 
             self.result_type = self.var_type.get_actual_type(self.times_dereferenced, &self.token);
 
-            if let Some(index) = self.array_aceess_index {
+            if let Some(ast_node) = &self.array_aceess_index {
+                ast_node.borrow_mut().semantic_visit(call_stack, f);
+
                 if let VarType::Array(type_, _) = &self.result_type {
                     // if an index is being accessed, then we have to get the underlying type
                     self.result_type = *type_.clone();

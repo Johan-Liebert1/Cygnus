@@ -1,3 +1,4 @@
+use crate::lexer::types::VarType;
 use crate::{helpers, trace};
 use crate::{lexer::tokens::AssignmentTypes, types::ASTNode};
 
@@ -52,7 +53,17 @@ impl AssignmentStatement {
 
 impl AST for AssignmentStatement {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        self.right.borrow().visit_com(v, f, asm, call_stack);
+        self.right.borrow().visit_com(v, f.clone(), asm, call_stack);
+
+        // Only this is required for arrays. Not actually calling the visit_com function for the
+        // variable as that messes up everything as it always assumes it's for printing and not for
+        // assignment
+        // We have to check var_type here as result_type actually contains integer
+        if let VarType::Array(..) = self.left.var_type {
+            if let Some(array_index) = &self.left.array_aceess_index {
+                array_index.borrow().visit_com(v, f, asm, call_stack);
+            }
+        }
 
         asm.variable_assignment(
             &self.left.var_name,
@@ -64,6 +75,7 @@ impl AST for AssignmentStatement {
             } else {
                 false
             },
+            &self.left.array_aceess_index,
         );
     }
 

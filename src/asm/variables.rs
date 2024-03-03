@@ -86,19 +86,16 @@ impl ASM {
 
         match *var_type.clone() {
             VarType::Int => {
-                trace!(
-                    "get_underlying_type_size: {}, ar_var.offset: {}, array_aceess_index: {}",
-                    variable.result_type.get_underlying_type_size(),
-                    ar_var.offset,
-                    variable.array_aceess_index.unwrap()
-                );
-
                 self.extend_current_label(vec![
-                    format!(
-                        "mov rax, [rbp - {}]",
-                        ar_var.offset
-                            + variable.result_type.get_underlying_type_size() * variable.array_aceess_index.unwrap()
-                    ),
+                    format!(";; Start array index access"),
+                    // rax has the index into the array
+                    format!("pop rax"),
+                    format!("mov rbx, {}", variable.result_type.get_underlying_type_size()),
+                    format!("mul rbx"),
+                    // now rax has index * 8
+                    format!("mov rbx, rbp"),
+                    format!("sub rbx, rax"),
+                    format!("mov rax, [rbx - {}]", ar_var.offset),
                     format!("push rax"),
                 ]);
             }

@@ -1,10 +1,12 @@
 use crate::{
+    ast::abstract_syntax_tree::ASTNodeEnum,
     lexer::{
         tokens::{AssignmentTypes, VariableEnum},
         types::VarType,
     },
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
     trace,
+    types::ASTNode,
 };
 
 use super::asm::ASM;
@@ -47,10 +49,11 @@ impl ASM {
         call_stack: &CallStack,
         times_dereferenced: usize,
         is_function_call_assign: bool,
+        array_access_index: &Option<ASTNode>,
     ) {
         // 1. Check whether the variable is a local or global variable
         // 2. If global var, get it from data section, else from stack offset
-        let (variable, variable_scope) = call_stack.get_var_with_name(&var_name);
+        let (var_from_call_stack, variable_scope) = call_stack.get_var_with_name(&var_name);
 
         let mut instructions = vec![];
 
@@ -58,7 +61,7 @@ impl ASM {
         let mut is_ptr_deref = false;
         let mut is_array = false;
 
-        match variable {
+        match var_from_call_stack {
             Some(var) => {
                 match variable_scope {
                     ActivationRecordType::Global => {
@@ -212,14 +215,42 @@ impl ASM {
                                     VarType::Array(type_, size) => {
                                         is_array = true;
 
-                                        for i in 0..*size {
-                                            instructions.extend([
-                                                format!("pop rax"),
-                                                format!(
-                                                    "mov [rbp - {}], rax",
-                                                    var.offset + type_.get_underlying_type_size() * i
-                                                ),
-                                            ]);
+                                        match array_access_index {
+                                            Some(index) => {
+                                                // we visit the right side first and then the left
+                                                // side. So the array index is at topand the
+                                                // actual value to set is at the top - 1 of the stack
+                                                instructions.extend([
+                                                    // array[1] = 10
+
+                                                    // rcx stores the index, rdx has the actual
+                                                    // value
+                                                    format!(";; rbx stores the index, rcx has the actual value"),
+                                                    format!("pop rbx"), // rcx has 1
+                                                    format!("pop rcx"), // rdx has 10
+
+                                                    format!("mov rax, {}", type_.get_underlying_type_size()), // rax = 8
+                                                    format!("mul rbx"), // now rax has = rax * rbx
+                                                    // = 1 * 8 = 8
+                                                    
+                                                    format!("mov rbx, rbp"),
+                                                    format!("sub rbx, rax"),
+                                                    format!("mov [rbx - {}], rcx", var.offset),
+                                                ]);
+                                            }
+
+                                            None => {
+                                                // Assignment to the array variable itself
+                                                for i in 0..*size {
+                                                    instructions.extend([
+                                                        format!("pop rax"),
+                                                        format!(
+                                                            "mov [rbp - {}], rax",
+                                                            var.offset + type_.get_underlying_type_size() * i
+                                                        ),
+                                                    ]);
+                                                }
+                                            }
                                         }
                                     }
 

@@ -191,17 +191,9 @@ impl<'a> Parser<'a> {
                                 // array[7] = 43
                                 let var_token = self.get_next_token();
 
-                                self.validate_token(TokenEnum::Bracket(Bracket::LSquare));
-
                                 let next_token = self.get_next_token();
 
-                                let array_access_index =
-                                    if let TokenEnum::Number(Number::Integer(idx)) = next_token.token {
-                                        idx as usize
-                                    } else {
-                                        unexpected_token(&next_token, Some(&TokenEnum::Number(Number::Integer(0))));
-                                        exit(1);
-                                    };
+                                let array_access_index = self.parse_logical_expression();
 
                                 self.validate_token(TokenEnum::Bracket(Bracket::RSquare));
 

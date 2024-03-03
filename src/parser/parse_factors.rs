@@ -55,12 +55,7 @@ impl<'a> Parser<'a> {
         if let TokenEnum::Bracket(Bracket::LSquare) = self.peek_next_token().token {
             self.get_next_token();
 
-            let peeked_token = self.peek_next_token();
-
-            if let TokenEnum::Number(Number::Integer(index)) = peeked_token.token {
-                self.get_next_token();
-                variable.array_aceess_index = Some(index as usize)
-            }
+            variable.array_aceess_index = Some(self.parse_logical_expression());
 
             self.validate_token(TokenEnum::Bracket(Bracket::RSquare));
         }

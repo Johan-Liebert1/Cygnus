@@ -69,6 +69,7 @@ impl AST for DeclarationStatement {
             call_stack,
             0,
             function_call_assign,
+            &None,
         );
     }
 

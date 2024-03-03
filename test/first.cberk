@@ -1,14 +1,20 @@
 mem buffer 1024
 
 fun main() {
-    def array: int[4] = [420, 2, 3, 4];
+    def array: int[10] = [0,0,0,0,0,0,0,0,0,0];
 
-    write(array[0])
-    write(array[1])
-    write(array[2])
-    write(array[3])
+    def i: int = 0;
 
-    array[4] = 5;
+    loop from 0 to 10 {
+        array[i] = i;
+        i = i + 1
+    }
+
+    i = 0
+    loop from 0 to 10 {
+        write(array[i])
+        i = i + 1
+    }
 }
 
 main() 
