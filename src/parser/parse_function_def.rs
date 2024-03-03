@@ -1,5 +1,6 @@
 use crate::{
-    helpers::unexpected_token, interpreter::interpreter::FunctionHashMapValue, lexer::types::VarType, types::ASTNode,
+    helpers::unexpected_token, interpreter::interpreter::FunctionHashMapValue, lexer::types::VarType, trace,
+    types::ASTNode,
 };
 
 use std::{cell::RefCell, process::exit, rc::Rc};
@@ -42,8 +43,6 @@ impl<'a> Parser<'a> {
             };
         }
 
-        // println!("parameters {:?}", parameters);
-
         return parameters;
     }
 
@@ -65,6 +64,7 @@ impl<'a> Parser<'a> {
 
         self.validate_token(TokenEnum::Bracket(Bracket::LParen));
 
+        // we validate closing ')' in the following function
         let parameters = self.parse_function_definition_parameters();
 
         let mut return_type = VarType::Unknown;
@@ -111,7 +111,7 @@ impl<'a> Parser<'a> {
             ff,
             FunctionHashMapValue {
                 func: Rc::clone(&fdef),
-                return_type
+                return_type,
             },
         );
 

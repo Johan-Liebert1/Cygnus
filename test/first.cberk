@@ -1,7 +1,16 @@
 mem array 1000
 
+fun swap(l: *int, r: *int) {
+    def temp: *int = l;
+    *l = *r;
+    *r = *temp;
+}
+
 fun main() {
-    def third: int = *(array + 1);
+    def i: int = 1;
+    def x: int = 2;
+
+    swap(&i, &x);
 }
 
 main()

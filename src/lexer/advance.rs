@@ -114,6 +114,8 @@ impl<'a> Lexer<'a> {
                         TokenEnum::Type(type_) => {
                             // consume the 'type_' token
                             self.get_next_token();
+                            self.index -= 1;
+
                             TokenEnum::Type(VarType::Ptr(Box::new(type_)))
                         }
 
