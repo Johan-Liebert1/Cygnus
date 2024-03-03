@@ -150,9 +150,7 @@ impl<'a> Lexer<'a> {
         return TokenEnum::StringLiteral(string_literal);
     }
 
-    fn parse_comment(&mut self) -> String {
-        let mut comment = String::new();
-
+    fn parse_comment(&mut self) {
         while self.index < self.file.len() {
             match self.file[self.index] {
                 b'\n' => {
@@ -162,14 +160,11 @@ impl<'a> Lexer<'a> {
                 }
 
                 _ => {
-                    comment += &(self.file[self.index] as char).to_string();
                     self.index += 1;
                     self.col_number += 1;
                 }
             }
         }
-
-        return comment;
     }
 
     pub fn is_comment(&mut self) -> bool {
