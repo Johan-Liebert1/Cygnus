@@ -62,6 +62,8 @@ impl ASM {
                 }
             }
 
+            VarType::Char => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
+
             _ => panic!("Unknown type '{pointer_var_type}'"),
         }
     }

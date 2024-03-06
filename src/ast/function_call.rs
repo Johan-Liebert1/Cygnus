@@ -56,7 +56,9 @@ impl AST for FunctionCall {
 
                         ASTNodeEnum::BinaryOp(bo) => match &bo.result_type {
                             VarType::Int => asm.func_write_number(),
-                            VarType::Str => todo!(),
+
+                            VarType::Str => asm.func_write_string(),
+
                             VarType::Float => todo!(),
                             VarType::Ptr(ptr_type) => asm.func_write_pointer(&ptr_type, bo.times_dereferenced),
                             VarType::Array(..) => todo!(),

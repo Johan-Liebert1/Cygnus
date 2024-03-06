@@ -57,6 +57,16 @@ impl VarType {
                 }
             }
 
+            // Dereferencing a string should give you a character
+            VarType::Str => match times_dereferenced {
+                0 => VarType::Str,
+                1 => VarType::Char,
+                _ => {
+                    compiler_error(format!("Cannot dereference Character"), token);
+                    exit(1);
+                }
+            },
+
             t => {
                 if times_dereferenced > 0 {
                     compiler_error(format!("Cannot dereference {self}"), token);
@@ -80,8 +90,9 @@ impl VarType {
                     // if a string ptr is added to an integer, it's now a pointer to a character
                     VarType::Str => VarType::Ptr(p.clone()), // VarType::Ptr(Box::new(VarType::Char)),
 
+                    VarType::Char => VarType::Ptr(p.clone()),
+
                     VarType::Float => todo!(),
-                    VarType::Char => todo!(),
                     VarType::Ptr(_) => todo!(),
                     VarType::Array(..) => todo!(),
                     VarType::Unknown => todo!(),

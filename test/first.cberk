@@ -1,9 +1,6 @@
-mem buffer 1024
-
 fun main() {
     def a: str = "hello\n";
     def b: *str = &a;
-
     write(*b);
 }
 
