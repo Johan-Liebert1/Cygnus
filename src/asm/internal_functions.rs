@@ -62,7 +62,13 @@ impl ASM {
                 }
             }
 
-            VarType::Char => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
+            VarType::Char => {
+                if times_dereferenced > 0 {
+                    WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
+                } else {
+                    vec![format!("pop rax"), format!("call _printRAX")]
+                }
+            }
 
             _ => panic!("Unknown type '{pointer_var_type}'"),
         }

@@ -62,8 +62,12 @@ impl ASM {
             }
 
             VarType::Char => {
+                trace!("handling ptr to char");
+
+                // TODO: Differentiate btw pointer to the first char of a string and a pointer to a
+                // single char
                 if variable.dereference {
-                    todo!()
+                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset), format!("push rax"), format!("push 1")]);
                 } else if variable.store_address {
                     todo!()
                 } else {

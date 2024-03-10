@@ -97,15 +97,17 @@ impl ASM {
 
         // result will always be in rax
         // We will also never dereference a string as we want the character address
-        trace!("result_type: {}", result_type);
+        // trace!("result_type: {}", result_type);
 
         if *result_type != VarType::Ptr(Box::new(VarType::Str)) && *result_type != VarType::Ptr(Box::new(VarType::Char))
         {
             instructions.extend(std::iter::repeat(format!("mov rax, [rax]")).take(times_dereferenced));
             instructions.push(format!("push rax"));
-        } else if times_dereferenced > 0 || *result_type == VarType::Ptr(Box::new(VarType::Char)) {
+        } else if times_dereferenced > 0 {
             instructions.push(format!("push rax"));
             instructions.push(format!("push 1"));
+        } else {
+            instructions.push(format!("push rax"));
         }
 
         self.extend_current_label(instructions);

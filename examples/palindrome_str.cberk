@@ -1,0 +1,30 @@
+fun is_palindrome(string: *char, length: int) {
+    def i: int = 0;
+
+    loop from 0 to length / 2 {
+        def sub: int = length - i - 1;
+
+        def eq: int = *(string + i) == *(string + sub);
+
+        if *(string + i) != *(string + sub) {
+            write(eq)
+
+            write(string as str, " is NOT a palindrome\n")
+            return
+        }
+
+        i = i + 1
+    }
+
+    write(string as str, " is a palindrome\n")
+}
+
+fun main() {
+    def string_to_check: str = "rush";
+    is_palindrome(string_to_check as *char, 4)
+
+    def string_to_check2: str = "racecar";
+    is_palindrome(string_to_check2 as *char, 7)
+}
+
+main()
