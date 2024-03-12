@@ -62,8 +62,6 @@ impl ASM {
             }
 
             VarType::Char => {
-                trace!("handling ptr to char");
-
                 // TODO: Differentiate btw pointer to the first char of a string and a pointer to a
                 // single char
                 if variable.dereference {

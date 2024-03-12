@@ -102,4 +102,8 @@ impl AST for Array {
     fn print(&self) {
         todo!()
     }
+
+    fn get_type(&self) -> (VarType, VarType) {
+        return (self.result_type.get_actual_type(0, &self.token), self.result_type.clone());
+    }
 }

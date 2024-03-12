@@ -1,3 +1,4 @@
+use crate::lexer::types::VarType;
 use crate::types::ASTNode;
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
@@ -66,5 +67,9 @@ impl AST for Program {
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::Program(self);
+    }
+
+    fn get_type(&self) -> (VarType, VarType) {
+        return (VarType::Unknown, VarType::Unknown);
     }
 }

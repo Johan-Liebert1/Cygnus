@@ -1,3 +1,4 @@
+use crate::lexer::types::VarType;
 use crate::{helpers, trace};
 use crate::{lexer::tokens::AssignmentTypes, types::ASTNode};
 
@@ -131,5 +132,9 @@ impl AST for DeclarationStatement {
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::DeclarationStatement(self);
+    }
+
+    fn get_type(&self) -> (VarType, VarType) {
+        return (VarType::Unknown, VarType::Unknown);
     }
 }

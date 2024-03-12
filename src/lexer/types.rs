@@ -81,7 +81,12 @@ impl VarType {
     pub fn figure_out_type(&self, other: &VarType, op: AllOperations) -> VarType {
         return match (self, other) {
             (VarType::Int, VarType::Int) => VarType::Int,
-            (VarType::Float, VarType::Float) => VarType::Float,
+
+            (VarType::Float, VarType::Float) => match op {
+                AllOperations::Op(_) => todo!(),
+                AllOperations::Comparator(_) => todo!(),
+                AllOperations::LogicalOp(_) => todo!(),
+            },
 
             (VarType::Int, VarType::Ptr(p)) | (VarType::Ptr(p), VarType::Int) => {
                 match **p {
@@ -113,12 +118,23 @@ impl VarType {
 
             (VarType::Ptr(ptr1), VarType::Ptr(ptr2)) => ptr1.figure_out_type(ptr2, op),
 
+            (VarType::Char, VarType::Char) => match op {
+                AllOperations::Op(_) => todo!(),
+                AllOperations::Comparator(_) => VarType::Int,
+                AllOperations::LogicalOp(_) => todo!(),
+            } ,
+
             (VarType::Ptr(_), VarType::Str)
             | (VarType::Str, VarType::Ptr(_))
             | (VarType::Ptr(_), VarType::Float)
             | (VarType::Float, VarType::Ptr(_)) => panic!("'{op}' not defined for '{self}' and '{other}'"),
 
-            _ => VarType::Unknown,
+            (l, r) => {
+                trace!("l: {}", l);
+                trace!("r: {}", r);
+
+                VarType::Unknown
+            }
         };
     }
 

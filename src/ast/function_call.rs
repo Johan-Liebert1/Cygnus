@@ -60,10 +60,13 @@ impl AST for FunctionCall {
                             VarType::Str => asm.func_write_string(),
 
                             VarType::Float => todo!(),
+
                             VarType::Ptr(ptr_type) => asm.func_write_pointer(&ptr_type, bo.times_dereferenced),
+
+                            VarType::Char => todo!(),
+
                             VarType::Array(..) => todo!(),
                             VarType::Unknown => todo!(),
-                            VarType::Char => todo!(),
                         },
 
                         ASTNodeEnum::Factor(f) => match &f.get_token().token {
@@ -252,5 +255,9 @@ impl AST for FunctionCall {
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::FunctionCall(self);
+    }
+
+    fn get_type(&self) -> (VarType, VarType) {
+        return (self.result_type.get_actual_type(0, &self.token), self.result_type.clone());
     }
 }

@@ -115,4 +115,8 @@ impl AST for Factor {
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::Factor(self);
     }
+
+    fn get_type(&self) -> (VarType, VarType) {
+        return (self.result_type.get_actual_type(0, &self.token), self.result_type.clone());
+    }
 }

@@ -36,6 +36,9 @@ pub trait AST {
     fn get_token(&self) -> &Token;
     fn get_node(&self) -> ASTNodeEnum;
     fn get_node_mut(&mut self) -> ASTNodeEnumMut;
+    /// Returns (actual_type, result_type)
+    /// actual_type = type after all dereferences have been applied
+    fn get_type(&self) -> (VarType, VarType);
     fn print(&self);
 }
 

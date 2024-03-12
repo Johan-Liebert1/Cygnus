@@ -144,6 +144,10 @@ impl AST for Variable {
         if self.store_address {
             self.result_type = VarType::Ptr(Box::new(self.var_type.clone()))
         }
+
+        // if self.token.line_number == 30 {
+        //     trace!("{}, {}", self.var_name, self.result_type);
+        // }
     }
 
     fn get_node(&self) -> ASTNodeEnum {
@@ -152,5 +156,9 @@ impl AST for Variable {
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::Variable(self);
+    }
+
+    fn get_type(&self) -> (VarType, VarType) {
+        return (self.result_type.get_actual_type(self.times_dereferenced, &self.token), self.result_type.clone());
     }
 }

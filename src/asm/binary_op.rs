@@ -99,6 +99,9 @@ impl ASM {
         // We will also never dereference a string as we want the character address
         // trace!("result_type: {}", result_type);
 
+        // if *result_type == VarType::Ptr(Box::new(VarType::Str)) {
+        // }
+
         if *result_type != VarType::Ptr(Box::new(VarType::Str)) && *result_type != VarType::Ptr(Box::new(VarType::Char))
         {
             instructions.extend(std::iter::repeat(format!("mov rax, [rax]")).take(times_dereferenced));
