@@ -147,6 +147,9 @@ impl AST for Jump {
     }
 
     fn get_type(&self) -> (VarType, VarType) {
-        return (self.result_type.get_actual_type(0, &self.token), self.result_type.clone());
+        return (
+            self.result_type.get_actual_type(0, &self.token),
+            self.result_type.clone(),
+        );
     }
 }

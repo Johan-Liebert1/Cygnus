@@ -247,6 +247,10 @@ impl AST for BinaryOP {
     }
 
     fn get_type(&self) -> (VarType, VarType) {
-        return (self.result_type.get_actual_type(self.times_dereferenced, &self.operator), self.result_type.clone());
+        return (
+            self.result_type
+                .get_actual_type(self.times_dereferenced, &self.operator),
+            self.result_type.clone(),
+        );
     }
 }

@@ -228,11 +228,9 @@ impl ASM {
                                                     format!(";; rbx stores the index, rcx has the actual value"),
                                                     format!("pop rbx"), // rcx has 1
                                                     format!("pop rcx"), // rdx has 10
-
                                                     format!("mov rax, {}", type_.get_underlying_type_size()), // rax = 8
                                                     format!("mul rbx"), // now rax has = rax * rbx
                                                     // = 1 * 8 = 8
-                                                    
                                                     format!("mov rbx, rbp"),
                                                     format!("sub rbx, rax"),
                                                     format!("mov [rbx - {}], rcx", var.offset),

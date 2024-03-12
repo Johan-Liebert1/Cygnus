@@ -7,7 +7,8 @@ use crate::{
     interpreter::interpreter::{Functions, Variables},
     lexer::{lexer::Token, types::VarType},
     semantic_analyzer::semantic_analyzer::CallStack,
-    types::ASTNode, trace,
+    trace,
+    types::ASTNode,
 };
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
@@ -84,7 +85,6 @@ impl AST for Array {
         }
 
         self.result_type = VarType::Array(Box::new(first_member_type), self.members.len());
-
     }
 
     fn get_token(&self) -> &Token {
@@ -104,6 +104,9 @@ impl AST for Array {
     }
 
     fn get_type(&self) -> (VarType, VarType) {
-        return (self.result_type.get_actual_type(0, &self.token), self.result_type.clone());
+        return (
+            self.result_type.get_actual_type(0, &self.token),
+            self.result_type.clone(),
+        );
     }
 }

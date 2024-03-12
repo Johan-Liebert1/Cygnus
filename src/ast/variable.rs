@@ -159,6 +159,9 @@ impl AST for Variable {
     }
 
     fn get_type(&self) -> (VarType, VarType) {
-        return (self.result_type.get_actual_type(self.times_dereferenced, &self.token), self.result_type.clone());
+        return (
+            self.result_type.get_actual_type(self.times_dereferenced, &self.token),
+            self.result_type.clone(),
+        );
     }
 }

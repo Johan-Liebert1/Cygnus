@@ -122,7 +122,7 @@ impl VarType {
                 AllOperations::Op(_) => todo!(),
                 AllOperations::Comparator(_) => VarType::Int,
                 AllOperations::LogicalOp(_) => todo!(),
-            } ,
+            },
 
             (VarType::Ptr(_), VarType::Str)
             | (VarType::Str, VarType::Ptr(_))

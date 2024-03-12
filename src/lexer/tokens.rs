@@ -241,7 +241,6 @@ impl Display for TokenEnum {
             TokenEnum::EOF => write!(f, "{}", "EOF"),
             TokenEnum::Comment => write!(f, "{}", "Comment"),
         }
-        
     }
 }
 

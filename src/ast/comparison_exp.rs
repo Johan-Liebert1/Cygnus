@@ -206,6 +206,9 @@ impl AST for ComparisonExp {
     }
 
     fn get_type(&self) -> (VarType, VarType) {
-        return (self.result_type.get_actual_type(0, &self.comp_op), self.result_type.clone());
+        return (
+            self.result_type.get_actual_type(0, &self.comp_op),
+            self.result_type.clone(),
+        );
     }
 }

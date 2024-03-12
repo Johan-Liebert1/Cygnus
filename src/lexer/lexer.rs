@@ -121,7 +121,6 @@ impl<'a> Lexer<'a> {
             return tok;
         }
 
-
         return TokenEnum::Variable(word);
     }
 

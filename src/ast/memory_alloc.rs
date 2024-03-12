@@ -104,6 +104,9 @@ impl AST for MemoryAlloc {
     }
 
     fn get_type(&self) -> (VarType, VarType) {
-        return (self.result_type.get_actual_type(0, self.get_token()), self.result_type.clone());
+        return (
+            self.result_type.get_actual_type(0, self.get_token()),
+            self.result_type.clone(),
+        );
     }
 }
