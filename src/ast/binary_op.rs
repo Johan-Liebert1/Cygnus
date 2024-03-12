@@ -227,8 +227,7 @@ impl AST for BinaryOP {
                 .left
                 .borrow()
                 .get_node()
-                .figure_out_type(&self.right.borrow().get_node(), AllOperations::Op(op.clone()))
-                .get_actual_type(self.times_dereferenced, self.right.borrow().get_token());
+                .figure_out_type(&self.right.borrow().get_node(), AllOperations::Op(op.clone()));
 
             // trace!("left: {:#?}", self.left.borrow());
             // trace!("right: {:#?}", self.right.borrow());

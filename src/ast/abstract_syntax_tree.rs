@@ -209,18 +209,43 @@ impl<'a> ASTNodeEnum<'a> {
         }
     }
 
-    pub fn is_var_assignment_okay(&self, variable: &Variable) -> (bool, &VarType) {
+    pub fn is_var_assignment_okay(&self, variable: &Variable) -> (bool, VarType) {
         use ASTNodeEnum::*;
 
         return match self {
-            Factor(f) => (f.result_type == variable.result_type, &f.result_type),
-            BinaryOp(f) => (f.result_type == variable.result_type, &f.result_type),
-            ComparisonExp(f) => (f.result_type == variable.result_type, &f.result_type),
-            FunctionCall(f) => (f.result_type == variable.result_type, &f.result_type),
-            LogicalExp(f) => (f.result_type == variable.result_type, &f.result_type),
-            Variable(f) => (f.result_type == variable.result_type, &f.result_type),
-            MemoryAlloc(f) => (f.result_type == variable.result_type, &f.result_type),
-            Array(f) => (f.result_type == variable.result_type, &f.result_type),
+            Factor(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+
+            BinaryOp(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+            ComparisonExp(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+            FunctionCall(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+            LogicalExp(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+            Variable(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+            MemoryAlloc(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+            Array(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
 
             node => unreachable!("Cannot assign a variable to {node}. This could a bug in the parsing stage"),
         };
