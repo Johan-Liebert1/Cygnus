@@ -231,7 +231,10 @@ impl AST for BinaryOP {
 
             // trace!("left: {:#?}", self.left.borrow());
             // trace!("right: {:#?}", self.right.borrow());
-            trace!("self.result_type: {:#?}", self.result_type);
+
+            // if self.operator.line_number == 12 {
+            //     trace!("self.result_type: {:#?}", self.result_type);
+            // }
         } else {
             unreachable!("Found Operation '{:?}' which is not defined for a binary operation. This must be a bug in the parsing step", self.operator.token)
         }

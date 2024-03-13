@@ -65,10 +65,11 @@ impl ASM {
                 // TODO: Differentiate btw pointer to the first char of a string and a pointer to a
                 // single char
                 if variable.dereference {
+                    // mov al as we only want 8 bytes
                     self.extend_current_label(vec![
-                        format!("mov rax, [rbp - {}]", ar_var.offset),
+                        format!("mov rbx, [rbp - {}]", ar_var.offset),
+                        format!("mov al, [rbx]"),
                         format!("push rax"),
-                        format!("push 1"),
                     ]);
                 } else if variable.store_address {
                     todo!()
@@ -134,11 +135,16 @@ impl ASM {
                 // now rax contains the address of the pointer to the
                 // string
                 // now we move the length of the string into rbx
-                format!("mov rbx, 1"), // now rbx = length of
-                                       // the string
+                // format!("mov rbx, 1"), // now rbx = length of
+                // the string
+                //
+                // NOTE: Not doing the above as a string derefed should only be the first character
             ];
             v.extend(std::iter::repeat(format!("mov rax, [rax]")).take(variable.times_dereferenced - 1));
-            v.extend([format!("push rax"), format!("push rbx")]);
+            v.extend([
+                format!("push rax"),
+                // format!("push rbx"),
+            ]);
 
             self.extend_current_label(v);
         } else if variable.store_address {

@@ -95,23 +95,57 @@ impl ASM {
             }
         };
 
-        // result will always be in rax
-        // We will also never dereference a string as we want the character address
-        // trace!("result_type: {}", result_type);
+        // trace!(
+        //     "result_type: {}, times_dereferenced: {}",
+        //     result_type,
+        //     times_dereferenced
+        // );
 
         // if *result_type == VarType::Ptr(Box::new(VarType::Str)) {
         // }
 
-        if *result_type != VarType::Ptr(Box::new(VarType::Str)) && *result_type != VarType::Ptr(Box::new(VarType::Char))
-        {
-            instructions.extend(std::iter::repeat(format!("mov rax, [rax]")).take(times_dereferenced));
-            instructions.push(format!("push rax"));
-        } else if times_dereferenced > 0 {
-            instructions.push(format!("push rax"));
-            instructions.push(format!("push 1"));
-        } else {
-            instructions.push(format!("push rax"));
-        }
+        // result will always be in rax
+        // We will also never dereference a string as we want the character address
+        match result_type {
+            VarType::Int => {
+                instructions.push(format!("push rax"));
+            }
+
+            VarType::Str => todo!(),
+            VarType::Float => todo!(),
+            VarType::Char => todo!(),
+
+            VarType::Ptr(type_) => match **type_ {
+                VarType::Int => {
+                    instructions.extend(std::iter::repeat(format!("mov rax, [rax]")).take(times_dereferenced));
+                    instructions.push(format!("push rax"));
+                }
+
+                VarType::Char => {
+                    instructions.push(format!(";; binary op ptr -> char"));
+
+                    if times_dereferenced > 0 {
+                        self.extend_current_label(vec![
+                            format!("mov rbx, rax"),
+                            format!("mov al, [rbx]"),
+                            format!("push rax"),
+                        ]);
+                    } else {
+                        instructions.push(format!("push rax"));
+                    }
+                }
+
+                VarType::Str => todo!(),
+
+                VarType::Float => todo!(),
+                VarType::Ptr(_) => todo!(),
+                VarType::Array(_, _) => todo!(),
+                VarType::Unknown => todo!(),
+            },
+
+            VarType::Array(_, _) => todo!(),
+            VarType::Unknown => todo!(),
+        };
 
         self.extend_current_label(instructions);
     }
