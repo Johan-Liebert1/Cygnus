@@ -27,6 +27,8 @@
 - [x] Proper type checking
 - [x] Type Casting
 
+- [ ] Have a single function for both variable and binary op asm generation
+
 - [ ] Floating point numbers
 - [ ] Enums - Use `offset` and `reset` kinda like Go's `iota`
 - [ ] Make sure nothing is left on the stack when we break out of a loop
