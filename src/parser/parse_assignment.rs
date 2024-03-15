@@ -1,6 +1,6 @@
 use crate::{
     ast::variable::Variable,
-    lexer::{lexer::Token, types::VarType},
+    lexer::{lexer::Token, tokens::Bracket, types::VarType},
     trace,
     types::ASTNode,
 };
@@ -23,7 +23,7 @@ impl<'a> Parser<'a> {
         let validated_token =
             self.validate_any_token(vec![TokenEnum::Equals, TokenEnum::PlusEquals, TokenEnum::MinusEquals]);
 
-        let right = self.parse_logical_expression();
+        let right = self.parse_logical_expression();;
 
         let mut variable = Variable::new(
             Box::new(var_token),

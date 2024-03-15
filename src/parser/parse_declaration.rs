@@ -94,7 +94,14 @@ impl<'a> Parser<'a> {
         self.validate_token(TokenEnum::Equals);
 
         // TODO: handle function calls and strings and stuff here
-        let right = self.parse_logical_expression();
+        let right: ASTNode;
+
+        if let TokenEnum::Bracket(Bracket::LCurly) = self.peek_next_token().token {
+            trace!("gonna parsing struct");
+            right = self.parse_struct();
+        } else {
+            right = self.parse_logical_expression();
+        }
 
         return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(left, right))));
     }
