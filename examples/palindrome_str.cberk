@@ -1,46 +1,28 @@
 fun is_palindrome(string: *char, length: int) {
     def i: int = 0;
 
-    def eq: int = *(string + 0) == *(string + 6);
-    write(eq)
+    loop from 0 to length / 2 {
+        def sub: int = length - i - 1;
 
-    -- loop from 0 to length / 2 {
-    --     def sub: int = length - i - 1;
+        def eq: int = *(string + i) == *(string + sub);
 
-    --     def eq: int = *(string + i) == *(string + sub);
+        if eq != 1 {
+            write(string as str, " is NOT a palindrome\n")
+            return
+        }
 
-    --     write(eq, *(string + i), *(string + sub), "\n")
-
-    --     if eq != 1 {
-    --         write(string as str, " is NOT a palindrome\n")
-    --         return
-    --     }
-
-    --     i = i + 1
-    -- }
+        i = i + 1
+    }
 
     write(string as str, " is a palindrome\n")
 }
 
 fun main() {
-    -- def string_to_check: str = "rush";
-    -- is_palindrome(string_to_check as *char, 4)
+    def string_to_check: str = "rush";
+    is_palindrome(string_to_check as *char, 4)
 
     def string_to_check2: str = "racecar";
-
-    def first: *char = string_to_check2 as *char + 0; 
-    def second: *char = string_to_check2 as *char + 6; 
-
-    def eq: int = *first == *second;
-    def eq2: int = *(string_to_check2 as *char + 0) == *(string_to_check2 as *char + 6);
-    write("eq = ", eq, "eq2 = ", eq2, *(first), *(second))
-
-    -- def sub: int = 6;
-    -- def eq: int = *string_to_check2 == *string_to_check2; -- *(string_to_check2 as *char + sub);
-
-    -- write(eq, string_to_check2)
-
-    -- is_palindrome(string_to_check2 as *char, 7)
+    is_palindrome(string_to_check2 as *char, 7)
 }
 
 main()

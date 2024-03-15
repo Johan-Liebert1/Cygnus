@@ -68,6 +68,7 @@ impl ASM {
                     // mov al as we only want 8 bytes
                     self.extend_current_label(vec![
                         format!("mov rbx, [rbp - {}]", ar_var.offset),
+                        format!("xor rax, rax"),
                         format!("mov al, [rbx]"),
                         format!("push rax"),
                     ]);

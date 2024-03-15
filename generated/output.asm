@@ -6,27 +6,61 @@ section .bss
 	argc resb 8
 
 section .data
-	string_0 db 104,101,108,108,111,10
-	string_1 db 108,111,108,32,104,101,114,101,10
-	string_2 db 108,111,108,32,110,111,116,32,104,101,114,101,10
-	string_3 db 104,105,10
-	string_4 db 98,121,101,10
-	string_5 db 52,32,60,32,50,10
-	string_6 db 52,32,62,32,50,10
-	string_7 db 108,111,111,112,32,119,105,116,104,32,115,116,101,112,32,111,102,32,50,10
+	string_0 db 32,105,115,32,78,79,84,32,97,32,112,97,108,105,110,100,114,111,109,101,10
+	string_1 db 32,105,115,32,97,32,112,97,108,105,110,100,114,111,109,101,10
+	string_2 db 114,117,115,104
+	string_3 db 114,97,99,101,99,97,114
 
 section .text
 	global _start
 
 _start:
 	mov [argc], rsp
+	call _main
+	
+	exit 0
+
+_is_palindrome:
+	push rbp
+	mov rbp, rsp
+	sub rsp, 64
+	;; param name string
+	mov [rbp - 8], rax
+	;; param name length
+	mov [rbp - 16], rdi
+	
+	push 0
+	
+	pop rax
+	mov [rbp - 24], rax
+	
+	push 0
+	
+	mov rax, [rbp - 16]
+	push rax
+	
+	push 2
+	
+	;; clean up rdx as this might mess up the final output
+	xor rdx, rdx
+	;; get the two operands from the stack
+	pop rbx
+	pop rax
+	div rbx
+	push rax
+	
 	push 1
-	push 5
-	push 1
-	.loop_0:
+	
 	pop rcx
 	pop rbx
 	pop rax
+	mov [rbp - 48], rcx
+	mov [rbp - 40], rbx
+	mov [rbp - 32], rax
+	.loop_0:
+	mov rcx, [rbp - 48]
+	mov rbx, [rbp - 40]
+	mov rax, [rbp - 32]
 	add rax, rcx
 	dec rax
 	dec rbx
@@ -34,16 +68,69 @@ _start:
 	jg .loop_end_0
 	inc rax
 	inc rbx
+	mov [rbp - 40], rbx
+	mov [rbp - 32], rax
+	
+	mov rax, [rbp - 16]
 	push rax
-	push rbx
-	push rcx
-	push 5
-	push 8
+	
+	mov rax, [rbp - 24]
+	push rax
+	
+	;; get the two operands from the stack
+	pop rbx
+	pop rax
+	sub rax, rbx
+	push rax
+	
+	push 1
+	
+	;; get the two operands from the stack
+	pop rbx
+	pop rax
+	sub rax, rbx
+	push rax
+	
+	pop rax
+	mov [rbp - 56], rax
+	
+	mov rax, [rbp - 8]
+	push rax
+	
+	mov rax, [rbp - 24]
+	push rax
+	
+	;; get the two operands from the stack
+	pop rax
+	pop rbx
+	add rax, rbx
+	;; binary op ptr -> char
+	mov rbx, rax
+	xor rax, rax
+	mov al, [rbx]
+	push rax
+	
+	mov rax, [rbp - 8]
+	push rax
+	
+	mov rax, [rbp - 56]
+	push rax
+	
+	;; get the two operands from the stack
+	pop rax
+	pop rbx
+	add rax, rbx
+	;; binary op ptr -> char
+	mov rbx, rax
+	xor rax, rax
+	mov al, [rbx]
+	push rax
+	
 	;; We pop in the opposite order of comparison as we push onto the stack
 	pop rbx
 	pop rax
 	cmp rax, rbx
-	jle .skip_0
+	je .skip_0
 	mov rax, 0
 	jmp .skip_next0
 	.skip_0:
@@ -51,42 +138,15 @@ _start:
 	.skip_next0:
 	;; push onto the stack whatever's in rax so rest of the program can use it
 	push rax
-	.if_0:
-	pop rcx
-	cmp rcx, 0
-	;; if the comparison value is false, jump to the next label altogether
-	je .if_end_0
-	mov rax, string_0
-	push rax
-	push 6
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
-	syscall
-	push 1
-	push 4
-	push 1
-	.loop_1:
-	pop rcx
-	pop rbx
+	
 	pop rax
-	add rax, rcx
-	dec rax
-	dec rbx
-	cmp rax, rbx
-	jg .loop_end_1
-	inc rax
-	inc rbx
+	mov [rbp - 64], rax
+	
+	mov rax, [rbp - 64]
 	push rax
-	push rbx
-	push rcx
-	push 3
-	push 3
+	
+	push 1
+	
 	;; We pop in the opposite order of comparison as we push onto the stack
 	pop rbx
 	pop rax
@@ -99,14 +159,18 @@ _start:
 	.skip_next1:
 	;; push onto the stack whatever's in rax so rest of the program can use it
 	push rax
-	.if_1:
+	
+	.if_0:
 	pop rcx
 	cmp rcx, 0
 	;; if the comparison value is false, jump to the next label altogether
-	je .else_1
-	mov rax, string_1
+	je .if_end_0
+	
+	mov rax, [rbp - 8]
 	push rax
-	push 9
+	mov rax, [rbp - 16]
+	push rax
+	
 	;; Assuming length is pushed last
 	pop r8
 	;; Assuming string address is pushed first
@@ -116,12 +180,11 @@ _start:
 	mov rsi, r9
 	mov rdx, r8
 	syscall
-	jmp .else_end_1
-	.if_end_1:
-	.else_1:
-	mov rax, string_2
+	
+	mov rax, string_0
 	push rax
-	push 13
+	push 21
+	
 	;; Assuming length is pushed last
 	pop r8
 	;; Assuming string address is pushed first
@@ -131,156 +194,110 @@ _start:
 	mov rsi, r9
 	mov rdx, r8
 	syscall
-	.else_end_1:
-	jmp .loop_1
-	.loop_end_1:
-	jmp .else_end_0
-	.if_end_0:
-	push 6
-	push 2
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
+	
 	pop rax
-	cmp rax, rbx
-	je .skip_2
-	mov rax, 0
-	jmp .skip_next2
-	.skip_2:
-	mov rax, 1
-	.skip_next2:
-	;; push onto the stack whatever's in rax so rest of the program can use it
+	
+	mov rsp, rbp
+	pop rbp
+	ret
+	
+	jmp .if_end_0
+	.if_end_0:
+	
+	mov rax, [rbp - 24]
 	push rax
-	.elif_0_0:
-	pop rcx
-	cmp rcx, 0
-	;; if the comparison value is false, jump to the next label altogether
-	je .else_0
-	mov rax, string_3
+	
+	push 1
+	
+	;; get the two operands from the stack
+	pop rax
+	pop rbx
+	add rax, rbx
 	push rax
-	push 3
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
-	syscall
-	jmp .else_end_0
-	.elif_0_0_end:
-	.else_0:
-	mov rax, string_4
-	push rax
-	push 4
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
-	syscall
-	.else_end_0:
+	
+	pop rax
+	mov [rbp - 24], rax
+	
 	jmp .loop_0
 	.loop_end_0:
-	push 1
-	push 3
-	push 1
-	.loop_2:
-	pop rcx
-	pop rbx
-	pop rax
-	add rax, rcx
-	dec rax
-	dec rbx
-	cmp rax, rbx
-	jg .loop_end_2
-	inc rax
-	inc rbx
+	
+	mov rax, [rbp - 8]
 	push rax
-	push rbx
-	push rcx
+	mov rax, [rbp - 16]
+	push rax
+	
+	;; Assuming length is pushed last
+	pop r8
+	;; Assuming string address is pushed first
+	pop r9
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, r9
+	mov rdx, r8
+	syscall
+	
+	mov rax, string_1
+	push rax
+	push 17
+	
+	;; Assuming length is pushed last
+	pop r8
+	;; Assuming string address is pushed first
+	pop r9
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, r9
+	mov rdx, r8
+	syscall
+	
+	mov rsp, rbp
+	pop rbp
+	ret
+	
+
+_main:
+	push rbp
+	mov rbp, rsp
+	sub rsp, 32
+	
+	mov rax, string_2
+	push rax
 	push 4
-	push 2
-	;; We pop in the opposite order of comparison as we push onto the stack
+	
 	pop rbx
 	pop rax
-	cmp rax, rbx
-	jl .skip_3
-	mov rax, 0
-	jmp .skip_next3
-	.skip_3:
-	mov rax, 1
-	.skip_next3:
-	;; push onto the stack whatever's in rax so rest of the program can use it
+	mov [rbp - 16], rbx
+	mov [rbp - 8], rax
+	
+	push 4
+	
+	mov rax, [rbp - 8]
 	push rax
-	.if_2:
-	pop rcx
-	cmp rcx, 0
-	;; if the comparison value is false, jump to the next label altogether
-	je .else_2
-	mov rax, string_5
+	
+	pop rax
+	pop rdi
+	call _is_palindrome
+	
+	mov rax, string_3
 	push rax
-	push 6
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
-	syscall
-	jmp .else_end_2
-	.if_end_2:
-	.else_2:
-	mov rax, string_6
-	push rax
-	push 6
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
-	syscall
-	.else_end_2:
-	jmp .loop_2
-	.loop_end_2:
-	push 1
-	push 11
-	push 2
-	.loop_3:
-	pop rcx
+	push 7
+	
 	pop rbx
 	pop rax
-	add rax, rcx
-	dec rax
-	dec rbx
-	cmp rax, rbx
-	jg .loop_end_3
-	inc rax
-	inc rbx
+	mov [rbp - 32], rbx
+	mov [rbp - 24], rax
+	
+	push 7
+	
+	mov rax, [rbp - 24]
 	push rax
-	push rbx
-	push rcx
-	mov rax, string_7
-	push rax
-	push 20
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
-	syscall
-	jmp .loop_3
-	.loop_end_3:
-	exit 0
+	
+	pop rax
+	pop rdi
+	call _is_palindrome
+	
+	mov rsp, rbp
+	pop rbp
+	ret
+	
 

@@ -137,8 +137,6 @@ impl ASM {
             ],
 
             _ => {
-                trace!("Writing type: {}", &var.var_type);
-
                 // the variable value or its address will be pushed onto the stack
                 // We don't need to check the scope here as the variable value is already
                 // pushed into rax beforehand in `factor` AST

@@ -125,8 +125,9 @@ impl ASM {
                     instructions.push(format!(";; binary op ptr -> char"));
 
                     if times_dereferenced > 0 {
-                        self.extend_current_label(vec![
+                        instructions.extend(vec![
                             format!("mov rbx, rax"),
+                            format!("xor rax, rax"),
                             format!("mov al, [rbx]"),
                             format!("push rax"),
                         ]);
