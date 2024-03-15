@@ -1,4 +1,4 @@
-fun is_palindrome(string: *char, length: int) {
+fun is_palindrome(length: int, string: *char) -> int {
     def i: int = 0;
 
     loop from 0 to length / 2 {
@@ -7,22 +7,37 @@ fun is_palindrome(string: *char, length: int) {
         def eq: int = *(string + i) == *(string + sub);
 
         if eq != 1 {
-            write(string as str, " is NOT a palindrome\n")
-            return
+            return 0
         }
 
         i = i + 1
     }
 
-    write(string as str, " is a palindrome\n")
+    return 1
 }
 
 fun main() {
-    def string_to_check: str = "rush";
-    is_palindrome(string_to_check as *char, 4)
+    def rush: str = "rush";
 
-    def string_to_check2: str = "racecar";
-    is_palindrome(string_to_check2 as *char, 7)
+    if is_palindrome(4, rush as *char) == 1 {
+        write(rush, " is a palindrome\n")
+    } else {
+        write(rush, " is NOT a palindrome\n")
+    }
+
+    def racecar: str = "racecar";
+    if is_palindrome(7, racecar as *char) == 1 {
+        write(racecar, " is a palindrome\n")
+    } else {
+        write(racecar, " is NOT a palindrome\n")
+    }
+
+    def mississippi: str = "mississippi";
+    if is_palindrome(11, mississippi as *char) == 1 {
+        write(mississippi, " is a palindrome\n")
+    } else {
+        write(mississippi, " is NOT a palindrome\n")
+    }
 }
 
 main()
