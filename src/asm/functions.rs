@@ -1,4 +1,4 @@
-use crate::{ast::variable::Variable, semantic_analyzer::semantic_analyzer::CallStack};
+use crate::{ast::variable::Variable, lexer::types::VarType, semantic_analyzer::semantic_analyzer::CallStack};
 
 use super::asm::ASM;
 
@@ -7,7 +7,7 @@ pub const FUNCTION_RETURN_INSTRUCTIONS: [&str; 3] = [("mov rsp, rbp"), ("pop rbp
 pub const FUNCTION_ARGS_REGS: [&str; 7] = ["rax", "rdi", "rsi", "rdx", "r10", "r8", "r9"];
 
 impl ASM {
-    pub fn function_call(&mut self, function_name: &String, num_args: usize) {
+    pub fn function_call(&mut self, function_name: &String, num_args: usize, func_return_type: &VarType) {
         let mut instructions = vec![];
 
         for i in 0..num_args {
@@ -15,6 +15,11 @@ impl ASM {
         }
 
         instructions.push(format!("call _{function_name}"));
+
+        // if the function returns anything, push it onto the stack
+        if !matches!(func_return_type, VarType::Unknown) {
+            instructions.push(format!("push rax"));
+        }
 
         self.extend_current_label(instructions);
     }

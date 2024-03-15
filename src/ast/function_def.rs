@@ -121,4 +121,8 @@ impl AST for FunctionDefinition {
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::FunctionDef(self);
     }
+
+    fn get_type(&self) -> (VarType, VarType) {
+        return (VarType::Unknown, VarType::Unknown);
+    }
 }

@@ -182,6 +182,7 @@ impl AST for ComparisonExp {
         self.right.borrow_mut().semantic_visit(call_stack, f);
 
         if let TokenEnum::Comparator(op) = &self.comp_op.token {
+            // need to do this even though it's always going to be an int
             self.result_type = self
                 .left
                 .borrow()
@@ -202,5 +203,12 @@ impl AST for ComparisonExp {
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::ComparisonExp(self);
+    }
+
+    fn get_type(&self) -> (VarType, VarType) {
+        return (
+            self.result_type.get_actual_type(0, &self.comp_op),
+            self.result_type.clone(),
+        );
     }
 }

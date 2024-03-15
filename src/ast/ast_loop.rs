@@ -200,4 +200,8 @@ impl AST for Loop {
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::Loop(self);
     }
+
+    fn get_type(&self) -> (VarType, VarType) {
+        return (VarType::Unknown, VarType::Unknown);
+    }
 }

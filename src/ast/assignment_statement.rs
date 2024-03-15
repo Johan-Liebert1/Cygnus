@@ -126,4 +126,8 @@ impl AST for AssignmentStatement {
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::AssignmentStatement(self);
     }
+
+    fn get_type(&self) -> (VarType, VarType) {
+        return (VarType::Unknown, VarType::Unknown);
+    }
 }

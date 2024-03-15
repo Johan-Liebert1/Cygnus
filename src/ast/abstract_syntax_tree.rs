@@ -18,10 +18,10 @@ use crate::{
 };
 
 use super::{
-    assignment_statement::AssignmentStatement, ast_loop::Loop, binary_op::BinaryOP, comparison_exp::ComparisonExp,
-    conditionals::ConditionalStatement, declaration_statement::DeclarationStatement, factor::Factor,
-    function_call::FunctionCall, function_def::FunctionDefinition, jump::Jump, logical_exp::LogicalExpression,
-    memory_alloc::MemoryAlloc, program::Program, variable::Variable, array::Array,
+    array::Array, assignment_statement::AssignmentStatement, ast_loop::Loop, binary_op::BinaryOP,
+    comparison_exp::ComparisonExp, conditionals::ConditionalStatement, declaration_statement::DeclarationStatement,
+    factor::Factor, function_call::FunctionCall, function_def::FunctionDefinition, jump::Jump,
+    logical_exp::LogicalExpression, memory_alloc::MemoryAlloc, program::Program, variable::Variable,
 };
 
 #[derive(Debug)]
@@ -36,6 +36,9 @@ pub trait AST {
     fn get_token(&self) -> &Token;
     fn get_node(&self) -> ASTNodeEnum;
     fn get_node_mut(&mut self) -> ASTNodeEnumMut;
+    /// Returns (actual_type, result_type)
+    /// actual_type = type after all dereferences have been applied
+    fn get_type(&self) -> (VarType, VarType);
     fn print(&self);
 }
 
@@ -162,62 +165,87 @@ impl<'a> ASTNodeEnum<'a> {
         use ASTNodeEnum::*;
 
         match (self, other) {
-            (BinaryOp(a), BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (Factor(a), Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (BinaryOp(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (Factor(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
 
-            (FunctionCall(a), Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (LogicalExp(a), LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (Variable(a), Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (FunctionCall(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (LogicalExp(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (Variable(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
 
-            (BinaryOp(a), FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (FunctionCall(a), BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (BinaryOp(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (FunctionCall(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
 
-            (BinaryOp(a), LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (LogicalExp(a), BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (BinaryOp(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (LogicalExp(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
 
-            (BinaryOp(a), Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (Variable(a), BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (BinaryOp(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (Variable(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
 
-            (BinaryOp(a), Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (Factor(a), BinaryOp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (BinaryOp(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (Factor(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
 
-            (Factor(a), FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (FunctionCall(a), Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (Factor(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (FunctionCall(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
 
-            (Factor(a), LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (LogicalExp(a), Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (Factor(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (LogicalExp(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
 
-            (Factor(a), Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (Variable(a), Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (Factor(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (Variable(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
 
-            (FunctionCall(a), FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (Variable(a), FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (FunctionCall(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (Variable(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
 
-            (FunctionCall(a), LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (LogicalExp(a), FunctionCall(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (FunctionCall(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (LogicalExp(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
 
-            (LogicalExp(a), Variable(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (Variable(a), LogicalExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (LogicalExp(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (Variable(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
 
-            (ComparisonExp(a), Factor(b)) => a.result_type.figure_out_type(&b.result_type, op),
-            (Factor(a), ComparisonExp(b)) => a.result_type.figure_out_type(&b.result_type, op),
+            (ComparisonExp(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (Factor(a), ComparisonExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
 
             (a, b) => unreachable!("This must be a bug in the parsing step. {a} and {b} not handled"),
         }
     }
 
-    pub fn is_var_assignment_okay(&self, variable: &Variable) -> (bool, &VarType) {
+    pub fn is_var_assignment_okay(&self, variable: &Variable) -> (bool, VarType) {
         use ASTNodeEnum::*;
 
         return match self {
-            Factor(f) => (f.result_type == variable.result_type, &f.result_type),
-            BinaryOp(f) => (f.result_type == variable.result_type, &f.result_type),
-            ComparisonExp(f) => (f.result_type == variable.result_type, &f.result_type),
-            FunctionCall(f) => (f.result_type == variable.result_type, &f.result_type),
-            LogicalExp(f) => (f.result_type == variable.result_type, &f.result_type),
-            Variable(f) => (f.result_type == variable.result_type, &f.result_type),
-            MemoryAlloc(f) => (f.result_type == variable.result_type, &f.result_type),
-            Array(f) => (f.result_type == variable.result_type, &f.result_type),
+            Factor(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+
+            BinaryOp(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+            ComparisonExp(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+            FunctionCall(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+            LogicalExp(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+            Variable(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+            MemoryAlloc(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+            Array(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
 
             node => unreachable!("Cannot assign a variable to {node}. This could a bug in the parsing stage"),
         };

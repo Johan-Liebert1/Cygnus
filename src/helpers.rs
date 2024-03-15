@@ -1,4 +1,4 @@
-use std::{fmt::Display, process::exit, backtrace::Backtrace};
+use std::{backtrace::Backtrace, fmt::Display, process::exit};
 
 use crate::lexer::{lexer::Token, tokens::TokenEnum};
 

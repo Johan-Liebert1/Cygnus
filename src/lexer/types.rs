@@ -3,7 +3,10 @@ use std::{fmt::Display, process::exit};
 
 use crate::{helpers::compiler_error, trace};
 
-use super::{lexer::Token, tokens::AllOperations};
+use super::{
+    lexer::Token,
+    tokens::{AllOperations, Comparators, Operations},
+};
 
 #[derive(Debug, Clone)]
 pub enum VarType {
@@ -57,6 +60,16 @@ impl VarType {
                 }
             }
 
+            // Dereferencing a string should give you a character
+            VarType::Str => match times_dereferenced {
+                0 => VarType::Str,
+                1 => VarType::Char,
+                _ => {
+                    compiler_error(format!("Cannot dereference Character"), token);
+                    exit(1);
+                }
+            },
+
             t => {
                 if times_dereferenced > 0 {
                     compiler_error(format!("Cannot dereference {self}"), token);
@@ -68,46 +81,89 @@ impl VarType {
         };
     }
 
+    fn type_int(&self, other: &VarType) -> VarType {
+        if !matches!(self, VarType::Int) {
+            panic!("function `type_int` only accepts VarType::Int as the first arg")
+        }
+
+        return match other {
+            VarType::Int => VarType::Int,
+            VarType::Str => todo!(),
+            VarType::Float => todo!(),
+            VarType::Char => todo!(),
+            VarType::Ptr(_) => todo!(),
+            VarType::Array(_, _) => todo!(),
+            VarType::Unknown => todo!(),
+        };
+    }
+
     pub fn figure_out_type(&self, other: &VarType, op: AllOperations) -> VarType {
+        use Comparators::*;
+        use Operations::*;
+        use VarType::*;
+
         return match (self, other) {
-            (VarType::Int, VarType::Int) => VarType::Int,
-            (VarType::Float, VarType::Float) => VarType::Float,
+            // No matter what the op is, the result will always be an integer
+            (Int, Int) => Int,
 
-            (VarType::Int, VarType::Ptr(p)) | (VarType::Ptr(p), VarType::Int) => {
-                match **p {
-                    VarType::Int => VarType::Ptr(p.clone()),
+            // No matter what the op is, the result will always be an float
+            (Float, Float) => Float,
 
-                    // if a string ptr is added to an integer, it's now a pointer to a character
-                    VarType::Str => VarType::Ptr(p.clone()), // VarType::Ptr(Box::new(VarType::Char)),
+            // Incrementing a pointer
+            (Int, Ptr(..)) | (Ptr(..), Int) => {
+                let is_allowed = matches!(
+                    op,
+                    AllOperations::Op(Plus) // only addition is allowed
+                        | AllOperations::Comparator(..) // all comparisons allowed
+                                                        // Logical and/or not allowed
+                );
 
-                    VarType::Float => todo!(),
-                    VarType::Char => todo!(),
-                    VarType::Ptr(_) => todo!(),
-                    VarType::Array(..) => todo!(),
-                    VarType::Unknown => todo!(),
+                if !is_allowed {
+                    panic!("'{op}' not defined for '{self}' and '{other}'")
                 }
+
+                // any pointer incremented is the same pointer to the same type unless casted
+                self.clone()
             }
 
-            (VarType::Int, VarType::Float) | (VarType::Float, VarType::Int) => {
+            (Ptr(ptr1), Ptr(ptr2)) => ptr1.figure_out_type(ptr2, op),
+
+            (Char, Char) | (Int, Char) | (Char, Int) => {
+                let is_allowed = matches!(
+                    op,
+                    AllOperations::Comparator(..) // only comparisons allowed
+                );
+
+                if !is_allowed {
+                    panic!("'{op}' not defined for '{self}' and '{other}'")
+                }
+
+                // result of comparison is always an int
+                Int
+            }
+
+            (Ptr(_), Str)
+            | (Str, Ptr(_))
+            | (Ptr(_), Float)
+            | (Float, Ptr(_))
+            | (Char, Ptr(_))
+            | (Ptr(_), Char)
+            | (Int, Str)
+            | (Str, Int)
+            | (Str, Float)
+            | (Str, Str)
+            | (Float, Str)
+            | (Int, Float)
+            | (Float, Int) => {
                 panic!("'{op}' not defined for '{self}' and '{other}'")
             }
 
-            (VarType::Str, VarType::Float) | (VarType::Str, VarType::Str) | (VarType::Float, VarType::Str) => {
-                panic!("'{op}' not defined for '{self}' and '{other}'")
+            (l, r) => {
+                trace!("l: {}", l);
+                trace!("r: {}", r);
+
+                Unknown
             }
-
-            (VarType::Int, VarType::Str) | (VarType::Str, VarType::Int) => {
-                panic!("'{op}' not defined for '{self}' and '{other}'")
-            }
-
-            (VarType::Ptr(ptr1), VarType::Ptr(ptr2)) => ptr1.figure_out_type(ptr2, op),
-
-            (VarType::Ptr(_), VarType::Str)
-            | (VarType::Str, VarType::Ptr(_))
-            | (VarType::Ptr(_), VarType::Float)
-            | (VarType::Float, VarType::Ptr(_)) => panic!("'{op}' not defined for '{self}' and '{other}'"),
-
-            _ => VarType::Unknown,
         };
     }
 

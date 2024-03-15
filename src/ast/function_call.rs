@@ -56,12 +56,17 @@ impl AST for FunctionCall {
 
                         ASTNodeEnum::BinaryOp(bo) => match &bo.result_type {
                             VarType::Int => asm.func_write_number(),
-                            VarType::Str => todo!(),
+
+                            VarType::Str => asm.func_write_string(),
+
                             VarType::Float => todo!(),
+
                             VarType::Ptr(ptr_type) => asm.func_write_pointer(&ptr_type, bo.times_dereferenced),
+
+                            VarType::Char => todo!(),
+
                             VarType::Array(..) => todo!(),
                             VarType::Unknown => todo!(),
-                            VarType::Char => todo!(),
                         },
 
                         ASTNodeEnum::Factor(f) => match &f.get_token().token {
@@ -73,6 +78,7 @@ impl AST for FunctionCall {
 
                         node => {
                             trace!("{:#?}", node);
+                            todo!();
                         }
                     };
                 }
@@ -96,13 +102,13 @@ impl AST for FunctionCall {
 
             name => match f.borrow().get(name) {
                 // args -> rax, rdi, rsi, rdx, r10, r8, r9
-                Some(..) => {
+                Some(func) => {
                     // we reverse here as we want to push into the stack backwards
                     for argument in self.arguments.iter().rev() {
                         argument.borrow().visit_com(v, f.clone(), asm, call_stack);
                     }
 
-                    asm.function_call(&String::from(name), self.arguments.len());
+                    asm.function_call(&String::from(name), self.arguments.len(), &func.return_type);
                 }
 
                 None => compiler_error(format!("Function {} unimplemented", self.name), &self.token),
@@ -249,5 +255,12 @@ impl AST for FunctionCall {
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::FunctionCall(self);
+    }
+
+    fn get_type(&self) -> (VarType, VarType) {
+        return (
+            self.result_type.get_actual_type(0, &self.token),
+            self.result_type.clone(),
+        );
     }
 }

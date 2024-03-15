@@ -227,12 +227,14 @@ impl AST for BinaryOP {
                 .left
                 .borrow()
                 .get_node()
-                .figure_out_type(&self.right.borrow().get_node(), AllOperations::Op(op.clone()))
-                .get_actual_type(self.times_dereferenced, self.right.borrow().get_token());
+                .figure_out_type(&self.right.borrow().get_node(), AllOperations::Op(op.clone()));
 
             // trace!("left: {:#?}", self.left.borrow());
             // trace!("right: {:#?}", self.right.borrow());
-            // trace!("self.result_type: {:#?}", self.result_type);
+
+            // if self.operator.line_number == 12 {
+            //     trace!("self.result_type: {:#?}", self.result_type);
+            // }
         } else {
             unreachable!("Found Operation '{:?}' which is not defined for a binary operation. This must be a bug in the parsing step", self.operator.token)
         }
@@ -244,5 +246,13 @@ impl AST for BinaryOP {
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::BinaryOp(self);
+    }
+
+    fn get_type(&self) -> (VarType, VarType) {
+        return (
+            self.result_type
+                .get_actual_type(self.times_dereferenced, &self.operator),
+            self.result_type.clone(),
+        );
     }
 }

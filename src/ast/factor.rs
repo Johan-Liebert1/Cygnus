@@ -87,7 +87,9 @@ impl AST for Factor {
                 let (variable, _) = call_stack.get_var_with_name(v);
 
                 if let Some(var) = variable {
-                    var.var_type.get_actual_type(var.times_dereferenced, &self.token).clone()
+                    var.var_type
+                        .get_actual_type(var.times_dereferenced, &self.token)
+                        .clone()
                 } else {
                     compiler_error(
                         format!("Variable with name '{v}' not found in current scope"),
@@ -114,5 +116,12 @@ impl AST for Factor {
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::Factor(self);
+    }
+
+    fn get_type(&self) -> (VarType, VarType) {
+        return (
+            self.result_type.get_actual_type(0, &self.token),
+            self.result_type.clone(),
+        );
     }
 }

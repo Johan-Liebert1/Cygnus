@@ -27,6 +27,8 @@
 - [x] Proper type checking
 - [x] Type Casting
 
+- [ ] Have a single function for both variable and binary op asm generation
+
 - [ ] Floating point numbers
 - [ ] Enums - Use `offset` and `reset` kinda like Go's `iota`
 - [ ] Make sure nothing is left on the stack when we break out of a loop
@@ -58,3 +60,35 @@
     RPAREN                   -> )
     LCURLY                   -> {
     RCURLY                   -> }
+
+# Handling strings
+
+def hi: str = "hello"
+
+stack top
+1008 5
+1016 ptr to "hello"
+
+---
+
+def hi: *char = C"hello"
+
+stack top
+1008 ptr to "hello"
+
+---
+
+def hi: str = "hello"
+def addr: *str = &hi;
+
+stack top
+1000 1016
+1008 5
+1016 ptr to "hello"
+
+---
+string deref is allowed
+
+def hi: str = "hello"
+
+write(*hi) -> 'h'

@@ -25,6 +25,17 @@ const WRITE_STRING_ASM_INSTRUCTIONS: [&str; 9] = [
     "syscall",
 ];
 
+const WRITE_CHAR_ASM_INSTRUCTIONS: [&str; 8] = [
+    ";; Writing a character",
+    "mov r8, 1",
+    "pop r9",
+    "mov rax, 1",
+    "mov rdi, 1",
+    "mov rsi, r9",
+    "mov rdx, r8",
+    "syscall",
+];
+
 impl ASM {
     pub fn func_write_number(&mut self) {
         self.extend_current_label(vec![String::from("pop rax"), String::from("call _printRAX")]);
@@ -60,6 +71,11 @@ impl ASM {
                 } else {
                     vec![format!("pop rax"), format!("call _printRAX")]
                 }
+            }
+
+            // a char is always represented as an 8 bit number
+            VarType::Char => {
+                vec![format!("pop rax"), format!("call _printRAX")]
             }
 
             _ => panic!("Unknown type '{pointer_var_type}'"),
@@ -131,14 +147,10 @@ impl ASM {
 
                     VarType::Str => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
 
-                    VarType::Char => {
-                        let mut a = vec![format!("push 1")];
-                        a.extend(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec());
-
-                        a
-                    }
+                    VarType::Char => WRITE_CHAR_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
 
                     VarType::Ptr(pointer_var_type) => {
+                        trace!("Writing pointer_var_type");
                         self.func_write_pointer_internal(pointer_var_type, var.times_dereferenced)
                     }
 

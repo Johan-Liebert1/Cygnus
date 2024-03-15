@@ -84,7 +84,7 @@ impl Variable {
     }
 
     pub fn store_result_type(&mut self) {
-        self.result_type = self.result_type.get_actual_type(self.times_dereferenced, &self.token);
+        self.result_type = self.result_type.clone();
     }
 }
 
@@ -119,7 +119,7 @@ impl AST for Variable {
                 variable_in_stack.var_type.clone()
             };
 
-            self.result_type = self.var_type.get_actual_type(self.times_dereferenced, &self.token);
+            self.result_type = self.var_type.clone();
 
             if let Some(ast_node) = &self.array_aceess_index {
                 ast_node.borrow_mut().semantic_visit(call_stack, f);
@@ -140,6 +140,14 @@ impl AST for Variable {
                 &self.token,
             );
         }
+
+        if self.store_address {
+            self.result_type = VarType::Ptr(Box::new(self.var_type.clone()))
+        }
+
+        // if self.token.line_number == 30 {
+        //     trace!("{}, {}", self.var_name, self.result_type);
+        // }
     }
 
     fn get_node(&self) -> ASTNodeEnum {
@@ -148,5 +156,12 @@ impl AST for Variable {
 
     fn get_node_mut(&mut self) -> ASTNodeEnumMut {
         return ASTNodeEnumMut::Variable(self);
+    }
+
+    fn get_type(&self) -> (VarType, VarType) {
+        return (
+            self.result_type.get_actual_type(self.times_dereferenced, &self.token),
+            self.result_type.clone(),
+        );
     }
 }

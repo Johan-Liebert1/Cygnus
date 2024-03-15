@@ -113,7 +113,7 @@ pub fn parse_input_file(path: String, compile_mode: bool, run_asm: bool, is_test
 
 fn main() {
     #[allow(non_snake_case)]
-    let mut COMPILE_MODE = false;
+    let mut COMPILE_MODE = true;
     #[allow(non_snake_case)]
     let mut RUN_PROGRAM = false;
 
