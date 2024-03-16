@@ -1,11 +1,11 @@
-struct hi {
-    b: int,
-    c: int,
-    d: str
-}
+-- struct hi {
+--     b: int,
+--     c: int,
+--     d: str
+-- }
 
 fun main() {
-    def a: int = {
+    def a: struct = {
         b: int,
         c: int,
         d: str

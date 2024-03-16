@@ -80,6 +80,7 @@ impl Variable {
             VarType::Ptr(_) => todo!(),
             VarType::Unknown => todo!(),
             VarType::Array(..) => todo!(),
+            VarType::Struct(_, _) => todo!(),
         };
     }
 

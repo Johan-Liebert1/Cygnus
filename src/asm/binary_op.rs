@@ -141,10 +141,12 @@ impl ASM {
                 VarType::Float => todo!(),
                 VarType::Ptr(_) => todo!(),
                 VarType::Array(_, _) => todo!(),
+                VarType::Struct(_, _) => todo!(),
                 VarType::Unknown => todo!(),
             },
 
             VarType::Array(_, _) => todo!(),
+            VarType::Struct(_, _) => todo!(),
             VarType::Unknown => todo!(),
         };
 

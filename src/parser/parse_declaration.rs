@@ -98,7 +98,7 @@ impl<'a> Parser<'a> {
 
         if let TokenEnum::Bracket(Bracket::LCurly) = self.peek_next_token().token {
             trace!("gonna parsing struct");
-            right = self.parse_struct();
+            right = self.parse_struct(false);
         } else {
             right = self.parse_logical_expression();
         }

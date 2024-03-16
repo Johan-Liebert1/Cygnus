@@ -1,7 +1,11 @@
 use core::panic;
-use std::{fmt::Display, process::exit};
+use std::{cell::RefCell, fmt::Display, process::exit, rc::Rc};
 
-use crate::{helpers::compiler_error, trace};
+use crate::{
+    ast::{abstract_syntax_tree::AST, structs::StructMembers, variable::Variable},
+    helpers::compiler_error,
+    trace,
+};
 
 use super::{
     lexer::Token,
@@ -16,6 +20,7 @@ pub enum VarType {
     Char,
     Ptr(Box<VarType>),
     Array(Box<VarType>, usize),
+    Struct(String, Rc<RefCell<StructMembers>>), // string = name of struct
     Unknown,
 }
 
@@ -93,6 +98,7 @@ impl VarType {
             VarType::Char => todo!(),
             VarType::Ptr(_) => todo!(),
             VarType::Array(_, _) => todo!(),
+            VarType::Struct(..) => todo!(),
             VarType::Unknown => todo!(),
         };
     }
@@ -181,6 +187,19 @@ impl VarType {
             VarType::Unknown => todo!(),
 
             VarType::Array(type_, elements) => type_.get_size() * elements,
+
+            VarType::Struct(_, members) => {
+                let size = members
+                    .borrow()
+                    .iter()
+                    .map(|var| var.get_type().0.get_size())
+                    .reduce(|acc, var| var);
+
+                match size {
+                    Some(s) => s,
+                    None => 0,
+                }
+            }
         };
     }
 
@@ -203,6 +222,7 @@ impl Display for VarType {
             VarType::Ptr(var_type) => format!("Pointer -> {}", *var_type),
             VarType::Char => "Character".to_string(),
             VarType::Unknown => "Unknown".to_string(),
+            VarType::Struct(name, _) => name.into(),
             VarType::Array(var_type, sz) => format!("Array of {} of size {sz}", *var_type),
         };
 

@@ -69,6 +69,7 @@ impl ASM {
                             AssignmentTypes::Equals => {
                                 match &var.var_type {
                                     VarType::Int => todo!(),
+                                    VarType::Struct(_, _) => todo!(),
 
                                     VarType::Str => {
                                         // pop the string pointer into rax
@@ -83,6 +84,7 @@ impl ASM {
                                         trace!("{}", var.var_type);
 
                                         match **ptr_var_type {
+                                            VarType::Struct(_, _) => todo!(),
                                             VarType::Int => {
                                                 // Store whatever's on the top of the stack into
                                                 // this memory location
@@ -130,6 +132,7 @@ impl ASM {
                         match assignment_type {
                             AssignmentTypes::Equals => {
                                 match &var.var_type {
+                                    VarType::Struct(_, _) => todo!(),
                                     VarType::Int | VarType::Float => {
                                         // if it is a function call assignment, then the value is
                                         // already in rax

@@ -4,7 +4,7 @@ use std::{
     char,
     io::{self, BufReader, Read},
     process::{ChildStdout, Stdio},
-    rc::Rc,
+    rc::Rc, time::Duration
 };
 
 use lexer::types::VarType;
@@ -146,4 +146,6 @@ fn main() {
         stdout.read_to_string(&mut str);
         println!("{:?}", str);
     }
+
+    std::thread::sleep(Duration::new(1000000, 0))
 }
