@@ -1,12 +1,23 @@
 use core::panic;
-use std::{fmt::Display, process::exit};
+use std::{cell::RefCell, fmt::Display, process::exit, rc::Rc};
 
-use crate::{helpers::compiler_error, trace};
+use crate::{
+    ast::{abstract_syntax_tree::AST, variable::Variable},
+    helpers::compiler_error,
+    trace,
+};
 
 use super::{
     lexer::Token,
     tokens::{AllOperations, Comparators, Operations},
 };
+
+#[derive(Debug, Clone)]
+pub struct StructMemberType {
+    pub name: String,
+    pub member_type: VarType,
+    pub offset: usize,
+}
 
 #[derive(Debug, Clone)]
 pub enum VarType {
@@ -16,6 +27,7 @@ pub enum VarType {
     Char,
     Ptr(Box<VarType>),
     Array(Box<VarType>, usize),
+    Struct(String, Rc<RefCell<Vec<StructMemberType>>>), // string = name of struct
     Unknown,
 }
 
@@ -36,6 +48,32 @@ impl PartialEq for VarType {
             (VarType::Ptr(a), VarType::Ptr(b)) => a == b,
 
             (VarType::Array(a, s1), VarType::Array(b, s2)) => a == b && s1 == s2,
+
+            (VarType::Struct(name1, members1), VarType::Struct(name2, members2)) => {
+                if name1 != name2 {
+                    return false;
+                }
+
+                if (members1).borrow().len() != members2.borrow().len() {
+                    return false;
+                }
+
+                let member2_borrow = members2.borrow();
+
+                for mem1 in members1.borrow().iter() {
+                    let found = member2_borrow.iter().find(|mem2| mem2.name == mem1.name);
+
+                    if found.is_none() {
+                        return false;
+                    }
+
+                    if mem1.member_type != found.unwrap().member_type {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
 
             _ => false,
         }
@@ -93,6 +131,7 @@ impl VarType {
             VarType::Char => todo!(),
             VarType::Ptr(_) => todo!(),
             VarType::Array(_, _) => todo!(),
+            VarType::Struct(..) => todo!(),
             VarType::Unknown => todo!(),
         };
     }
@@ -181,6 +220,19 @@ impl VarType {
             VarType::Unknown => todo!(),
 
             VarType::Array(type_, elements) => type_.get_size() * elements,
+
+            VarType::Struct(_, members) => {
+                let size = members
+                    .borrow()
+                    .iter()
+                    .map(|var_type| var_type.member_type.get_size())
+                    .reduce(|acc, var_type| acc + var_type);
+
+                match size {
+                    Some(s) => s,
+                    None => 0,
+                }
+            }
         };
     }
 
@@ -203,6 +255,7 @@ impl Display for VarType {
             VarType::Ptr(var_type) => format!("Pointer -> {}", *var_type),
             VarType::Char => "Character".to_string(),
             VarType::Unknown => "Unknown".to_string(),
+            VarType::Struct(name, _) => name.into(),
             VarType::Array(var_type, sz) => format!("Array of {} of size {sz}", *var_type),
         };
 
@@ -216,4 +269,4 @@ pub const TYPE_FLOAT: &str = "float";
 pub const TYPE_STRING: &str = "str";
 pub const TYPE_CHAR: &str = "char";
 
-pub const TYPES: [&str; 4] = [TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_CHAR];
+pub const PREDEFINED_TYPES: [&str; 4] = [TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_CHAR];

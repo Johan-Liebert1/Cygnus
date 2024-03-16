@@ -66,6 +66,7 @@ impl AST for FunctionCall {
                             VarType::Char => todo!(),
 
                             VarType::Array(..) => todo!(),
+                            VarType::Struct(_, _) => todo!(),
                             VarType::Unknown => todo!(),
                         },
 

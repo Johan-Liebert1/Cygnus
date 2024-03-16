@@ -21,7 +21,8 @@ use super::{
     array::Array, assignment_statement::AssignmentStatement, ast_loop::Loop, binary_op::BinaryOP,
     comparison_exp::ComparisonExp, conditionals::ConditionalStatement, declaration_statement::DeclarationStatement,
     factor::Factor, function_call::FunctionCall, function_def::FunctionDefinition, jump::Jump,
-    logical_exp::LogicalExpression, memory_alloc::MemoryAlloc, program::Program, variable::Variable,
+    logical_exp::LogicalExpression, memory_alloc::MemoryAlloc, program::Program, structs::StructDecleration,
+    variable::Variable,
 };
 
 #[derive(Debug)]
@@ -64,6 +65,7 @@ pub enum ASTNodeEnumMut<'a> {
     Variable(&'a mut Variable),
     MemoryAlloc(&'a mut MemoryAlloc),
     Array(&'a mut Array),
+    Struct(&'a mut StructDecleration),
 }
 
 pub enum ASTNodeEnum<'a> {
@@ -82,6 +84,7 @@ pub enum ASTNodeEnum<'a> {
     Variable(&'a Variable),
     MemoryAlloc(&'a MemoryAlloc),
     Array(&'a Array),
+    Struct(&'a StructDecleration),
 }
 
 impl<'a> Display for ASTNodeEnumMut<'a> {
@@ -102,6 +105,7 @@ impl<'a> Display for ASTNodeEnumMut<'a> {
             ASTNodeEnumMut::Variable(_) => "VariableMut",
             ASTNodeEnumMut::MemoryAlloc(_) => "MemoryAlloc",
             ASTNodeEnumMut::Array(_) => "Array",
+            ASTNodeEnumMut::Struct(_) => "Struct",
         };
 
         write!(f, "{}", name)
@@ -132,6 +136,7 @@ impl<'a> Display for ASTNodeEnum<'a> {
             ASTNodeEnum::Variable(_) => "Variable",
             ASTNodeEnum::MemoryAlloc(_) => "MemoryAlloc",
             ASTNodeEnum::Array(_) => "Array",
+            ASTNodeEnum::Struct(_) => "Struct",
         };
 
         write!(f, "{}", name)
@@ -156,6 +161,7 @@ impl<'a> Debug for ASTNodeEnum<'a> {
             ASTNodeEnum::Variable(a) => write!(f, "Name: Variable {:#?}", a),
             ASTNodeEnum::MemoryAlloc(a) => write!(f, "Name: MemoryAlloc {:#?}", a),
             ASTNodeEnum::Array(a) => write!(f, "Name: Array {:#?}", a),
+            ASTNodeEnum::Struct(a) => write!(f, "Name: Struct {:#?}", a),
         }
     }
 }
@@ -247,6 +253,11 @@ impl<'a> ASTNodeEnum<'a> {
                 (actual_type == variable.get_type().0, actual_type)
             }
 
+            Struct(f) => {
+                let (actual_type, result_type) = f.get_type();
+                (actual_type == variable.get_type().0, actual_type)
+            }
+
             node => unreachable!("Cannot assign a variable to {node}. This could a bug in the parsing stage"),
         };
     }
@@ -263,6 +274,7 @@ impl<'a> ASTNodeEnum<'a> {
             ASTNodeEnum::Jump(node) => &node.result_type,
             ASTNodeEnum::Array(node) => &node.result_type,
 
+            ASTNodeEnum::Struct(_) => todo!(),
             ASTNodeEnum::AssignmentStatement(_) => todo!(),
             ASTNodeEnum::Loop(_) => todo!(),
             ASTNodeEnum::Conditionals(_) => todo!(),

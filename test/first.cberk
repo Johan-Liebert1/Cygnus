@@ -1,7 +1,19 @@
+struct hi {
+    b: int,
+    c: int,
+    d: str
+}
+
+struct hello {
+    a: int
+}
+
 fun main() {
-    def a: str = "hello\n";
-    def b: *str = &a;
-    write(*b);
+    def a: hi = hi {
+        c: 2,
+        b: 1,
+        d: "hello"
+    };
 }
 
 main()

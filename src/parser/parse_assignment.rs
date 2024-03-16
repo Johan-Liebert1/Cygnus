@@ -1,6 +1,6 @@
 use crate::{
     ast::variable::Variable,
-    lexer::{lexer::Token, types::VarType},
+    lexer::{lexer::Token, tokens::Bracket, types::VarType},
     trace,
     types::ASTNode,
 };

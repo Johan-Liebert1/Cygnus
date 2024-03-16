@@ -13,4 +13,6 @@ pub mod jump;
 pub mod logical_exp;
 pub mod memory_alloc;
 pub mod program;
+pub mod structs;
 pub mod variable;
+pub mod void;

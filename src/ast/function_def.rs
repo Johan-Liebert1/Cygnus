@@ -75,6 +75,7 @@ impl AST for FunctionDefinition {
                 VarType::Ptr(_) => todo!(),
                 VarType::Unknown => todo!(),
                 VarType::Char => todo!(),
+                VarType::Struct(_, _) => todo!(),
             };
 
             v.insert(param.var_name.clone(), VariableEnum::Number(value));

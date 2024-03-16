@@ -64,6 +64,17 @@ impl AST for DeclarationStatement {
             false
         };
 
+        let borrow = self.right.borrow();
+
+        let member_order = match borrow.get_node() {
+            ASTNodeEnum::Struct(s) => {
+                let binding = s.get_member_definition_order();
+                Some(binding)
+            }
+
+            _ => None,
+        };
+
         asm.variable_assignment(
             &self.left.var_name,
             &AssignmentTypes::Equals,
@@ -71,6 +82,7 @@ impl AST for DeclarationStatement {
             0,
             function_call_assign,
             &None,
+            member_order,
         );
     }
 

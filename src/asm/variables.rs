@@ -109,6 +109,7 @@ impl ASM {
             }
 
             VarType::Float => todo!(),
+            VarType::Struct(_, _) => todo!(),
 
             VarType::Str => todo!(),
             VarType::Char => todo!(),
@@ -231,6 +232,7 @@ impl ASM {
 
                         VarType::Array(..) => todo!(),
                         VarType::Unknown => todo!(),
+                        VarType::Struct(_, _) => todo!(),
                     }, // global scope end
 
                     _ => {
@@ -246,6 +248,7 @@ impl ASM {
                             VarType::Char => todo!(),
 
                             VarType::Array(var_type, _) => self.handle_asm_for_array(var_type, variable, ar_var),
+                            VarType::Struct(_, _) => todo!(),
 
                             VarType::Unknown => todo!(),
                         }

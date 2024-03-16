@@ -5,6 +5,7 @@ use std::{
     io::{self, BufReader, Read},
     process::{ChildStdout, Stdio},
     rc::Rc,
+    time::Duration,
 };
 
 use lexer::types::VarType;
@@ -51,12 +52,13 @@ pub fn parse_input_file(path: String, compile_mode: bool, run_asm: bool, is_test
     let mut parser = Parser::new(&file, &path);
     let ast = parser.parse_program();
 
-    let mut semantic_analyzer = SemanticAnalyzer::new(ast.clone(), Rc::clone(&parser.functions));
+    let mut semantic_analyzer =
+        SemanticAnalyzer::new(ast.clone(), Rc::clone(&parser.functions), &parser.user_defined_types);
     semantic_analyzer.analyze();
 
     let mut interpreter = Interpreter::new(ast.clone(), parser.functions.clone());
 
-    let mut semantic_analyzer = SemanticAnalyzer::new(ast, parser.functions);
+    let mut semantic_analyzer = SemanticAnalyzer::new(ast, parser.functions, &parser.user_defined_types);
 
     if compile_mode {
         let _result = interpreter.compile(&mut semantic_analyzer.call_stack);

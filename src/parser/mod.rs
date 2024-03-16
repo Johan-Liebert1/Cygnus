@@ -10,6 +10,7 @@ pub mod parse_logical_exp;
 pub mod parse_loop;
 pub mod parse_memory_alloc;
 pub mod parse_return;
+pub mod parse_struct;
 pub mod parse_term;
 pub mod parse_tokens;
 pub mod parser;

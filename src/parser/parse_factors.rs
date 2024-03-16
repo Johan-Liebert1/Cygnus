@@ -188,10 +188,7 @@ impl<'a> Parser<'a> {
                 }
 
                 _ => {
-                    panic!(
-                        "Invalid token {:?}.\nInside func: {} \nInside Loop: {} \nInside If Else: {}\n",
-                        next_token, self.inside_function_depth, self.inside_loop_depth, self.inside_if_else_depth
-                    );
+                    panic!("Invalid token {:?}", next_token);
                 }
             },
 

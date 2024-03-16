@@ -19,8 +19,9 @@ pub const WITH: &str = "with";
 pub const AS: &str = "as";
 
 pub const MEM: &str = "mem";
+pub const STRUCT: &str = "struct";
 
-pub const KEYWORDS: [&str; 17] = [
+pub const KEYWORDS: [&str; 18] = [
     VAR_DEFINE,
     IF_STATEMENT,
     ELSE_STATEMENT,
@@ -38,6 +39,7 @@ pub const KEYWORDS: [&str; 17] = [
     WITH,
     MEM,
     AS,
+    STRUCT,
 ];
 
 // Predefined functions
