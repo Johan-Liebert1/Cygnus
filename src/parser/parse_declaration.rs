@@ -126,16 +126,23 @@ impl<'a> Parser<'a> {
 
         self.validate_token(TokenEnum::Equals);
 
-        // TODO: handle function calls and strings and stuff here
-        let right: ASTNode;
+        let peeked = self.peek_next_token();
 
-        let peeked = self.peek_next_token().token;
+        let mut parse_struct = false;
 
-        if let TokenEnum::Variable(..) = peeked {
-            right = self.parse_struct_decleration();
-        } else {
-            right = self.parse_logical_expression();
+        if let TokenEnum::Variable(var_peeked) = &peeked.token {
+            let next_token = self.peek_nth_token(1).token;
+
+            // as we could also enter this if condition with the following assignment
+            // def a: int = array[4];
+            parse_struct = matches!(next_token, TokenEnum::Bracket(Bracket::LCurly));
         }
+
+        let right = if parse_struct {
+            self.parse_struct_decleration()
+        } else {
+            self.parse_logical_expression()
+        };
 
         return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(left, right))));
     }

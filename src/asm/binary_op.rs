@@ -10,7 +10,7 @@ impl ASM {
         let mut instructions = match op {
             Operations::Plus => {
                 vec![
-                    format!(";; get the two operands from the stack"),
+                    format!(";; Plus get the two operands from the stack"),
                     format!("pop rax"),
                     format!("pop rbx"),
                     format!("add rax, rbx"),
@@ -19,7 +19,7 @@ impl ASM {
 
             Operations::Minus => {
                 vec![
-                    format!(";; get the two operands from the stack"),
+                    format!(";; Minus get the two operands from the stack"),
                     format!("pop rbx"),
                     format!("pop rax"),
                     format!("sub rax, rbx"),
@@ -31,7 +31,7 @@ impl ASM {
                     // 40 / 5
                     // push 40
                     // push 5
-                    format!(";; clean up rdx as this might mess up the final output"),
+                    format!(";; Divide clean up rdx as this might mess up the final output"),
                     format!("xor rdx, rdx"),
                     format!(";; get the two operands from the stack"),
                     format!("pop rbx"),
@@ -42,7 +42,7 @@ impl ASM {
 
             Operations::Multiply => {
                 vec![
-                    format!(";; get the two operands from the stack"),
+                    format!(";; Multiply get the two operands from the stack"),
                     format!("xor rdx, rdx"),
                     format!("pop rax"),
                     format!("pop rbx"),
@@ -56,7 +56,7 @@ impl ASM {
                 // push 10
                 // 1 should be popped into rax and 10 in rcx
                 vec![
-                    format!(";; get the two operands from the stack"),
+                    format!(";; ShiftLeft get the two operands from the stack"),
                     // the shl instruction in x86 assembly does not allow the use of a general-purpose register like bl
                     // for the count operand when the destination is a 64-bit register like rax.
                     // The count operand must be either an immediate value (a constant) or the cl register.
@@ -72,7 +72,7 @@ impl ASM {
                 // push 10
                 // 1 should be popped into rax and 10 in rcx
                 vec![
-                    format!(";; get the two operands from the stack"),
+                    format!(";; ShiftRight get the two operands from the stack"),
                     // the shl instruction in x86 assembly does not allow the use of a general-purpose register like bl
                     // for the count operand when the destination is a 64-bit register like rax.
                     // The count operand must be either an immediate value (a constant) or the cl register.
@@ -85,7 +85,7 @@ impl ASM {
 
             Operations::Modulo => {
                 vec![
-                    format!(";; get the two operands from the stack"),
+                    format!(";; Modulo get the two operands from the stack"),
                     format!("xor rdx, rdx"),
                     format!("pop rbx"),
                     format!("pop rax"),

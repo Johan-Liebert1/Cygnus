@@ -148,6 +148,4 @@ fn main() {
         stdout.read_to_string(&mut str);
         println!("{:?}", str);
     }
-
-    std::thread::sleep(Duration::new(1000000, 0))
 }

@@ -70,7 +70,6 @@ _main:
 	push rax
 	
 	pop rax
-	mov [rbp - 16], rax
 	
 	mov rax, current
 	push rax
@@ -111,7 +110,6 @@ _main:
 	push rax
 	
 	pop rax
-	mov [rbp - 24], rax
 	
 	mov rax, current
 	push rax
@@ -143,7 +141,6 @@ _main:
 	push rax
 	
 	pop rax
-	mov [rbp - 32], rax
 	
 	push 1
 	
@@ -167,19 +164,16 @@ _main:
 	push rax
 	
 	pop rax
-	mov [rbp - 40], rax
 	
 	mov rax, current
 	push rax
 	
 	pop rax
-	mov [rbp - 48], rax
 	
 	mov rax, current
 	push rax
 	
 	pop rax
-	mov [rbp - 56], rax
 	
 	push 0
 	
@@ -275,7 +269,6 @@ _main:
 	push rax
 	
 	pop rax
-	mov [rbp - 40], rax
 	
 	mov rax, current
 	push rax
@@ -307,7 +300,6 @@ _main:
 	push rax
 	
 	pop rax
-	mov [rbp - 48], rax
 	
 	mov rax, current
 	push rax
@@ -339,7 +331,6 @@ _main:
 	push rax
 	
 	pop rax
-	mov [rbp - 56], rax
 	
 	mov rax, next
 	push rax
@@ -371,7 +362,6 @@ _main:
 	push rax
 	
 	pop rax
-	mov [rbp - 120], rax
 	
 	;; Dereferencing variable first
 	mov rax, [rbp - 40]
@@ -1271,7 +1261,6 @@ _main:
 	push rax
 	
 	pop rax
-	mov [rbp - 184], rax
 	
 	mov rax, next
 	push rax
@@ -1286,7 +1275,6 @@ _main:
 	push rax
 	
 	pop rax
-	mov [rbp - 192], rax
 	
 	;; Dereferencing variable idx_into_next
 	mov rax, [rbp - 192]

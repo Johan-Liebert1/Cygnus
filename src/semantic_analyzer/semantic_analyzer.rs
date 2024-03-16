@@ -1,4 +1,7 @@
-use crate::{ast::variable::Variable, helpers::compiler_error, parser::parser::UserDefinedType, types::ASTNode};
+use crate::{
+    asm::structs, ast::variable::Variable, helpers::compiler_error, lexer::types::VarType,
+    parser::parser::UserDefinedType, trace, types::ASTNode,
+};
 
 use core::panic;
 use std::{cell::RefCell, collections::HashMap, process::exit, rc::Rc, usize};
@@ -200,7 +203,6 @@ impl<'a> CallStack<'a> {
                     Some(fname) => {
                         if fname == &record.name {
                             offset += record.var_size_sum;
-
                             record.var_size_sum += var.size();
                         }
                     }
@@ -235,14 +237,37 @@ impl<'a> CallStack<'a> {
                         exit(1);
                     }
 
-                    None => last_record.variable_members.insert(var_name.into(), variable),
+                    None => {
+                        if let VarType::Struct(_, struct_members) = &mut variable.result_type {
+                            if struct_members.borrow().len() == 0 {
+                                last_record.variable_members.insert(var_name.into(), variable);
+                                return;
+                            }
+
+                            // the struct has members
+                            struct_members.borrow_mut().first_mut().unwrap().offset = variable.offset;
+
+                            let mut prev_member_offset = variable.offset;
+                            let mut prev_member_size = struct_members.borrow().first().unwrap().member_type.get_size();
+
+                            // variable.offset will be equal to the first struct member
+                            for member in struct_members.borrow_mut().iter_mut().skip(1) {
+                                member.offset = prev_member_offset + prev_member_size;
+
+                                prev_member_offset = member.offset;
+                                prev_member_size = member.member_type.get_size();
+                            }
+                        }
+
+                        last_record.variable_members.insert(var_name.into(), variable)
+                    }
                 };
             }
 
             None => {
                 panic!("Call stack is empty");
             }
-        }
+        };
     }
 
     pub fn get_func_var_stack_size(&self, function_name: &String) -> usize {

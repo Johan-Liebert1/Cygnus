@@ -48,6 +48,7 @@ impl<'a> Parser<'a> {
             members.push(StructMemberType {
                 name: var.var_name,
                 member_type: var.var_type,
+                offset: 0,
             });
 
             if matches!(self.peek_next_token().token, TokenEnum::Comma) {

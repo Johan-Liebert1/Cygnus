@@ -28,8 +28,10 @@ _main:
 	
 	push 100
 	
+	;; for int float
 	pop rax
 	mov [rbp - 8], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	mov rax, current
 	push rax
@@ -71,6 +73,7 @@ _main:
 	
 	pop rax
 	mov [rbp - 16], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	mov rax, current
 	push rax
@@ -112,6 +115,7 @@ _main:
 	
 	pop rax
 	mov [rbp - 24], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	mov rax, current
 	push rax
@@ -144,47 +148,56 @@ _main:
 	
 	pop rax
 	mov [rbp - 32], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	push 1
 	
 	pop rax
 	mov rbx, [rbp - 16]
 	mov [rbx], rax
+	;; is_ptr_deref: true, is_array: false, is_string: false
 	
 	push 1
 	
 	pop rax
 	mov rbx, [rbp - 24]
 	mov [rbx], rax
+	;; is_ptr_deref: true, is_array: false, is_string: false
 	
 	push 0
 	
 	pop rax
 	mov rbx, [rbp - 32]
 	mov [rbx], rax
+	;; is_ptr_deref: true, is_array: false, is_string: false
 	
 	mov rax, current
 	push rax
 	
 	pop rax
 	mov [rbp - 40], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	mov rax, current
 	push rax
 	
 	pop rax
 	mov [rbp - 48], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	mov rax, current
 	push rax
 	
 	pop rax
 	mov [rbp - 56], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	push 0
 	
+	;; for int float
 	pop rax
 	mov [rbp - 64], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	push 0
 	
@@ -215,8 +228,10 @@ _main:
 	
 	push 0
 	
+	;; for int float
 	pop rax
 	mov [rbp - 64], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	push 0
 	
@@ -276,6 +291,7 @@ _main:
 	
 	pop rax
 	mov [rbp - 40], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	mov rax, current
 	push rax
@@ -308,6 +324,7 @@ _main:
 	
 	pop rax
 	mov [rbp - 48], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	mov rax, current
 	push rax
@@ -340,6 +357,7 @@ _main:
 	
 	pop rax
 	mov [rbp - 56], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	mov rax, next
 	push rax
@@ -372,6 +390,7 @@ _main:
 	
 	pop rax
 	mov [rbp - 120], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	;; Dereferencing variable first
 	mov rax, [rbp - 40]
@@ -457,6 +476,7 @@ _main:
 	pop rax
 	mov rbx, [rbp - 120]
 	mov [rbx], rax
+	;; is_ptr_deref: true, is_array: false, is_string: false
 	
 	jmp .elif_0_6_end
 	.if_end_0:
@@ -545,6 +565,7 @@ _main:
 	pop rax
 	mov rbx, [rbp - 120]
 	mov [rbx], rax
+	;; is_ptr_deref: true, is_array: false, is_string: false
 	
 	jmp .elif_0_0_end
 	.elif_0_0_end:
@@ -633,6 +654,7 @@ _main:
 	pop rax
 	mov rbx, [rbp - 120]
 	mov [rbx], rax
+	;; is_ptr_deref: true, is_array: false, is_string: false
 	
 	jmp .elif_0_1_end
 	.elif_0_1_end:
@@ -721,6 +743,7 @@ _main:
 	pop rax
 	mov rbx, [rbp - 120]
 	mov [rbx], rax
+	;; is_ptr_deref: true, is_array: false, is_string: false
 	
 	jmp .elif_0_2_end
 	.elif_0_2_end:
@@ -809,6 +832,7 @@ _main:
 	pop rax
 	mov rbx, [rbp - 120]
 	mov [rbx], rax
+	;; is_ptr_deref: true, is_array: false, is_string: false
 	
 	jmp .elif_0_3_end
 	.elif_0_3_end:
@@ -897,6 +921,7 @@ _main:
 	pop rax
 	mov rbx, [rbp - 120]
 	mov [rbx], rax
+	;; is_ptr_deref: true, is_array: false, is_string: false
 	
 	jmp .elif_0_4_end
 	.elif_0_4_end:
@@ -985,6 +1010,7 @@ _main:
 	pop rax
 	mov rbx, [rbp - 120]
 	mov [rbx], rax
+	;; is_ptr_deref: true, is_array: false, is_string: false
 	
 	jmp .elif_0_5_end
 	.elif_0_5_end:
@@ -1073,6 +1099,7 @@ _main:
 	pop rax
 	mov rbx, [rbp - 120]
 	mov [rbx], rax
+	;; is_ptr_deref: true, is_array: false, is_string: false
 	
 	jmp .elif_0_6_end
 	.elif_0_6_end:
@@ -1088,16 +1115,20 @@ _main:
 	add rax, rbx
 	push rax
 	
+	;; for int float
 	pop rax
 	mov [rbp - 64], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	jmp .loop_1
 	.loop_end_1:
 	
 	push 0
 	
+	;; for int float
 	pop rax
 	mov [rbp - 128], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	push 0
 	
@@ -1206,8 +1237,10 @@ _main:
 	add rax, rbx
 	push rax
 	
+	;; for int float
 	pop rax
 	mov [rbp - 128], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	jmp .loop_2
 	.loop_end_2:
@@ -1228,8 +1261,10 @@ _main:
 	
 	push 0
 	
+	;; for int float
 	pop rax
 	mov [rbp - 128], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	push 0
 	
@@ -1272,6 +1307,7 @@ _main:
 	
 	pop rax
 	mov [rbp - 184], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	mov rax, next
 	push rax
@@ -1287,6 +1323,7 @@ _main:
 	
 	pop rax
 	mov [rbp - 192], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	;; Dereferencing variable idx_into_next
 	mov rax, [rbp - 192]
@@ -1297,6 +1334,7 @@ _main:
 	pop rax
 	mov rbx, [rbp - 184]
 	mov [rbx], rax
+	;; is_ptr_deref: true, is_array: false, is_string: false
 	
 	mov rax, [rbp - 128]
 	push rax
@@ -1309,8 +1347,10 @@ _main:
 	add rax, rbx
 	push rax
 	
+	;; for int float
 	pop rax
 	mov [rbp - 128], rax
+	;; is_ptr_deref: false, is_array: false, is_string: false
 	
 	jmp .loop_3
 	.loop_end_3:

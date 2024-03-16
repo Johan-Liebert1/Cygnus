@@ -16,6 +16,7 @@ use super::{
 pub struct StructMemberType {
     pub name: String,
     pub member_type: VarType,
+    pub offset: usize,
 }
 
 #[derive(Debug, Clone)]
@@ -221,19 +222,11 @@ impl VarType {
             VarType::Array(type_, elements) => type_.get_size() * elements,
 
             VarType::Struct(_, members) => {
-                // let size = members
-                //     .borrow()
-                //     .iter()
-                //     .map(|var| var.get_type().0.get_size())
-                //     .reduce(|acc, var| var);
-
                 let size = members
                     .borrow()
                     .iter()
                     .map(|var_type| var_type.member_type.get_size())
-                    .reduce(|acc, var_type| var_type);
-
-                trace!("Struct size: {:#?}", size);
+                    .reduce(|acc, var_type| acc + var_type);
 
                 match size {
                     Some(s) => s,

@@ -51,7 +51,6 @@ impl AST for StructDecleration {
     }
 
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        todo!()
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
@@ -71,6 +70,7 @@ impl AST for StructDecleration {
             member_types.push(StructMemberType {
                 name: member.name.clone(),
                 member_type: member.rhs.borrow().get_type().0,
+                offset: 0,
             });
         }
 
