@@ -129,9 +129,10 @@ impl<'a> Parser<'a> {
         // TODO: handle function calls and strings and stuff here
         let right: ASTNode;
 
-        if let TokenEnum::Bracket(Bracket::LCurly) = self.peek_next_token().token {
-            trace!("gonna parsing struct");
-            right = self.parse_struct();
+        let peeked = self.peek_next_token().token;
+
+        if let TokenEnum::Variable(..) = peeked {
+            right = self.parse_struct_decleration();
         } else {
             right = self.parse_logical_expression();
         }

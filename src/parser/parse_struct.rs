@@ -1,8 +1,12 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::{assignment_statement::AssignmentStatement, structs::{Struct, StructMember}, variable::Variable},
-    helpers::unexpected_token,
+    ast::{
+        assignment_statement::AssignmentStatement,
+        structs::{StructDecleration, StructMember},
+        variable::Variable,
+    },
+    helpers::{unexpected_token, unexpected_token_string},
     lexer::{
         tokens::{AssignmentTypes, Bracket, TokenEnum},
         types::{StructMemberType, VarType},
@@ -14,7 +18,7 @@ use crate::{
 use super::parser::{Parser, UserDefinedType};
 
 impl<'a> Parser<'a> {
-    pub fn parse_struct_declaration(&mut self) {
+    pub fn parse_struct_definition(&mut self) {
         let mut name = String::from("");
 
         let next_token = self.get_next_token();
@@ -60,8 +64,16 @@ impl<'a> Parser<'a> {
         });
     }
 
-    pub fn parse_struct(&mut self) -> ASTNode {
-        let mut name = String::from("");
+    pub fn parse_struct_decleration(&mut self) -> ASTNode {
+        let mut struct_name = String::from("");
+
+        let name_token = self.get_next_token();
+
+        if let TokenEnum::Variable(ref name) = name_token.token {
+            struct_name = name.into();
+        } else {
+            unexpected_token_string(&name_token, "Struct name");
+        }
 
         self.validate_token(TokenEnum::Bracket(Bracket::LCurly));
 
@@ -79,7 +91,7 @@ impl<'a> Parser<'a> {
             let var_token = self.get_next_token();
 
             let mut var_name = String::new();
-            
+
             if let TokenEnum::Variable(ref name) = var_token.token {
                 var_name = name.into();
             } else {
@@ -102,6 +114,10 @@ impl<'a> Parser<'a> {
 
         self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
 
-        return Rc::new(RefCell::new(Box::new(Struct::new(name, members))));
+        return Rc::new(RefCell::new(Box::new(StructDecleration::new(
+            struct_name,
+            members,
+            name_token,
+        ))));
     }
 }

@@ -49,9 +49,9 @@ impl PartialEq for VarType {
             (VarType::Array(a, s1), VarType::Array(b, s2)) => a == b && s1 == s2,
 
             (VarType::Struct(name1, members1), VarType::Struct(name2, members2)) => {
-                // if name1 != name2 {
-                //     return false;
-                // }
+                if name1 != name2 {
+                    return false;
+                }
 
                 if (members1).borrow().len() != members2.borrow().len() {
                     return false;

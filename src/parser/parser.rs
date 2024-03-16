@@ -3,7 +3,8 @@ use crate::{
     helpers::{self, compiler_error, unexpected_token},
     lexer::{
         keywords::{MEM, STRUCT},
-        tokens::{Number, Operations}, types::VarType,
+        tokens::{Number, Operations},
+        types::VarType,
     },
     trace,
     types::ASTNode,
@@ -161,10 +162,10 @@ impl<'a> Parser<'a> {
                     MEM => self.parse_memory_alloc(),
 
                     STRUCT => {
-                        self.parse_struct_declaration();
+                        self.parse_struct_definition();
 
                         Rc::new(RefCell::new(Box::new(Void)))
-                    },
+                    }
 
                     ELSE_STATEMENT => {
                         compiler_error("Found 'else' without an 'if' {:?}", &current_token);

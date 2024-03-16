@@ -1,4 +1,4 @@
-use crate::{ast::variable::Variable, helpers::compiler_error, types::ASTNode};
+use crate::{ast::variable::Variable, helpers::compiler_error, parser::parser::UserDefinedType, types::ASTNode};
 
 use core::panic;
 use std::{cell::RefCell, collections::HashMap, process::exit, rc::Rc, usize};
@@ -56,13 +56,14 @@ impl ActivationRecord {
 }
 
 #[derive(Debug)]
-pub struct CallStack {
+pub struct CallStack<'a> {
     call_stack: Vec<ActivationRecord>,
     current_function_name: Option<String>,
     loop_number: usize,
+    pub user_defined_types: &'a Vec<UserDefinedType>,
 }
 
-impl CallStack {
+impl<'a> CallStack<'a> {
     pub fn length(&self) -> usize {
         return self.call_stack.len();
     }
@@ -257,19 +258,20 @@ impl CallStack {
     }
 }
 
-pub struct SemanticAnalyzer {
-    pub call_stack: CallStack,
+pub struct SemanticAnalyzer<'a> {
+    pub call_stack: CallStack<'a>,
     pub ast: ASTNode,
     pub functions: Rc<RefCell<Functions>>,
 }
 
-impl SemanticAnalyzer {
-    pub fn new(ast: ASTNode, functions: Rc<RefCell<Functions>>) -> Self {
+impl<'a> SemanticAnalyzer<'a> {
+    pub fn new(ast: ASTNode, functions: Rc<RefCell<Functions>>, user_defined_types: &'a Vec<UserDefinedType>) -> Self {
         Self {
             call_stack: CallStack {
                 call_stack: vec![ActivationRecord::new("".into(), ActivationRecordType::Global)],
                 current_function_name: None,
                 loop_number: 0,
+                user_defined_types,
             },
             ast,
             functions,

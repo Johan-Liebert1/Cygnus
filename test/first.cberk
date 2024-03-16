@@ -4,9 +4,13 @@ struct hi {
     d: str
 }
 
+struct hello {
+    a: int,
+}
+
 fun main() {
-    def a: hi = {
-        b: 1,
+    def a: hi = hi {
+        b: 1.2,
         c: 2,
         d: "hello"
     };
