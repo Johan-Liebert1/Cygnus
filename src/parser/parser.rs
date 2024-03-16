@@ -282,6 +282,7 @@ impl<'a> Parser<'a> {
             TokenEnum::SemiColon => todo!(),
             TokenEnum::FunctionReturnIndicator => todo!(),
             TokenEnum::Comment => todo!(),
+            TokenEnum::Dot => todo!(),
 
             TokenEnum::Unknown(..) => {
                 panic!("Unknown token: {:?}", &current_token);

@@ -84,6 +84,7 @@ impl ASM {
             TokenEnum::FunctionReturnIndicator => todo!(),
             TokenEnum::Comment => todo!(),
             TokenEnum::EOF => todo!(),
+            TokenEnum::Dot => todo!(),
         }
 
         self.extend_current_label(instructions);

@@ -34,6 +34,10 @@ pub struct Variable {
     pub is_memory_block: bool,
     pub type_cast: Option<VarType>,
     pub array_aceess_index: Option<ASTNode>,
+
+    /// if it's a.b.c.d then the var_name is 'a'
+    /// and member_access contains ['b', 'c']
+    pub member_access: Vec<String>,
 }
 
 impl Variable {
@@ -57,6 +61,7 @@ impl Variable {
             is_memory_block: false,
             type_cast: None,
             array_aceess_index: None,
+            member_access: vec![],
         }
     }
 

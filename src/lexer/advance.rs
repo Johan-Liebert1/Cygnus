@@ -73,6 +73,8 @@ impl<'a> Lexer<'a> {
                     continue;
                 }
 
+                '.' => TokenEnum::Dot,
+
                 '+' => {
                     self.index += 1;
 

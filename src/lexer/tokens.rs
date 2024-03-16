@@ -190,6 +190,7 @@ pub enum TokenEnum {
     Ampersand,
     FunctionReturnIndicator,
     Comment,
+    Dot,
 
     Number(Number),
     Bracket(Bracket),
@@ -240,6 +241,7 @@ impl Display for TokenEnum {
             TokenEnum::Unknown(token) => write!(f, "{}", token),
             TokenEnum::EOF => write!(f, "{}", "EOF"),
             TokenEnum::Comment => write!(f, "{}", "Comment"),
+            TokenEnum::Dot => write!(f, "{}", "."),
         }
     }
 }
