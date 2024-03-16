@@ -252,6 +252,15 @@ impl<'a> ASTNodeEnum<'a> {
                 (actual_type == variable.get_type().0, actual_type)
             }
 
+            Struct(f) => {
+                let (actual_type, result_type) = f.get_type();
+
+                trace!("actual_type {:?}", actual_type);
+                trace!("variable type {:?}", variable.get_type().0);
+
+                (actual_type == variable.get_type().0, actual_type)
+            }
+
             node => unreachable!("Cannot assign a variable to {node}. This could a bug in the parsing stage"),
         };
     }

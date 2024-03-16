@@ -8,7 +8,7 @@ use crate::{
 use super::{
     keywords::{self, LOGICAL_AND, LOGICAL_OR},
     tokens::{Bracket, LogicalOps, Number, Operations, TokenEnum},
-    types::{VarType, TYPES, TYPE_CHAR, TYPE_INT},
+    types::{VarType, PREDEFINED_TYPES, TYPE_CHAR, TYPE_INT},
 };
 
 #[derive(Debug, Clone)]
@@ -106,7 +106,7 @@ impl<'a> Lexer<'a> {
             return TokenEnum::Keyword(word);
         }
 
-        if TYPES.contains(&word.as_str()) {
+        if PREDEFINED_TYPES.contains(&word.as_str()) {
             let tok = TokenEnum::Type(match word.as_str() {
                 TYPE_INT => VarType::Int,
                 TYPE_FLOAT => VarType::Float,

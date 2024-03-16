@@ -1,39 +1,99 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::{structs::Struct, variable::Variable},
+    ast::{assignment_statement::AssignmentStatement, structs::{Struct, StructMember}, variable::Variable},
     helpers::unexpected_token,
-    lexer::tokens::{Bracket, TokenEnum},
+    lexer::{
+        tokens::{AssignmentTypes, Bracket, TokenEnum},
+        types::{StructMemberType, VarType},
+    },
     trace,
     types::ASTNode,
 };
 
-use super::parser::Parser;
+use super::parser::{Parser, UserDefinedType};
 
 impl<'a> Parser<'a> {
-    pub fn parse_struct(&mut self, parse_struct_declaration: bool) -> ASTNode {
+    pub fn parse_struct_declaration(&mut self) {
         let mut name = String::from("");
 
-        if parse_struct_declaration {
-            let next_token = self.get_next_token();
+        let next_token = self.get_next_token();
 
-            if let TokenEnum::Variable(var_name) = next_token.token {
-                name = var_name;
-            } else {
-                unexpected_token(&next_token, Some(&TokenEnum::Variable("".into())));
-            }
+        if let TokenEnum::Variable(var_name) = next_token.token {
+            name = var_name;
         } else {
-            self.validate_token(TokenEnum::Bracket(Bracket::LCurly));
+            unexpected_token(&next_token, Some(&TokenEnum::Variable("".into())));
         }
 
-        let mut members: Vec<Variable> = vec![];
+        self.validate_token(TokenEnum::Bracket(Bracket::LCurly));
+
+        let mut members = vec![];
 
         loop {
             if matches!(self.peek_next_token().token, TokenEnum::Bracket(Bracket::RCurly)) {
                 break;
             }
 
-            members.push(self.parse_variable());
+            // struct A {
+            // a: int,
+            // b: str,
+            // }
+
+            let var = self.parse_variable();
+
+            members.push(StructMemberType {
+                name: var.var_name,
+                member_type: var.var_type,
+            });
+
+            if matches!(self.peek_next_token().token, TokenEnum::Comma) {
+                self.get_next_token();
+            }
+        }
+
+        self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
+
+        self.user_defined_types.push(UserDefinedType {
+            name: name.clone(),
+            // TODO: This clone can be easily not cloned
+            type_: VarType::Struct(name.clone(), Rc::new(RefCell::new(members))),
+        });
+    }
+
+    pub fn parse_struct(&mut self) -> ASTNode {
+        let mut name = String::from("");
+
+        self.validate_token(TokenEnum::Bracket(Bracket::LCurly));
+
+        let mut members = vec![];
+
+        loop {
+            if matches!(self.peek_next_token().token, TokenEnum::Bracket(Bracket::RCurly)) {
+                break;
+            }
+
+            // A {
+            // a: 1,
+            // b: "hello",
+            // }
+            let var_token = self.get_next_token();
+
+            let mut var_name = String::new();
+            
+            if let TokenEnum::Variable(ref name) = var_token.token {
+                var_name = name.into();
+            } else {
+                unexpected_token(&var_token, Some(&TokenEnum::Variable("".into())));
+            }
+
+            let colon = self.validate_token(TokenEnum::Colon);
+            let variable_assigned_to = self.parse_logical_expression();
+
+            members.push(StructMember {
+                var_token,
+                name: var_name.into(),
+                rhs: variable_assigned_to,
+            });
 
             if matches!(self.peek_next_token().token, TokenEnum::Comma) {
                 self.get_next_token();

@@ -15,3 +15,4 @@ pub mod memory_alloc;
 pub mod program;
 pub mod structs;
 pub mod variable;
+pub mod void;

@@ -2,7 +2,7 @@ use core::panic;
 use std::{cell::RefCell, fmt::Display, process::exit, rc::Rc};
 
 use crate::{
-    ast::{abstract_syntax_tree::AST, structs::StructMembers, variable::Variable},
+    ast::{abstract_syntax_tree::AST, variable::Variable},
     helpers::compiler_error,
     trace,
 };
@@ -13,6 +13,12 @@ use super::{
 };
 
 #[derive(Debug, Clone)]
+pub struct StructMemberType {
+    pub name: String,
+    pub member_type: VarType,
+}
+
+#[derive(Debug, Clone)]
 pub enum VarType {
     Int,
     Str,
@@ -20,7 +26,7 @@ pub enum VarType {
     Char,
     Ptr(Box<VarType>),
     Array(Box<VarType>, usize),
-    Struct(String, Rc<RefCell<StructMembers>>), // string = name of struct
+    Struct(String, Rc<RefCell<Vec<StructMemberType>>>), // string = name of struct
     Unknown,
 }
 
@@ -41,6 +47,32 @@ impl PartialEq for VarType {
             (VarType::Ptr(a), VarType::Ptr(b)) => a == b,
 
             (VarType::Array(a, s1), VarType::Array(b, s2)) => a == b && s1 == s2,
+
+            (VarType::Struct(name1, members1), VarType::Struct(name2, members2)) => {
+                // if name1 != name2 {
+                //     return false;
+                // }
+
+                if (members1).borrow().len() != members2.borrow().len() {
+                    return false;
+                }
+
+                let member2_borrow = members2.borrow();
+
+                for mem1 in members1.borrow().iter() {
+                    let found = member2_borrow.iter().find(|mem2| mem2.name == mem1.name);
+
+                    if found.is_none() {
+                        return false;
+                    }
+
+                    if mem1.member_type != found.unwrap().member_type {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
 
             _ => false,
         }
@@ -189,11 +221,19 @@ impl VarType {
             VarType::Array(type_, elements) => type_.get_size() * elements,
 
             VarType::Struct(_, members) => {
+                // let size = members
+                //     .borrow()
+                //     .iter()
+                //     .map(|var| var.get_type().0.get_size())
+                //     .reduce(|acc, var| var);
+
                 let size = members
                     .borrow()
                     .iter()
-                    .map(|var| var.get_type().0.get_size())
-                    .reduce(|acc, var| var);
+                    .map(|var_type| var_type.member_type.get_size())
+                    .reduce(|acc, var_type| var_type);
+
+                trace!("Struct size: {:#?}", size);
 
                 match size {
                     Some(s) => s,
@@ -236,4 +276,4 @@ pub const TYPE_FLOAT: &str = "float";
 pub const TYPE_STRING: &str = "str";
 pub const TYPE_CHAR: &str = "char";
 
-pub const TYPES: [&str; 4] = [TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_CHAR];
+pub const PREDEFINED_TYPES: [&str; 4] = [TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_CHAR];

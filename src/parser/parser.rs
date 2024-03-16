@@ -1,9 +1,9 @@
 use crate::{
-    ast::abstract_syntax_tree::AST,
+    ast::{abstract_syntax_tree::AST, void::Void},
     helpers::{self, compiler_error, unexpected_token},
     lexer::{
-        keywords::MEM,
-        tokens::{Number, Operations},
+        keywords::{MEM, STRUCT},
+        tokens::{Number, Operations}, types::VarType,
     },
     trace,
     types::ASTNode,
@@ -28,6 +28,12 @@ use crate::{
 pub type ParserFunctions = Rc<RefCell<Functions>>;
 
 #[derive(Debug)]
+pub struct UserDefinedType {
+    pub name: String,
+    pub type_: VarType,
+}
+
+#[derive(Debug)]
 pub struct Parser<'a> {
     pub lexer: Box<Lexer<'a>>,
     pub bracket_stack: Vec<Bracket>,
@@ -45,6 +51,8 @@ pub struct Parser<'a> {
     pub times_dereferenced: usize,
 
     pub current_function_being_parsed: Option<String>,
+
+    pub user_defined_types: Vec<UserDefinedType>,
 }
 
 impl<'a> Parser<'a> {
@@ -69,6 +77,7 @@ impl<'a> Parser<'a> {
             times_dereferenced: 0,
 
             current_function_being_parsed: None,
+            user_defined_types: vec![],
         }
     }
 
@@ -150,6 +159,12 @@ impl<'a> Parser<'a> {
                     RETURN => self.parse_return_statement(&current_token),
 
                     MEM => self.parse_memory_alloc(),
+
+                    STRUCT => {
+                        self.parse_struct_declaration();
+
+                        Rc::new(RefCell::new(Box::new(Void)))
+                    },
 
                     ELSE_STATEMENT => {
                         compiler_error("Found 'else' without an 'if' {:?}", &current_token);
