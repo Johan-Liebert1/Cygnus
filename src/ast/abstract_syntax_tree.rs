@@ -21,7 +21,7 @@ use super::{
     array::Array, assignment_statement::AssignmentStatement, ast_loop::Loop, binary_op::BinaryOP,
     comparison_exp::ComparisonExp, conditionals::ConditionalStatement, declaration_statement::DeclarationStatement,
     factor::Factor, function_call::FunctionCall, function_def::FunctionDefinition, jump::Jump,
-    logical_exp::LogicalExpression, memory_alloc::MemoryAlloc, program::Program, variable::Variable, structs::Struct,
+    logical_exp::LogicalExpression, memory_alloc::MemoryAlloc, program::Program, structs::Struct, variable::Variable,
 };
 
 #[derive(Debug)]

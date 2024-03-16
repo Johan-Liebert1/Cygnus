@@ -4,7 +4,8 @@ use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
     lexer::{lexer::Token, types::VarType},
-    semantic_analyzer::semantic_analyzer::CallStack, trace,
+    semantic_analyzer::semantic_analyzer::CallStack,
+    trace,
 };
 
 use super::{

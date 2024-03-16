@@ -160,7 +160,7 @@ impl ASM {
                         vec![format!("pop rax"), format!("call _printRAX")]
                     }
 
-            VarType::Struct(_, _) => todo!(),
+                    VarType::Struct(_, _) => todo!(),
                     VarType::Unknown => todo!(),
                 }
             }

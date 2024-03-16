@@ -4,7 +4,8 @@ use std::{
     char,
     io::{self, BufReader, Read},
     process::{ChildStdout, Stdio},
-    rc::Rc, time::Duration
+    rc::Rc,
+    time::Duration,
 };
 
 use lexer::types::VarType;

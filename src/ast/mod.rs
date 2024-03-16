@@ -1,5 +1,4 @@
 pub mod abstract_syntax_tree;
-pub mod structs;
 pub mod array;
 pub mod assignment_statement;
 pub mod ast_loop;
@@ -14,4 +13,5 @@ pub mod jump;
 pub mod logical_exp;
 pub mod memory_alloc;
 pub mod program;
+pub mod structs;
 pub mod variable;
