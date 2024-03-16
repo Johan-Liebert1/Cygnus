@@ -43,6 +43,16 @@ impl StructDecleration {
             result_type: VarType::Unknown,
         }
     }
+
+    pub fn get_member_definition_order(&self) -> Vec<&String> {
+        let mut member_order = vec![];
+
+        for member in &self.members {
+            member_order.push(&member.name);
+        }
+
+        return member_order;
+    }
 }
 
 impl AST for StructDecleration {
@@ -51,6 +61,10 @@ impl AST for StructDecleration {
     }
 
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+        // iterate in reverse order so that 
+        for member_type in self.members.iter().rev() {
+            member_type.rhs.borrow().visit_com(v, f.clone(), asm, call_stack)
+        }
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {

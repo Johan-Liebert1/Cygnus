@@ -1,8 +1,11 @@
+use core::panic;
+use std::{cell::RefCell, rc::Rc};
+
 use crate::{
     ast::abstract_syntax_tree::ASTNodeEnum,
     lexer::{
         tokens::{AssignmentTypes, VariableEnum},
-        types::VarType,
+        types::{StructMemberType, VarType},
     },
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
     trace,
@@ -143,11 +146,59 @@ impl ASM {
             }
         };
 
+        // This is assignment to the pointer itself not to the value to which the pointer is
+        // pointing to
         if !is_ptr_deref {
             instructions.push(format!("mov [rbp - {}], rax", var_offset));
         }
 
         self.extend_current_label(instructions);
+    }
+
+    fn assign_local_struct(
+        &mut self,
+        struct_assign_order: Option<Vec<&String>>,
+        struct_name: &String,
+        call_stack: &CallStack,
+        is_function_call_assign: bool,
+    ) {
+        if struct_assign_order.is_none() {
+            panic!("Need struct_assign_order")
+        }
+
+        let (var, _) = call_stack.get_var_with_name(struct_name);
+
+        if var.is_none() {
+            unreachable!("Did not find var with name {struct_name} in ASM generator.")
+        }
+
+        let var = var.unwrap();
+
+        if let VarType::Struct(_, member_types) = &var.var_type {
+            for order in struct_assign_order.unwrap() {
+                // this has to exist
+                let borrow = member_types.borrow();
+                let member_type = borrow.iter().find(|x| x.name == *order).unwrap();
+
+                match &member_type.member_type {
+                    VarType::Int | VarType::Float => {
+                        self.assign_local_number(member_type.offset, is_function_call_assign)
+                    }
+                    VarType::Str => self.assign_local_string(member_type.offset),
+
+                    // times_dereferenced = 0 as you cannot dereference a struct member while
+                    // initializing
+                    VarType::Ptr(inner_type) => self.assign_local_pointer(&inner_type, member_type.offset, 0),
+                    VarType::Array(type_, size) => self.assign_local_array(member_type.offset, &None, &type_, &size),
+
+                    VarType::Char => todo!(),
+                    VarType::Struct(_, _) => todo!(),
+                    VarType::Unknown => todo!(),
+                };
+            }
+        } else {
+            unreachable!("Found non struct type for struct")
+        }
     }
 
     /// pops the top most element on the stack and assigns it to the variable
@@ -159,6 +210,7 @@ impl ASM {
         times_dereferenced: usize,
         is_function_call_assign: bool,
         array_access_index: &Option<ASTNode>,
+        struct_assign_order: Option<Vec<&String>>,
     ) {
         // 1. Check whether the variable is a local or global variable
         // 2. If global var, get it from data section, else from stack offset
@@ -167,9 +219,6 @@ impl ASM {
         let mut instructions = vec![];
 
         let mut is_string = false;
-        let mut is_ptr_deref = false;
-        let mut is_array = false;
-        let mut is_struct = false;
 
         match var_from_call_stack {
             Some(var) => {
@@ -244,11 +293,12 @@ impl ASM {
                         match assignment_type {
                             AssignmentTypes::Equals => {
                                 match &var.var_type {
-                                    VarType::Struct(name, _) => {
-                                        is_struct = true;
-
-                                        trace!("handling assignment for struct {name}");
-                                    }
+                                    VarType::Struct(name, _) => self.assign_local_struct(
+                                        struct_assign_order,
+                                        name,
+                                        call_stack,
+                                        is_function_call_assign,
+                                    ),
 
                                     VarType::Int | VarType::Float => {
                                         self.assign_local_number(var.offset, is_function_call_assign)
@@ -287,16 +337,6 @@ impl ASM {
                             AssignmentTypes::MinusEquals => {
                                 instructions.extend([format!("pop rax"), format!("pop rbx"), format!("sub rax, rbx")])
                             }
-                        }
-
-                        if is_string {
-                            // Move the string length into the mem address above the addr
-                            // containing the string pointer
-                            instructions.push(format!("mov [rbp - {}], rbx", var.offset + 8));
-                        }
-
-                        if !is_ptr_deref && !is_array && !is_struct {
-                            instructions.push(format!("mov [rbp - {}], rax", var.offset));
                         }
                     }
                 }

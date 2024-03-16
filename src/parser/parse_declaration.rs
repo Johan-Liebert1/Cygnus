@@ -131,7 +131,7 @@ impl<'a> Parser<'a> {
         let mut parse_struct = false;
 
         if let TokenEnum::Variable(var_peeked) = &peeked.token {
-            let next_token = self.peek_nth_token(1).token;
+            let next_token = self.peek_nth_token(2).token;
 
             // as we could also enter this if condition with the following assignment
             // def a: int = array[4];
