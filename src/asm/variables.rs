@@ -236,7 +236,8 @@ impl ASM {
                     }, // global scope end
 
                     _ => {
-                        match &ar_var.var_type {
+                        // cannot use ar_var here as it does not have the computed types
+                        match &variable.var_type {
                             VarType::Int => self.handle_local_int(variable, ar_var.offset),
 
                             VarType::Str => self.handle_local_str(variable, ar_var.offset),
