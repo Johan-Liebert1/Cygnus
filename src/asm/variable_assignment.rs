@@ -166,8 +166,7 @@ impl ASM {
             panic!("Need struct_assign_order")
         }
 
-        let var_type = call_stack.user_defined_types.iter().find(|x| { x.name == *struct_name });
-
+        let var_type = call_stack.user_defined_types.iter().find(|x| x.name == *struct_name);
 
         if var_type.is_none() {
             unreachable!("Did not find type with name {struct_name} in ASM generator.")
@@ -329,13 +328,25 @@ impl ASM {
                                 }
                             }
 
-                            AssignmentTypes::PlusEquals => {
-                                instructions.extend([format!("pop rax"), format!("pop rbx"), format!("add rax, rbx")])
-                            }
+                            AssignmentTypes::PlusEquals => self.extend_current_label(
+                                [
+                                    format!("mov rax, [rbp - {}]", var.offset),
+                                    format!("pop rbx"),
+                                    format!("add rax, rbx"),
+                                    format!("mov [rbp - {}], rax", var.offset),
+                                ]
+                                .into(),
+                            ),
 
-                            AssignmentTypes::MinusEquals => {
-                                instructions.extend([format!("pop rax"), format!("pop rbx"), format!("sub rax, rbx")])
-                            }
+                            AssignmentTypes::MinusEquals => self.extend_current_label(
+                                [
+                                    format!("mov rax, [rbp - {}]", var.offset),
+                                    format!("pop rbx"),
+                                    format!("sub rax, rbx"),
+                                    format!("mov [rbp - {}], rax", var.offset),
+                                ]
+                                .into(),
+                            ),
                         }
                     }
                 }

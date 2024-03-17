@@ -129,6 +129,18 @@ fn palindrome_str() {
     assert_eq!(stdout_str, file_result);
 }
 
+#[test]
+fn basic_struct() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("basic_struct.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
+fn assignment() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("assignment.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
 // This has issues with parent -> child stdout
 //
 // #[test]

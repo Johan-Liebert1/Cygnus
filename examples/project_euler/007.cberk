@@ -1,4 +1,4 @@
--- Find the 10001st Prime Number
+-- Find the 5001st Prime Number
 
 fun main() {
     def prime: int = 0;
@@ -26,7 +26,7 @@ fun main() {
         if is_prime == 1 {
             num_primes_found = num_primes_found + 1;
 
-            if num_primes_found == 10001 {
+            if num_primes_found == 5001 {
                 prime = i;
                 break;
             }
