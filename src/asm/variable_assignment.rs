@@ -166,15 +166,14 @@ impl ASM {
             panic!("Need struct_assign_order")
         }
 
-        let (var, _) = call_stack.get_var_with_name(struct_name);
+        let var_type = call_stack.user_defined_types.iter().find(|x| { x.name == *struct_name });
 
-        if var.is_none() {
-            unreachable!("Did not find var with name {struct_name} in ASM generator.")
+
+        if var_type.is_none() {
+            unreachable!("Did not find type with name {struct_name} in ASM generator.")
         }
 
-        let var = var.unwrap();
-
-        if let VarType::Struct(_, member_types) = &var.var_type {
+        if let VarType::Struct(_, member_types) = &var_type.unwrap().type_ {
             for order in struct_assign_order.unwrap() {
                 // this has to exist
                 let borrow = member_types.borrow();

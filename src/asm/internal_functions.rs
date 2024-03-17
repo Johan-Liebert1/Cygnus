@@ -150,7 +150,6 @@ impl ASM {
                     VarType::Char => WRITE_CHAR_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
 
                     VarType::Ptr(pointer_var_type) => {
-                        trace!("Writing pointer_var_type");
                         self.func_write_pointer_internal(pointer_var_type, var.times_dereferenced)
                     }
 
@@ -160,7 +159,36 @@ impl ASM {
                         vec![format!("pop rax"), format!("call _printRAX")]
                     }
 
-                    VarType::Struct(_, _) => todo!(),
+                    VarType::Struct(_, member_access) => {
+                        let borrow = member_access.borrow();
+                        let found = borrow.iter().find(|x| x.name == var.member_access[0]);
+
+                        match found {
+                            Some(struct_member_type) => match &struct_member_type.member_type {
+                                VarType::Int => {
+                                    vec![format!("pop rax"), format!("call _printRAX")]
+                                }
+
+                                VarType::Str => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
+
+                                VarType::Ptr(var_type) => {
+                                    self.func_write_pointer_internal(var_type, var.times_dereferenced)
+                                }
+
+                                VarType::Float => todo!(),
+                                VarType::Char => todo!(),
+                                VarType::Array(_, _) => todo!(),
+                                VarType::Struct(_, _) => todo!(),
+                                VarType::Unknown => todo!(),
+                            },
+
+                            None => unreachable!(
+                                "Could not find memeber '{}' of struct while generating ASM",
+                                var.member_access[0]
+                            ),
+                        }
+                    }
+
                     VarType::Unknown => todo!(),
                 }
             }

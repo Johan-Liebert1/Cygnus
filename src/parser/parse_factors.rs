@@ -65,6 +65,23 @@ impl<'a> Parser<'a> {
             self.validate_token(TokenEnum::Bracket(Bracket::RSquare));
         }
 
+        let mut member_access = vec![];
+
+        while let TokenEnum::Dot = self.peek_next_token().token {
+            self.get_next_token();
+
+            let next_token = self.peek_next_token();
+
+            if let TokenEnum::Variable(member_name) = next_token.token {
+                self.get_next_token();
+                member_access.push(member_name);
+            } else {
+                unexpected_token(&next_token, Some(&TokenEnum::Variable("".into())))
+            }
+        }
+
+        variable.member_access = member_access;
+
         return Rc::new(RefCell::new(Box::new(variable)));
     }
 

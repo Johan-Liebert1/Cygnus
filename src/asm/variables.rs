@@ -13,13 +13,13 @@ use crate::{
 use super::asm::ASM;
 
 impl ASM {
-    fn handle_local_ptr(&mut self, var_type: &Box<VarType>, variable: &Variable, ar_var: &Variable) {
+    fn handle_local_ptr(&mut self, var_type: &Box<VarType>, variable: &Variable, ar_var_offset: usize) {
         match *var_type.clone() {
             VarType::Int | VarType::Float => {
                 if variable.dereference {
                     let mut v = vec![
                         format!(";; Dereferencing variable {}", variable.var_name),
-                        format!("mov rax, [rbp - {}]", ar_var.offset),
+                        format!("mov rax, [rbp - {}]", ar_var_offset),
                     ];
                     v.extend(std::iter::repeat(format!("mov rax, [rax]")).take(variable.times_dereferenced));
                     v.extend([
@@ -29,9 +29,9 @@ impl ASM {
 
                     self.extend_current_label(v);
                 } else if variable.store_address {
-                    self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+                    self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
                 } else {
-                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
                 }
             }
 
@@ -39,7 +39,7 @@ impl ASM {
                 if variable.dereference {
                     let mut v = vec![
                         format!(";; Dereferencing variable {}", variable.var_name),
-                        format!("mov rax, [rbp - {}]", ar_var.offset),
+                        format!("mov rax, [rbp - {}]", ar_var_offset),
                         // now rax contains the address of the pointer to the
                         // string
                         // now we move the length of the string into rbx
@@ -55,9 +55,9 @@ impl ASM {
 
                     self.extend_current_label(v);
                 } else if variable.store_address {
-                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
                 } else {
-                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
                 }
             }
 
@@ -67,7 +67,7 @@ impl ASM {
                 if variable.dereference {
                     // mov al as we only want 8 bytes
                     self.extend_current_label(vec![
-                        format!("mov rbx, [rbp - {}]", ar_var.offset),
+                        format!("mov rbx, [rbp - {}]", ar_var_offset),
                         format!("xor rax, rax"),
                         format!("mov al, [rbx]"),
                         format!("push rax"),
@@ -75,7 +75,7 @@ impl ASM {
                 } else if variable.store_address {
                     todo!()
                 } else {
-                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
                 }
             }
 
@@ -119,21 +119,21 @@ impl ASM {
         }
     }
 
-    fn handle_local_int(&mut self, variable: &Variable, ar_var: &Variable) {
+    fn handle_local_int(&mut self, variable: &Variable, ar_var_offset: usize) {
         if variable.dereference {
             panic!("Cannot dereference a number")
         } else if variable.store_address {
-            self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+            self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
         } else {
-            self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+            self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
         }
     }
 
-    fn handle_local_str(&mut self, variable: &Variable, ar_var: &Variable) {
+    fn handle_local_str(&mut self, variable: &Variable, ar_var_offset: usize) {
         if variable.dereference {
             let mut v = vec![
                 format!(";; Dereferencing variable {}", variable.var_name),
-                format!("mov rax, [rbp - {}]", ar_var.offset),
+                format!("mov rax, [rbp - {}]", ar_var_offset),
                 // now rax contains the address of the pointer to the
                 // string
                 // now we move the length of the string into rbx
@@ -156,13 +156,13 @@ impl ASM {
             // .
             // --- length ---
             // --- pointer to string ---
-            self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+            self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
         } else {
             self.extend_current_label(vec![
-                format!("mov rax, [rbp - {}]", ar_var.offset),
+                format!("mov rax, [rbp - {}]", ar_var_offset),
                 format!("push rax"),
                 // length is pushed last
-                format!("mov rax, [rbp - {}]", ar_var.offset + 8),
+                format!("mov rax, [rbp - {}]", ar_var_offset + 8),
                 format!("push rax"),
             ])
         }
@@ -236,19 +236,57 @@ impl ASM {
                     }, // global scope end
 
                     _ => {
-                        match &variable.var_type {
-                            VarType::Int => self.handle_local_int(variable, ar_var),
+                        match &ar_var.var_type {
+                            VarType::Int => self.handle_local_int(variable, ar_var.offset),
 
-                            VarType::Str => self.handle_local_str(variable, ar_var),
+                            VarType::Str => self.handle_local_str(variable, ar_var.offset),
 
                             // TODO: Handle pointer to pointer to something
-                            VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, ar_var),
+                            VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, ar_var.offset),
 
                             VarType::Float => todo!(),
                             VarType::Char => todo!(),
 
                             VarType::Array(var_type, _) => self.handle_asm_for_array(var_type, variable, ar_var),
-                            VarType::Struct(_, _) => todo!(),
+
+                            VarType::Struct(_, member_access) => {
+                                let first = &member_access.borrow()[0];
+
+                                // 'variable' has the member access properties
+                                // 'variable_from_stack' has the offset
+                                // it's the entire struct
+                                // print the memory address
+                                if variable.member_access.len() == 0 {
+                                    self.extend_current_label(vec![
+                                        format!("lea rax, [rbp - {}]", first.offset),
+                                        format!("push rax"),
+                                    ]);
+
+                                    return;
+                                }
+
+                                let offset = first;
+
+                                // TODO: handle struct inside struct here
+                                let borrow = member_access.borrow();
+                                let found = borrow.iter().find(|x| { x.name == variable.member_access[0] });
+
+                                match found {
+                                    Some(struct_member_type) => match &struct_member_type.member_type {
+                                        VarType::Int => self.handle_local_int(variable, struct_member_type.offset),
+                                        VarType::Str => self.handle_local_str(variable, struct_member_type.offset),
+                                        VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, struct_member_type.offset),
+
+                                        VarType::Float => todo!(),
+                                        VarType::Char => todo!(),
+                                        VarType::Array(_, _) => todo!(),
+                                        VarType::Struct(_, _) => todo!(),
+                                        VarType::Unknown => todo!(),
+                                    },
+
+                                    None => unreachable!("Could not find memeber {} of struct while generating ASM", variable.member_access[0])
+                                }
+                            }
 
                             VarType::Unknown => todo!(),
                         }
