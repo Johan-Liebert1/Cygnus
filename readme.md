@@ -26,6 +26,8 @@
 - [x] Function arguments and their type checking
 - [x] Proper type checking
 - [x] Type Casting
+- [x] Array
+- [x] Structures
 
 - [ ] Have a single function for both variable and binary op asm generation
 
