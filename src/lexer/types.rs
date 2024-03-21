@@ -150,7 +150,7 @@ impl VarType {
 
             // Incrementing a pointer
             // char is represented as an int so this should be fine
-            (Int, Ptr(..)) | (Ptr(..), Int) | (Char, Ptr(_)) | (Ptr(_), Char) => {
+            (Int, Ptr(ptr)) | (Ptr(ptr), Int) /*| (Ptr(..), Int) | (Ptr(_), Char)*/ => {
                 let is_allowed = matches!(
                     op,
                     AllOperations::Op(Plus) // only addition is allowed
@@ -164,7 +164,7 @@ impl VarType {
                 }
 
                 // any pointer incremented is the same pointer to the same type unless casted
-                self.clone()
+                Ptr(ptr.clone())
             }
 
             (Ptr(ptr1), Ptr(ptr2)) => ptr1.figure_out_type(ptr2, op),

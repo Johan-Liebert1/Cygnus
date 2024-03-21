@@ -104,6 +104,8 @@ impl ASM {
         // if *result_type == VarType::Ptr(Box::new(VarType::Str)) {
         // }
 
+        trace!("result_type: {result_type}\n");
+
         // result will always be in rax
         // We will also never dereference a string as we want the character address
         match result_type {
@@ -113,7 +115,11 @@ impl ASM {
 
             VarType::Str => todo!(),
             VarType::Float => todo!(),
-            VarType::Char => todo!(),
+
+            // this is basically an integer, a u8 to be precise
+            VarType::Char => {
+                instructions.push(format!("push rax"));
+            },
 
             VarType::Ptr(type_) => match **type_ {
                 VarType::Int => {

@@ -108,7 +108,10 @@ impl<'a> Parser<'a> {
 
                 match &peeked_token.token {
                     TokenEnum::Bracket(b) => match b {
-                        Bracket::LParen => self.parse_function_call(var_name.into()),
+                        Bracket::LParen => {
+                            // parse_function_call already pushes to the bracket_stack
+                            self.parse_function_call(var_name.into())
+                        }
 
                         // WE cannot check for other type of parenthesis here as
                         // write(variable) will result in error as there's a ')' following the
@@ -124,16 +127,21 @@ impl<'a> Parser<'a> {
                 Bracket::LParen => {
                     self.get_next_token();
 
+                    self.bracket_stack.push(Bracket::LParen);
+
+                    trace!("Insde the LParen branch in factor. next_token: {:?}", self.peek_next_token());
+
                     let return_value = self.parse_logical_expression();
 
                     let next_next_token = self.peek_next_token();
 
                     match &next_next_token.token {
                         TokenEnum::Bracket(b) => match b {
-                            Bracket::LParen => self.parse_logical_expression(),
+                            // Bracket::LParen => self.parse_logical_expression(),
 
                             Bracket::RParen => {
                                 self.get_next_token();
+                                self.bracket_stack.pop();
                                 return return_value;
                             }
 
@@ -156,6 +164,7 @@ impl<'a> Parser<'a> {
                             Bracket::LParen => {
                                 // all good. A left paren was closed
                                 self.get_next_token();
+                                self.bracket_stack.pop();
                                 return Rc::new(RefCell::new(Box::new(Factor::new(Box::new(next_token)))));
                             }
 
@@ -228,14 +237,25 @@ impl<'a> Parser<'a> {
                         self.parsing_pointer_deref = true;
                     }
 
+                    // FIXME: Cannot have this accept self.times_dereferenced as the amount of
+                    // times it's been derefed as
+                    //
+                    // *(str as *char) + 3 will be counted as *(str as *char + 3) which is
+                    // incredibly wrong
                     let mut exp = self.parse_expression();
 
                     match exp.borrow_mut().get_node_mut() {
                         ASTNodeEnumMut::Variable(ref mut var) => {
+                             trace!("Factor var_name: {}", var.var_name);
+
+
                             var.dereference = true;
                             var.times_dereferenced = self.times_dereferenced;
                         }
 
+                        // ASTNodeEnumMut::BinaryOp(ref mut var) => {
+                        //     trace!("{:#?}", var);
+                        // }
                         _ => {}
                     };
 
