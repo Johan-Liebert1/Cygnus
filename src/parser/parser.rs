@@ -48,7 +48,6 @@ pub struct Parser<'a> {
     pub inside_current_loop_number: i32,
 
     pub num_strings: usize,
-    pub parsing_pointer_deref: bool,
     pub times_dereferenced: usize,
 
     pub current_function_being_parsed: Option<String>,
@@ -74,7 +73,6 @@ impl<'a> Parser<'a> {
 
             num_strings: 0,
 
-            parsing_pointer_deref: false,
             times_dereferenced: 0,
 
             current_function_being_parsed: None,

@@ -29,13 +29,9 @@ impl<'a> Parser<'a> {
             Box::new(var_token.clone()),
             VarType::Unknown,
             var_name.into(),
-            self.parsing_pointer_deref,
             false,
-            if self.parsing_pointer_deref {
-                self.times_dereferenced
-            } else {
-                0
-            },
+            false,
+            0,
         );
 
         if let TokenEnum::Keyword(word) = self.peek_next_token().token {
@@ -204,7 +200,6 @@ impl<'a> Parser<'a> {
             TokenEnum::Op(Operations::Multiply) => {
                 self.get_next_token();
 
-                self.parsing_pointer_deref = false;
                 self.times_dereferenced = 1;
 
                 while let TokenEnum::Op(Operations::Multiply) = self.peek_next_token().token {
@@ -212,11 +207,25 @@ impl<'a> Parser<'a> {
                     self.get_next_token();
                 }
 
-                if let TokenEnum::Variable(..) = self.peek_next_token().token {
-                    // to fix things like *a + *b as we consume the first '*'
-                    // and start parsing expression, the fact that 'a' was dereferenced
-                    // is lost
-                    self.parsing_pointer_deref = true;
+                if let TokenEnum::Bracket(Bracket::LParen) = self.peek_next_token().token {
+                    self.validate_token(TokenEnum::Bracket(Bracket::LParen));
+                    let mut exp = self.parse_expression();
+                    self.validate_token(TokenEnum::Bracket(Bracket::RParen));
+
+                    match exp.borrow_mut().get_node_mut() {
+                        ASTNodeEnumMut::Variable(ref mut var) => {
+                            // trace!("Factor var_name: {}", var.var_name);
+
+                            var.dereference = true;
+                            var.times_dereferenced = self.times_dereferenced;
+                        }
+
+                        _ => {}
+                    };
+
+                    self.times_dereferenced = 0;
+
+                    return exp;
                 }
 
                 // FIXME: Cannot have this accept self.times_dereferenced as the amount of
@@ -224,23 +233,19 @@ impl<'a> Parser<'a> {
                 //
                 // *(str as *char) + 3 will be counted as *(str as *char + 3) which is
                 // incredibly wrong
-                let mut exp = self.parse_expression();
+                let mut exp = self.parse_factor();
 
                 match exp.borrow_mut().get_node_mut() {
                     ASTNodeEnumMut::Variable(ref mut var) => {
-                        trace!("Factor var_name: {}", var.var_name);
+                        // trace!("Factor var_name: {}", var.var_name);
 
                         var.dereference = true;
                         var.times_dereferenced = self.times_dereferenced;
                     }
 
-                    // ASTNodeEnumMut::BinaryOp(ref mut var) => {
-                    //     trace!("{:#?}", var);
-                    // }
                     _ => {}
                 };
 
-                self.parsing_pointer_deref = false;
                 self.times_dereferenced = 0;
 
                 return exp;

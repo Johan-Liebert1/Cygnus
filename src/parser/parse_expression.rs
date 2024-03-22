@@ -18,11 +18,11 @@ impl<'a> Parser<'a> {
     /// for precedence as term will be calculated first
     pub fn parse_expression(&mut self) -> ASTNode {
         let bracket_stack_len = self.bracket_stack.len();
-        trace!("Before parsing term BracketStack: {:?}", self.bracket_stack);
+        // trace!("Before parsing term BracketStack: {:?}", self.bracket_stack);
 
         let mut result = self.parse_term();
 
-        trace!("After parsing term BracketStack: {:?}\n\n", self.bracket_stack);
+        // trace!("After parsing term BracketStack: {:?}\n\n", self.bracket_stack);
 
         // trace!(
         //     "Frist Term: {}. BracketStack: {:?}\n\n",
@@ -41,7 +41,7 @@ impl<'a> Parser<'a> {
                         let mut term = self.parse_term();
 
                         // trace!(
-                        //     "Term: {}. BracketStack: {:?}\n\n",
+                        //     "=== Term: {}. BracketStack: {:?}\n\n",
                         //     term.borrow().get_node(),
                         //     self.bracket_stack
                         // );

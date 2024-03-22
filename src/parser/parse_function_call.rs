@@ -16,8 +16,6 @@ impl<'a> Parser<'a> {
         // consume the LPAREN
         let tok = self.get_next_token();
 
-        trace!("function_call tok {:?}, Bracket: {:?}", tok, self.bracket_stack);
-
         self.bracket_stack.push(tok.clone());
 
         let mut arguments: Vec<ASTNode> = vec![];
