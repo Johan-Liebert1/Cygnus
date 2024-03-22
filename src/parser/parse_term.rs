@@ -55,7 +55,6 @@ impl<'a> Parser<'a> {
                 },
 
                 _ => {
-                    trace!("BracketStack: {:?}\n\n", self.bracket_stack);
                     return result;
                 }
             }

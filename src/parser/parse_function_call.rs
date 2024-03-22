@@ -12,11 +12,13 @@ use super::parser::Parser;
 impl<'a> Parser<'a> {
     /// FUNCTION_CALL -> VAR_NAME LPAREN (COMPARISON_EXPRESSION)* RPAREN
     pub fn parse_function_call(&mut self, name: String) -> ASTNode {
-        self.bracket_stack.push(Bracket::LParen);
-
         // We parse from the LPAREN
         // consume the LPAREN
         let tok = self.get_next_token();
+
+        trace!("function_call tok {:?}, Bracket: {:?}", tok, self.bracket_stack);
+
+        self.bracket_stack.push(tok.clone());
 
         let mut arguments: Vec<ASTNode> = vec![];
 
@@ -26,9 +28,18 @@ impl<'a> Parser<'a> {
             match &token.token {
                 TokenEnum::Bracket(b) => match b {
                     Bracket::RParen => {
-                        let Some(Bracket::LParen) = self.bracket_stack.pop() else {
-                            compiler_error(") never opened", &token);
-                            exit(1);
+                        match self.bracket_stack.pop() {
+                            Some(tok) => {
+                                let TokenEnum::Bracket(Bracket::LParen) = tok.token else {
+                                    compiler_error(") never opened", &token);
+                                    exit(1);
+                                };
+                            }
+
+                            None => {
+                                compiler_error(") never opened", &token);
+                                exit(1);
+                            }
                         };
 
                         self.get_next_token();
@@ -49,7 +60,6 @@ impl<'a> Parser<'a> {
                 }
 
                 _ => {
-                    trace!("inside the catch all in parse_function_call. BracketStack: {:?}", self.bracket_stack);
                     let factor = self.parse_logical_expression();
                     arguments.push(factor);
                 }

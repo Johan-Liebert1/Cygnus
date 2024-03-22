@@ -37,7 +37,7 @@ pub struct UserDefinedType {
 #[derive(Debug)]
 pub struct Parser<'a> {
     pub lexer: Box<Lexer<'a>>,
-    pub bracket_stack: Vec<Bracket>,
+    pub bracket_stack: Vec<Token>,
     pub functions: ParserFunctions,
 
     pub inside_loop_depth: usize,

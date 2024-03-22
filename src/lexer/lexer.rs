@@ -1,4 +1,4 @@
-use std::{fmt::Display, thread::sleep, time::Duration};
+use std::{fmt::{Display, Debug}, thread::sleep, time::Duration};
 
 use crate::{
     lexer::types::{TYPE_FLOAT, TYPE_STRING},
@@ -11,7 +11,7 @@ use super::{
     types::{VarType, PREDEFINED_TYPES, TYPE_CHAR, TYPE_INT},
 };
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Token {
     pub token: TokenEnum,
     pub line_number: usize,
@@ -24,6 +24,13 @@ impl Display for Token {
         write!(f, "{}", self.token)
     }
 }
+
+impl Debug for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "< {}:{}:{} {:?} >", self.file, self.line_number, self.col_number, self.token)
+    }
+}
+
 
 #[derive(Debug)]
 pub struct Lexer<'a> {
