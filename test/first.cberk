@@ -2,9 +2,7 @@ fun main(a: int) {
     def s: str = "hello";
     def i: int = 5;
 
-    def hi: *char = s as *char;
-
-    write(*(hi) + i)
+    write(*(s as *char) + i)
 
 }
 

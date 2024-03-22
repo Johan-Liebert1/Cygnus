@@ -214,8 +214,6 @@ impl<'a> Parser<'a> {
 
                     match exp.borrow_mut().get_node_mut() {
                         ASTNodeEnumMut::Variable(ref mut var) => {
-                            // trace!("Factor var_name: {}", var.var_name);
-
                             var.dereference = true;
                             var.times_dereferenced = self.times_dereferenced;
                         }
@@ -237,8 +235,6 @@ impl<'a> Parser<'a> {
 
                 match exp.borrow_mut().get_node_mut() {
                     ASTNodeEnumMut::Variable(ref mut var) => {
-                        // trace!("Factor var_name: {}", var.var_name);
-
                         var.dereference = true;
                         var.times_dereferenced = self.times_dereferenced;
                     }

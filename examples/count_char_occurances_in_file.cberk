@@ -15,7 +15,7 @@ fun main() {
     def upper_a: int = 65;
     def upper_z: int = lower_a + 26 - 1;
 
-    def file_name: str = "./examples/test_files/read_a_file\0";
+    def file_name: str = "../examples/test_files/read_a_file\0";
 
     -- (syscall number, file_name, readonly flag)
     -- open syscall
@@ -36,12 +36,9 @@ fun main() {
         def thing: *int = file + i;
 
         if *(thing as *char) >= lower_a and *(thing as *char) <= lower_z {
-            def inc: char =  *(thing as *char) - lower_a;
-
-            write("inc: ", inc as int, "*(thing as *char): ", *(thing as *char) ,"lower_a: ", lower_a)
+            def inc: int =  *(thing as *char) - lower_a;
 
             def addr_to_update: *int = lower_char_occurances + (inc as int) * 8;
-
 
             -- FIXME: Can't do *addr_to_update = *addr_to_update + 1;
             *addr_to_update = *(addr_to_update as *int) + 1;
