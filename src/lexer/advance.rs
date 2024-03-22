@@ -25,6 +25,7 @@ impl<'a> Lexer<'a> {
         let mut token: Token = Token {
             token: TokenEnum::EOF,
             line_number: 0,
+            index: 0,
             col_number: 0,
             file: self.file_name.to_string(),
         };
@@ -90,6 +91,7 @@ impl<'a> Lexer<'a> {
                         return Token {
                             token: TokenEnum::Comment,
                             line_number: self.line_number,
+                            index: self.index,
                             col_number: self.col_number,
                             file: self.file_name.into(),
                         };
@@ -99,7 +101,10 @@ impl<'a> Lexer<'a> {
                         match self.peek_next_token().token {
                             TokenEnum::Equals => TokenEnum::MinusEquals,
                             TokenEnum::Comparator(Comparators::GreaterThan) => TokenEnum::FunctionReturnIndicator,
-                            _ => TokenEnum::Op(Operations::Minus),
+                            _ => {
+                                self.index -= 1;
+                                TokenEnum::Op(Operations::Minus)
+                            }
                         }
                     }
                 }
@@ -136,13 +141,14 @@ impl<'a> Lexer<'a> {
                 '=' => {
                     self.index += 1;
 
-                    let tok = match self.peek_next_token().token {
+                    match self.peek_next_token().token {
                         TokenEnum::Equals => TokenEnum::Comparator(Comparators::DoubleEquals),
 
-                        _ => TokenEnum::Equals,
-                    };
-
-                    tok
+                        _ => {
+                            self.index -= 1;
+                            TokenEnum::Equals
+                        }
+                    }
                 }
 
                 '!' => {
@@ -177,11 +183,7 @@ impl<'a> Lexer<'a> {
                     self.index += 1;
 
                     match self.peek_next_token().token {
-                        TokenEnum::Equals => {
-                            self.get_next_token();
-                            self.index -= 1;
-                            TokenEnum::Comparator(Comparators::GreaterThanEq)
-                        }
+                        TokenEnum::Equals => TokenEnum::Comparator(Comparators::GreaterThanEq),
 
                         TokenEnum::Comparator(com) => match com {
                             Comparators::GreaterThan => TokenEnum::Op(Operations::ShiftRight),
@@ -199,12 +201,8 @@ impl<'a> Lexer<'a> {
                 '<' => {
                     self.index += 1;
 
-                    let tok = match self.peek_next_token().token {
-                        TokenEnum::Equals => {
-                            self.get_next_token();
-                            self.index -= 1;
-                            TokenEnum::Comparator(Comparators::LessThanEq)
-                        }
+                    match self.peek_next_token().token {
+                        TokenEnum::Equals => TokenEnum::Comparator(Comparators::LessThanEq),
 
                         TokenEnum::Comparator(com) => match com {
                             Comparators::LessThan => TokenEnum::Op(Operations::ShiftLeft),
@@ -216,9 +214,7 @@ impl<'a> Lexer<'a> {
                             self.index -= 1;
                             TokenEnum::Comparator(Comparators::LessThan)
                         }
-                    };
-
-                    tok
+                    }
                 }
 
                 // only handle ASCII for now
@@ -237,6 +233,7 @@ impl<'a> Lexer<'a> {
                 token,
                 line_number: self.line_number,
                 col_number: self.col_number,
+                index: self.index,
                 file: self.file_name.into(),
             };
 
@@ -247,6 +244,7 @@ impl<'a> Lexer<'a> {
             token: TokenEnum::EOF,
             line_number: self.line_number,
             col_number: self.col_number,
+            index: self.index,
             file: self.file_name.into(),
         };
     }

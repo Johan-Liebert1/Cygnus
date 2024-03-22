@@ -124,11 +124,6 @@ impl<'a> Parser<'a> {
                     let tok = self.get_next_token();
                     self.bracket_stack.push(tok);
 
-                    // trace!(
-                    //     "Insde the LParen branch in factor. next_token: {:?}",
-                    //     self.peek_next_token()
-                    // );
-
                     let return_value = self.parse_logical_expression();
 
                     match self.peek_next_token().token {
@@ -206,59 +201,49 @@ impl<'a> Parser<'a> {
                 }
             },
 
-            TokenEnum::Op(op) => {
-                if let Operations::Multiply = op {
+            TokenEnum::Op(Operations::Multiply) => {
+                self.get_next_token();
+
+                self.parsing_pointer_deref = false;
+                self.times_dereferenced = 1;
+
+                while let TokenEnum::Op(Operations::Multiply) = self.peek_next_token().token {
+                    self.times_dereferenced += 1;
                     self.get_next_token();
-
-                    self.parsing_pointer_deref = false;
-                    self.times_dereferenced = 1;
-
-                    while let TokenEnum::Op(Operations::Multiply) = self.peek_next_token().token {
-                        self.times_dereferenced += 1;
-                        self.get_next_token();
-                    }
-
-                    if let TokenEnum::Variable(..) = self.peek_next_token().token {
-                        // to fix things like *a + *b as we consume the first '*'
-                        // and start parsing expression, the fact that 'a' was dereferenced
-                        // is lost
-                        self.parsing_pointer_deref = true;
-                    }
-
-                    trace!("Before Parsing expressing: {:?}", self.bracket_stack);
-
-                    // FIXME: Cannot have this accept self.times_dereferenced as the amount of
-                    // times it's been derefed as
-                    //
-                    // *(str as *char) + 3 will be counted as *(str as *char + 3) which is
-                    // incredibly wrong
-                    let mut exp = self.parse_expression();
-
-                    trace!("After Parsing expressing: {:?}", self.bracket_stack);
-
-                    match exp.borrow_mut().get_node_mut() {
-                        ASTNodeEnumMut::Variable(ref mut var) => {
-                            trace!("Factor var_name: {}", var.var_name);
-
-                            var.dereference = true;
-                            var.times_dereferenced = self.times_dereferenced;
-                        }
-
-                        // ASTNodeEnumMut::BinaryOp(ref mut var) => {
-                        //     trace!("{:#?}", var);
-                        // }
-                        _ => {}
-                    };
-
-                    self.parsing_pointer_deref = false;
-                    self.times_dereferenced = 0;
-
-                    return exp;
                 }
 
-                helpers::unexpected_token(&next_token, None);
+                if let TokenEnum::Variable(..) = self.peek_next_token().token {
+                    // to fix things like *a + *b as we consume the first '*'
+                    // and start parsing expression, the fact that 'a' was dereferenced
+                    // is lost
+                    self.parsing_pointer_deref = true;
+                }
 
-                exit(1);
+                // FIXME: Cannot have this accept self.times_dereferenced as the amount of
+                // times it's been derefed as
+                //
+                // *(str as *char) + 3 will be counted as *(str as *char + 3) which is
+                // incredibly wrong
+                let mut exp = self.parse_expression();
+
+                match exp.borrow_mut().get_node_mut() {
+                    ASTNodeEnumMut::Variable(ref mut var) => {
+                        trace!("Factor var_name: {}", var.var_name);
+
+                        var.dereference = true;
+                        var.times_dereferenced = self.times_dereferenced;
+                    }
+
+                    // ASTNodeEnumMut::BinaryOp(ref mut var) => {
+                    //     trace!("{:#?}", var);
+                    // }
+                    _ => {}
+                };
+
+                self.parsing_pointer_deref = false;
+                self.times_dereferenced = 0;
+
+                return exp;
             }
 
             TokenEnum::Ampersand => {

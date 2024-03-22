@@ -16,6 +16,7 @@ pub struct Token {
     pub token: TokenEnum,
     pub line_number: usize,
     pub col_number: usize,
+    pub index: usize,
     pub file: String,
 }
 
@@ -27,7 +28,7 @@ impl Display for Token {
 
 impl Debug for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "< {}:{}:{} {:?} >", self.file, self.line_number, self.col_number, self.token)
+        write!(f, "< {} {}:{}:{} {:?} >", self.index, self.file, self.line_number, self.col_number, self.token)
     }
 }
 
@@ -70,7 +71,7 @@ impl<'a> Lexer<'a> {
 
             int_string += &char.to_string();
 
-            self.col_number += 1;
+            // self.col_number += 1;
             self.index += 1;
         }
 

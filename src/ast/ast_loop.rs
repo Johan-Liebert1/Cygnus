@@ -58,6 +58,7 @@ impl Loop {
         let token = Token {
             token: TokenEnum::Variable(from_name.clone()),
             col_number: 0,
+            index: 0,
             line_number: 0,
             file: "".into(),
         };
