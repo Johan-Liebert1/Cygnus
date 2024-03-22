@@ -172,7 +172,11 @@ impl AST for BinaryOP {
 
         match &self.operator.token {
             TokenEnum::Op(c) => {
-                asm.binary_op_nums(c.clone(), self.times_dereferenced, &self.result_type);
+                // if matches!(c, Operations::Plus) {
+                //     trace!("line: {}, times_dereferenced: {}, op: {c}", self.get_token().line_number, self.times_dereferenced);
+                // }
+
+                asm.binary_op_nums(c.clone(), self.times_dereferenced, &self.get_type().1);
             }
 
             _ => unreachable!("Found non operator for a Binary Expression"),

@@ -1,25 +1,9 @@
-fun main() {
-    def i: int = 0;
+fun main(a: int) {
+    def s: str = "hello";
+    def i: int = 5;
 
-    loop from 1 to 10 {
-        i += 2
-        write(i)
-    }
+    write(*(s as *char) + i)
 
-    loop from 1 to 10 {
-        i -= 1
-        write(i)
-    }
-
-    loop from 1 to 10 {
-        i += 7
-        write(i)
-    }
-
-    loop from 1 to 10 {
-        i -= 5
-        write(i)
-    }
 }
 
-main()
+main(1)

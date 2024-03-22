@@ -69,6 +69,7 @@ impl<'a> Parser<'a> {
         let default_step: ASTNode = Rc::new(RefCell::new(Box::new(Factor::new(Box::new(Token {
             token: TokenEnum::Number(Number::Integer(1)),
             line_number: 0,
+            index: 0,
             col_number: 0,
             file: "".into(),
         })))));

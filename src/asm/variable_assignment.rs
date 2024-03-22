@@ -272,13 +272,18 @@ impl ASM {
                                 }
                             }
 
-                            AssignmentTypes::PlusEquals => {
-                                instructions.extend([format!("pop rax"), format!("pop rbx"), format!("add rax, rbx")])
-                            }
+                            AssignmentTypes::PlusEquals => instructions.extend([
+                                format!(";; Global PlusEquals {}", var_name),
+                                format!("mov rax, [{}]", var_name),
+                                format!("pop rbx"),
+                                format!("add rax, rbx"),
+                            ]),
 
-                            AssignmentTypes::MinusEquals => {
-                                instructions.extend([format!("pop rax"), format!("pop rbx"), format!("sub rax, rbx")])
-                            }
+                            AssignmentTypes::MinusEquals => instructions.extend([
+                                format!("mov rax, [{}]", var_name),
+                                format!("pop rbx"),
+                                format!("sub rax, rbx"),
+                            ]),
                         }
 
                         instructions.push(format!("mov [{}], rax", var_name));
@@ -311,7 +316,11 @@ impl ASM {
                                         // the string len should be in rbx as string len is pushed
                                         // last
                                         // Treat a character as a string with length of 1
-                                        instructions.extend([format!("mov rbx, 1"), format!("pop rax")]);
+                                        instructions.extend([
+                                            format!("mov rbx, 1"),
+                                            format!("pop rax"),
+                                            format!("mov [rbp - {}], rax", var.offset),
+                                        ]);
 
                                         is_string = true;
                                     }

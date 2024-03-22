@@ -149,10 +149,12 @@ impl VarType {
             (Float, Float) => Float,
 
             // Incrementing a pointer
-            (Int, Ptr(..)) | (Ptr(..), Int) => {
+            // char is represented as an int so this should be fine
+            (Int, Ptr(ptr)) | (Ptr(ptr), Int) /*| (Ptr(..), Int) | (Ptr(_), Char)*/ => {
                 let is_allowed = matches!(
                     op,
                     AllOperations::Op(Plus) // only addition is allowed
+                    | AllOperations::Op(Minus) // only addition is allowed
                         | AllOperations::Comparator(..) // all comparisons allowed
                                                         // Logical and/or not allowed
                 );
@@ -162,7 +164,7 @@ impl VarType {
                 }
 
                 // any pointer incremented is the same pointer to the same type unless casted
-                self.clone()
+                Ptr(ptr.clone())
             }
 
             (Ptr(ptr1), Ptr(ptr2)) => ptr1.figure_out_type(ptr2, op),
@@ -170,7 +172,9 @@ impl VarType {
             (Char, Char) | (Int, Char) | (Char, Int) => {
                 let is_allowed = matches!(
                     op,
-                    AllOperations::Comparator(..) // only comparisons allowed
+                    AllOperations::Op(Plus) // only addition is allowed
+                    | AllOperations::Op(Minus) // only addition is allowed
+                    | AllOperations::Comparator(..) // only comparisons allowed
                 );
 
                 if !is_allowed {
@@ -185,8 +189,6 @@ impl VarType {
             | (Str, Ptr(_))
             | (Ptr(_), Float)
             | (Float, Ptr(_))
-            | (Char, Ptr(_))
-            | (Ptr(_), Char)
             | (Int, Str)
             | (Str, Int)
             | (Str, Float)

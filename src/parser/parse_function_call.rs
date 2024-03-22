@@ -1,6 +1,6 @@
-use crate::{trace, types::ASTNode};
+use crate::{helpers::compiler_error, trace, types::ASTNode};
 
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, process::exit, rc::Rc};
 
 use crate::{
     ast::function_call::FunctionCall,
@@ -16,6 +16,8 @@ impl<'a> Parser<'a> {
         // consume the LPAREN
         let tok = self.get_next_token();
 
+        self.bracket_stack.push(tok.clone());
+
         let mut arguments: Vec<ASTNode> = vec![];
 
         loop {
@@ -24,6 +26,20 @@ impl<'a> Parser<'a> {
             match &token.token {
                 TokenEnum::Bracket(b) => match b {
                     Bracket::RParen => {
+                        match self.bracket_stack.pop() {
+                            Some(tok) => {
+                                let TokenEnum::Bracket(Bracket::LParen) = tok.token else {
+                                    compiler_error(") never opened", &token);
+                                    exit(1);
+                                };
+                            }
+
+                            None => {
+                                compiler_error(") never opened", &token);
+                                exit(1);
+                            }
+                        };
+
                         self.get_next_token();
                         break;
                     }

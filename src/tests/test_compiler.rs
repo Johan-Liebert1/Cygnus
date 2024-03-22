@@ -141,6 +141,13 @@ fn assignment() {
     assert_eq!(stdout_str, file_result);
 }
 
+#[test]
+fn count_char_occurances_in_file() {
+    let (stdout_str, file_result) = get_stdout_and_actual_result("count_char_occurances_in_file.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+
 // This has issues with parent -> child stdout
 //
 // #[test]

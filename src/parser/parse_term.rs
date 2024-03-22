@@ -1,4 +1,4 @@
-use crate::types::ASTNode;
+use crate::{trace, types::ASTNode};
 
 use std::{cell::RefCell, rc::Rc};
 
@@ -18,9 +18,11 @@ impl<'a> Parser<'a> {
         loop {
             let next_token = self.peek_next_token();
 
-            if constants::PARSER_DEBUG {
-                println!("parse_term next_token {:#?}", next_token);
-            }
+            // trace!(
+            //     "parse_term next_token {:#?}. BracketStack: {:?}",
+            //     next_token,
+            //     self.bracket_stack
+            // );
 
             match &next_token.token {
                 TokenEnum::Op(op) => match op {
