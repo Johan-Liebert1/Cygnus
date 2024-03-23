@@ -270,13 +270,15 @@ impl ASM {
 
                                 // TODO: handle struct inside struct here
                                 let borrow = member_access.borrow();
-                                let found = borrow.iter().find(|x| { x.name == variable.member_access[0] });
+                                let found = borrow.iter().find(|x| x.name == variable.member_access[0]);
 
                                 match found {
                                     Some(struct_member_type) => match &struct_member_type.member_type {
                                         VarType::Int => self.handle_local_int(variable, struct_member_type.offset),
                                         VarType::Str => self.handle_local_str(variable, struct_member_type.offset),
-                                        VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, struct_member_type.offset),
+                                        VarType::Ptr(var_type) => {
+                                            self.handle_local_ptr(var_type, variable, struct_member_type.offset)
+                                        }
 
                                         VarType::Float => todo!(),
                                         VarType::Char => todo!(),
@@ -285,7 +287,10 @@ impl ASM {
                                         VarType::Unknown => todo!(),
                                     },
 
-                                    None => unreachable!("Could not find memeber {} of struct while generating ASM", variable.member_access[0])
+                                    None => unreachable!(
+                                        "Could not find memeber {} of struct while generating ASM",
+                                        variable.member_access[0]
+                                    ),
                                 }
                             }
 

@@ -117,7 +117,7 @@ impl ASM {
             // this is basically an integer, a u8 to be precise
             VarType::Char => {
                 instructions.push(format!("push rax"));
-            },
+            }
 
             VarType::Ptr(type_) => match **type_ {
                 VarType::Int => {

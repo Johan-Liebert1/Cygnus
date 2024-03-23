@@ -19,7 +19,7 @@ pub fn print_only_tokens(tokens: &Vec<Token>) {
 }
 
 pub fn unexpected_keyword<S: AsRef<str> + Display>(token: &Token, unexpected: S, expected: Option<S>) {
-    println!(
+    eprintln!(
         "{}:{}:{} Unexpected Keyword: '{}'{}",
         token.file,
         token.line_number,
@@ -38,7 +38,7 @@ pub fn unexpected_keyword<S: AsRef<str> + Display>(token: &Token, unexpected: S,
 }
 
 pub fn unexpected_token(unexpected: &Token, expected: Option<&TokenEnum>) {
-    println!(
+    eprintln!(
         "{}:{}:{} Unexpected Token: '{}'{}",
         unexpected.file,
         unexpected.line_number,
@@ -57,7 +57,7 @@ pub fn unexpected_token(unexpected: &Token, expected: Option<&TokenEnum>) {
 }
 
 pub fn unexpected_token_string(unexpected: &Token, expected: &str) {
-    println!(
+    eprintln!(
         "{}:{}:{} Unexpected Token: '{}'. Expected {}",
         unexpected.file, unexpected.line_number, unexpected.col_number, unexpected, expected
     );
@@ -69,7 +69,7 @@ pub fn unexpected_token_string(unexpected: &Token, expected: &str) {
 }
 
 pub fn compiler_error<S: AsRef<str> + Display>(message: S, tok: &Token) {
-    println!("{}:{}:{} {}", tok.file, tok.line_number, tok.col_number, message);
+    eprintln!("{}:{}:{} {}", tok.file, tok.line_number, tok.col_number, message);
     let backtrace = std::backtrace::Backtrace::capture();
     println!("{:#?}", backtrace);
     exit(1);

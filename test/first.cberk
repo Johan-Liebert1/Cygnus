@@ -1,7 +1,8 @@
 include "./second.cberk"
 
 fun main(hi_: int) {
-    write(hi_, hi)
+    write(hi_)
+    hello()
 }
 
 main(1)

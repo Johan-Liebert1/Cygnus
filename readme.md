@@ -28,6 +28,7 @@
 - [x] Type Casting
 - [x] Array
 - [x] Structures
+- [x] File Includes
 
 - [ ] Have a single function for both variable and binary op asm generation
 

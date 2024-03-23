@@ -3,7 +3,7 @@
 use std::{
     char,
     io::{self, BufReader, Read},
-    process::{ChildStdout, Stdio},
+    process::{ChildStderr, ChildStdout, Stdio},
     rc::Rc,
     time::Duration,
 };
@@ -38,7 +38,12 @@ pub fn generate_asm() -> io::Result<()> {
     Ok(())
 }
 
-pub fn parse_input_file(path: String, compile_mode: bool, run_asm: bool, is_test: bool) -> Option<ChildStdout> {
+pub fn parse_input_file(
+    path: String,
+    compile_mode: bool,
+    run_asm: bool,
+    is_test: bool,
+) -> Option<(ChildStdout, ChildStderr)> {
     println!("Parsing file {path}");
 
     let file = match std::fs::read(&path) {
@@ -83,7 +88,11 @@ pub fn parse_input_file(path: String, compile_mode: bool, run_asm: bool, is_test
             return None;
         }
 
-        match std::process::Command::new("./output").stdout(Stdio::piped()).spawn() {
+        match std::process::Command::new("./output")
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+        {
             Ok(ref mut child) => match child.wait() {
                 Ok(exit_status) => {
                     if !is_test {
@@ -91,10 +100,12 @@ pub fn parse_input_file(path: String, compile_mode: bool, run_asm: bool, is_test
                     }
 
                     std::env::set_current_dir(current_dir).unwrap();
-                    return Some(child.stdout.take().unwrap());
+                    return Some((child.stdout.take().unwrap(), child.stderr.take().unwrap()));
                 }
 
-                Err(err) => println!("Error while waiting for child {:?}", err),
+                Err(err) => {
+                    println!("Error while waiting for child {:?}", err)
+                }
             },
 
             Err(e) => {
@@ -145,7 +156,7 @@ fn main() {
 
     if let Some(ref mut stdout) = parse_input_file(file_name.into(), COMPILE_MODE, RUN_PROGRAM, false) {
         let mut str = String::new();
-        stdout.read_to_string(&mut str);
+        stdout.0.read_to_string(&mut str);
         println!("{:?}", str);
     }
 }

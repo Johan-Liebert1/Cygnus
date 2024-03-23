@@ -1,3 +1,5 @@
 const hi: int = 69;
 
-hi = 34;
+fun hello() {
+    write("yo I'm the func hello\n")
+}
