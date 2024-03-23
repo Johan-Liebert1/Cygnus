@@ -1,9 +1,7 @@
-include "./std.cberk"
-
-const hi: int = 69;
+include "./second.cberk"
 
 fun main(hi_: int) {
-    write(*hi_)
+    write(hi_, hi)
 }
 
 main(1)

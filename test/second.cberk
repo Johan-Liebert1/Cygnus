@@ -1,0 +1,3 @@
+const hi: int = 69;
+
+hi = 34;

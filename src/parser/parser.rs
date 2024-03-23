@@ -11,7 +11,7 @@ use crate::{
 };
 
 use core::panic;
-use std::{cell::RefCell, collections::HashMap, fs, process::exit, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, fs, path::Path, process::exit, rc::Rc};
 
 use crate::{
     ast::{
@@ -176,6 +176,7 @@ impl Parser {
                         let mut file_path = String::new();
 
                         if let TokenEnum::StringLiteral(fp) = included_file_tok.token {
+                            self.get_next_token();
                             file_path = fp;
                         } else {
                             unexpected_token(&included_file_tok, Some(&TokenEnum::StringLiteral("".into())));
@@ -183,18 +184,27 @@ impl Parser {
 
                         let current_lexer = self.lexer.clone();
 
+                        let borrow = self.lexer.borrow();
+
+                        let path = Path::new(&borrow.file_name);
+
+                        let file_path = path
+                            .parent()
+                            .unwrap_or_else(|| Path::new(""))
+                            .join(Path::new(&file_path.strip_prefix("./").unwrap_or_else(|| &file_path)));
+
+                        drop(borrow);
+
                         let file_contents = fs::read(file_path.clone()).unwrap();
-                        let new_file_lexer = Lexer::new(file_contents, file_path);
+                        let new_file_lexer = Lexer::new(file_contents, file_path.to_str().unwrap().into());
                         let new_lexer = Rc::new(RefCell::new(Box::new(new_file_lexer)));
                         self.lexer = new_lexer.clone();
 
                         let ast = self.parse_program();
 
-                        drop(new_lexer);
-
                         self.lexer = current_lexer;
 
-                        todo!()
+                        ast
                     }
 
                     ELSE_STATEMENT => {
