@@ -17,7 +17,7 @@ use crate::{
 
 use super::parser::{Parser, UserDefinedType};
 
-impl<'a> Parser<'a> {
+impl Parser {
     pub fn parse_struct_definition(&mut self) {
         let mut name = String::from("");
 

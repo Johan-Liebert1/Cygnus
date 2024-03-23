@@ -12,7 +12,7 @@ use crate::{
 
 use super::parser::Parser;
 
-impl<'a> Parser<'a> {
+impl Parser {
     /// MEMORY_BLOCK -> mem VAR_NAME (size in bytes)
     pub fn parse_memory_alloc(&mut self) -> ASTNode {
         // we get here after consuming the 'mem' token

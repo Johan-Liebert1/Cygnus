@@ -22,7 +22,9 @@ pub const AS: &str = "as";
 pub const MEM: &str = "mem";
 pub const STRUCT: &str = "struct";
 
-pub const KEYWORDS: [&str; 19] = [
+pub const INCLUDE: &str = "include";
+
+pub const KEYWORDS: [&str; 20] = [
     VAR_DEFINE,
     CONST_VAR_DEFINE,
     IF_STATEMENT,
@@ -42,6 +44,7 @@ pub const KEYWORDS: [&str; 19] = [
     MEM,
     AS,
     STRUCT,
+    INCLUDE,
 ];
 
 // Predefined functions

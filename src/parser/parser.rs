@@ -2,7 +2,7 @@ use crate::{
     ast::{abstract_syntax_tree::AST, void::Void},
     helpers::{self, compiler_error, unexpected_token},
     lexer::{
-        keywords::{CONST_VAR_DEFINE, MEM, STRUCT},
+        keywords::{CONST_VAR_DEFINE, INCLUDE, MEM, STRUCT},
         tokens::{Number, Operations},
         types::VarType,
     },
@@ -11,7 +11,7 @@ use crate::{
 };
 
 use core::panic;
-use std::{cell::RefCell, collections::HashMap, process::exit, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, fs, process::exit, rc::Rc};
 
 use crate::{
     ast::{
@@ -35,8 +35,8 @@ pub struct UserDefinedType {
 }
 
 #[derive(Debug)]
-pub struct Parser<'a> {
-    pub lexer: Box<Lexer<'a>>,
+pub struct Parser {
+    pub lexer: Rc<RefCell<Box<Lexer>>>,
     pub bracket_stack: Vec<Token>,
     pub functions: ParserFunctions,
 
@@ -55,12 +55,12 @@ pub struct Parser<'a> {
     pub user_defined_types: Vec<UserDefinedType>,
 }
 
-impl<'a> Parser<'a> {
-    pub fn new(file: &'a Vec<u8>, file_name: &'a String) -> Self {
+impl Parser {
+    pub fn new(file: Vec<u8>, file_name: String) -> Self {
         let lexer = Lexer::new(file, file_name);
 
         Self {
-            lexer: Box::new(lexer),
+            lexer: Rc::new(RefCell::new(Box::new(lexer))),
             bracket_stack: vec![],
             functions: Rc::new(RefCell::new(HashMap::new())),
 
@@ -164,6 +164,37 @@ impl<'a> Parser<'a> {
                         self.parse_struct_definition();
 
                         Rc::new(RefCell::new(Box::new(Void)))
+                    }
+
+                    INCLUDE => {
+                        if self.inside_loop_depth != 0 || self.inside_function_depth != 0 {
+                            compiler_error("`include` can only be used at the beginning of a file", &current_token)
+                        }
+
+                        let included_file_tok = self.peek_next_token();
+
+                        let mut file_path = String::new();
+
+                        if let TokenEnum::StringLiteral(fp) = included_file_tok.token {
+                            file_path = fp;
+                        } else {
+                            unexpected_token(&included_file_tok, Some(&TokenEnum::StringLiteral("".into())));
+                        }
+
+                        let current_lexer = self.lexer.clone();
+
+                        let file_contents = fs::read(file_path.clone()).unwrap();
+                        let new_file_lexer = Lexer::new(file_contents, file_path);
+                        let new_lexer = Rc::new(RefCell::new(Box::new(new_file_lexer)));
+                        self.lexer = new_lexer.clone();
+
+                        let ast = self.parse_program();
+
+                        drop(new_lexer);
+
+                        self.lexer = current_lexer;
+
+                        todo!()
                     }
 
                     ELSE_STATEMENT => {

@@ -12,7 +12,7 @@ use crate::{
 
 use super::parser::Parser;
 
-impl<'a> Parser<'a> {
+impl Parser {
     pub fn parse_return_statement(&mut self, current_token: &Token) -> ASTNode {
         if self.inside_function_depth == 0 {
             compiler_error("Found `return` outside of a function", &current_token);

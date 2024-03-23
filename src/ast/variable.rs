@@ -106,7 +106,7 @@ impl AST for Variable {
         asm.gen_asm_for_var(&self, &call_stack);
     }
 
-    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         todo!()
     }
 

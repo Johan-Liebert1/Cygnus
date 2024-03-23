@@ -1,4 +1,8 @@
-use std::{fmt::{Display, Debug}, thread::sleep, time::Duration};
+use std::{
+    fmt::{Debug, Display},
+    thread::sleep,
+    time::Duration,
+};
 
 use crate::{
     lexer::types::{TYPE_FLOAT, TYPE_STRING},
@@ -28,22 +32,25 @@ impl Display for Token {
 
 impl Debug for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "< {} {}:{}:{} {:?} >", self.index, self.file, self.line_number, self.col_number, self.token)
+        write!(
+            f,
+            "< {} {}:{}:{} {:?} >",
+            self.index, self.file, self.line_number, self.col_number, self.token
+        )
     }
 }
 
-
 #[derive(Debug)]
-pub struct Lexer<'a> {
+pub struct Lexer {
     pub line_number: usize,
     pub col_number: usize,
-    pub file: &'a Vec<u8>,
+    pub file: Vec<u8>,
     pub index: usize,
-    pub file_name: &'a String,
+    pub file_name: String,
 }
 
-impl<'a> Lexer<'a> {
-    pub fn new(file: &'a Vec<u8>, file_name: &'a String) -> Self {
+impl Lexer {
+    pub fn new(file: Vec<u8>, file_name: String) -> Self {
         Lexer {
             line_number: 1,
             col_number: 1,

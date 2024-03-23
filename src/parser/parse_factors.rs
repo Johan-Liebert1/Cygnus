@@ -22,7 +22,7 @@ use crate::{
 
 use super::parser::Parser;
 
-impl<'a> Parser<'a> {
+impl Parser {
     /// VARIABLE (as type)*
     fn parse_variable_factor(&mut self, var_token: &Token, var_name: &String) -> ASTNode {
         let mut variable = Variable::new(

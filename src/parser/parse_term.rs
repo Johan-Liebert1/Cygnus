@@ -10,7 +10,7 @@ use crate::{
 
 use super::parser::Parser;
 
-impl<'a> Parser<'a> {
+impl Parser {
     /// TERM -> FACTOR (( * | /  | << | >> | % ) FACTOR)*
     pub fn parse_term(&mut self) -> ASTNode {
         let mut result = self.parse_factor();

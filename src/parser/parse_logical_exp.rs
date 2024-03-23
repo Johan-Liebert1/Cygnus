@@ -6,7 +6,7 @@ use crate::{ast::logical_exp::LogicalExpression, lexer::tokens::TokenEnum};
 
 use super::parser::Parser;
 
-impl<'a> Parser<'a> {
+impl Parser {
     /// LOGICAL_EXPRESSION -> COMPARISON_EXPRESSION ((and | or) COMPARISON_EXPRESSION)*
     pub fn parse_logical_expression(&mut self) -> ASTNode {
         let left = self.parse_comparison_expression();

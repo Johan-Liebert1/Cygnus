@@ -49,7 +49,7 @@ pub fn parse_input_file(path: String, compile_mode: bool, run_asm: bool, is_test
         }
     };
 
-    let mut parser = Parser::new(&file, &path);
+    let mut parser = Parser::new(file, path);
     let ast = parser.parse_program();
 
     let mut semantic_analyzer =
