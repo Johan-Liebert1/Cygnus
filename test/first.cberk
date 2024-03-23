@@ -1,9 +1,7 @@
-fun main(a: int) {
-    def s: str = "hello";
-    def i: int = 5;
+const hi: int = 69;
 
-    write(*(s as *char) + i)
-
+fun main(hi_: int) {
+    write(hi_)
 }
 
 main(1)

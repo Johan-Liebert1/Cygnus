@@ -1,3 +1,4 @@
+use crate::helpers::compiler_error;
 use crate::lexer::types::VarType;
 use crate::{helpers, trace};
 use crate::{lexer::tokens::AssignmentTypes, types::ASTNode};
@@ -117,6 +118,14 @@ impl AST for AssignmentStatement {
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         self.right.borrow_mut().semantic_visit(call_stack, f.clone());
         self.left.semantic_visit(call_stack, f);
+
+        if self.left.is_const {
+            compiler_error(
+                format!("Cannot reassign constant variable {}", self.left.var_name),
+                &self.left.get_token(),
+            );
+        }
+
         self.verify_type();
     }
 

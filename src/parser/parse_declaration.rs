@@ -119,10 +119,11 @@ impl<'a> Parser<'a> {
     }
 
     /// VARIABLE_DECLARATION -> def VAR_NAME: (*)* VAR_TYPE (= ASSIGNED_STATEMENT)*
-    pub fn parse_declaration_statement(&mut self) -> ASTNode {
+    pub fn parse_declaration_statement(&mut self, is_const: bool) -> ASTNode {
         // we get here after consuming 'def'
 
-        let left = self.parse_variable();
+        let mut left = self.parse_variable();
+        left.is_const = is_const;
 
         self.validate_token(TokenEnum::Equals);
 

@@ -2,7 +2,7 @@ use crate::{
     ast::{abstract_syntax_tree::AST, void::Void},
     helpers::{self, compiler_error, unexpected_token},
     lexer::{
-        keywords::{MEM, STRUCT},
+        keywords::{CONST_VAR_DEFINE, MEM, STRUCT},
         tokens::{Number, Operations},
         types::VarType,
     },
@@ -126,7 +126,8 @@ impl<'a> Parser<'a> {
                 self.get_next_token();
 
                 match keyword as &str {
-                    VAR_DEFINE => self.parse_declaration_statement(),
+                    VAR_DEFINE => self.parse_declaration_statement(false),
+                    CONST_VAR_DEFINE => self.parse_declaration_statement(true),
 
                     IF_STATEMENT => self.parse_conditional_statement(),
 

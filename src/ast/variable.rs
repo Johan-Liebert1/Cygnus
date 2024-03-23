@@ -38,6 +38,8 @@ pub struct Variable {
     /// if it's a.b.c.d then the var_name is 'a'
     /// and member_access contains ['b', 'c']
     pub member_access: Vec<String>,
+
+    pub is_const: bool,
 }
 
 impl Variable {
@@ -62,6 +64,7 @@ impl Variable {
             type_cast: None,
             array_aceess_index: None,
             member_access: vec![],
+            is_const: false,
         }
     }
 
@@ -124,6 +127,10 @@ impl AST for Variable {
             } else {
                 variable_in_stack.var_type.clone()
             };
+
+            // have to do this here as the variable_in_stack comes from variable definition, which
+            // is the only AST node where we have the information about this variable
+            self.is_const = variable_in_stack.is_const;
 
             self.result_type = self.var_type.clone();
 
