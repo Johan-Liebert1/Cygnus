@@ -149,11 +149,3 @@ fn count_char_occurances_in_file() {
     let (stdout_str, _, file_result) = get_stdout_and_actual_result("count_char_occurances_in_file.cberk");
     assert_eq!(stdout_str, file_result);
 }
-
-// This has issues with parent -> child stdout
-//
-// #[test]
-// fn read_write_syscalls() {
-//     let (stdout_str, file_result) = get_stdout_and_actual_result("read_write_syscalls.cberk");
-//     assert_eq!(stdout_str, file_result);
-// }

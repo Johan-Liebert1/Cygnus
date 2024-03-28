@@ -1,6 +1,8 @@
 include "./second.cberk"
 
 fun main(hi_: int) {
+    hi_ = "34";
+    -- def hi_: str = "34";
     write(hi_)
     hello()
 }

@@ -1,4 +1,8 @@
-use std::{process::{Command, Stdio}, sync::Once, io::Read};
+use std::{
+    io::Read,
+    process::{Command, Stdio},
+    sync::Once,
+};
 
 use super::test_compiler::get_file_result;
 
@@ -14,14 +18,17 @@ fn compile_binary() {
 }
 
 fn try_to_compile_example(file_name: &str) -> (String, String) {
-    let command = Command::new("./target/debug/lang").args(["-f".into(), format!("./examples/{}", file_name)]).stderr(Stdio::piped()).spawn();
+    let command = Command::new("./target/debug/lang")
+        .args(["-f".into(), format!("./examples/{}", file_name)])
+        .stderr(Stdio::piped())
+        .spawn();
 
     let mut stderr = String::new();
 
     match command {
         Ok(mut child) => {
             let sss = child.stderr.take().unwrap().read_to_string(&mut stderr);
-        },
+        }
 
         Err(err) => println!("Failed to spawn process err {:?}", err),
     }
