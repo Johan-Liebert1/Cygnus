@@ -1,0 +1,5 @@
+const hi: int = 69;
+
+fun hello() {
+    write("yo I'm the func hello\n")
+}

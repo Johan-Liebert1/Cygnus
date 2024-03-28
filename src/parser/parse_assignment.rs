@@ -11,7 +11,7 @@ use crate::{ast::assignment_statement::AssignmentStatement, lexer::tokens::Token
 
 use super::parser::Parser;
 
-impl<'a> Parser<'a> {
+impl Parser {
     pub fn parse_assignment_statement(
         &mut self,
         var_token: Token,

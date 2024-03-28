@@ -22,7 +22,7 @@ use crate::{
 
 use super::parser::Parser;
 
-impl<'a> Parser<'a> {
+impl Parser {
     /// LOOP -> loop from LPAREN* EXPRESSION to EXPRESSION (step EXPRESSION)* RPAREN* (with VAR_NAME)* LCURLY STATEMENT[] RCURLY
     pub fn parse_loop(&mut self) -> ASTNode {
         // we get here after consuming the 'loop' keyword

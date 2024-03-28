@@ -9,7 +9,7 @@ use crate::{
 
 use super::parser::Parser;
 
-impl<'a> Parser<'a> {
+impl Parser {
     /// FUNCTION_CALL -> VAR_NAME LPAREN (COMPARISON_EXPRESSION)* RPAREN
     pub fn parse_function_call(&mut self, name: String) -> ASTNode {
         // We parse from the LPAREN

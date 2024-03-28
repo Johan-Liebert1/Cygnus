@@ -225,7 +225,8 @@ impl ASM {
                         match assignment_type {
                             AssignmentTypes::Equals => {
                                 match &var.var_type {
-                                    VarType::Int => todo!(),
+                                    VarType::Int => instructions.extend([format!("pop rax")]),
+
                                     VarType::Struct(_, _) => todo!(),
 
                                     VarType::Str => {

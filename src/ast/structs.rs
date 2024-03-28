@@ -61,7 +61,7 @@ impl AST for StructDecleration {
     }
 
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        // iterate in reverse order so that 
+        // iterate in reverse order so that
         for member_type in self.members.iter().rev() {
             member_type.rhs.borrow().visit_com(v, f.clone(), asm, call_stack)
         }

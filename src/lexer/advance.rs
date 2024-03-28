@@ -8,7 +8,7 @@ use super::{
     types::VarType,
 };
 
-impl<'a> Lexer<'a> {
+impl Lexer {
     pub fn peek_next_token(&mut self) -> Token {
         return self.peek_nth_token(1);
     }
@@ -93,7 +93,7 @@ impl<'a> Lexer<'a> {
                             line_number: self.line_number,
                             index: self.index,
                             col_number: self.col_number,
-                            file: self.file_name.into(),
+                            file: self.file_name.clone().into(),
                         };
                     } else {
                         self.index += 1;
@@ -234,7 +234,7 @@ impl<'a> Lexer<'a> {
                 line_number: self.line_number,
                 col_number: self.col_number,
                 index: self.index,
-                file: self.file_name.into(),
+                file: self.file_name.clone().into(),
             };
 
             return token;
@@ -245,7 +245,7 @@ impl<'a> Lexer<'a> {
             line_number: self.line_number,
             col_number: self.col_number,
             index: self.index,
-            file: self.file_name.into(),
+            file: self.file_name.clone().into(),
         };
     }
 }

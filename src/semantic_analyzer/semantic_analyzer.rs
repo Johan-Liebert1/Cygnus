@@ -261,7 +261,7 @@ impl<'a> CallStack<'a> {
 
                         last_record.variable_members.insert(var_name.into(), variable)
                     }
-                };
+                }; // last_record.variable_members.get(var_name) end
             }
 
             None => {

@@ -6,7 +6,7 @@ use crate::{ast::comparison_exp::ComparisonExp, lexer::tokens::TokenEnum};
 
 use super::parser::Parser;
 
-impl<'a> Parser<'a> {
+impl Parser {
     /// COMPARISON_EXPRESSION -> EXPRESSION ((> | < | >= | <= | == | !=) EXPRESSION)*
     pub fn parse_comparison_expression(&mut self) -> ASTNode {
         let left_expression = self.parse_expression();

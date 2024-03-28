@@ -12,7 +12,7 @@ use crate::{
 
 use super::parser::{Parser, ParserFunctions};
 
-impl<'a> Parser<'a> {
+impl Parser {
     fn parse_function_definition_parameters(&mut self) -> Vec<Variable> {
         let mut parameters = vec![];
 

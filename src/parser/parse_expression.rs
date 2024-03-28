@@ -13,7 +13,7 @@ use crate::{
 
 use super::parser::Parser;
 
-impl<'a> Parser<'a> {
+impl Parser {
     /// EXPRESSION -> BINARY_OP (+|-) BINARY_OP
     /// for precedence as term will be calculated first
     pub fn parse_expression(&mut self) -> ASTNode {

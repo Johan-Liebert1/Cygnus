@@ -12,7 +12,7 @@ use crate::{
 
 use super::parser::Parser;
 
-impl<'a> Parser<'a> {
+impl Parser {
     /// CONDITIONAL_STATEMENT -> if LPAREN* COMPARISON_EXPRESSION RPAREN* LCURLY STATEMENT[]* RCURLY ELSE_STATEMENT*
     pub fn parse_conditional_statement(&mut self) -> ASTNode {
         // we get here after 'if' has been consumed

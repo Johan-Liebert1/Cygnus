@@ -1,9 +1,10 @@
-fun main(a: int) {
-    def s: str = "hello";
-    def i: int = 5;
+include "./second.cberk"
 
-    write(*(s as *char) + i)
-
+fun main(hi_: int) {
+    hi_ = "34";
+    -- def hi_: str = "34";
+    write(hi_)
+    hello()
 }
 
 main(1)
