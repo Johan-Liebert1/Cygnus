@@ -1,0 +1,47 @@
+def SOCKET_SYSCALL: int = 41;
+def AF_INET: int = 2;
+def SOCK_STREAM: int = 1;
+
+def BIND_SYSCALL: int = 49;
+
+def LISTEN_SYSCALL: int = 50;
+
+def ACCEPT_SYSCALL: int = 43;
+
+struct sockaddr_in {
+    sa_prefix: int,
+    s_addr: int,
+    sin_port: int,
+};
+
+-- need to implement int32, int16 and int8 for this to work
+
+fun main() {
+    def sockfd: int = syscall(SOCKET_SYSCALL, AF_INET, SOCK_STREAM, 0);
+    write("SOCKET_SYSCALL return: ", sockfd);
+
+    def sockaddr: sockaddr_in = sockaddr_in{
+        sa_prefix: AF_INET,
+        s_addr: 0,
+        sin_port: 5000
+    };
+
+    def clientaddr: sockaddr_in = sockaddr_in{
+        sa_prefix: AF_INET,
+        s_addr: 0,
+        sin_port: 5000
+    };
+
+    def bind_ret: int = syscall(BIND_SYSCALL, sockfd, &sockaddr, 16);
+    write("BIND_SYSCALL return: ", bind_ret);
+
+    def listener: int = syscall(LISTEN_SYSCALL, sockfd, 10);
+    write("LISTEN_SYSCALL return: ", listener);
+
+    loop from 1 to 2 {
+        def connfd: int = syscall(ACCEPT_SYSCALL, sockfd, &clientaddr, 16);
+        write("ACCEPT_SYSCALL return: ", connfd);
+    }
+}
+
+main()
