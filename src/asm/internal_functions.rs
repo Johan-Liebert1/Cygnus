@@ -145,6 +145,10 @@ impl ASM {
                         vec![format!("pop rax"), format!("call _printRAX")]
                     }
 
+                    VarType::Int8 => todo!(),
+                    VarType::Int16 => todo!(),
+                    VarType::Int32 => todo!(),
+
                     VarType::Str => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
 
                     VarType::Char => WRITE_CHAR_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
@@ -174,6 +178,10 @@ impl ASM {
                                 VarType::Ptr(var_type) => {
                                     self.func_write_pointer_internal(var_type, var.times_dereferenced)
                                 }
+
+                                VarType::Int8 => todo!(),
+                                VarType::Int16 => todo!(),
+                                VarType::Int32 => todo!(),
 
                                 VarType::Float => todo!(),
                                 VarType::Char => todo!(),

@@ -108,6 +108,10 @@ impl ASM {
                 ]);
             }
 
+            VarType::Int8 => todo!(),
+            VarType::Int16 => todo!(),
+            VarType::Int32 => todo!(),
+
             VarType::Float => todo!(),
             VarType::Struct(_, _) => todo!(),
 
@@ -228,6 +232,10 @@ impl ASM {
                         VarType::Float => todo!(),
                         VarType::Char => todo!(),
 
+                        VarType::Int8 => todo!(),
+                        VarType::Int16 => todo!(),
+                        VarType::Int32 => todo!(),
+
                         VarType::Ptr(_) => self.handle_global_ptr(variable, ar_var),
 
                         VarType::Array(..) => todo!(),
@@ -239,6 +247,10 @@ impl ASM {
                         // cannot use ar_var here as it does not have the computed types
                         match &variable.var_type {
                             VarType::Int => self.handle_local_int(variable, ar_var.offset),
+
+                            VarType::Int8 => todo!(),
+                            VarType::Int16 => todo!(),
+                            VarType::Int32 => todo!(),
 
                             VarType::Str => self.handle_local_str(variable, ar_var.offset),
 
@@ -279,6 +291,10 @@ impl ASM {
                                         VarType::Ptr(var_type) => {
                                             self.handle_local_ptr(var_type, variable, struct_member_type.offset)
                                         }
+
+                                        VarType::Int8 => todo!(),
+                                        VarType::Int16 => todo!(),
+                                        VarType::Int32 => todo!(),
 
                                         VarType::Float => todo!(),
                                         VarType::Char => todo!(),

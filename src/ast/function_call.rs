@@ -63,6 +63,10 @@ impl AST for FunctionCall {
 
                             VarType::Ptr(ptr_type) => asm.func_write_pointer(&ptr_type, bo.times_dereferenced),
 
+                            VarType::Int8 => todo!(),
+                            VarType::Int16 => todo!(),
+                            VarType::Int32 => todo!(),
+
                             VarType::Char => todo!(),
 
                             VarType::Array(..) => todo!(),
