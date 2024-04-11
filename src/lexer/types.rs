@@ -123,6 +123,55 @@ impl VarType {
         };
     }
 
+    pub fn can_assign(&self, other: &VarType) -> bool {
+        use VarType::*;
+
+        return match self {
+            Int | Int8 | Int32 | Int16 => matches!(other, Int | Int8 | Int32 | Int16),
+
+            Str => *other == Str,
+
+            Float => todo!(),
+
+            Char => *other == Char,
+
+            Ptr(inner) => match other {
+                Ptr(inner2) => inner.can_assign(inner2),
+
+                _ => false,
+            },
+
+            Array(inner1, size1) => match other {
+                Array(inner2, size2) => size1 == size2 && inner1.can_assign(inner2),
+                _ => false,
+            },
+
+            Struct(name1, members1) => match other {
+                Struct(name2, members2) => {
+                    let mem1borrow = members1.borrow();
+                    let mem2borrow = members2.borrow();
+
+                    let equal = mem1borrow.len() == mem2borrow.len();
+
+                    if !equal {
+                        return equal;
+                    }
+
+                    for (mem1, mem2) in mem1borrow.iter().zip(mem2borrow.iter()) {
+                        if !mem1.member_type.can_assign(&mem2.member_type) {
+                            return false;
+                        }
+                    };
+
+                    name1 == name2
+                }
+                _ => false,
+            },
+
+            Unknown => todo!(),
+        };
+    }
+
     pub fn figure_out_type(&self, other: &VarType, op: AllOperations) -> VarType {
         use Comparators::*;
         use Operations::*;
@@ -260,8 +309,19 @@ impl Display for VarType {
 
 // types
 pub const TYPE_INT: &str = "int";
+pub const TYPE_INT8: &str = "int8";
+pub const TYPE_INT16: &str = "int16";
+pub const TYPE_INT32: &str = "int32";
 pub const TYPE_FLOAT: &str = "float";
 pub const TYPE_STRING: &str = "str";
 pub const TYPE_CHAR: &str = "char";
 
-pub const PREDEFINED_TYPES: [&str; 4] = [TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_CHAR];
+pub const PREDEFINED_TYPES: [&str; 7] = [
+    TYPE_INT,
+    TYPE_INT8,
+    TYPE_INT16,
+    TYPE_INT32,
+    TYPE_FLOAT,
+    TYPE_STRING,
+    TYPE_CHAR,
+];

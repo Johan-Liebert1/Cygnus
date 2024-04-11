@@ -221,41 +221,41 @@ impl<'a> ASTNodeEnum<'a> {
         return match self {
             Factor(f) => {
                 let (actual_type, result_type) = f.get_type();
-                (actual_type == variable.get_type().0, actual_type)
+                (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
 
             BinaryOp(f) => {
                 let (actual_type, result_type) = f.get_type();
-                (actual_type == variable.get_type().0, actual_type)
+                (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
             ComparisonExp(f) => {
                 let (actual_type, result_type) = f.get_type();
-                (actual_type == variable.get_type().0, actual_type)
+                (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
             FunctionCall(f) => {
                 let (actual_type, result_type) = f.get_type();
-                (actual_type == variable.get_type().0, actual_type)
+                (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
             LogicalExp(f) => {
                 let (actual_type, result_type) = f.get_type();
-                (actual_type == variable.get_type().0, actual_type)
+                (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
             Variable(f) => {
                 let (actual_type, result_type) = f.get_type();
-                (actual_type == variable.get_type().0, actual_type)
+                (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
             MemoryAlloc(f) => {
                 let (actual_type, result_type) = f.get_type();
-                (actual_type == variable.get_type().0, actual_type)
+                (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
             Array(f) => {
                 let (actual_type, result_type) = f.get_type();
-                (actual_type == variable.get_type().0, actual_type)
+                (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
 
             Struct(f) => {
                 let (actual_type, result_type) = f.get_type();
-                (actual_type == variable.get_type().0, actual_type)
+                (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
 
             node => unreachable!("Cannot assign a variable to {node}. This could a bug in the parsing stage"),
