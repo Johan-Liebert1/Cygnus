@@ -111,6 +111,10 @@ impl ASM {
                 instructions.push(format!("push rax"));
             }
 
+            VarType::Int8 => todo!(),
+            VarType::Int16 => todo!(),
+            VarType::Int32 => todo!(),
+
             VarType::Str => todo!(),
             VarType::Float => todo!(),
 
@@ -124,6 +128,10 @@ impl ASM {
                     instructions.extend(std::iter::repeat(format!("mov rax, [rax]")).take(times_dereferenced));
                     instructions.push(format!("push rax"));
                 }
+
+                VarType::Int8 => todo!(),
+                VarType::Int16 => todo!(),
+                VarType::Int32 => todo!(),
 
                 VarType::Char => {
                     instructions.push(format!(";; binary op ptr -> char"));

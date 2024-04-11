@@ -21,7 +21,11 @@ pub struct StructMemberType {
 
 #[derive(Debug, Clone)]
 pub enum VarType {
+    // int64
     Int,
+    Int8,
+    Int16,
+    Int32,
     Str,
     Float,
     Char,
@@ -119,23 +123,6 @@ impl VarType {
         };
     }
 
-    fn type_int(&self, other: &VarType) -> VarType {
-        if !matches!(self, VarType::Int) {
-            panic!("function `type_int` only accepts VarType::Int as the first arg")
-        }
-
-        return match other {
-            VarType::Int => VarType::Int,
-            VarType::Str => todo!(),
-            VarType::Float => todo!(),
-            VarType::Char => todo!(),
-            VarType::Ptr(_) => todo!(),
-            VarType::Array(_, _) => todo!(),
-            VarType::Struct(..) => todo!(),
-            VarType::Unknown => todo!(),
-        };
-    }
-
     pub fn figure_out_type(&self, other: &VarType, op: AllOperations) -> VarType {
         use Comparators::*;
         use Operations::*;
@@ -212,6 +199,9 @@ impl VarType {
         return match self {
             // 64 bit integer
             VarType::Int => 8,
+            VarType::Int32 => 4,
+            VarType::Int16 => 2,
+            VarType::Int8 => 1,
             // 8 bytes for length + 8 bytes for pointer to the start of the string
             VarType::Str => 16,
             VarType::Float => todo!(),
@@ -252,6 +242,9 @@ impl Display for VarType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let msg = match self {
             VarType::Int => "Integer".to_string(),
+            VarType::Int32 => "Integer32".to_string(),
+            VarType::Int16 => "Integer16".to_string(),
+            VarType::Int8 => "Integer8".to_string(),
             VarType::Str => "String".to_string(),
             VarType::Float => "Floating Point".to_string(),
             VarType::Ptr(var_type) => format!("Pointer -> {}", *var_type),

@@ -182,6 +182,11 @@ impl ASM {
                     VarType::Int | VarType::Float => {
                         self.assign_local_number(member_type.offset, is_function_call_assign)
                     }
+
+                    VarType::Int8 => todo!(),
+                    VarType::Int16 => todo!(),
+                    VarType::Int32 => todo!(),
+
                     VarType::Str => self.assign_local_string(member_type.offset),
 
                     // times_dereferenced = 0 as you cannot dereference a struct member while
@@ -258,6 +263,9 @@ impl ASM {
 
                                             VarType::Str => todo!(),
 
+                                            VarType::Int8 => todo!(),
+                                            VarType::Int16 => todo!(),
+                                            VarType::Int32 => todo!(),
                                             VarType::Array(..) => todo!(),
                                             VarType::Float => todo!(),
                                             VarType::Char => todo!(),
@@ -265,6 +273,10 @@ impl ASM {
                                             VarType::Unknown => todo!(),
                                         }
                                     }
+
+                                    VarType::Int8 => todo!(),
+                                    VarType::Int16 => todo!(),
+                                    VarType::Int32 => todo!(),
 
                                     VarType::Array(..) => todo!(),
                                     VarType::Float => todo!(),
@@ -333,6 +345,10 @@ impl ASM {
                                     VarType::Array(type_, size) => {
                                         self.assign_local_array(var.offset, &array_access_index, type_, size)
                                     }
+
+                                    VarType::Int8 => todo!(),
+                                    VarType::Int16 => todo!(),
+                                    VarType::Int32 => todo!(),
 
                                     VarType::Unknown => todo!(),
                                 }
