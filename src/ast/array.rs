@@ -77,7 +77,7 @@ impl AST for Array {
                 compiler_error(
                     format!(
                         "{new_member_type} is not assignable to array of type {}",
-                        self.result_type
+                        first_member_type,
                     ),
                     member.borrow().get_token(),
                 );
