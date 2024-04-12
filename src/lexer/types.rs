@@ -180,6 +180,9 @@ impl VarType {
         return match (self, other) {
             // No matter what the op is, the result will always be an integer
             (Int, Int) => Int,
+            (Int8, Int8) => Int8,
+            (Int16, Int16) => Int16,
+            (Int32, Int32) => Int32,
 
             // No matter what the op is, the result will always be an float
             (Float, Float) => Float,
@@ -231,6 +234,15 @@ impl VarType {
             | (Str, Str)
             | (Float, Str)
             | (Int, Float)
+            | (Int8, Int16)
+            | (Int8, Int32)
+            | (Int8, Int)
+            | (Int16, Int8)
+            | (Int16, Int32)
+            | (Int16, Int)
+            | (Int32, Int16)
+            | (Int32, Int8)
+            | (Int32, Int)
             | (Float, Int) => {
                 panic!("'{op}' not defined for '{self}' and '{other}'")
             }
@@ -239,7 +251,7 @@ impl VarType {
                 trace!("l: {}", l);
                 trace!("r: {}", r);
 
-                Unknown
+                unimplemented!()
             }
         };
     }

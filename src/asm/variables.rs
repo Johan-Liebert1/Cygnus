@@ -3,6 +3,7 @@ use core::panic;
 use crate::{
     ast::variable::{self, Variable},
     lexer::{
+        registers::Register,
         tokens::VariableEnum,
         types::{VarType, TYPE_FLOAT, TYPE_INT},
     },
@@ -129,7 +130,12 @@ impl ASM {
         } else if variable.store_address {
             self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
         } else {
-            self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+            let reg_name = variable.var_type.get_register_name(Register::RAX);
+
+            self.extend_current_label(vec![
+                format!("mov {}, [rbp - {}]", reg_name, ar_var_offset),
+                format!("push rax"),
+            ]);
         }
     }
 
@@ -246,11 +252,9 @@ impl ASM {
                     _ => {
                         // cannot use ar_var here as it does not have the computed types
                         match &variable.var_type {
-                            VarType::Int => self.handle_local_int(variable, ar_var.offset),
-
-                            VarType::Int8 => todo!(),
-                            VarType::Int16 => todo!(),
-                            VarType::Int32 => todo!(),
+                            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                                self.handle_local_int(variable, ar_var.offset)
+                            }
 
                             VarType::Str => self.handle_local_str(variable, ar_var.offset),
 

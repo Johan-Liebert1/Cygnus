@@ -1,5 +1,8 @@
-fun main(hi_: int) {
-    def a: int8 = 8989;
+fun main() {
+    def a: int32 = 8989;
+    def b: int = 32;
+
+    write(a + b);
 }
 
-main(1)
+main()
