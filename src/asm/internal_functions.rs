@@ -141,13 +141,9 @@ impl ASM {
                 // We don't need to check the scope here as the variable value is already
                 // pushed into rax beforehand in `factor` AST
                 match &var.var_type {
-                    VarType::Int => {
+                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                         vec![format!("pop rax"), format!("call _printRAX")]
                     }
-
-                    VarType::Int8 => todo!(),
-                    VarType::Int16 => todo!(),
-                    VarType::Int32 => todo!(),
 
                     VarType::Str => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
 

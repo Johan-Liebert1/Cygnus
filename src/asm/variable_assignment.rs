@@ -4,6 +4,7 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     ast::abstract_syntax_tree::ASTNodeEnum,
     lexer::{
+        registers::Register,
         tokens::{AssignmentTypes, VariableEnum},
         types::{StructMemberType, VarType},
     },
@@ -33,7 +34,9 @@ impl ASM {
         self.extend_current_label(instructions);
     }
 
-    fn assign_local_number(&mut self, var_offset: usize, is_function_call_assign: bool) {
+    fn assign_local_number(&mut self, var_offset: usize, is_function_call_assign: bool, var_type: &VarType) {
+        let reg_name = var_type.get_register_name(Register::RAX);
+
         let mut instructions = vec![];
 
         // if it is a function call assignment, then the value is
@@ -42,7 +45,7 @@ impl ASM {
             instructions.push(format!("pop rax"))
         }
 
-        instructions.push(format!("mov [rbp - {}], rax", var_offset));
+        instructions.push(format!("mov [rbp - {}], {}", var_offset, reg_name));
 
         self.extend_current_label(instructions);
     }
@@ -180,7 +183,7 @@ impl ASM {
 
                 match &member_type.member_type {
                     VarType::Int | VarType::Float => {
-                        self.assign_local_number(member_type.offset, is_function_call_assign)
+                        self.assign_local_number(member_type.offset, is_function_call_assign, &member_type.member_type)
                     }
 
                     VarType::Int8 => todo!(),
@@ -230,7 +233,9 @@ impl ASM {
                         match assignment_type {
                             AssignmentTypes::Equals => {
                                 match &var.var_type {
-                                    VarType::Int => instructions.extend([format!("pop rax")]),
+                                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                                        instructions.extend([format!("pop rax")])
+                                    }
 
                                     VarType::Struct(_, _) => todo!(),
 
@@ -274,10 +279,6 @@ impl ASM {
                                         }
                                     }
 
-                                    VarType::Int8 => todo!(),
-                                    VarType::Int16 => todo!(),
-                                    VarType::Int32 => todo!(),
-
                                     VarType::Array(..) => todo!(),
                                     VarType::Float => todo!(),
                                     VarType::Char => todo!(),
@@ -316,9 +317,11 @@ impl ASM {
                                         is_function_call_assign,
                                     ),
 
-                                    VarType::Int | VarType::Float => {
-                                        self.assign_local_number(var.offset, is_function_call_assign)
+                                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                                        self.assign_local_number(var.offset, is_function_call_assign, &var.var_type)
                                     }
+
+                                    VarType::Float => todo!(),
 
                                     VarType::Str => self.assign_local_string(var.offset),
 
@@ -345,10 +348,6 @@ impl ASM {
                                     VarType::Array(type_, size) => {
                                         self.assign_local_array(var.offset, &array_access_index, type_, size)
                                     }
-
-                                    VarType::Int8 => todo!(),
-                                    VarType::Int16 => todo!(),
-                                    VarType::Int32 => todo!(),
 
                                     VarType::Unknown => todo!(),
                                 }
