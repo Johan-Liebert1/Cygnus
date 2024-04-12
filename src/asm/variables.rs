@@ -133,6 +133,7 @@ impl ASM {
             let reg_name = variable.var_type.get_register_name(Register::RAX);
 
             self.extend_current_label(vec![
+                format!("xor {}, {}", Register::RAX, Register::RAX),
                 format!("mov {}, [rbp - {}]", reg_name, ar_var_offset),
                 format!("push rax"),
             ]);

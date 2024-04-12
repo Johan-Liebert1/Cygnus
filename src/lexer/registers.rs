@@ -6,6 +6,7 @@
 // 8-bit: r8b to r15b (lower 8 bits)
 
 use core::panic;
+use std::fmt::Display;
 
 use super::types::VarType;
 
@@ -26,6 +27,22 @@ pub enum Register {
     RSI,
     RDI,
     RBP,
+}
+
+impl Display for Register {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Register::RAX =>  "rax",
+            Register::RBX =>  "rbx",
+            Register::RCX =>  "rcx",
+            Register::RDX =>  "rdx",
+            Register::RSI =>  "rsi",
+            Register::RDI =>  "rdi",
+            Register::RBP =>  "rbp",
+        };
+
+        write!(f, "{}", s)
+    }
 }
 
 pub fn get_register_name_for_bits(register: &Register, bits: u8) -> &'static str {
