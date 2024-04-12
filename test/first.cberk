@@ -1,10 +1,6 @@
-include "./second.cberk"
-
-fun main(hi_: int) {
-    hi_ = "34";
-    -- def hi_: str = "34";
-    write(hi_)
-    hello()
+fun main() {
+    def a: int16 = 65537;
+    write(a);
 }
 
-main(1)
+main()
