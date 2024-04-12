@@ -1,8 +1,6 @@
 fun main() {
-    def a: int32 = 8989;
-    def b: int = 32;
-
-    write(a + b);
+    def a: int16 = 65537;
+    write(a);
 }
 
 main()

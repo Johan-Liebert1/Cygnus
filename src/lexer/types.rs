@@ -161,7 +161,7 @@ impl VarType {
                         if !mem1.member_type.can_assign(&mem2.member_type) {
                             return false;
                         }
-                    };
+                    }
 
                     name1 == name2
                 }
@@ -224,34 +224,8 @@ impl VarType {
                 Int
             }
 
-            (Ptr(_), Str)
-            | (Str, Ptr(_))
-            | (Ptr(_), Float)
-            | (Float, Ptr(_))
-            | (Int, Str)
-            | (Str, Int)
-            | (Str, Float)
-            | (Str, Str)
-            | (Float, Str)
-            | (Int, Float)
-            | (Int8, Int16)
-            | (Int8, Int32)
-            | (Int8, Int)
-            | (Int16, Int8)
-            | (Int16, Int32)
-            | (Int16, Int)
-            | (Int32, Int16)
-            | (Int32, Int8)
-            | (Int32, Int)
-            | (Float, Int) => {
+            (..) => {
                 panic!("'{op}' not defined for '{self}' and '{other}'")
-            }
-
-            (l, r) => {
-                trace!("l: {}", l);
-                trace!("r: {}", r);
-
-                unimplemented!()
             }
         };
     }
