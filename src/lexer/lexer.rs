@@ -10,7 +10,7 @@ use crate::{
 };
 
 use super::{
-    keywords::{self, LOGICAL_AND, LOGICAL_OR},
+    keywords::{self, LOGICAL_AND, LOGICAL_OR, LOGICAL_NOT},
     tokens::{Bracket, LogicalOps, Number, Operations, TokenEnum},
     types::{VarType, PREDEFINED_TYPES, TYPE_CHAR, TYPE_INT, TYPE_INT16, TYPE_INT32, TYPE_INT8},
 };
@@ -116,6 +116,10 @@ impl Lexer {
 
             if word.as_str() == LOGICAL_OR {
                 return TokenEnum::LogicalOp(LogicalOps::Or);
+            }
+
+            if word.as_str() == LOGICAL_NOT {
+                return TokenEnum::LogicalOp(LogicalOps::Not);
             }
 
             return TokenEnum::Keyword(word);

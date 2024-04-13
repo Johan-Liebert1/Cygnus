@@ -1,6 +1,8 @@
+include "../examples/include/std.cberk"
+
 fun main() {
-    def a: int16 = 65537;
-    write(a);
+    def a: int = 49 - 100;
+    print_int(a)
 }
 
 main()

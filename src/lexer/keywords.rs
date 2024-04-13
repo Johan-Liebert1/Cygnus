@@ -8,6 +8,7 @@ pub const ELIF_STATEMENT: &str = "elif";
 
 pub const LOGICAL_OR: &str = "or";
 pub const LOGICAL_AND: &str = "and";
+pub const LOGICAL_NOT: &str = "not";
 
 pub const LOOP: &str = "loop";
 pub const USING: &str = "using";
@@ -24,7 +25,7 @@ pub const STRUCT: &str = "struct";
 
 pub const INCLUDE: &str = "include";
 
-pub const KEYWORDS: [&str; 20] = [
+pub const KEYWORDS: [&str; 21] = [
     VAR_DEFINE,
     CONST_VAR_DEFINE,
     IF_STATEMENT,
@@ -32,6 +33,7 @@ pub const KEYWORDS: [&str; 20] = [
     ELIF_STATEMENT,
     LOGICAL_OR,
     LOGICAL_AND,
+    LOGICAL_NOT,
     LOOP,
     USING,
     FROM,

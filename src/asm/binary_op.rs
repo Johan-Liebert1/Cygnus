@@ -60,6 +60,8 @@ impl ASM {
                     // the shl instruction in x86 assembly does not allow the use of a general-purpose register like bl
                     // for the count operand when the destination is a 64-bit register like rax.
                     // The count operand must be either an immediate value (a constant) or the cl register.
+                    format!("xor rax, rax"),
+                    format!("xor rcx, rcx"),
                     format!("pop rcx"),
                     format!("pop rax"),
                     format!(";; We can only shift left or right by 8 bits"),
@@ -76,6 +78,8 @@ impl ASM {
                     // the shl instruction in x86 assembly does not allow the use of a general-purpose register like bl
                     // for the count operand when the destination is a 64-bit register like rax.
                     // The count operand must be either an immediate value (a constant) or the cl register.
+                    format!("xor rax, rax"),
+                    format!("xor rcx, rcx"),
                     format!("pop rcx"),
                     format!("pop rax"),
                     format!(";; We can only shift left or right by 8 bits"),
