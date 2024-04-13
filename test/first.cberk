@@ -1,15 +1,32 @@
+struct sockaddr_in {
+    sa_prefix: int16
+};
+    -- sin_port: int16,
+    -- s_addr: int32,
+    -- pad: int,
+
 fun main() {
-    def i: int = 0;
+    def AF_INET: int16 = 2;
+    -- def S_ADDR: int32 = 0;
+    -- def PORT: int16 = 5000;
+    -- def PAD: int = 0;
 
-    loop {
-        write("Hi\n")
+    def sockaddr: sockaddr_in = sockaddr_in{
+        sa_prefix: AF_INET
+    };
+        -- sin_port: PORT,
+        -- s_addr: S_ADDR,
+        -- pad: PAD,
 
-        i += 1;
+    write(AF_INET)
+    -- write("S_ADDR = ", S_ADDR)
+    -- write("PORT = ", PORT)
+    -- write("PAD = ", PAD)
 
-        if i == 10 {
-            break;
-        }
-    }
+    write(sockaddr.sa_prefix)
+    -- write("sin_port ", sockaddr.sin_port)
+    -- write("s_addr ", sockaddr.s_addr)
+    -- write("pad ", sockaddr.pad)
 }
 
 main()

@@ -165,7 +165,7 @@ impl ASM {
 
                         match found {
                             Some(struct_member_type) => match &struct_member_type.member_type {
-                                VarType::Int => {
+                                VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                                     vec![format!("pop rax"), format!("call _printRAX")]
                                 }
 
@@ -174,10 +174,6 @@ impl ASM {
                                 VarType::Ptr(var_type) => {
                                     self.func_write_pointer_internal(var_type, var.times_dereferenced)
                                 }
-
-                                VarType::Int8 => todo!(),
-                                VarType::Int16 => todo!(),
-                                VarType::Int32 => todo!(),
 
                                 VarType::Float => todo!(),
                                 VarType::Char => todo!(),

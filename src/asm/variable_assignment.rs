@@ -42,7 +42,11 @@ impl ASM {
         // if it is a function call assignment, then the value is
         // already in rax
         if !is_function_call_assign {
-            instructions.push(format!("pop rax"))
+            instructions.extend([
+                format!(";; assign_local_number"),
+                format!("xor rax, rax"),
+                format!("pop rax"),
+            ])
         }
 
         instructions.push(format!("mov [rbp - {}], {}", var_offset, reg_name));
@@ -182,13 +186,11 @@ impl ASM {
                 let member_type = borrow.iter().find(|x| x.name == *order).unwrap();
 
                 match &member_type.member_type {
-                    VarType::Int | VarType::Float => {
+                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                         self.assign_local_number(member_type.offset, is_function_call_assign, &member_type.member_type)
                     }
 
-                    VarType::Int8 => todo!(),
-                    VarType::Int16 => todo!(),
-                    VarType::Int32 => todo!(),
+                    VarType::Float => todo!(),
 
                     VarType::Str => self.assign_local_string(member_type.offset),
 

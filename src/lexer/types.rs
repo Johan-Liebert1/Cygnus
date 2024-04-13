@@ -39,6 +39,9 @@ impl PartialEq for VarType {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (VarType::Int, VarType::Int)
+            | (VarType::Int8, VarType::Int8)
+            | (VarType::Int16, VarType::Int16)
+            | (VarType::Int32, VarType::Int32)
             | (VarType::Float, VarType::Float)
             | (VarType::Char, VarType::Char)
             | (VarType::Unknown, VarType::Unknown) => true,

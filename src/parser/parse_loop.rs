@@ -36,8 +36,6 @@ impl Parser {
 
         self.num_loops += 1;
 
-        println!("self.peek_next_token().token {}", self.peek_next_token().token);
-
         // Infinite loop
         if matches!(self.peek_next_token().token, TokenEnum::Bracket(Bracket::LCurly)) {
             self.validate_token(TokenEnum::Bracket(Bracket::LCurly));

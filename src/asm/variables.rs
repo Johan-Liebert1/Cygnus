@@ -124,13 +124,14 @@ impl ASM {
         }
     }
 
-    fn handle_local_int(&mut self, variable: &Variable, ar_var_offset: usize) {
+    // need the var_type for struct member access as struct_name.member as the type 'struct_name'
+    fn handle_local_int(&mut self, variable: &Variable, ar_var_offset: usize, actual_var_type: &VarType) {
         if variable.dereference {
             panic!("Cannot dereference a number")
         } else if variable.store_address {
             self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
         } else {
-            let reg_name = variable.var_type.get_register_name(Register::RAX);
+            let reg_name = actual_var_type.get_register_name(Register::RAX);
 
             self.extend_current_label(vec![
                 format!("xor {}, {}", Register::RAX, Register::RAX),
@@ -215,13 +216,18 @@ impl ASM {
             Some(ar_var) => {
                 match variable_scope {
                     ActivationRecordType::Global => match variable.var_type {
-                        VarType::Int => {
+                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                            let register_name = variable.var_type.get_register_name(Register::RAX);
+
                             if variable.dereference {
                                 panic!("Cannot dereference a number")
                             } else if variable.store_address {
                                 self.extend_current_label(vec![format!("lea rax, {var_name}"), format!("push rax")]);
                             } else {
-                                self.extend_current_label(vec![format!("mov rax, [{var_name}]"), format!("push rax")])
+                                self.extend_current_label(vec![
+                                    format!("mov {}, [{var_name}]", register_name),
+                                    format!("push rax"),
+                                ])
                             }
                         }
 
@@ -239,10 +245,6 @@ impl ASM {
                         VarType::Float => todo!(),
                         VarType::Char => todo!(),
 
-                        VarType::Int8 => todo!(),
-                        VarType::Int16 => todo!(),
-                        VarType::Int32 => todo!(),
-
                         VarType::Ptr(_) => self.handle_global_ptr(variable, ar_var),
 
                         VarType::Array(..) => todo!(),
@@ -254,7 +256,7 @@ impl ASM {
                         // cannot use ar_var here as it does not have the computed types
                         match &variable.var_type {
                             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                self.handle_local_int(variable, ar_var.offset)
+                                self.handle_local_int(variable, ar_var.offset, &variable.var_type)
                             }
 
                             VarType::Str => self.handle_local_str(variable, ar_var.offset),
@@ -291,15 +293,17 @@ impl ASM {
 
                                 match found {
                                     Some(struct_member_type) => match &struct_member_type.member_type {
-                                        VarType::Int => self.handle_local_int(variable, struct_member_type.offset),
+                                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => self
+                                            .handle_local_int(
+                                                variable,
+                                                struct_member_type.offset,
+                                                &struct_member_type.member_type,
+                                            ),
+
                                         VarType::Str => self.handle_local_str(variable, struct_member_type.offset),
                                         VarType::Ptr(var_type) => {
                                             self.handle_local_ptr(var_type, variable, struct_member_type.offset)
                                         }
-
-                                        VarType::Int8 => todo!(),
-                                        VarType::Int16 => todo!(),
-                                        VarType::Int32 => todo!(),
 
                                         VarType::Float => todo!(),
                                         VarType::Char => todo!(),

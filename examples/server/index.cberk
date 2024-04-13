@@ -1,9 +1,13 @@
 include "../include/std.cberk"
 
-def SOCKET_SYSCALL: int = 41;
-def AF_INET: int = 2;
+def AF_INET: int16 = 2;
+def S_ADDR: int32 = 0;
+def PORT: int16 = 5000;
+def PAD: int = 0;
+
 def SOCK_STREAM: int = 1;
 
+def SOCKET_SYSCALL: int = 41;
 def READ_SYSCALL: int = 0;
 def WRITE_SYSCALL: int = 1;
 def OPEN_SYSCALL: int = 2;
@@ -15,16 +19,15 @@ def LISTEN_SYSCALL: int = 50;
 def STDOUT: int = 1;
 
 struct sockaddr_in {
-    sa_prefix: int,
-    s_addr: int,
-    sin_port: int,
+    sa_prefix: int16,
+    sin_port: int16,
+    s_addr: int32,
+    pad: int,
 };
 
 mem clientaddr 1024
 
 mem read_data 4096
-
--- need to implement int32, int16 and int8 for this to work
 
 fun main() {
     def sockfd: int = syscall(SOCKET_SYSCALL, AF_INET, SOCK_STREAM, 0);
@@ -36,38 +39,47 @@ fun main() {
 
     def sockaddr: sockaddr_in = sockaddr_in{
         sa_prefix: AF_INET,
-        s_addr: 0,
-        sin_port: 5000
+        sin_port: PORT,
+        s_addr: S_ADDR,
+        pad: PAD,
     };
 
-    -- def clientaddr: sockaddr_in = sockaddr_in{
-    --     sa_prefix: AF_INET,
-    --     s_addr: 0,
-    --     sin_port: 5000
-    -- };
+    write("sa_prefix ", sockaddr.sa_prefix)
+    write("sin_port ", sockaddr.sin_port)
+    write("s_addr ", sockaddr.s_addr)
+    write("pad ", sockaddr.pad)
+
+    def clientaddr: sockaddr_in = sockaddr_in{
+        sa_prefix: AF_INET,
+        sin_port: PORT,
+        s_addr: S_ADDR,
+        pad: PAD,
+    };
+
+    def len: int32 = 0;
 
     def http_ok: str = "HTTP/1.1 200 OK\r\n";
 
     def bind_ret: int = syscall(BIND_SYSCALL, sockfd, &sockaddr, 16);
+    write("BIND_SYSCALL return: ");
+    print_int(bind_ret);
     if bind_ret < 0 {
-        write("BIND_SYSCALL failed with return: ");
-        print_int(bind_ret);
         exit(1);
     }
 
     def listener: int = syscall(LISTEN_SYSCALL, sockfd, 10);
+    write("LISTEN_SYSCALL return: ");
+    print_int(listener);
     if listener < 0 {
-        write("LISTEN_SYSCALL failed with return: ");
-        print_int(listener);
         exit(1);
     }
 
-    loop from 1 to 20000 {
+    loop {
         def connfd: int = syscall(ACCEPT_SYSCALL, sockfd, 0, 0);
+        write("ACCEPT_SYSCALL return: ");
+        print_int(connfd);
         
         if connfd < 0 {
-            write("ACCEPT_SYSCALL failed with return: ");
-            print_int(connfd);
             exit(1);
         }
 
