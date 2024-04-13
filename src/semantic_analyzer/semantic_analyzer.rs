@@ -4,7 +4,7 @@ use crate::{
 };
 
 use core::panic;
-use std::{cell::RefCell, collections::HashMap, process::exit, rc::Rc, usize};
+use std::{cell::RefCell, cmp::min, collections::HashMap, process::exit, rc::Rc, usize};
 
 use crate::{
     ast::abstract_syntax_tree::AST,
@@ -28,7 +28,7 @@ type ActivationRecordVariables = HashMap<String, ActivationRecordVariablesValue>
 #[derive(Debug)]
 pub enum ActivationRecordType {
     Global,
-    Function,
+    Function(usize), // stack_var_size
     IfElse,
     Loop,
 }
@@ -45,6 +45,7 @@ pub struct ActivationRecord {
     record_type: ActivationRecordType,
     variable_members: ActivationRecordVariables,
     var_size_sum: usize,
+    current_offset: usize,
 }
 
 impl ActivationRecord {
@@ -54,6 +55,7 @@ impl ActivationRecord {
             record_type,
             variable_members: HashMap::new(),
             var_size_sum: 0,
+            current_offset: 0,
         }
     }
 }
@@ -75,8 +77,8 @@ impl<'a> CallStack<'a> {
         return self.loop_number;
     }
 
-    fn push_record(&mut self, record: ActivationRecord) {
-        if let ActivationRecordType::Function = record.record_type {
+    fn push_record(&mut self, mut record: ActivationRecord) {
+        if let ActivationRecordType::Function(stack_var_size) = record.record_type {
             self.current_function_name = Some(record.name.clone());
         }
 
@@ -94,7 +96,7 @@ impl<'a> CallStack<'a> {
     pub fn pop(&mut self) {
         match self.call_stack.pop() {
             Some(record) => {
-                if let ActivationRecordType::Function = record.record_type {
+                if let ActivationRecordType::Function(..) = record.record_type {
                     self.current_function_name = None;
                 }
 
@@ -109,40 +111,6 @@ impl<'a> CallStack<'a> {
 
     pub fn peek(&mut self) -> Option<&ActivationRecord> {
         self.call_stack.last()
-    }
-
-    pub fn pop_special(&mut self, pop_type: PopTypes) {
-        let mut index_to_slice_from: Option<usize> = None;
-
-        for (index, record) in self.call_stack.iter().enumerate().rev() {
-            match record.record_type {
-                ActivationRecordType::Function => {
-                    if let PopTypes::EarlyReturn = pop_type {
-                        // adding 1 here as at the end of the stack we'll pop the function
-                        // stack
-                        index_to_slice_from = Some(index + 1);
-                        break;
-                    }
-                }
-
-                ActivationRecordType::Loop => {
-                    if let PopTypes::LoopBreak = pop_type {
-                        index_to_slice_from = Some(index + 1);
-                        break;
-                    }
-                }
-
-                _ => continue,
-            }
-        }
-
-        match index_to_slice_from {
-            Some(index_to_slice_from) => {
-                self.call_stack.drain(index_to_slice_from..);
-            }
-
-            None => panic!("Nothing to pop"),
-        }
     }
 
     pub fn var_with_name_found(&self, var_name: &String) -> bool {
@@ -176,7 +144,7 @@ impl<'a> CallStack<'a> {
         let mut inserted = false;
 
         for record in self.call_stack.iter_mut().rev() {
-            if let ActivationRecordType::Function = record.record_type {
+            if let ActivationRecordType::Function(..) = record.record_type {
                 inserted = true;
 
                 if record.variable_members.get(var_name).is_some() {
@@ -195,15 +163,40 @@ impl<'a> CallStack<'a> {
     }
 
     fn update_function_variable_size_and_get_offset(&mut self, var: &ARVariable) -> usize {
-        let mut offset = 8;
+        let actual_var_size = var.var_type.get_size_handle_array_and_struct(&var);
+        let mut offset = 0;
 
         for record in self.call_stack.iter_mut().rev() {
-            if let ActivationRecordType::Function = record.record_type {
+            if let ActivationRecordType::Function(stack_var_size) = record.record_type {
                 match &self.current_function_name {
                     Some(fname) => {
                         if fname == &record.name {
-                            offset += record.var_size_sum;
-                            record.var_size_sum += var.size();
+                            // This means semantic analysis has been finished and we're on the
+                            // visiting stage
+                            if stack_var_size > 0 {
+                                offset = stack_var_size - record.current_offset;
+
+                                trace!(
+                                    "funcname: {}, get_size = {}, offset = {}, stack_var_size = {}",
+                                    fname,
+                                    actual_var_size,
+                                    offset,
+                                    stack_var_size
+                                );
+
+                                if let Some(..) = self.user_defined_types.iter().find(|x| x.type_ == var.var_type) {
+                                    if var.member_access.len() != 0 {
+                                        record.current_offset += actual_var_size;
+                                    }
+                                } else {
+                                    record.current_offset += actual_var_size;
+                                }
+                            } else {
+                                offset = record.var_size_sum;
+                                offset += actual_var_size;
+                            }
+
+                            record.var_size_sum += actual_var_size;
                         }
                     }
 
@@ -252,7 +245,7 @@ impl<'a> CallStack<'a> {
 
                             // variable.offset will be equal to the first struct member
                             for member in struct_members.borrow_mut().iter_mut().skip(1) {
-                                member.offset = prev_member_offset + prev_member_size;
+                                member.offset = prev_member_offset - prev_member_size;
 
                                 prev_member_offset = member.offset;
                                 prev_member_size = member.member_type.get_size();
@@ -272,9 +265,16 @@ impl<'a> CallStack<'a> {
 
     pub fn get_func_var_stack_size(&self, function_name: &String) -> usize {
         for record in self.call_stack.iter().rev() {
-            if let ActivationRecordType::Function = record.record_type {
+            if let ActivationRecordType::Function(..) = record.record_type {
                 if &record.name == function_name {
-                    return record.var_size_sum;
+                    // TODO: Implement a proper fix for this
+                    // Since we set the initial offset to 8 (i.e. the largest size a variable can
+                    // have) if we have int8 or int16, then the offset goes beyond the record.var_size_sum
+                    return if record.var_size_sum >= 8 {
+                        record.var_size_sum
+                    } else {
+                        record.var_size_sum + 8
+                    };
                 }
             }
         }

@@ -103,7 +103,7 @@ impl ASM {
                     format!("mul rbx"),
                     // now rax has index * 8
                     format!("mov rbx, rbp"),
-                    format!("sub rbx, rax"),
+                    format!("add rbx, rax"),
                     format!("mov rax, [rbx - {}]", ar_var.offset),
                     format!("push rax"),
                 ]);
@@ -174,7 +174,7 @@ impl ASM {
                 format!("mov rax, [rbp - {}]", ar_var_offset),
                 format!("push rax"),
                 // length is pushed last
-                format!("mov rax, [rbp - {}]", ar_var_offset + 8),
+                format!("mov rax, [rbp - {}]", ar_var_offset - 8),
                 format!("push rax"),
             ])
         }

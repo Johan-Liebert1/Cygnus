@@ -266,6 +266,35 @@ impl VarType {
         };
     }
 
+    pub fn get_size_handle_array_and_struct(&self, variable: &Variable) -> usize {
+        return match self {
+            VarType::Array(type_, _) => {
+                if variable.array_aceess_index.is_none() {
+                    return self.get_size();
+                }
+
+                return type_.get_size();
+            },
+
+            VarType::Struct(_, members) => {
+                if variable.member_access.len() == 0 {
+                    return self.get_size();
+                }
+
+                // TODO: Handle structs in structs
+                for memeber in members.borrow().iter() {
+                    if memeber.name == variable.member_access[0] {
+                        return memeber.member_type.get_size();
+                    }
+                }
+
+                return 0;
+            },
+
+            _ => self.get_size(),
+        };
+    }
+
     pub fn get_underlying_type_size(&self) -> usize {
         return match self {
             VarType::Ptr(type_) => type_.get_size(),

@@ -27,7 +27,7 @@ impl ASM {
         instructions.extend([
             format!("pop rbx"),
             format!("pop rax"),
-            format!("mov [rbp - {}], rbx", var_offset + 8),
+            format!("mov [rbp - {}], rbx", var_offset - 8),
             format!("mov [rbp - {}], rax", var_offset),
         ]);
 
@@ -80,7 +80,7 @@ impl ASM {
                     format!("mul rbx"),                                       // now rax has = rax * rbx
                     // = 1 * 8 = 8
                     format!("mov rbx, rbp"),
-                    format!("sub rbx, rax"),
+                    format!("add rbx, rax"),
                     format!("mov [rbx - {}], rcx", var_offset),
                 ]);
             }
@@ -90,7 +90,7 @@ impl ASM {
                 for i in 0..*size {
                     instructions.extend([
                         format!("pop rax"),
-                        format!("mov [rbp - {}], rax", var_offset + type_.get_underlying_type_size() * i),
+                        format!("mov [rbp - {}], rax", var_offset - type_.get_underlying_type_size() * i),
                     ]);
                 }
             }

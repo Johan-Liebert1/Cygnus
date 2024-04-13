@@ -1,32 +1,68 @@
-struct sockaddr_in {
-    sa_prefix: int16
-};
-    -- sin_port: int16,
-    -- s_addr: int32,
-    -- pad: int,
-
 fun main() {
-    def AF_INET: int16 = 2;
-    -- def S_ADDR: int32 = 0;
-    -- def PORT: int16 = 5000;
-    -- def PAD: int = 0;
+    def array: int[3] = [12, 8, 9];
 
-    def sockaddr: sockaddr_in = sockaddr_in{
-        sa_prefix: AF_INET
-    };
-        -- sin_port: PORT,
-        -- s_addr: S_ADDR,
-        -- pad: PAD,
+    write(array[0])
+    write(array[1])
+    write(array[2])
 
-    write(AF_INET)
-    -- write("S_ADDR = ", S_ADDR)
-    -- write("PORT = ", PORT)
-    -- write("PAD = ", PAD)
+    -- def i: int = 0;
+    -- def j: int = 0;
 
-    write(sockaddr.sa_prefix)
-    -- write("sin_port ", sockaddr.sin_port)
-    -- write("s_addr ", sockaddr.s_addr)
-    -- write("pad ", sockaddr.pad)
+    -- loop from 0 to 3 {
+    --     j = 0
+    --     loop from 0 to 2 {
+    --         if array[j] > array[j + 1] {
+    --             def temp: int = array[j];
+    --             array[j] = array[j + 1];
+    --             array[j + 1] = temp;
+    --         }
+
+    --         j = j + 1
+    --     }
+
+    --     i = i + 1
+    -- }
+
+    -- i = 0
+
+    -- loop from 0 to 3 {
+    --     write(array[i])
+    --     i = i + 1
+    -- }
 }
 
-main()
+main() 
+
+
+-- struct sockaddr_in {
+--     sa_prefix: int16
+-- };
+--     -- sin_port: int16,
+--     -- s_addr: int32,
+--     -- pad: int,
+-- 
+-- fun main() {
+--     def AF_INET: int16 = 2;
+--     -- def S_ADDR: int32 = 0;
+--     -- def PORT: int16 = 5000;
+--     -- def PAD: int = 0;
+-- 
+--     def sockaddr: sockaddr_in = sockaddr_in{
+--         sa_prefix: AF_INET
+--     };
+--         -- sin_port: PORT,
+--         -- s_addr: S_ADDR,
+--         -- pad: PAD,
+-- 
+--     write(AF_INET)
+--     -- write("S_ADDR = ", S_ADDR)
+--     -- write("PORT = ", PORT)
+--     -- write("PAD = ", PAD)
+-- 
+--     write(sockaddr.sa_prefix)
+--     -- write("sin_port ", sockaddr.sin_port)
+--     -- write("s_addr ", sockaddr.s_addr)
+--     -- write("pad ", sockaddr.pad)
+-- }
+-- 
+-- main()
