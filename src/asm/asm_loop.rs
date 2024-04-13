@@ -56,27 +56,7 @@ impl ASM {
             loop_start.extend(vec![format!("mov [rbp - {}], rax", call_stack_var.unwrap().offset)]);
         }
 
-        loop_start.extend(vec![
-            format!(".loop_{}:", loop_number),
-            // format!("mov rcx, [rbp - {}]", step_offset), // step
-            // format!("mov rbx, [rbp - {}]", to_offset),   // to
-            // format!("mov rax, [rbp - {}]", from_offset), // from
-        ]);
-
-        // loop_start.extend([
-        //     format!("add rax, rcx"),
-        //     format!("dec rax"),
-        //     // now compare rax to rbx - 1 and if they're equal jump to the end
-        //     format!("dec rbx"),
-        //     format!("cmp rax, rbx"),
-        //     format!("jg .loop_end_{}", loop_number),
-        //     format!("inc rax"),
-
-        //     // format!("inc rbx"),
-        //     // format!("mov [rbp - {}], rbx", to_offset),
-        //
-        //     format!("mov [rbp - {}], rax", from_offset),
-        // ]);
+        loop_start.push(format!(".loop_{}:", loop_number));
 
         self.extend_current_label(loop_start);
     }
@@ -130,9 +110,6 @@ impl ASM {
             format!("cmp rax, rbx"),
             format!("jg .loop_end_{}", loop_number),
             format!("mov [rbp - {}], rax", from_offset),
-        ]);
-
-        loop_end.extend(vec![
             // unconditional jump to loop start
             format!("jmp .loop_{}", loop_number),
             // we jump here when the loop ends
