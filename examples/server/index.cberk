@@ -1,17 +1,16 @@
+include "../include/std.cberk"
+
 def SOCKET_SYSCALL: int = 41;
 def AF_INET: int = 2;
 def SOCK_STREAM: int = 1;
-
-def BIND_SYSCALL: int = 49;
-
-def LISTEN_SYSCALL: int = 50;
-
-def ACCEPT_SYSCALL: int = 43;
 
 def READ_SYSCALL: int = 0;
 def WRITE_SYSCALL: int = 1;
 def OPEN_SYSCALL: int = 2;
 def CLSOE_SYSCALL: int = 3;
+def ACCEPT_SYSCALL: int = 43;
+def BIND_SYSCALL: int = 49;
+def LISTEN_SYSCALL: int = 50;
 
 def STDOUT: int = 1;
 
@@ -29,7 +28,11 @@ mem read_data 4096
 
 fun main() {
     def sockfd: int = syscall(SOCKET_SYSCALL, AF_INET, SOCK_STREAM, 0);
-    write("SOCKET_SYSCALL return: ", sockfd);
+    if sockfd < 0 {
+        write("SOCKET_SYSCALL failed with return: ");
+        print_int(sockfd);
+        exit(1);
+    }
 
     def sockaddr: sockaddr_in = sockaddr_in{
         sa_prefix: AF_INET,
@@ -46,20 +49,33 @@ fun main() {
     def http_ok: str = "HTTP/1.1 200 OK\r\n";
 
     def bind_ret: int = syscall(BIND_SYSCALL, sockfd, &sockaddr, 16);
-    write("BIND_SYSCALL return: ", bind_ret);
+    if bind_ret < 0 {
+        write("BIND_SYSCALL failed with return: ");
+        print_int(bind_ret);
+        exit(1);
+    }
 
     def listener: int = syscall(LISTEN_SYSCALL, sockfd, 10);
-    write("LISTEN_SYSCALL return: ", listener);
+    if listener < 0 {
+        write("LISTEN_SYSCALL failed with return: ");
+        print_int(listener);
+        exit(1);
+    }
 
     loop from 1 to 20000 {
         def connfd: int = syscall(ACCEPT_SYSCALL, sockfd, 0, 0);
-        write("ACCEPT_SYSCALL return: ", connfd);
+        
+        if connfd < 0 {
+            write("ACCEPT_SYSCALL failed with return: ");
+            print_int(connfd);
+            exit(1);
+        }
 
         def read_bytes: int = syscall(READ_SYSCALL, connfd, read_data, 4096);
         syscall(WRITE_SYSCALL, STDOUT, read_data, 4096);
 
         def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_ok as *char, 19);
-        write("Wriring to connfd returned: ", write_ret);
+        write("Writing to connfd returned: ", write_ret);
 
         syscall(CLSOE_SYSCALL, connfd);
     }

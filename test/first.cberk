@@ -1,8 +1,35 @@
-include "../examples/include/std.cberk"
+mem buffer 1000
+
+fun strlen(string: *char) -> int {
+    def len: int = 0;
+}
+
+fun strcmp(first: *char, second: *char) -> int {
+    def idx: int = 0;
+
+    loop from 1 to 6 {
+        def char1: *char = (first + idx);
+        def char2: *char = (second + idx);
+
+        write(*char1, *char2, "\n")
+
+        if *char1 != *char2 {
+            return 0;
+        }
+
+        idx += 1
+    }
+
+    return 1;
+}
 
 fun main() {
-    def a: int = 49 - 100;
-    print_int(a)
+    def a: str = "hello";
+    def b: str = "hello";
+
+    def eq: int = strcmp(a as *char, b as *char)
+
+    write("eq = ", eq)
 }
 
 main()
