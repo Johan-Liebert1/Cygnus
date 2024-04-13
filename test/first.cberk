@@ -1,18 +1,15 @@
 fun main() {
-    def i: int = 4;
+    def i: int = 0;
 
-    loop from 3 to 10 with i {
-        write("first from = ", loop_0_from)
-        write("first step = ", loop_0_step)
-        write("First loop i = ", i)
-        write("\n")
+    loop {
+        write("Hi\n")
+
+        i += 1;
+
+        if i == 10 {
+            break;
+        }
     }
-
-    loop from 3 to 10 step 2 with i {
-        write("Second loop i = ", i)
-    }
-
-    write("outer i = ", i)
 }
 
 main()

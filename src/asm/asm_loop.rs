@@ -5,6 +5,19 @@ use crate::{ast::variable::Variable, semantic_analyzer::semantic_analyzer::CallS
 use super::asm::ASM;
 
 impl ASM {
+    pub fn gen_inf_loop_start(&mut self, loop_number: usize) {
+        self.add_to_current_label(format!(".loop_{}:", loop_number));
+    }
+
+    pub fn gen_inf_loop_end(&mut self, loop_number: usize) {
+        self.extend_current_label(vec![
+            // unconditional jump to loop start
+            format!("jmp .loop_{}", loop_number),
+            // we jump here when the loop ends
+            format!(".loop_end_{}:", loop_number),
+        ]);
+    }
+
     pub fn gen_loop_start(&mut self, loop_number: usize, call_stack: &CallStack, with_var: &Option<Variable>) {
         // we should have in the stack
         //
