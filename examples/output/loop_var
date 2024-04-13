@@ -1,0 +1,33 @@
+first from = 3
+first step = 1
+First loop i = 3
+
+first from = 4
+first step = 1
+First loop i = 4
+
+first from = 5
+first step = 1
+First loop i = 5
+
+first from = 6
+first step = 1
+First loop i = 6
+
+first from = 7
+first step = 1
+First loop i = 7
+
+first from = 8
+first step = 1
+First loop i = 8
+
+first from = 9
+first step = 1
+First loop i = 9
+
+Second loop i = 3
+Second loop i = 5
+Second loop i = 7
+Second loop i = 9
+outer i = 4
