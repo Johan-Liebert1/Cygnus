@@ -220,6 +220,8 @@ impl<'a> CallStack<'a> {
     pub fn insert_variable(&mut self, mut variable: ActivationRecordVariablesValue) {
         variable.offset = self.update_function_variable_size_and_get_offset(&variable);
 
+        trace!("variable '{}' offset = {:?}", variable.var_name, variable.offset);
+
         let var_name = &variable.var_name;
 
         match self.call_stack.last_mut() {

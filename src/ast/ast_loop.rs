@@ -120,9 +120,9 @@ impl AST for Loop {
 
         self.add_call_stack(call_stack);
 
-        asm.gen_loop_start(self.loop_number, call_stack);
+        asm.gen_loop_start(self.loop_number, call_stack, &self.with_var);
         self.block.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
-        asm.gen_loop_end(self.loop_number);
+        asm.gen_loop_end(self.loop_number, call_stack, &self.with_var);
 
         call_stack.pop();
     }
