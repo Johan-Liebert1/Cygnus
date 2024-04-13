@@ -149,6 +149,7 @@ pub enum Operand {
 pub enum LogicalOps {
     Or,
     And,
+    Not,
 }
 
 impl Display for LogicalOps {
@@ -156,6 +157,7 @@ impl Display for LogicalOps {
         let msg = match self {
             LogicalOps::Or => "or",
             LogicalOps::And => "and",
+            LogicalOps::Not => "not",
         };
 
         write!(f, "{}", msg)

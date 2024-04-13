@@ -52,7 +52,7 @@
     ELSE_STATEMENT           -> else LCURLY STATEMENT[]* RCURLY
     VARIABLE_DECLARATION     -> def VAR_NAME: (*)* VAR_TYPE (= LOGICAL_EXPRESSION)*
     VAR_TYPE                 -> int | float
-    LOGICAL_EXPRESSION       -> COMPARISON_EXPRESSION ((and | or) COMPARISON_EXPRESSION)*
+    LOGICAL_EXPRESSION       -> (not)* COMPARISON_EXPRESSION ((and | or) COMPARISON_EXPRESSION)*
     COMPARISON_EXPRESSION    -> EXPRESSION ((> | < | >= | <= | == | !=) EXPRESSION)*
     EXPRESSION               -> TERM (( + | - ) TERM)*                      # for precedence as term will be calculated first
     TERM                     -> FACTOR (( * | /  | << | >> | % ) FACTOR)*

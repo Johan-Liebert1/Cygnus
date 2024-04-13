@@ -1,62 +1,8 @@
-mem print_mem 1024
-
-fun print(a: int) {
-    if a >> 63 == 1 {
-        write("negative\n")
-    } else {
-        write("positive\n")
-    }
-
-    def i: int = 0;
-    def n: int = a;
-
-    def zero_ascii: int = 48;
-
-    def len: int = 1;
-
-    loop from  1 to 10000  {
-        n = n / 10
-
-        if n == 0 {
-            break
-        }
-
-        len = len * 10
-    }
-
-    write("len = ", len)
-
-    n = a;
-
-    write("first digit = ", n / len)
-
-    loop from 1 to 10000 {
-        def digit: int = n / len;
-
-        def thing: *int = print_mem + i;
-        *thing = digit + zero_ascii;
-
-        n = n % len;
-        i += 1
-
-        len = len / 10
-
-        if n == 0 {
-            break;
-        }
-    }
-
-    write("i = ", i)
-
-    syscall(1, 1, print_mem, i)
-}
+include "../examples/include/std.cberk"
 
 fun main() {
-    def a: int = -65537;
-
-    def b: int = 1;
-
-    write(not b)
+    def a: int = 49 - 100;
+    print_int(a)
 }
 
 main()

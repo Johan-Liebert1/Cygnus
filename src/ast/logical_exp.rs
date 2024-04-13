@@ -14,14 +14,14 @@ use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST}
 
 #[derive(Debug)]
 pub struct LogicalExpression {
-    left: ASTNode,
+    left: Option<ASTNode>,
     op: Token,
     right: ASTNode,
     pub result_type: VarType,
 }
 
 impl LogicalExpression {
-    pub fn new(left: ASTNode, op: Token, right: ASTNode) -> Self {
+    pub fn new(left: Option<ASTNode>, op: Token, right: ASTNode) -> Self {
         Self {
             left,
             op,
@@ -33,14 +33,20 @@ impl LogicalExpression {
 
 impl AST for LogicalExpression {
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
-        let _left = self.left.borrow().visit(v, Rc::clone(&f), call_stack);
+        if let Some(left) = &self.left {
+            left.borrow().visit(v, Rc::clone(&f), call_stack);
+        };
+
         let _right = self.right.borrow().visit(v, Rc::clone(&f), call_stack);
 
         todo!()
     }
 
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        self.left.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+        if let Some(left) = &self.left {
+            left.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+        }
+
         self.right.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
         match &self.op.token {
@@ -61,7 +67,10 @@ impl AST for LogicalExpression {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        self.left.borrow_mut().semantic_visit(call_stack, f.clone());
+        if let Some(left) = &self.left {
+            left.borrow_mut().semantic_visit(call_stack, f.clone());
+        }
+
         self.right.borrow_mut().semantic_visit(call_stack, f);
     }
 
