@@ -15,7 +15,16 @@ impl ASM {
 
         match token {
             TokenEnum::Number(n) => match n {
-                Number::Integer(i) => instructions.push(format!("push {i}")),
+                Number::Integer(i) => {
+                    if *i >= 0 {
+                        instructions.push(format!("push {i}"))
+                    } else {
+                        instructions.push(format!("push {i}"))
+                    }
+
+                    trace!("i: {}, {:?}", i, instructions);
+                },
+
                 Number::Float(_) => todo!(),
             },
 
