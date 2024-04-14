@@ -130,13 +130,13 @@ impl VarType {
         use VarType::*;
 
         return match self {
-            Int | Int8 | Int32 | Int16 => matches!(other, Int | Int8 | Int32 | Int16),
+            Int | Int8 | Int32 | Int16 => matches!(other, Int | Int8 | Int32 | Int16 | Char),
 
             Str => *other == Str,
 
             Float => todo!(),
 
-            Char => *other == Char,
+            Char => *other == Char || *other == Int8,
 
             Ptr(inner) => match other {
                 Ptr(inner2) => inner.can_assign(inner2),

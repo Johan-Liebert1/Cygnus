@@ -128,14 +128,10 @@ impl ASM {
             }
 
             VarType::Ptr(type_) => match **type_ {
-                VarType::Int => {
+                VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                     instructions.extend(std::iter::repeat(format!("mov rax, [rax]")).take(times_dereferenced));
                     instructions.push(format!("push rax"));
                 }
-
-                VarType::Int8 => todo!(),
-                VarType::Int16 => todo!(),
-                VarType::Int32 => todo!(),
 
                 VarType::Char => {
                     instructions.push(format!(";; binary op ptr -> char"));

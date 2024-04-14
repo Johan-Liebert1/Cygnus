@@ -1,0 +1,103 @@
+include "../include/std.cberk"
+
+struct sockaddr_in {
+    sa_prefix: int16,
+    sin_port: int16,
+    s_addr: int32,
+    pad: int,
+};
+
+mem clientaddr 1024
+mem read_data 4096
+
+mem serveraddr_mem 16
+mem clientaddr_mem 16
+
+mem file_len 32
+
+const PRINT_REQ: int = 0;
+
+fun main() {
+    def sockfd: int = syscall(SOCKET_SYSCALL, AF_INET, SOCK_STREAM, 0);
+    write("SOCKET_SYSCALL return: ");
+    print_int(sockfd);
+
+    if sockfd < 0 {
+        exit(1);
+    }
+
+    def sa_prefix: *int16 = serveraddr_mem;
+    def sin_port: *int16 = serveraddr_mem + 2;
+    def s_addr: *int = serveraddr_mem + 4;
+
+    *sa_prefix = AF_INET;
+    *sin_port = PORT;
+    *s_addr = S_ADDR;
+
+    def len: int32 = 0;
+
+    def http_ok: str = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK";
+
+    def http_index_html: str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ";
+    def http_index_html_len: int = strlen(&http_index_html);
+
+    def header_body_seperator: str = "\r\n\r\n";
+    def header_body_seperator_len: int = strlen(&header_body_seperator);
+
+    def index_html_file: str = "/home/pragyan/Rust/lang/examples/http_server/index.html\0";
+
+    def bind_ret: int = syscall(BIND_SYSCALL, sockfd, serveraddr_mem, 16);
+    write("BIND_SYSCALL return: ");
+    print_int(bind_ret);
+    if bind_ret < 0 {
+        exit(1);
+    }
+
+    def listener: int = syscall(LISTEN_SYSCALL, sockfd, 10);
+    write("LISTEN_SYSCALL return: ");
+    print_int(listener);
+    if listener < 0 {
+        exit(1);
+    }
+
+    loop {
+        def connfd: int = syscall(ACCEPT_SYSCALL, sockfd, 0, 0);
+        write("ACCEPT_SYSCALL return: ");
+        print_int(connfd);
+        
+        if connfd < 0 {
+            exit(1);
+        }
+
+        if PRINT_REQ {
+            def read_bytes: int = syscall(READ_SYSCALL, connfd, read_data, 4096);
+            syscall(WRITE_SYSCALL, STDOUT, read_data, 4096);
+        }
+
+        def file_read_bytes: int = read_file_into_memory(read_data, 4096, index_html_file as *char);
+
+        if file_read_bytes < 0 {
+            write("read_file_into_memory returned: ")
+            print_int(file_read_bytes)
+        } else {
+            write("Read ", file_read_bytes, " bytes from file ", index_html_file, "\n")
+
+            def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_index_html as *char, http_index_html_len);
+            write("Writing to connfd returned: ");
+            print_int(write_ret)
+
+            def num_written: int = write_int_into_mem(file_len, file_read_bytes);
+            write_ret = syscall(WRITE_SYSCALL, connfd, file_len, num_written);
+
+            write_ret = syscall(WRITE_SYSCALL, connfd, header_body_seperator, header_body_seperator_len);
+
+            write_ret = syscall(WRITE_SYSCALL, connfd, read_data, file_read_bytes);
+            write("Writing to connfd returned: ");
+            print_int(write_ret)
+
+            syscall(CLOSE_SYSCALL, connfd);
+        }
+    }
+}
+
+main()

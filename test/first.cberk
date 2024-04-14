@@ -1,58 +1,72 @@
 include "../examples/include/std.cberk"
 
-def AF_INET: int16 = 2;
-def S_ADDR: int32 = 0;
-def PORT: int16 = 5000;
-def PAD: int = 0;
+def PROT_READ_PROT_WRITE: int = 3;
+def MAP_PRIVATE_MAP_ANONYMOUS: int = 34;
 
-def SOCK_STREAM: int = 1;
+mem read_file_mem 4096
 
-def SOCKET_SYSCALL: int = 41;
-def READ_SYSCALL: int = 0;
-def WRITE_SYSCALL: int = 1;
-def OPEN_SYSCALL: int = 2;
-def CLSOE_SYSCALL: int = 3;
-def ACCEPT_SYSCALL: int = 43;
-def BIND_SYSCALL: int = 49;
-def LISTEN_SYSCALL: int = 50;
+fun write_int_into_mem(memory: *int, number: int) {
+    def zero_ascii: int = 48;
+    def n: int = number;
 
-def STDOUT: int = 1;
-
-struct sockaddr_in {
-    sa_prefix: int16
-    sin_port: int16,
-    s_addr: int32,
-    pad: int,
-};
-
-mem serveraddr_mem 16
-
-fun strlen_cstr(string: *char) -> int {
-    def i: int = 0;
-
+    def number_len: int = 0;
+    
     loop {
-        if *(string + i) == 0 {
+        n = n / 10
+        number_len += 1
+
+        if n == 0 {
             break;
         }
-
-        i += 1;
     }
 
-    return i;
-}
+    def idx: int = number_len - 1;
+    n = number
 
-fun strlen(string: *str) -> int {
-    def len: *str = string + 8;
-    def length: int = *(len as *int);
-    return length;
+    loop {
+        def c: int = n % 10;
+
+        def idx_into_mem: *int8 = memory + idx;
+        *idx_into_mem = c + zero_ascii;
+
+        n = n / 10
+        idx -= 1
+
+        if n == 0 {
+            break;
+        }
+    }
 }
 
 fun main() {
+    write_int_into_mem(read_file_mem, 69420)
+    syscall(WRITE_SYSCALL, STDOUT, read_file_mem, 5)
+}
+
+fun main2() {
     def hel: str = "hello_world\0";
+    def capital_a: int8 = 65;
 
-    def len: int = strlen2(&hel);
+    def addr: int = syscall(MMAP_SYSCALL, 0, 1024, PROT_READ_PROT_WRITE, MAP_PRIVATE_MAP_ANONYMOUS, -1, 0);
 
-    write("len = ", len)
+    write("mmap ret = ")
+    print_int(addr)
+
+    def address: *int8 = addr as *int8;
+    def addr_1: *int8 = address + 1;
+    def addr_2: *int8 = address + 2;
+    def addr_4: *int8 = address + 4;
+    def addr_3: *int8 = address + 3;
+
+    *address = 65;
+    *addr_1 = 65;
+    *addr_2 = 65;
+    *addr_3 = 65;
+    *addr_4 = 10;
+               
+    def write_ret: int = syscall(WRITE_SYSCALL, STDOUT, addr, 5)
+    write("write ret = ")
+    print_int(write_ret)
 }
 
 main()

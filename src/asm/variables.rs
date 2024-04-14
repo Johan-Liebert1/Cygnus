@@ -16,13 +16,17 @@ use super::asm::ASM;
 impl ASM {
     fn handle_local_ptr(&mut self, var_type: &Box<VarType>, variable: &Variable, ar_var_offset: usize) {
         match *var_type.clone() {
-            VarType::Int | VarType::Float => {
+            VarType::Int | VarType::Int16 | VarType::Int32 | VarType::Int8 | VarType::Float => {
+                let reg_name = var_type.get_register_name(Register::RAX);
+
                 if variable.dereference {
                     let mut v = vec![
                         format!(";; Dereferencing variable {}", variable.var_name),
                         format!("mov rax, [rbp - {}]", ar_var_offset),
                     ];
+
                     v.extend(std::iter::repeat(format!("mov rax, [rax]")).take(variable.times_dereferenced));
+
                     v.extend([
                         format!("push rax"),
                         format!(";; Finish dereferencing variable {}", variable.var_name),
@@ -32,7 +36,7 @@ impl ASM {
                 } else if variable.store_address {
                     self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
                 } else {
-                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+                    self.extend_current_label(vec![format!("mov {}, [rbp - {}]", reg_name, ar_var_offset), format!("push rax")]);
                 }
             }
 

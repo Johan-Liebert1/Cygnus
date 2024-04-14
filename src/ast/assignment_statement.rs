@@ -41,6 +41,8 @@ impl AssignmentStatement {
         let (is_assignment_okay, rhs_type) = node.is_var_assignment_okay(&self.left);
 
         if !is_assignment_okay {
+            trace!("Assignment statement: self.left: {:#?}.\n\nself.right: {:#?}", self.left, self.right);
+
             helpers::compiler_error(
                 format!(
                     "Cannot assign variable (LHS) of type {} to RHS {}",

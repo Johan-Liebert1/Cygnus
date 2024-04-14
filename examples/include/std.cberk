@@ -1,3 +1,24 @@
+def READ_SYSCALL: int = 0;
+def WRITE_SYSCALL: int = 1;
+def OPEN_SYSCALL: int = 2;
+def CLOSE_SYSCALL: int = 3;
+def MMAP_SYSCALL: int = 9;
+def SOCKET_SYSCALL: int = 41;
+def ACCEPT_SYSCALL: int = 43;
+def BIND_SYSCALL: int = 49;
+def LISTEN_SYSCALL: int = 50;
+
+def AF_INET: int16 = 2;
+def S_ADDR: int32 = 16777343; -- htonl(127.0.0.1)
+def PORT: int16 = 34835; -- htons(5000)
+def PAD: int = 0;
+
+def SOCK_STREAM: int = 1;
+
+def STDOUT: int = 1;
+def STDIN: int = 0;
+def STDERR: int = 2;
+
 fun print_int(a: int) {
     def n: int = 0;
 
@@ -39,4 +60,60 @@ fun strlen(string: *str) -> int {
     def len: *str = string + 8;
     def length: int = *(len as *int);
     return length;
+}
+
+fun read_file_into_memory(memory: *int, mem_size: int, abs_file_path: *char) -> int {
+    -- (syscall number, file_name, readonly flag)
+    -- open syscall
+    def fd: int = syscall(OPEN_SYSCALL, abs_file_path, 0, 0);
+
+    write("syscall(OPEN_SYSCALL, abs_file_path, 0, 0) = ")
+    print_int(fd)
+
+    if fd < 0 {
+        return -1;
+    }
+
+    -- read syscall
+    def read_bytes: int = syscall(0, fd, memory, mem_size);
+
+    syscall(CLOSE_SYSCALL, fd)
+
+    return read_bytes;
+}
+
+-- returns the amount of bytes written into memory
+fun write_int_into_mem(memory: *int, number: int) -> int {
+    def zero_ascii: int = 48;
+    def n: int = number;
+
+    def number_len: int = 0;
+    
+    loop {
+        n = n / 10
+        number_len += 1
+
+        if n == 0 {
+            break;
+        }
+    }
+
+    def idx: int = number_len - 1;
+    n = number
+
+    loop {
+        def c: int = n % 10;
+
+        def idx_into_mem: *int8 = memory + idx;
+        *idx_into_mem = c + zero_ascii;
+
+        n = n / 10
+        idx -= 1
+
+        if n == 0 {
+            break;
+        }
+    }
+
+    return number_len;
 }
