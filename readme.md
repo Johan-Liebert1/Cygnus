@@ -1,6 +1,6 @@
 ## Programming Language called CBerk
 
-### Todo, to do, tu du, tu du, tu du, tu du, tu duuuuuu, tu du du
+### Implemented features
 
 - [x] Write tests
 
@@ -29,9 +29,13 @@
 - [x] Array
 - [x] Structures
 - [x] File Includes
+- [x] Negative Numbers
+- [x] HTTP Server
+
+- [ ] Fix structs
+- [ ] Fix type casting for pointers
 
 - [ ] Have a single function for both variable and binary op asm generation
-
 - [ ] Floating point numbers
 - [ ] Enums - Use `offset` and `reset` kinda like Go's `iota`
 - [ ] Make sure nothing is left on the stack when we break out of a loop
@@ -52,7 +56,7 @@
     ELSE_STATEMENT           -> else LCURLY STATEMENT[]* RCURLY
     VARIABLE_DECLARATION     -> def VAR_NAME: (*)* VAR_TYPE (= LOGICAL_EXPRESSION)*
     VAR_TYPE                 -> int | float
-    LOGICAL_EXPRESSION       -> COMPARISON_EXPRESSION ((and | or) COMPARISON_EXPRESSION)*
+    LOGICAL_EXPRESSION       -> (not)* COMPARISON_EXPRESSION ((and | or) COMPARISON_EXPRESSION)*
     COMPARISON_EXPRESSION    -> EXPRESSION ((> | < | >= | <= | == | !=) EXPRESSION)*
     EXPRESSION               -> TERM (( + | - ) TERM)*                      # for precedence as term will be calculated first
     TERM                     -> FACTOR (( * | /  | << | >> | % ) FACTOR)*
@@ -64,34 +68,97 @@
     LCURLY                   -> {
     RCURLY                   -> }
 
-# Handling strings
+# (Extremely) Simple HTTP server
 
-def hi: str = "hello"
+```lua
+include "../include/std.cberk"
 
-stack top
-1008 5
-1016 ptr to "hello"
+def AF_INET: int16 = 2;
+def S_ADDR: int32 = 16777343; -- htonl(127.0.0.1)
+def PORT: int16 = 34835; -- htons(5000)
+def PAD: int = 0;
 
----
+def SOCK_STREAM: int = 1;
 
-def hi: *char = C"hello"
+def SOCKET_SYSCALL: int = 41;
+def READ_SYSCALL: int = 0;
+def WRITE_SYSCALL: int = 1;
+def OPEN_SYSCALL: int = 2;
+def CLSOE_SYSCALL: int = 3;
+def ACCEPT_SYSCALL: int = 43;
+def BIND_SYSCALL: int = 49;
+def LISTEN_SYSCALL: int = 50;
 
-stack top
-1008 ptr to "hello"
+def STDOUT: int = 1;
 
----
+struct sockaddr_in {
+    sa_prefix: int16,
+    sin_port: int16,
+    s_addr: int32,
+    pad: int,
+};
 
-def hi: str = "hello"
-def addr: *str = &hi;
+mem clientaddr 1024
+mem read_data 4096
 
-stack top
-1000 1016
-1008 5
-1016 ptr to "hello"
+mem serveraddr_mem 16
+mem clientaddr_mem 16
 
----
-string deref is allowed
+fun main() {
+    def sockfd: int = syscall(SOCKET_SYSCALL, AF_INET, SOCK_STREAM, 0);
+    write("SOCKET_SYSCALL return: ");
+    print_int(sockfd);
 
-def hi: str = "hello"
+    if sockfd < 0 {
+        exit(1);
+    }
 
-write(*hi) -> 'h'
+    def sa_prefix: *int16 = serveraddr_mem;
+    def sin_port: *int16 = serveraddr_mem + 2;
+    def s_addr: *int = serveraddr_mem + 4;
+
+    *sa_prefix = AF_INET;
+    *sin_port = PORT;
+    *s_addr = S_ADDR;
+
+    def len: int32 = 0;
+
+    def http_ok: str = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK";
+
+    def bind_ret: int = syscall(BIND_SYSCALL, sockfd, serveraddr_mem, 16);
+    write("BIND_SYSCALL return: ");
+    print_int(bind_ret);
+    write(bind_ret);
+
+    if bind_ret < 0 {
+        exit(1);
+    }
+
+    def listener: int = syscall(LISTEN_SYSCALL, sockfd, 10);
+    write("LISTEN_SYSCALL return: ");
+    print_int(listener);
+    if listener < 0 {
+        exit(1);
+    }
+
+    loop {
+        def connfd: int = syscall(ACCEPT_SYSCALL, sockfd, 0, 0);
+        write("ACCEPT_SYSCALL return: ");
+        print_int(connfd);
+        
+        if connfd < 0 {
+            exit(1);
+        }
+
+        def read_bytes: int = syscall(READ_SYSCALL, connfd, read_data, 4096);
+        syscall(WRITE_SYSCALL, STDOUT, read_data, 4096);
+
+        def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_ok as *char, 74);
+        write("Writing to connfd returned: ", write_ret);
+
+        syscall(CLSOE_SYSCALL, connfd);
+    }
+}
+
+main()
+```

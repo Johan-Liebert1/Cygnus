@@ -1,0 +1,22 @@
+fun print_int(a: int) {
+    def n: int = 0;
+
+    if a >> 63 == 1 {
+        n = not a - 1
+        write("-", n)
+    } else {
+        n = a
+        write(n)
+    }
+}
+
+fun memset(ptr: *int, value: int, size: int) {
+    def i: int = 0;
+
+    loop from 0 to value {
+        def thing: *int = ptr + i;
+        *thing = value;
+
+        i += 8;
+    }
+}

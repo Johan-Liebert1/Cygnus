@@ -32,13 +32,13 @@ pub enum Register {
 impl Display for Register {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
-            Register::RAX =>  "rax",
-            Register::RBX =>  "rbx",
-            Register::RCX =>  "rcx",
-            Register::RDX =>  "rdx",
-            Register::RSI =>  "rsi",
-            Register::RDI =>  "rdi",
-            Register::RBP =>  "rbp",
+            Register::RAX => "rax",
+            Register::RBX => "rbx",
+            Register::RCX => "rcx",
+            Register::RDX => "rdx",
+            Register::RSI => "rsi",
+            Register::RDI => "rdi",
+            Register::RBP => "rbp",
         };
 
         write!(f, "{}", s)
@@ -97,12 +97,12 @@ pub fn get_register_name_for_bits(register: &Register, bits: u8) -> &'static str
 impl VarType {
     pub fn get_register_name(&self, register: Register) -> &'static str {
         let thing = match self {
-            Self::Int => get_register_name_for_bits(&register, 0),
+            Self::Int => get_register_name_for_bits(&register, 64),
             Self::Int32 => get_register_name_for_bits(&register, 32),
             Self::Int16 => get_register_name_for_bits(&register, 16),
             Self::Int8 => get_register_name_for_bits(&register, 8),
 
-            v => get_register_name_for_bits(&register, 64),
+            v => panic!("get_register_name not implemented for '{}'", v),
         };
 
         return thing;

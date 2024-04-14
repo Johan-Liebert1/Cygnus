@@ -4,7 +4,7 @@ use crate::trace;
 
 use super::{
     lexer::{Lexer, Token},
-    tokens::{Bracket, Comparators, Operations, TokenEnum},
+    tokens::{Bracket, Comparators, Number, Operations, TokenEnum},
     types::VarType,
 };
 
@@ -98,12 +98,28 @@ impl Lexer {
                     } else {
                         self.index += 1;
 
-                        match self.peek_next_token().token {
-                            TokenEnum::Equals => TokenEnum::MinusEquals,
-                            TokenEnum::Comparator(Comparators::GreaterThan) => TokenEnum::FunctionReturnIndicator,
-                            _ => {
-                                self.index -= 1;
-                                TokenEnum::Op(Operations::Minus)
+                        // - 4545 should not be parsed as "-4545"
+                        if self.file[self.index].is_ascii_whitespace() {
+                            TokenEnum::Op(Operations::Minus)
+                        } else {
+                            match self.peek_next_token().token {
+                                TokenEnum::Equals => TokenEnum::MinusEquals,
+                                TokenEnum::Comparator(Comparators::GreaterThan) => TokenEnum::FunctionReturnIndicator,
+
+                                // Also handle things like -var_name
+                                TokenEnum::Number(num) => match num {
+                                    Number::Integer(int) => {
+                                        self.get_next_token();
+                                        TokenEnum::Number(Number::Integer(-int))
+                                    }
+
+                                    Number::Float(_) => todo!(),
+                                },
+
+                                _ => {
+                                    self.index -= 1;
+                                    TokenEnum::Op(Operations::Minus)
+                                }
                             }
                         }
                     }

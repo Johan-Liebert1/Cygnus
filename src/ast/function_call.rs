@@ -81,6 +81,9 @@ impl AST for FunctionCall {
                             tok => unreachable!("This should be unreachable"),
                         },
 
+                        // This will always be an integer
+                        ASTNodeEnum::LogicalExp(lo) => asm.func_write_number(),
+
                         node => {
                             trace!("{:#?}", node);
                             todo!();

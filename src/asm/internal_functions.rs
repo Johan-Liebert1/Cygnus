@@ -165,7 +165,7 @@ impl ASM {
 
                         match found {
                             Some(struct_member_type) => match &struct_member_type.member_type {
-                                VarType::Int => {
+                                VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                                     vec![format!("pop rax"), format!("call _printRAX")]
                                 }
 

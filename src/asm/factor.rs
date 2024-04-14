@@ -16,6 +16,7 @@ impl ASM {
         match token {
             TokenEnum::Number(n) => match n {
                 Number::Integer(i) => instructions.push(format!("push {i}")),
+
                 Number::Float(_) => todo!(),
             },
 
@@ -32,6 +33,7 @@ impl ASM {
                                     Some(c) => match c {
                                         'n' => chars.push(('\n' as u8).to_string()),
                                         '0' => chars.push('0'.into()),
+                                        'r' => chars.push(('\r' as u8).to_string()),
 
                                         _ => unimplemented!(),
                                     },

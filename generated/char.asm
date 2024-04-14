@@ -13,16 +13,13 @@ section .text
 	global _start
 
 _start:
-    mov rax, string_0
-    call _printRAX
-
     xor rax, rax
-    mov al, [string_0]
-    push rax
-    call _printRAX
+    mov rax, 2
 
-    pop rax
-    call _printRAX
+    mov [rsp - 3], ax
+    xor rax, rax
+    mov ax, [rsp - 3]
 
+    call _printRAX
 
 	exit 0

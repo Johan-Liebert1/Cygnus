@@ -103,7 +103,7 @@ impl ASM {
                     format!("mul rbx"),
                     // now rax has index * 8
                     format!("mov rbx, rbp"),
-                    format!("sub rbx, rax"),
+                    format!("add rbx, rax"),
                     format!("mov rax, [rbx - {}]", ar_var.offset),
                     format!("push rax"),
                 ]);
@@ -124,13 +124,14 @@ impl ASM {
         }
     }
 
-    fn handle_local_int(&mut self, variable: &Variable, ar_var_offset: usize) {
+    // need the var_type for struct member access as struct_name.member as the type 'struct_name'
+    fn handle_local_int(&mut self, variable: &Variable, ar_var_offset: usize, actual_var_type: &VarType) {
         if variable.dereference {
             panic!("Cannot dereference a number")
         } else if variable.store_address {
             self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
         } else {
-            let reg_name = variable.var_type.get_register_name(Register::RAX);
+            let reg_name = actual_var_type.get_register_name(Register::RAX);
 
             self.extend_current_label(vec![
                 format!("xor {}, {}", Register::RAX, Register::RAX),
@@ -173,7 +174,7 @@ impl ASM {
                 format!("mov rax, [rbp - {}]", ar_var_offset),
                 format!("push rax"),
                 // length is pushed last
-                format!("mov rax, [rbp - {}]", ar_var_offset + 8),
+                format!("mov rax, [rbp - {}]", ar_var_offset - 8),
                 format!("push rax"),
             ])
         }
@@ -215,13 +216,18 @@ impl ASM {
             Some(ar_var) => {
                 match variable_scope {
                     ActivationRecordType::Global => match variable.var_type {
-                        VarType::Int => {
+                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                            let register_name = variable.var_type.get_register_name(Register::RAX);
+
                             if variable.dereference {
                                 panic!("Cannot dereference a number")
                             } else if variable.store_address {
                                 self.extend_current_label(vec![format!("lea rax, {var_name}"), format!("push rax")]);
                             } else {
-                                self.extend_current_label(vec![format!("mov rax, [{var_name}]"), format!("push rax")])
+                                self.extend_current_label(vec![
+                                    format!("mov {}, [{var_name}]", register_name),
+                                    format!("push rax"),
+                                ])
                             }
                         }
 
@@ -254,7 +260,7 @@ impl ASM {
                         // cannot use ar_var here as it does not have the computed types
                         match &variable.var_type {
                             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                self.handle_local_int(variable, ar_var.offset)
+                                self.handle_local_int(variable, ar_var.offset, &variable.var_type)
                             }
 
                             VarType::Str => self.handle_local_str(variable, ar_var.offset),
@@ -291,7 +297,13 @@ impl ASM {
 
                                 match found {
                                     Some(struct_member_type) => match &struct_member_type.member_type {
-                                        VarType::Int => self.handle_local_int(variable, struct_member_type.offset),
+                                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => self
+                                            .handle_local_int(
+                                                variable,
+                                                struct_member_type.offset,
+                                                &struct_member_type.member_type,
+                                            ),
+
                                         VarType::Str => self.handle_local_str(variable, struct_member_type.offset),
                                         VarType::Ptr(var_type) => {
                                             self.handle_local_ptr(var_type, variable, struct_member_type.offset)

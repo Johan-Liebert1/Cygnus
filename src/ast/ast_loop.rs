@@ -11,6 +11,7 @@ use crate::{
     interpreter::interpreter::{Functions, Variables},
     lexer::tokens::{Number, TokenEnum},
 };
+use core::panic;
 use std::process::exit;
 use std::{cell::RefCell, rc::Rc};
 
@@ -20,10 +21,10 @@ use super::variable::Variable;
 #[derive(Debug)]
 pub struct Loop {
     /// an expression
-    from_range: ASTNode,
+    from_range: Option<ASTNode>,
     /// an expression
-    to_range: ASTNode,
-    step_by: ASTNode,
+    to_range: Option<ASTNode>,
+    step_by: Option<ASTNode>,
     with_var: Option<Variable>,
     block: ASTNode,
     loop_number: usize,
@@ -31,9 +32,9 @@ pub struct Loop {
 
 impl Loop {
     pub fn new(
-        from_range: ASTNode,
-        to_range: ASTNode,
-        step_by: ASTNode,
+        from_range: Option<ASTNode>,
+        to_range: Option<ASTNode>,
+        step_by: Option<ASTNode>,
         with_var: Option<Variable>,
         block: ASTNode,
         loop_number: usize,
@@ -112,25 +113,51 @@ impl AST for Loop {
         // 3. Compare if the current addition value is equal to the `to` value, and if they are
         //    equal break the loop
 
-        self.from_range.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+        match (&self.from_range, &self.to_range, &self.step_by) {
+            (Some(from_range), Some(to_range), Some(step_by)) => {
+                from_range.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+                to_range.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+                step_by.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
-        self.to_range.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+                self.add_call_stack(call_stack);
 
-        self.step_by.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+                asm.gen_loop_start(self.loop_number, call_stack, &self.with_var);
+                self.block.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+                asm.gen_loop_end(self.loop_number, call_stack, &self.with_var);
 
-        self.add_call_stack(call_stack);
+                call_stack.pop();
+            }
 
-        asm.gen_loop_start(self.loop_number, call_stack);
-        self.block.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
-        asm.gen_loop_end(self.loop_number);
+            (None, None, None) => {
+                // infinite loop
+                asm.gen_inf_loop_start(self.loop_number);
+                self.block.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+                asm.gen_inf_loop_end(self.loop_number);
+            }
 
-        call_stack.pop();
+            _ => panic!("from, to or step not defined"),
+        }
     }
 
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
-        let from = self.from_range.borrow().visit(v, Rc::clone(&f), call_stack);
-        let to = self.to_range.borrow().visit(v, Rc::clone(&f), call_stack);
-        let step_by = self.step_by.borrow().visit(v, Rc::clone(&f), call_stack);
+        let from = self
+            .from_range
+            .as_ref()
+            .unwrap()
+            .borrow()
+            .visit(v, Rc::clone(&f), call_stack);
+        let to = self
+            .to_range
+            .as_ref()
+            .unwrap()
+            .borrow()
+            .visit(v, Rc::clone(&f), call_stack);
+        let step_by = self
+            .step_by
+            .as_ref()
+            .unwrap()
+            .borrow()
+            .visit(v, Rc::clone(&f), call_stack);
 
         if !from.token.is_integer() || !to.token.is_integer() || !step_by.token.is_integer() {
             helpers::compiler_error("Expected from, to and step expressions to be Integer", self.get_token());
@@ -184,9 +211,19 @@ impl AST for Loop {
         // These variables live in the outer scope not in the loop scope
         self.add_call_stack(call_stack);
 
-        self.from_range.borrow_mut().semantic_visit(call_stack, f.clone());
-        self.to_range.borrow_mut().semantic_visit(call_stack, f.clone());
-        self.step_by.borrow_mut().semantic_visit(call_stack, f.clone());
+        match (&self.from_range, &self.to_range, &self.step_by) {
+            (Some(from_range), Some(to_range), Some(step_by)) => {
+                from_range.borrow_mut().semantic_visit(call_stack, f.clone());
+                to_range.borrow_mut().semantic_visit(call_stack, f.clone());
+                step_by.borrow_mut().semantic_visit(call_stack, f.clone());
+            }
+
+            (None, None, None) => {
+                // no-op. It's an infinite loop
+            }
+
+            _ => panic!("from, to or step not defined"),
+        }
 
         self.block.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
 

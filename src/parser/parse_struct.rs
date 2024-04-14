@@ -2,13 +2,12 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::{
-        assignment_statement::AssignmentStatement,
         structs::{StructDecleration, StructMember},
         variable::Variable,
     },
     helpers::{unexpected_token, unexpected_token_string},
     lexer::{
-        tokens::{AssignmentTypes, Bracket, TokenEnum},
+        tokens::{Bracket, TokenEnum},
         types::{StructMemberType, VarType},
     },
     trace,
@@ -86,8 +85,8 @@ impl Parser {
             }
 
             // A {
-            // a: 1,
-            // b: "hello",
+            //      a: 1,
+            //      b: "hello",
             // }
             let var_token = self.get_next_token();
 

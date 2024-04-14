@@ -1,5 +1,5 @@
 use crate::{
-    helpers,
+    helpers::{self, compiler_error},
     lexer::types::{VarType, TYPE_FLOAT, TYPE_INT, TYPE_STRING},
     semantic_analyzer::semantic_analyzer::CallStack,
     trace,
@@ -122,7 +122,7 @@ impl AST for Variable {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        let (variable_in_stack, _) = call_stack.get_var_with_name(&self.var_name);
+        let (mut variable_in_stack, _) = call_stack.get_var_with_name(&self.var_name);
 
         if let Some(variable_in_stack) = variable_in_stack {
             self.var_type = if let Some(casted_type) = &self.type_cast {
@@ -149,6 +149,39 @@ impl AST for Variable {
                         &self.token,
                     );
                 }
+            }
+
+            if self.member_access.len() > 0 {
+                match call_stack
+                    .user_defined_types
+                    .iter()
+                    .find(|x| x.name == format!("{}", self.var_type))
+                {
+                    Some(user_defined_type) => match &user_defined_type.type_ {
+                        // TODO: Handle struct -> struct -> member_access here
+                        VarType::Struct(_, members) => {
+                            for m in members.borrow().iter() {
+                                if m.name == self.member_access[0] {
+                                    self.result_type = m.member_type.clone();
+                                    break;
+                                }
+                            }
+                        }
+
+                        tt => {
+                            compiler_error(
+                                format!("Cannot access '{}' on type '{}'", self.member_access[0], tt),
+                                self.get_token(),
+                            );
+                        }
+                    },
+
+                    None => {
+                        compiler_error(format!("Type '{}' not defined", self.var_type), self.get_token());
+                    }
+                }
+
+                trace!("Final var type: {}, {}", self.result_type, self.member_access[0]);
             }
         } else {
             helpers::compiler_error(

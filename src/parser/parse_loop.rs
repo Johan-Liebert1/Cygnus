@@ -23,7 +23,7 @@ use crate::{
 use super::parser::Parser;
 
 impl Parser {
-    /// LOOP -> loop from LPAREN* EXPRESSION to EXPRESSION (step EXPRESSION)* RPAREN* (with VAR_NAME)* LCURLY STATEMENT[] RCURLY
+    /// LOOP -> loop (from LPAREN* EXPRESSION to EXPRESSION (step EXPRESSION)* RPAREN* (with VAR_NAME)*)* LCURLY STATEMENT[] RCURLY
     pub fn parse_loop(&mut self) -> ASTNode {
         // we get here after consuming the 'loop' keyword
         if self.inside_function_depth == 0 {
@@ -35,6 +35,28 @@ impl Parser {
         self.inside_current_loop_number = current_loop_number as i32;
 
         self.num_loops += 1;
+
+        // Infinite loop
+        if matches!(self.peek_next_token().token, TokenEnum::Bracket(Bracket::LCurly)) {
+            self.validate_token(TokenEnum::Bracket(Bracket::LCurly));
+
+            self.inside_loop_depth += 1;
+            let block = self.parse_program();
+            self.inside_loop_depth -= 1;
+
+            self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
+
+            self.inside_current_loop_number -= 1;
+
+            return Rc::new(RefCell::new(Box::new(Loop::new(
+                None,
+                None,
+                None,
+                None,
+                block,
+                current_loop_number,
+            ))));
+        };
 
         self.validate_token(TokenEnum::Keyword(FROM.to_string()));
 
@@ -146,9 +168,9 @@ impl Parser {
         self.inside_current_loop_number -= 1;
 
         return Rc::new(RefCell::new(Box::new(Loop::new(
-            from_range,
-            to_range,
-            step,
+            Some(from_range),
+            Some(to_range),
+            Some(step),
             with_var,
             block,
             current_loop_number,

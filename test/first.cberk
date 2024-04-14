@@ -1,6 +1,56 @@
+include "../examples/include/std.cberk"
+
+def AF_INET: int16 = 2;
+def S_ADDR: int32 = 0;
+def PORT: int16 = 5000;
+def PAD: int = 0;
+
+def SOCK_STREAM: int = 1;
+
+def SOCKET_SYSCALL: int = 41;
+def READ_SYSCALL: int = 0;
+def WRITE_SYSCALL: int = 1;
+def OPEN_SYSCALL: int = 2;
+def CLSOE_SYSCALL: int = 3;
+def ACCEPT_SYSCALL: int = 43;
+def BIND_SYSCALL: int = 49;
+def LISTEN_SYSCALL: int = 50;
+
+def STDOUT: int = 1;
+
+struct sockaddr_in {
+    sa_prefix: int16
+    sin_port: int16,
+    s_addr: int32,
+    pad: int,
+};
+
+mem serveraddr_mem 16
+
 fun main() {
-    def a: int16 = 65537;
-    write(a);
+    def serveraddr: sockaddr_in = sockaddr_in{
+        sa_prefix: AF_INET
+        sin_port: PORT,
+        s_addr: S_ADDR,
+        pad: PAD,
+    };
+
+
+    def sockfd: int = syscall(SOCKET_SYSCALL, AF_INET, SOCK_STREAM, 0);
+
+    write("sockfd = ", sockfd)
+
+    -- def sa_prefix: *int16 = serveraddr_mem;
+    -- def sin_port: *int16 = serveraddr_mem + 2;
+    -- def s_addr: *int = serveraddr_mem + 4;
+
+    -- *sa_prefix = AF_INET;
+    -- *sin_port = PORT;
+    -- *s_addr = S_ADDR;
+
+    def bind_ret: int = syscall(BIND_SYSCALL, sockfd, serveraddr, 16);
+    print_int(bind_ret)
+
 }
 
 main()

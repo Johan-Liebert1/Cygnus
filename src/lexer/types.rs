@@ -39,6 +39,9 @@ impl PartialEq for VarType {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (VarType::Int, VarType::Int)
+            | (VarType::Int8, VarType::Int8)
+            | (VarType::Int16, VarType::Int16)
+            | (VarType::Int32, VarType::Int32)
             | (VarType::Float, VarType::Float)
             | (VarType::Char, VarType::Char)
             | (VarType::Unknown, VarType::Unknown) => true,
@@ -260,6 +263,35 @@ impl VarType {
                     None => 0,
                 }
             }
+        };
+    }
+
+    pub fn get_size_handle_array_and_struct(&self, variable: &Variable) -> usize {
+        return match self {
+            VarType::Array(type_, _) => {
+                if variable.array_aceess_index.is_none() {
+                    return self.get_size();
+                }
+
+                return type_.get_size();
+            },
+
+            VarType::Struct(_, members) => {
+                if variable.member_access.len() == 0 {
+                    return self.get_size();
+                }
+
+                // TODO: Handle structs in structs
+                for memeber in members.borrow().iter() {
+                    if memeber.name == variable.member_access[0] {
+                        return memeber.member_type.get_size();
+                    }
+                }
+
+                return 0;
+            },
+
+            _ => self.get_size(),
         };
     }
 
