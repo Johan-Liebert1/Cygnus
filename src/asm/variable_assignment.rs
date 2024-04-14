@@ -2,7 +2,7 @@ use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::abstract_syntax_tree::ASTNodeEnum,
+    ast::{abstract_syntax_tree::ASTNodeEnum, variable::Variable},
     lexer::{
         registers::Register,
         tokens::{AssignmentTypes, VariableEnum},
@@ -219,6 +219,9 @@ impl ASM {
         is_function_call_assign: bool,
         array_access_index: &Option<ASTNode>,
         struct_assign_order: Option<Vec<&String>>,
+        // This is not from the call stack. Only required for structs.
+        // TODO: Fix the inconsistency between call_stack variables and actual variables
+        variable_assigned_to: &Variable,
     ) {
         // 1. Check whether the variable is a local or global variable
         // 2. If global var, get it from data section, else from stack offset
@@ -311,13 +314,41 @@ impl ASM {
                     _ => {
                         match assignment_type {
                             AssignmentTypes::Equals => {
+                                // var = variable from call stack
                                 match &var.var_type {
-                                    VarType::Struct(name, _) => self.assign_local_struct(
-                                        struct_assign_order,
-                                        name,
-                                        call_stack,
-                                        is_function_call_assign,
-                                    ),
+                                    VarType::Struct(name, members) => {
+                                        // Assignment to the struct variable
+                                        if variable_assigned_to.member_access.len() == 0 {
+                                            self.assign_local_struct(
+                                                struct_assign_order,
+                                                name,
+                                                call_stack,
+                                                is_function_call_assign,
+                                            )
+                                        } else {
+                                            match &variable_assigned_to.result_type {
+                                                VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                                                    let borrowed = members.borrow();
+
+                                                    let member_offset = borrowed
+                                                        .iter()
+                                                        .find(|x| x.name == variable_assigned_to.member_access[0])
+                                                        .unwrap();
+
+                                                    self.assign_local_number(
+                                                        member_offset.offset,
+                                                        is_function_call_assign,
+                                                        &variable_assigned_to.result_type,
+                                                    )
+                                                }
+
+                                                v => unimplemented!(
+                                                    "Assignment to var_type '{}' inside struct not handled",
+                                                    v
+                                                ),
+                                            };
+                                        }
+                                    }
 
                                     VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                                         self.assign_local_number(var.offset, is_function_call_assign, &var.var_type)

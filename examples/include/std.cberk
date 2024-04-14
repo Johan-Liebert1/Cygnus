@@ -10,3 +10,13 @@ fun print_int(a: int) {
     }
 }
 
+fun memset(ptr: *int, value: int, size: int) {
+    def i: int = 0;
+
+    loop from 0 to value {
+        def thing: *int = ptr + i;
+        *thing = value;
+
+        i += 8;
+    }
+}

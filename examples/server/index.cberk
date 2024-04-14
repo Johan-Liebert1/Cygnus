@@ -31,9 +31,10 @@ mem read_data 4096
 
 fun main() {
     def sockfd: int = syscall(SOCKET_SYSCALL, AF_INET, SOCK_STREAM, 0);
+    write("SOCKET_SYSCALL return: ");
+    print_int(sockfd);
+
     if sockfd < 0 {
-        write("SOCKET_SYSCALL failed with return: ");
-        print_int(sockfd);
         exit(1);
     }
 
@@ -43,6 +44,14 @@ fun main() {
         s_addr: S_ADDR,
         pad: PAD,
     };
+
+    def ptr_as_int: *int = sockaddr as *int;
+
+    memset(ptr_as_int, 0, 16);
+
+    -- sockaddr.sa_prefix = AF_INET;
+    -- sockaddr.sin_port = PORT;
+    -- sockaddr.s_addr  = S_ADDR;
 
     write("sa_prefix ", sockaddr.sa_prefix)
     write("sin_port ", sockaddr.sin_port)
@@ -63,6 +72,8 @@ fun main() {
     def bind_ret: int = syscall(BIND_SYSCALL, sockfd, &sockaddr, 16);
     write("BIND_SYSCALL return: ");
     print_int(bind_ret);
+    write(bind_ret);
+
     if bind_ret < 0 {
         exit(1);
     }

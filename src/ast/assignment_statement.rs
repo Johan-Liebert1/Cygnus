@@ -78,6 +78,7 @@ impl AST for AssignmentStatement {
             },
             &self.left.array_aceess_index,
             None,
+            &self.left,
         );
     }
 
