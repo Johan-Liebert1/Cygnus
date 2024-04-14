@@ -152,7 +152,20 @@ impl ASM {
                     }
                 }
 
-                VarType::Str => todo!(),
+                VarType::Str => {
+                    instructions.push(format!(";; binary op ptr -> char"));
+
+                    if times_dereferenced > 0 {
+                        instructions.extend(vec![
+                            format!("mov rbx, rax"),
+                            format!("xor rax, rax"),
+                            format!("mov rax, [rbx]"),
+                            format!("push rax"),
+                        ]);
+                    } else {
+                        instructions.push(format!("push rax"));
+                    }
+                }
 
                 VarType::Float => todo!(),
                 VarType::Ptr(_) => todo!(),

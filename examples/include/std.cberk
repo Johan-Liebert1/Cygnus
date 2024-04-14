@@ -20,3 +20,23 @@ fun memset(ptr: *int, value: int, size: int) {
         i += 8;
     }
 }
+
+fun strlen_cstr(string: *char) -> int {
+    def i: int = 0;
+
+    loop {
+        if *(string + i) == 0 {
+            break;
+        }
+
+        i += 1;
+    }
+
+    return i;
+}
+
+fun strlen(string: *str) -> int {
+    def len: *str = string + 8;
+    def length: int = *(len as *int);
+    return length;
+}

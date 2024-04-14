@@ -27,30 +27,32 @@ struct sockaddr_in {
 
 mem serveraddr_mem 16
 
+fun strlen_cstr(string: *char) -> int {
+    def i: int = 0;
+
+    loop {
+        if *(string + i) == 0 {
+            break;
+        }
+
+        i += 1;
+    }
+
+    return i;
+}
+
+fun strlen(string: *str) -> int {
+    def len: *str = string + 8;
+    def length: int = *(len as *int);
+    return length;
+}
+
 fun main() {
-    def serveraddr: sockaddr_in = sockaddr_in{
-        sa_prefix: AF_INET
-        sin_port: PORT,
-        s_addr: S_ADDR,
-        pad: PAD,
-    };
+    def hel: str = "hello_world\0";
 
+    def len: int = strlen2(&hel);
 
-    def sockfd: int = syscall(SOCKET_SYSCALL, AF_INET, SOCK_STREAM, 0);
-
-    write("sockfd = ", sockfd)
-
-    -- def sa_prefix: *int16 = serveraddr_mem;
-    -- def sin_port: *int16 = serveraddr_mem + 2;
-    -- def s_addr: *int = serveraddr_mem + 4;
-
-    -- *sa_prefix = AF_INET;
-    -- *sin_port = PORT;
-    -- *s_addr = S_ADDR;
-
-    def bind_ret: int = syscall(BIND_SYSCALL, sockfd, serveraddr, 16);
-    print_int(bind_ret)
-
+    write("len = ", len)
 }
 
 main()

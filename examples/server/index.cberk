@@ -31,6 +31,21 @@ mem read_data 4096
 mem serveraddr_mem 16
 mem clientaddr_mem 16
 
+fun strlen(string: *char) {
+    def i: int = 0;
+
+    loop {
+        def ch: char = *(string + i);
+        write(ch);
+
+        if ch == 0 {
+            break;
+        }
+
+        i += 1;
+    }
+}
+
 fun main() {
     def sockfd: int = syscall(SOCKET_SYSCALL, AF_INET, SOCK_STREAM, 0);
     write("SOCKET_SYSCALL return: ");
@@ -50,7 +65,7 @@ fun main() {
 
     def len: int32 = 0;
 
-    def http_ok: str = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK";
+    def http_ok: str = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK\0";
 
     def bind_ret: int = syscall(BIND_SYSCALL, sockfd, serveraddr_mem, 16);
     write("BIND_SYSCALL return: ");
