@@ -263,7 +263,7 @@ impl Parser {
                         }
                     }
 
-                    TokenEnum::Equals | TokenEnum::MinusEquals | TokenEnum::PlusEquals => {
+                    TokenEnum::Equals | TokenEnum::MinusEquals | TokenEnum::PlusEquals | TokenEnum::Dot => {
                         // variable assignment
                         let var_token = self.get_next_token();
                         self.parse_assignment_statement(var_token, var.to_string(), 0, None)

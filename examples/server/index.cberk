@@ -1,8 +1,8 @@
 include "../include/std.cberk"
 
 def AF_INET: int16 = 2;
-def S_ADDR: int32 = 0;
-def PORT: int16 = 5000;
+def S_ADDR: int32 = 16777343; -- htonl(127.0.0.1)
+def PORT: int16 = 34835; -- htons(5000)
 def PAD: int = 0;
 
 def SOCK_STREAM: int = 1;
@@ -26,43 +26,37 @@ struct sockaddr_in {
 };
 
 mem clientaddr 1024
-
 mem read_data 4096
+
+mem serveraddr_mem 16
+mem clientaddr_mem 16
 
 fun main() {
     def sockfd: int = syscall(SOCKET_SYSCALL, AF_INET, SOCK_STREAM, 0);
+    write("SOCKET_SYSCALL return: ");
+    print_int(sockfd);
+
     if sockfd < 0 {
-        write("SOCKET_SYSCALL failed with return: ");
-        print_int(sockfd);
         exit(1);
     }
 
-    def sockaddr: sockaddr_in = sockaddr_in{
-        sa_prefix: AF_INET,
-        sin_port: PORT,
-        s_addr: S_ADDR,
-        pad: PAD,
-    };
+    def sa_prefix: *int16 = serveraddr_mem;
+    def sin_port: *int16 = serveraddr_mem + 2;
+    def s_addr: *int = serveraddr_mem + 4;
 
-    write("sa_prefix ", sockaddr.sa_prefix)
-    write("sin_port ", sockaddr.sin_port)
-    write("s_addr ", sockaddr.s_addr)
-    write("pad ", sockaddr.pad)
-
-    def clientaddr: sockaddr_in = sockaddr_in{
-        sa_prefix: AF_INET,
-        sin_port: PORT,
-        s_addr: S_ADDR,
-        pad: PAD,
-    };
+    *sa_prefix = AF_INET;
+    *sin_port = PORT;
+    *s_addr = S_ADDR;
 
     def len: int32 = 0;
 
-    def http_ok: str = "HTTP/1.1 200 OK\r\n";
+    def http_ok: str = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK";
 
-    def bind_ret: int = syscall(BIND_SYSCALL, sockfd, &sockaddr, 16);
+    def bind_ret: int = syscall(BIND_SYSCALL, sockfd, serveraddr_mem, 16);
     write("BIND_SYSCALL return: ");
     print_int(bind_ret);
+    write(bind_ret);
+
     if bind_ret < 0 {
         exit(1);
     }
@@ -86,7 +80,7 @@ fun main() {
         def read_bytes: int = syscall(READ_SYSCALL, connfd, read_data, 4096);
         syscall(WRITE_SYSCALL, STDOUT, read_data, 4096);
 
-        def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_ok as *char, 19);
+        def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_ok as *char, 74);
         write("Writing to connfd returned: ", write_ret);
 
         syscall(CLSOE_SYSCALL, connfd);

@@ -176,14 +176,6 @@ impl<'a> CallStack<'a> {
                             if stack_var_size > 0 {
                                 offset = stack_var_size - record.current_offset;
 
-                                trace!(
-                                    "funcname: {}, get_size = {}, offset = {}, stack_var_size = {}",
-                                    fname,
-                                    actual_var_size,
-                                    offset,
-                                    stack_var_size
-                                );
-
                                 if let Some(..) = self.user_defined_types.iter().find(|x| x.type_ == var.var_type) {
                                     if var.member_access.len() != 0 {
                                         record.current_offset += actual_var_size;

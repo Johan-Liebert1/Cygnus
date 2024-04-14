@@ -1,5 +1,6 @@
 use crate::{
     ast::variable::Variable,
+    helpers::{compiler_error, unexpected_token},
     lexer::{lexer::Token, tokens::Bracket, types::VarType},
     trace,
     types::ASTNode,
@@ -19,6 +20,27 @@ impl Parser {
         times_dereferenced: usize,
         array_access_index: Option<ASTNode>,
     ) -> ASTNode {
+        let mut member_access = vec![];
+
+        while matches!(self.peek_next_token().token, TokenEnum::Dot) {
+            // this is a struct member assignment
+
+            // consume '.'
+            self.get_next_token();
+
+            let next = self.get_next_token();
+
+            match next.token {
+                TokenEnum::Variable(name) => {
+                    member_access.push(name);
+                }
+
+                _ => {
+                    unexpected_token(&next, Some(&TokenEnum::Variable("".into())));
+                }
+            };
+        }
+
         // we get here after parsing the variable name
         let validated_token =
             self.validate_any_token(vec![TokenEnum::Equals, TokenEnum::PlusEquals, TokenEnum::MinusEquals]);
@@ -35,6 +57,7 @@ impl Parser {
         );
 
         variable.array_aceess_index = array_access_index;
+        variable.member_access = member_access;
 
         return Rc::new(RefCell::new(Box::new(AssignmentStatement::new(
             variable,

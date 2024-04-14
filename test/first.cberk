@@ -1,68 +1,56 @@
+include "../examples/include/std.cberk"
+
+def AF_INET: int16 = 2;
+def S_ADDR: int32 = 0;
+def PORT: int16 = 5000;
+def PAD: int = 0;
+
+def SOCK_STREAM: int = 1;
+
+def SOCKET_SYSCALL: int = 41;
+def READ_SYSCALL: int = 0;
+def WRITE_SYSCALL: int = 1;
+def OPEN_SYSCALL: int = 2;
+def CLSOE_SYSCALL: int = 3;
+def ACCEPT_SYSCALL: int = 43;
+def BIND_SYSCALL: int = 49;
+def LISTEN_SYSCALL: int = 50;
+
+def STDOUT: int = 1;
+
+struct sockaddr_in {
+    sa_prefix: int16
+    sin_port: int16,
+    s_addr: int32,
+    pad: int,
+};
+
+mem serveraddr_mem 16
+
 fun main() {
-    def array: int[3] = [12, 8, 9];
+    def serveraddr: sockaddr_in = sockaddr_in{
+        sa_prefix: AF_INET
+        sin_port: PORT,
+        s_addr: S_ADDR,
+        pad: PAD,
+    };
 
-    write(array[0])
-    write(array[1])
-    write(array[2])
 
-    -- def i: int = 0;
-    -- def j: int = 0;
+    def sockfd: int = syscall(SOCKET_SYSCALL, AF_INET, SOCK_STREAM, 0);
 
-    -- loop from 0 to 3 {
-    --     j = 0
-    --     loop from 0 to 2 {
-    --         if array[j] > array[j + 1] {
-    --             def temp: int = array[j];
-    --             array[j] = array[j + 1];
-    --             array[j + 1] = temp;
-    --         }
+    write("sockfd = ", sockfd)
 
-    --         j = j + 1
-    --     }
+    -- def sa_prefix: *int16 = serveraddr_mem;
+    -- def sin_port: *int16 = serveraddr_mem + 2;
+    -- def s_addr: *int = serveraddr_mem + 4;
 
-    --     i = i + 1
-    -- }
+    -- *sa_prefix = AF_INET;
+    -- *sin_port = PORT;
+    -- *s_addr = S_ADDR;
 
-    -- i = 0
+    def bind_ret: int = syscall(BIND_SYSCALL, sockfd, serveraddr, 16);
+    print_int(bind_ret)
 
-    -- loop from 0 to 3 {
-    --     write(array[i])
-    --     i = i + 1
-    -- }
 }
 
-main() 
-
-
--- struct sockaddr_in {
---     sa_prefix: int16
--- };
---     -- sin_port: int16,
---     -- s_addr: int32,
---     -- pad: int,
--- 
--- fun main() {
---     def AF_INET: int16 = 2;
---     -- def S_ADDR: int32 = 0;
---     -- def PORT: int16 = 5000;
---     -- def PAD: int = 0;
--- 
---     def sockaddr: sockaddr_in = sockaddr_in{
---         sa_prefix: AF_INET
---     };
---         -- sin_port: PORT,
---         -- s_addr: S_ADDR,
---         -- pad: PAD,
--- 
---     write(AF_INET)
---     -- write("S_ADDR = ", S_ADDR)
---     -- write("PORT = ", PORT)
---     -- write("PAD = ", PAD)
--- 
---     write(sockaddr.sa_prefix)
---     -- write("sin_port ", sockaddr.sin_port)
---     -- write("s_addr ", sockaddr.s_addr)
---     -- write("pad ", sockaddr.pad)
--- }
--- 
--- main()
+main()

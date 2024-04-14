@@ -29,9 +29,13 @@
 - [x] Array
 - [x] Structures
 - [x] File Includes
+- [x] Negative Numbers
+- [x] HTTP Server
+
+- [ ] Fix structs
+- [ ] Fix type casting for pointers
 
 - [ ] Have a single function for both variable and binary op asm generation
-
 - [ ] Floating point numbers
 - [ ] Enums - Use `offset` and `reset` kinda like Go's `iota`
 - [ ] Make sure nothing is left on the stack when we break out of a loop

@@ -83,6 +83,7 @@ impl AST for DeclarationStatement {
             function_call_assign,
             &None,
             member_order,
+            &self.left,
         );
     }
 
