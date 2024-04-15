@@ -104,8 +104,6 @@ impl AST for Jump {
                 let func_struct = f.borrow();
                 let func_struct = func_struct.get(&name).unwrap();
 
-                trace!("{:#?}", func_struct.return_type);
-
                 ast_node.borrow_mut().semantic_visit(call_stack, f.clone());
 
                 let ast_node_type = ast_node.borrow().get_node().get_result_type().clone();

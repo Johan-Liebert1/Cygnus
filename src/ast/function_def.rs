@@ -104,12 +104,6 @@ impl AST for FunctionDefinition {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        if self.name == "write_int_into_mem" {
-            trace!("name {:#?}", self.name);
-            trace!("stack_var_size {:#?}", self.stack_var_size);
-            trace!("return_type {:#?}", self.return_type);
-        }
-
         call_stack.push(self.name.to_string(), ActivationRecordType::Function(0));
 
         for arg in &self.parameters {

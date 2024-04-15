@@ -3,44 +3,38 @@ include "../examples/include/std.cberk"
 def PROT_READ_PROT_WRITE: int = 3;
 def MAP_PRIVATE_MAP_ANONYMOUS: int = 34;
 
-mem read_file_mem 4096
+fun string_ends_with(string: *char, string_len: int, substr: *char, substr_len: int) -> int {
+    if substr_len > string_len {
+        return 0;
+    }
 
-fun write_int_into_mem(memory: *int, number: int) {
-    def zero_ascii: int = 48;
-    def n: int = number;
+    def idx_into_str: int = string_len - 1;
+    def idx_into_substr: int = substr_len - 1;
 
-    def number_len: int = 0;
-    
     loop {
-        n = n / 10
-        number_len += 1
+        def str_char: *char = string + idx_into_str;
+        def substr_char: *char = substr + idx_into_substr;
 
-        if n == 0 {
+        if *str_char != *substr_char {
+            return 0;
+        }
+
+        idx_into_str -= 1;
+        idx_into_substr -= 1;
+
+        if idx_into_substr < 0 {
             break;
         }
     }
 
-    def idx: int = number_len - 1;
-    n = number
-
-    loop {
-        def c: int = n % 10;
-
-        def idx_into_mem: *int8 = memory + idx;
-        *idx_into_mem = c + zero_ascii;
-
-        n = n / 10
-        idx -= 1
-
-        if n == 0 {
-            break;
-        }
-    }
+    return 1;
 }
 
 fun main() {
-    write_int_into_mem(read_file_mem, 69420)
-    syscall(WRITE_SYSCALL, STDOUT, read_file_mem, 5)
+    def string: str = "index.html";
+    def subs: str = "hhml";
+
+    write(string_ends_with(string as *char, strlen(&string), subs as *char, strlen(&subs)))
 }
 
 fun main2() {

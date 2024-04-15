@@ -15,7 +15,80 @@ mem clientaddr_mem 16
 
 mem file_len 32
 
-const PRINT_REQ: int = 0;
+mem req_method 32
+mem req_path 256
+
+const PRINT_REQ: int = 1;
+const SPACE_ASCII: int = 32;
+const NEW_LINE_ASCII: int = 10;
+
+fun string_ends_with(string: *char, string_len: int, substr: *char, substr_len: int) -> int {
+    if substr_len > string_len {
+        return 0;
+    }
+
+    def idx_into_str: int = string_len - 1;
+    def idx_into_substr: int = substr_len - 1;
+
+    loop {
+        def str_char: char = string + idx_into_str;
+        def substr_char: char = substr + idx_into_substr;
+
+        if *str_char != *substr_char {
+            return 0;
+        }
+
+        idx_into_str -= 1;
+        idx_into_substr -= 1;
+    }
+
+    return 1;
+}
+
+-- GET / HTTP/1.1
+-- Host: localhost:5000
+-- User-Agent: curl/8.5.0
+-- Accept: */*
+fun parse_http_request(req: *int, read_bytes: int) {
+    if PRINT_REQ {
+        syscall(WRITE_SYSCALL, STDOUT, req, read_bytes);
+    }
+
+    -- we'll only parse the method and path for now
+    def idx: int = 0;
+
+    -- parse the method
+    loop {
+        def character: *char = req + idx;
+
+        if *character == SPACE_ASCII or *character == 0 {
+            break;
+        }
+
+        idx += 1;
+    }
+
+    def method_ends_at_idx: int = idx;
+
+    -- consume the space character
+    idx += 1;
+
+    -- parse path
+    loop {
+        def character1: *char = req + idx;
+
+        if *character1 == SPACE_ASCII or *character1 == 0 {
+            break;
+        }
+
+        idx += 1;
+    }
+
+    def path_ends_at_idx: int = idx;
+
+    write("method_ends_at_idx = ", method_ends_at_idx)
+    write("path_ends_at_idx = ", path_ends_at_idx)
+}
 
 fun main() {
     def sockfd: int = syscall(SOCKET_SYSCALL, AF_INET, SOCK_STREAM, 0);
@@ -37,6 +110,7 @@ fun main() {
     def len: int32 = 0;
 
     def http_ok: str = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK";
+    def http_404: str = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
 
     def http_index_html: str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ";
     def http_index_html_len: int = strlen(&http_index_html);
@@ -69,10 +143,9 @@ fun main() {
             exit(1);
         }
 
-        if PRINT_REQ {
-            def read_bytes: int = syscall(READ_SYSCALL, connfd, read_data, 4096);
-            syscall(WRITE_SYSCALL, STDOUT, read_data, 4096);
-        }
+        def read_bytes: int = syscall(READ_SYSCALL, connfd, read_data, 4096);
+
+        parse_http_request(read_data, read_bytes);
 
         def file_read_bytes: int = read_file_into_memory(read_data, 4096, index_html_file as *char);
 

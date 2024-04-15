@@ -117,3 +117,30 @@ fun write_int_into_mem(memory: *int, number: int) -> int {
 
     return number_len;
 }
+
+fun string_ends_with(string: *char, string_len: int, substr: *char, substr_len: int) -> int {
+    if substr_len > string_len {
+        return 0;
+    }
+
+    def idx_into_str: int = string_len - 1;
+    def idx_into_substr: int = substr_len - 1;
+
+    loop {
+        def str_char: *char = string + idx_into_str;
+        def substr_char: *char = substr + idx_into_substr;
+
+        if *str_char != *substr_char {
+            return 0;
+        }
+
+        idx_into_str -= 1;
+        idx_into_substr -= 1;
+
+        if idx_into_substr < 0 {
+            break;
+        }
+    }
+
+    return 1;
+}

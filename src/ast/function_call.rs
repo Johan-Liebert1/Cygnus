@@ -84,6 +84,19 @@ impl AST for FunctionCall {
                         // This will always be an integer
                         ASTNodeEnum::LogicalExp(lo) => asm.func_write_number(),
 
+                        ASTNodeEnum::FunctionCall(fc) => {
+                            // if the function returns anything, then that will be in rax
+
+                            let borrow = f.borrow();
+                            // this will most definitely exist here
+                            let func_def = borrow.get(&fc.name).unwrap();
+
+                            match func_def.return_type {
+                                VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => asm.func_write_number(),
+                                _ => unimplemented!()
+                            };
+                        }
+
                         node => {
                             trace!("{:#?}", node);
                             todo!();
