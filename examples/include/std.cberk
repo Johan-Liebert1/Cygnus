@@ -118,6 +118,7 @@ fun write_int_into_mem(memory: *int, number: int) -> int {
     return number_len;
 }
 
+-- @returns 0 if string does not end with substr else returns the index in the string where substr starts
 fun string_ends_with(string: *char, string_len: int, substr: *char, substr_len: int) -> int {
     if substr_len > string_len {
         return 0;
@@ -138,6 +139,34 @@ fun string_ends_with(string: *char, string_len: int, substr: *char, substr_len: 
         idx_into_substr -= 1;
 
         if idx_into_substr < 0 {
+            break;
+        }
+    }
+
+    return idx_into_str + 1;
+}
+
+-- @returns true if string starts with substr
+fun string_starts_with(string: *char, string_len: int, substr: *char, substr_len: int) -> int {
+    if substr_len > string_len {
+        return 0;
+    }
+
+    def idx_into_str: int = 0;
+    def idx_into_substr: int = 0;
+
+    loop {
+        def str_char: *char = string + idx_into_str;
+        def substr_char: *char = substr + idx_into_substr;
+
+        if *str_char != *substr_char {
+            return 0;
+        }
+
+        idx_into_str += 1;
+        idx_into_substr += 1;
+
+        if idx_into_substr >= substr_len - 1 {
             break;
         }
     }

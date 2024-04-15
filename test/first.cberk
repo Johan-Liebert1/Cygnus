@@ -32,9 +32,12 @@ fun string_ends_with(string: *char, string_len: int, substr: *char, substr_len: 
 
 fun main() {
     def string: str = "index.html";
-    def subs: str = "hhml";
+    def subs: str = "html";
+    write(string_starts_with(string as *char, strlen(&string), subs as *char, strlen(&subs)))
 
-    write(string_ends_with(string as *char, strlen(&string), subs as *char, strlen(&subs)))
+    string = "first second third";
+    subs = "third";
+    write(string_starts_with(string as *char, strlen(&string), subs as *char, strlen(&subs)))
 }
 
 fun main2() {
