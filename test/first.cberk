@@ -1,58 +1,58 @@
 include "../examples/include/std.cberk"
 
-def AF_INET: int16 = 2;
-def S_ADDR: int32 = 0;
-def PORT: int16 = 5000;
-def PAD: int = 0;
+def PROT_READ_PROT_WRITE: int = 3;
+def MAP_PRIVATE_MAP_ANONYMOUS: int = 34;
 
-def SOCK_STREAM: int = 1;
+mem str_concat 1000
 
-def SOCKET_SYSCALL: int = 41;
-def READ_SYSCALL: int = 0;
-def WRITE_SYSCALL: int = 1;
-def OPEN_SYSCALL: int = 2;
-def CLSOE_SYSCALL: int = 3;
-def ACCEPT_SYSCALL: int = 43;
-def BIND_SYSCALL: int = 49;
-def LISTEN_SYSCALL: int = 50;
+mem addr 1000
 
-def STDOUT: int = 1;
+fun main2() {
+    def first: str = "hello";
+    def second: str = "_world\0";
+    
+    def concat_len: int =  str_concat(first as *char, strlen(&first), second as *char, strlen(&second), str_concat);
 
-struct sockaddr_in {
-    sa_prefix: int16
-    sin_port: int16,
-    s_addr: int32,
-    pad: int,
-};
-
-mem serveraddr_mem 16
-
-fun strlen_cstr(string: *char) -> int {
-    def i: int = 0;
-
-    loop {
-        if *(string + i) == 0 {
-            break;
-        }
-
-        i += 1;
+    loop from 0 to concat_len with i {
+        def c: *char = str_concat + i;
+        write(*c)
     }
 
-    return i;
-}
-
-fun strlen(string: *str) -> int {
-    def len: *str = string + 8;
-    def length: int = *(len as *int);
-    return length;
+    syscall(WRITE_SYSCALL, STDOUT, str_concat, concat_len)
 }
 
 fun main() {
     def hel: str = "hello_world\0";
+    def capital_a: int8 = 65;
 
-    def len: int = strlen2(&hel);
+    -- def addr: int = syscall(MMAP_SYSCALL, 0, 1024, PROT_READ_PROT_WRITE, MAP_PRIVATE_MAP_ANONYMOUS, -1, 0);
 
-    write("len = ", len)
+    -- write("mmap ret = ")
+    -- print_int(addr)
+
+    def address: *int = addr as *int;
+    def addr_1: *int8 = address + 1;
+    def addr_2: *int8 = address + 2;
+    def addr_4: *int8 = address + 4;
+    def addr_3: *int8 = address + 3;
+
+    write(address)
+    write(addr_1)
+    write(addr_2)
+    write(addr_4)
+    write(addr_3)
+
+    *address = 65;
+    *addr_1 = 65;
+    *addr_2 = 65;
+    *addr_3 = 65;
+    *addr_4 = 10;
+
+    syscall(WRITE_SYSCALL, STDOUT, address, 5)
+
+    def substr: str = "AA\0";
+               
+    write("string_ends_with: ", string_ends_with(address, 5, substr as *char, strlen(&substr)))
 }
 
 main()

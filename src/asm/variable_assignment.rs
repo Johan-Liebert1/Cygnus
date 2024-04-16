@@ -43,7 +43,7 @@ impl ASM {
         // already in rax
         if !is_function_call_assign {
             instructions.extend([
-                format!(";; assign_local_number"),
+                format!(";; assign_local_number of type {}", var_type),
                 format!("xor rax, rax"),
                 format!("pop rax"),
             ])
@@ -104,8 +104,10 @@ impl ASM {
 
         let mut is_ptr_deref = false;
 
-        match **var_ptr_type {
-            VarType::Ptr(_) => todo!(),
+        match *var_ptr_type.clone() {
+            VarType::Ptr(ptr_tpye) => self.assign_local_pointer(&ptr_tpye, var_offset, times_dereferenced),
+
+            VarType::Unknown => todo!(),
 
             // assignment to ptr to a character
             // basically a CStr
@@ -113,11 +115,7 @@ impl ASM {
             // TODO: Also handle things like
             // def ch: char = 'a';
             // def ch_ptr: *char = &ch;
-            VarType::Char => {}
-
-            VarType::Unknown => todo!(),
-
-            _ => {
+            t => {
                 is_ptr_deref = times_dereferenced > 0;
 
                 // Let's say the following code
@@ -135,6 +133,7 @@ impl ASM {
                 // mov rbx, [rbp - 8]
                 // mov [rbx], rax
 
+                instructions.push(format!(";; assign_local_pointer of type {}", t));
                 instructions.push(format!("pop rax"));
 
                 if is_ptr_deref {
@@ -146,7 +145,7 @@ impl ASM {
                 }
 
                 if is_ptr_deref {
-                    instructions.push(format!("mov [rbx], rax"));
+                    instructions.push(format!("mov [rbx], {}", t.get_register_name(Register::RAX)));
                 }
 
                 // instructions.extend(vec![format!("pop rbx"), format!("mov rax, rbx")]);

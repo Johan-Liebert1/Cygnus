@@ -39,13 +39,15 @@ impl DeclarationStatement {
         let (is_assignment_okay, rhs_type) = node.is_var_assignment_okay(&self.left);
 
         if !is_assignment_okay {
+            trace!("Decleration statement: self.left: {:#?}", self.left);
+
             helpers::compiler_error(
                 format!(
                     "Cannot assign variable (LHS) of type {} to RHS {}",
                     self.left.result_type, rhs_type
                 ),
                 self.left.get_token(),
-            )
+            );
         }
     }
 }

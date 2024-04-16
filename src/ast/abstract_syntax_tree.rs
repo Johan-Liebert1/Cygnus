@@ -242,6 +242,10 @@ impl<'a> ASTNodeEnum<'a> {
             }
             Variable(f) => {
                 let (actual_type, result_type) = f.get_type();
+
+                // trace!("\n\n=======================================\nf's actual_type: {:#?}, result_type: {:#?}", actual_type, result_type);
+                // trace!("variable's actual_type: {:#?}, result_type: {:#?}", variable.get_type().0, variable.get_type().1);
+
                 (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
             MemoryAlloc(f) => {

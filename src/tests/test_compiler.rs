@@ -161,3 +161,15 @@ fn strlen() {
     let (stdout_str, _, file_result) = get_stdout_and_actual_result("strlen.cberk");
     assert_eq!(stdout_str, file_result);
 }
+
+#[test]
+fn string_ends_with() {
+    let (stdout_str, _, file_result) = get_stdout_and_actual_result("string_ends_with.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
+fn string_starts_with() {
+    let (stdout_str, _, file_result) = get_stdout_and_actual_result("string_starts_with.cberk");
+    assert_eq!(stdout_str, file_result);
+}

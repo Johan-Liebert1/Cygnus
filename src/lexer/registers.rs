@@ -101,6 +101,7 @@ impl VarType {
             Self::Int32 => get_register_name_for_bits(&register, 32),
             Self::Int16 => get_register_name_for_bits(&register, 16),
             Self::Int8 => get_register_name_for_bits(&register, 8),
+            Self::Char => get_register_name_for_bits(&register, 8),
 
             v => panic!("get_register_name not implemented for '{}'", v),
         };

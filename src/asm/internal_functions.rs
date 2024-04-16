@@ -60,7 +60,7 @@ impl ASM {
         times_dereferenced: usize,
     ) -> Vec<String> {
         match **pointer_var_type {
-            VarType::Int => {
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                 vec![format!("pop rax"), format!("call _printRAX")]
             }
 

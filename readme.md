@@ -84,7 +84,7 @@ def SOCKET_SYSCALL: int = 41;
 def READ_SYSCALL: int = 0;
 def WRITE_SYSCALL: int = 1;
 def OPEN_SYSCALL: int = 2;
-def CLSOE_SYSCALL: int = 3;
+def CLOSE_SYSCALL: int = 3;
 def ACCEPT_SYSCALL: int = 43;
 def BIND_SYSCALL: int = 49;
 def LISTEN_SYSCALL: int = 50;
@@ -156,7 +156,7 @@ fun main() {
         def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_ok as *char, 74);
         write("Writing to connfd returned: ", write_ret);
 
-        syscall(CLSOE_SYSCALL, connfd);
+        syscall(CLOSE_SYSCALL, connfd);
     }
 }
 
