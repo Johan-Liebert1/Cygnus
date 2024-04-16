@@ -211,7 +211,23 @@ impl VarType {
 
             (Ptr(ptr1), Ptr(ptr2)) => ptr1.figure_out_type(ptr2, op),
 
-            (Char, Char) | (Int, Char) | (Char, Int) => {
+            (Char, Char) | (Int8, Char) | (Char, Int8) => {
+                let is_allowed = matches!(
+                    op,
+                    AllOperations::Op(Plus) // only addition is allowed
+                    | AllOperations::Op(Minus) // only addition is allowed
+                    | AllOperations::Comparator(..) // only comparisons allowed
+                );
+
+                if !is_allowed {
+                    panic!("'{op}' not defined for '{self}' and '{other}'")
+                }
+
+                // result of comparison is always an int
+                Int8
+            }
+
+            (Int, Char) | (Char, Int) => {
                 let is_allowed = matches!(
                     op,
                     AllOperations::Op(Plus) // only addition is allowed

@@ -3,41 +3,19 @@ include "../examples/include/std.cberk"
 def PROT_READ_PROT_WRITE: int = 3;
 def MAP_PRIVATE_MAP_ANONYMOUS: int = 34;
 
-fun string_ends_with(string: *char, string_len: int, substr: *char, substr_len: int) -> int {
-    if substr_len > string_len {
-        return 0;
-    }
-
-    def idx_into_str: int = string_len - 1;
-    def idx_into_substr: int = substr_len - 1;
-
-    loop {
-        def str_char: *char = string + idx_into_str;
-        def substr_char: *char = substr + idx_into_substr;
-
-        if *str_char != *substr_char {
-            return 0;
-        }
-
-        idx_into_str -= 1;
-        idx_into_substr -= 1;
-
-        if idx_into_substr < 0 {
-            break;
-        }
-    }
-
-    return 1;
-}
+mem str_concat 1000
 
 fun main() {
-    def string: str = "index.html";
-    def subs: str = "html";
-    write(string_starts_with(string as *char, strlen(&string), subs as *char, strlen(&subs)))
+    def first: str = "hello";
+    def second: str = " world\0";
+    
+    def concat_len: int =  str_concat(first as *char, strlen(&first), second as *char, strlen(&second), str_concat);
 
-    string = "first second third";
-    subs = "third";
-    write(string_starts_with(string as *char, strlen(&string), subs as *char, strlen(&subs)))
+    loop from 0 to concat_len with i {
+        def c: *char = str_concat + i;
+    }
+
+    syscall(WRITE_SYSCALL, STDOUT, str_concat, concat_len)
 }
 
 fun main2() {
