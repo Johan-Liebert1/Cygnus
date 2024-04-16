@@ -5,43 +5,54 @@ def MAP_PRIVATE_MAP_ANONYMOUS: int = 34;
 
 mem str_concat 1000
 
-fun main() {
+mem addr 1000
+
+fun main2() {
     def first: str = "hello";
-    def second: str = " world\0";
+    def second: str = "_world\0";
     
     def concat_len: int =  str_concat(first as *char, strlen(&first), second as *char, strlen(&second), str_concat);
 
     loop from 0 to concat_len with i {
         def c: *char = str_concat + i;
+        write(*c)
     }
 
     syscall(WRITE_SYSCALL, STDOUT, str_concat, concat_len)
 }
 
-fun main2() {
+fun main() {
     def hel: str = "hello_world\0";
     def capital_a: int8 = 65;
 
-    def addr: int = syscall(MMAP_SYSCALL, 0, 1024, PROT_READ_PROT_WRITE, MAP_PRIVATE_MAP_ANONYMOUS, -1, 0);
+    -- def addr: int = syscall(MMAP_SYSCALL, 0, 1024, PROT_READ_PROT_WRITE, MAP_PRIVATE_MAP_ANONYMOUS, -1, 0);
 
-    write("mmap ret = ")
-    print_int(addr)
+    -- write("mmap ret = ")
+    -- print_int(addr)
 
-    def address: *int8 = addr as *int8;
+    def address: *int = addr as *int;
     def addr_1: *int8 = address + 1;
     def addr_2: *int8 = address + 2;
     def addr_4: *int8 = address + 4;
     def addr_3: *int8 = address + 3;
+
+    write(address)
+    write(addr_1)
+    write(addr_2)
+    write(addr_4)
+    write(addr_3)
 
     *address = 65;
     *addr_1 = 65;
     *addr_2 = 65;
     *addr_3 = 65;
     *addr_4 = 10;
+
+    syscall(WRITE_SYSCALL, STDOUT, address, 5)
+
+    def substr: str = "AA\0";
                
-    def write_ret: int = syscall(WRITE_SYSCALL, STDOUT, addr, 5)
-    write("write ret = ")
-    print_int(write_ret)
+    write("string_ends_with: ", string_ends_with(address, 5, substr as *char, strlen(&substr)))
 }
 
 main()

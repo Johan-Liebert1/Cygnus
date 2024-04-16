@@ -17,6 +17,7 @@ mem file_len 32
 
 mem req_method 32
 mem req_path 256
+mem file_to_read 256
 
 const PRINT_REQ: int = 1;
 const SPACE_ASCII: int8 = 32;
@@ -32,8 +33,11 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
         syscall(WRITE_SYSCALL, STDOUT, req, read_bytes);
     }
 
+    def dot_html: str = ".html";
+
     def http_ok: str = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK";
     def http_404: str = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
+    def http_500: str = "HTTP/1.1 500 Internal Server Error\r\n\r\n";
 
     def http_index_html: str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ";
     def http_index_html_len: int = strlen(&http_index_html);
@@ -41,7 +45,7 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
     def header_body_seperator: str = "\r\n\r\n";
     def header_body_seperator_len: int = strlen(&header_body_seperator);
 
-    def index_html_file: str = "/home/pragyan/Rust/lang/examples/http_server/";
+    def index_html_file_dir_path: str = "/home/pragyan/Rust/lang/examples/http_server";
 
     -- we'll only parse the method and path for now
     def idx: int = 0;
@@ -58,8 +62,6 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
 
         idx += 1;
     }
-
-    write("method_ends_at_idx: ", method_ends_at_idx)
 
     -- consume the space character
     idx += 1;
@@ -79,16 +81,42 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
         idx += 1;
     }
 
-    def index_html: str = "index.html";
     def path_as_char: *char = req + path_starts_at_idx;
+    def path_len: int = path_ends_at_idx - path_starts_at_idx + 1;
 
-    def file_read_bytes: int = read_file_into_memory(read_data, 4096, index_html_file as *char);
+    if string_ends_with(path_as_char, path_len, dot_html as *char, strlen(&dot_html)) == 0 {
+        def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_404 as *char, strlen(&http_404));
+
+        write("Writing http_404 to connfd returned: ");
+        print_int(write_ret)
+        write("Client asked for path: ")
+        syscall(WRITE_SYSCALL, STDOUT, path_as_char, path_len)
+        write("\n");
+
+        syscall(CLOSE_SYSCALL, connfd);
+        return;
+    }
+
+    def final_file_abs_path: int = str_concat(
+        index_html_file_dir_path as *char, 
+        strlen(&index_html_file_dir_path), 
+        path_as_char, 
+        path_ends_at_idx - path_starts_at_idx + 1,
+        file_to_read
+    );
+    
+    syscall(WRITE_SYSCALL, STDOUT, path_as_char, path_ends_at_idx - path_starts_at_idx + 1)
+    write("\n")
+    syscall(WRITE_SYSCALL, STDOUT, file_to_read, final_file_abs_path)
+
+    def file_read_bytes: int = read_file_into_memory(read_data, 4096, file_to_read as *char);
 
     if file_read_bytes < 0 {
+        syscall(WRITE_SYSCALL, connfd, http_500 as *char, strlen(&http_500));
         write("read_file_into_memory returned: ")
         print_int(file_read_bytes)
     } else {
-        write("Read ", file_read_bytes, " bytes from file ", index_html_file, "\n")
+        write("Read ", file_read_bytes, " bytes from file ", file_to_read, "\n")
 
         def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_index_html as *char, http_index_html_len);
         write("Writing to connfd returned: ");
@@ -105,8 +133,9 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
         write("Writing to connfd returned: ");
         print_int(write_ret)
 
-        syscall(CLOSE_SYSCALL, connfd);
     }
+
+    syscall(CLOSE_SYSCALL, connfd);
 }
 
 fun main() {
@@ -152,7 +181,6 @@ fun main() {
         def read_bytes: int = syscall(READ_SYSCALL, connfd, read_data, 4096);
 
         parse_http_request(connfd, read_data, read_bytes);
-
     }
 }
 

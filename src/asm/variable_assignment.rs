@@ -105,7 +105,9 @@ impl ASM {
         let mut is_ptr_deref = false;
 
         match *var_ptr_type.clone() {
-            VarType::Ptr(_) => todo!(),
+            VarType::Ptr(ptr_tpye) => self.assign_local_pointer(&ptr_tpye, var_offset, times_dereferenced),
+
+            VarType::Unknown => todo!(),
 
             // assignment to ptr to a character
             // basically a CStr
@@ -113,10 +115,6 @@ impl ASM {
             // TODO: Also handle things like
             // def ch: char = 'a';
             // def ch_ptr: *char = &ch;
-            VarType::Char => {}
-
-            VarType::Unknown => todo!(),
-
             t => {
                 is_ptr_deref = times_dereferenced > 0;
 
