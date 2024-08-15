@@ -1,10 +1,19 @@
-fun thingy() -> int8 {
-    def thin: int8 = 300;
-    return thin;
+struct mah_struct {
+    val: int,
+};
+
+fun modify(ss_infunc: *int) {
+    *ss_infunc = 4;
 }
 
 fun main() {
-    write("thingy() = ", thingy());
+    -- def ss: mah_struct = mah_struct { val: 2 };
+    -- modify(&ss);
+
+    def a: int = 5;
+    modify(&a);
+
+    write("a.val = ", a.thingy)
 }
 
 main()

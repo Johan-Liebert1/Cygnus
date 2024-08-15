@@ -176,9 +176,18 @@ impl AST for Variable {
                         }
                     },
 
-                    None => {
-                        compiler_error(format!("Type '{}' not defined", self.var_type), self.get_token());
-                    }
+                    None => match &self.var_type {
+                        VarType::Unknown => {
+                            compiler_error(format!("Type '{}' not defined", self.var_type), self.get_token())
+                        }
+
+                        tt => {
+                            compiler_error(
+                                format!("Cannot access '{}' on type '{}'", self.member_access[0], tt),
+                                self.get_token(),
+                            );
+                        }
+                    },
                 }
 
                 trace!("Final var type: {}, {}", self.result_type, self.member_access[0]);
