@@ -1,7 +1,7 @@
 use crate::{
     helpers::{compiler_error, unexpected_token},
     lexer::{
-        tokens::{Bracket, Number},
+        tokens::{Bracket, Number, Operations},
         types::VarType,
     },
     trace,
@@ -70,6 +70,8 @@ impl Parser {
 
                             // This could be a user defined type
                             TokenEnum::Variable(var_type_name) => {
+                                trace!("var_type_name {}", var_type_name);
+
                                 let var_name_clone = var_type_name.clone();
 
                                 let found = self.user_defined_types.iter().find(|var| var.name == *var_name_clone);
@@ -95,6 +97,49 @@ impl Parser {
                                     false,
                                     0,
                                 );
+                            }
+
+                            TokenEnum::Op(Operations::Multiply) => {
+                                // pointer to a user defined type
+                                // Since we can't really lex these
+
+                                // consume '*'
+                                self.get_next_token();
+
+                                let next_token = self.get_next_token();
+
+                                if let TokenEnum::Variable(var_type_name) = &next_token.token {
+                                    let var_name_clone = var_type_name.clone();
+
+                                    let found = self.user_defined_types.iter().find(|var| var.name == *var_name_clone);
+
+                                    if found.is_none() {
+                                        compiler_error(format!("No such type '{}'", var_type_name), &token);
+                                        exit(1);
+                                    }
+
+                                    let var_type = found.unwrap().type_.clone();
+
+                                    trace!("{var_type}");
+
+                                    let mut actual_var_type = var_type.clone();
+
+                                    trace!("{actual_var_type}");
+
+                                    self.check_if_array_type(&mut actual_var_type, &var_type);
+
+                                    return Variable::new(
+                                        Box::new(next_token),
+                                        VarType::Ptr(Box::new(actual_var_type)),
+                                        var_name.into(),
+                                        false,
+                                        false,
+                                        0,
+                                    );
+                                } else {
+                                    unexpected_token(&next_token, None);
+                                    exit(1);
+                                }
                             }
 
                             tok => {

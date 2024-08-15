@@ -151,11 +151,13 @@ impl AST for Variable {
                 }
             }
 
+            trace!("self.var_type = '{}'. Line: {}", self.var_type, self.token.line_number);
+
             if self.member_access.len() > 0 {
                 match call_stack
                     .user_defined_types
                     .iter()
-                    .find(|x| x.name == format!("{}", self.var_type))
+                    .find(|x| { x.name == format!("{}", self.var_type.get_pointer_type()) })
                 {
                     Some(user_defined_type) => match &user_defined_type.type_ {
                         // TODO: Handle struct -> struct -> member_access here
@@ -190,7 +192,7 @@ impl AST for Variable {
                     },
                 }
 
-                trace!("Final var type: {}, {}", self.result_type, self.member_access[0]);
+                trace!("Final var type: {}, {:?}. Line: {}", self.result_type, self.member_access, self.token.line_number);
             }
         } else {
             helpers::compiler_error(
@@ -202,10 +204,6 @@ impl AST for Variable {
         if self.store_address {
             self.result_type = VarType::Ptr(Box::new(self.var_type.clone()))
         }
-
-        // if self.token.line_number == 30 {
-        //     trace!("{}, {}", self.var_name, self.result_type);
-        // }
     }
 
     fn get_node(&self) -> ASTNodeEnum {

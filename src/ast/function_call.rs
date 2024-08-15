@@ -51,6 +51,7 @@ impl AST for FunctionCall {
 
                     match arg.borrow().get_node() {
                         ASTNodeEnum::Variable(v) => {
+                            println!("token: {:?}",arg.borrow().get_token());
                             asm.func_write_var(v);
                         }
 

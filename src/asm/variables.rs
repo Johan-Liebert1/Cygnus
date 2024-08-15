@@ -1,4 +1,5 @@
 use core::panic;
+use std::fmt::format;
 
 use crate::{
     ast::variable::{self, Variable},
@@ -36,7 +37,10 @@ impl ASM {
                 } else if variable.store_address {
                     self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
                 } else {
-                    self.extend_current_label(vec![format!("mov {}, [rbp - {}]", reg_name, ar_var_offset), format!("push rax")]);
+                    self.extend_current_label(vec![
+                        format!("mov {}, [rbp - {}]", reg_name, ar_var_offset),
+                        format!("push rax"),
+                    ]);
                 }
             }
 
@@ -82,6 +86,11 @@ impl ASM {
                 } else {
                     self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
                 }
+            }
+
+            VarType::Struct(name, members) => {
+                self.extend_current_label(vec![format!(";; TODO: handle parsing {}", name)]);
+                trace!("{name}, members = {:?}", members);
             }
 
             type_ => {
