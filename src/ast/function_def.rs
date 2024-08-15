@@ -23,7 +23,7 @@ use super::{
 #[derive(Debug)]
 pub struct FunctionDefinition {
     name: String,
-    pub parameters: Vec<Variable>,
+    pub parameters: Vec<Rc<RefCell<Variable>>>,
     block: ASTNode,
     /// How much to allocate on the stack to make room for local variables
     stack_var_size: usize,
@@ -31,7 +31,7 @@ pub struct FunctionDefinition {
 }
 
 impl FunctionDefinition {
-    pub fn new(name: String, arguments: Vec<Variable>, block: ASTNode, return_type: VarType) -> Self {
+    pub fn new(name: String, arguments: Vec<Rc<RefCell<Variable>>>, block: ASTNode, return_type: VarType) -> Self {
         Self {
             name,
             parameters: arguments,
@@ -48,7 +48,7 @@ impl AST for FunctionDefinition {
 
         for arg in &self.parameters {
             // params cannot be dereferenced
-            call_stack.insert_variable(arg.clone());
+            call_stack.insert_variable(Rc::clone(arg));
         }
 
         // args -> rax, rdi, rsi, rdx, r10, r8, r9
@@ -67,7 +67,7 @@ impl AST for FunctionDefinition {
     fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
         // TODO: handle global variables and function parameters with the same name
         for param in &self.parameters {
-            let value = match param.var_type {
+            let value = match param.borrow().var_type {
                 VarType::Int => todo!(),
                 VarType::Int8 => todo!(),
                 VarType::Int16 => todo!(),
@@ -81,13 +81,13 @@ impl AST for FunctionDefinition {
                 VarType::Struct(_, _) => todo!(),
             };
 
-            v.insert(param.var_name.clone(), VariableEnum::Number(value));
+            v.insert(param.borrow().var_name.clone(), VariableEnum::Number(value));
         }
 
         self.block.borrow().visit(v, f, call_stack);
 
         for param in &self.parameters {
-            v.remove(&param.var_name.clone());
+            v.remove(&param.borrow().var_name.clone());
         }
 
         return VisitResult {
@@ -107,7 +107,7 @@ impl AST for FunctionDefinition {
         call_stack.push(self.name.to_string(), ActivationRecordType::Function(0));
 
         for arg in &self.parameters {
-            call_stack.insert_variable(arg.clone());
+            call_stack.insert_variable(Rc::clone(arg));
         }
 
         self.block.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));

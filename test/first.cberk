@@ -1,18 +1,7 @@
-struct mah_struct {
-    val: int,
-};
-
-fun modify(ss_infunc: *mah_struct) {
-    ss_infunc.val = 4;
-    write("ss_infunc.val = ", ss_infunc.val)
-}
-
 fun main() {
-    def ss: mah_struct = mah_struct { val: 2 };
+    def a: int = 0;
 
-    modify(&ss);
-
-    write("a.val = ", ss.val)
+    a += 2;
 }
 
 main()

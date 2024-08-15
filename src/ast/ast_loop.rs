@@ -25,7 +25,7 @@ pub struct Loop {
     /// an expression
     to_range: Option<ASTNode>,
     step_by: Option<ASTNode>,
-    with_var: Option<Variable>,
+    with_var: Option<Rc<RefCell<Variable>>>,
     block: ASTNode,
     loop_number: usize,
 }
@@ -35,7 +35,7 @@ impl Loop {
         from_range: Option<ASTNode>,
         to_range: Option<ASTNode>,
         step_by: Option<ASTNode>,
-        with_var: Option<Variable>,
+        with_var: Option<Rc<RefCell<Variable>>>,
         block: ASTNode,
         loop_number: usize,
     ) -> Self {
@@ -67,37 +67,37 @@ impl Loop {
         // TODO: Fix this, this doesn't need to be done this way
         //
         // These variables live in the outer scope not in the loop scope
-        call_stack.insert_variable_in_most_recent_function(Variable::new(
+        call_stack.insert_variable_in_most_recent_function(Rc::new(RefCell::new(Variable::new(
             Box::new(token.clone()),
             VarType::Int,
             from_name,
             false,
             false,
             0,
-        ));
+        ))));
 
-        call_stack.insert_variable_in_most_recent_function(Variable::new(
+        call_stack.insert_variable_in_most_recent_function(Rc::new(RefCell::new(Variable::new(
             Box::new(token.clone()),
             VarType::Int,
             to_name,
             false,
             false,
             0,
-        ));
+        ))));
 
-        call_stack.insert_variable_in_most_recent_function(Variable::new(
+        call_stack.insert_variable_in_most_recent_function(Rc::new(RefCell::new(Variable::new(
             Box::new(token),
             VarType::Int,
             step_name,
             false,
             false,
             0,
-        ));
+        ))));
 
         call_stack.push("".into(), ActivationRecordType::Loop);
 
         if let Some(var) = &self.with_var {
-            call_stack.insert_variable(var.clone())
+            call_stack.insert_variable(Rc::clone(var))
         }
     }
 }

@@ -21,7 +21,7 @@ use crate::{
 //
 // type ActivationRecordVariables = HashMap<String, ARVariable>;
 
-pub type ARVariable = Variable;
+pub type ARVariable = Rc<RefCell<Variable>>;
 type ActivationRecordVariablesValue = ARVariable;
 type ActivationRecordVariables = HashMap<String, ActivationRecordVariablesValue>;
 
@@ -124,10 +124,12 @@ impl<'a> CallStack<'a> {
         return false;
     }
 
-    pub fn get_var_with_name(&self, var_name: &String) -> (Option<&Variable>, &ActivationRecordType) {
+    pub fn get_var_with_name(&self, var_name: &String) -> (Option<&Rc<RefCell<Variable>>>, &ActivationRecordType) {
         for record in self.call_stack.iter().rev() {
             match record.variable_members.get(var_name) {
-                Some(var) => return (Some(&var), &record.record_type),
+                Some(var) => {
+                    return (Some(var), &record.record_type);
+                }
 
                 None => continue,
             }
@@ -137,9 +139,10 @@ impl<'a> CallStack<'a> {
     }
 
     pub fn insert_variable_in_most_recent_function(&mut self, mut variable: ActivationRecordVariablesValue) {
-        variable.offset = self.update_function_variable_size_and_get_offset(&variable);
+        variable.borrow_mut().offset = self.update_function_variable_size_and_get_offset(&variable);
 
-        let var_name = &variable.var_name;
+        let immutable_variable = variable.borrow();
+        let var_name = &immutable_variable.var_name;
 
         let mut inserted = false;
 
@@ -151,7 +154,7 @@ impl<'a> CallStack<'a> {
                     panic!("Variable '{}' is already defined", var_name);
                 }
 
-                record.variable_members.insert(var_name.into(), variable);
+                record.variable_members.insert(var_name.into(), Rc::clone(&variable));
 
                 break;
             }
@@ -163,7 +166,9 @@ impl<'a> CallStack<'a> {
     }
 
     fn update_function_variable_size_and_get_offset(&mut self, var: &ARVariable) -> usize {
-        let actual_var_size = var.var_type.get_size_handle_array_and_struct(&var);
+        let borrowed_var = var.borrow();
+
+        let actual_var_size = borrowed_var.var_type.get_size_handle_array_and_struct(&borrowed_var);
         let mut offset = 0;
 
         for record in self.call_stack.iter_mut().rev() {
@@ -176,8 +181,12 @@ impl<'a> CallStack<'a> {
                             if stack_var_size > 0 {
                                 offset = stack_var_size - record.current_offset;
 
-                                if let Some(..) = self.user_defined_types.iter().find(|x| x.type_ == var.var_type) {
-                                    if var.member_access.len() != 0 {
+                                if let Some(..) = self
+                                    .user_defined_types
+                                    .iter()
+                                    .find(|x| x.type_ == var.borrow().var_type)
+                                {
+                                    if borrowed_var.member_access.len() != 0 {
                                         record.current_offset += actual_var_size;
                                     }
                                 } else {
@@ -203,9 +212,9 @@ impl<'a> CallStack<'a> {
     }
 
     pub fn insert_variable(&mut self, mut variable: ActivationRecordVariablesValue) {
-        variable.offset = self.update_function_variable_size_and_get_offset(&variable);
+        variable.borrow_mut().offset = self.update_function_variable_size_and_get_offset(&variable);
 
-        let var_name = &variable.var_name;
+        let var_name = &variable.borrow().var_name;
 
         match self.call_stack.last_mut() {
             Some(last_record) => {
@@ -215,24 +224,26 @@ impl<'a> CallStack<'a> {
                             format!(
                                 "Variable '{}' is already defined on line {}",
                                 var_name,
-                                var.get_token().line_number
+                                var.borrow().get_token().line_number
                             ),
-                            variable.get_token(),
+                            variable.borrow().get_token(),
                         );
                         exit(1);
                     }
 
                     None => {
-                        if let VarType::Struct(_, struct_members) = &mut variable.result_type {
+                        if let VarType::Struct(_, struct_members) = &variable.borrow().result_type {
                             if struct_members.borrow().len() == 0 {
-                                last_record.variable_members.insert(var_name.into(), variable);
+                                last_record
+                                    .variable_members
+                                    .insert(var_name.into(), Rc::clone(&variable));
                                 return;
                             }
 
                             // the struct has members
-                            struct_members.borrow_mut().first_mut().unwrap().offset = variable.offset;
+                            struct_members.borrow_mut().first_mut().unwrap().offset = variable.borrow().offset;
 
-                            let mut prev_member_offset = variable.offset;
+                            let mut prev_member_offset = variable.borrow().offset;
                             let mut prev_member_size = struct_members.borrow().first().unwrap().member_type.get_size();
 
                             // variable.offset will be equal to the first struct member
@@ -244,7 +255,9 @@ impl<'a> CallStack<'a> {
                             }
                         }
 
-                        last_record.variable_members.insert(var_name.into(), variable)
+                        last_record
+                            .variable_members
+                            .insert(var_name.into(), Rc::clone(&variable))
                     }
                 }; // last_record.variable_members.get(var_name) end
             }
