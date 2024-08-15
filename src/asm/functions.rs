@@ -1,3 +1,5 @@
+use std::{cell::RefCell, rc::Rc};
+
 use crate::{ast::variable::Variable, lexer::types::VarType, semantic_analyzer::semantic_analyzer::CallStack};
 
 use super::asm::ASM;
@@ -29,7 +31,7 @@ impl ASM {
         call_stack: &CallStack,
         function_name: &String,
         local_var_size: usize,
-        func_params: &Vec<Variable>,
+        func_params: &Vec<Rc<RefCell<Variable>>>,
     ) {
         self.change_current_label(format!("_{function_name}"));
 
@@ -47,19 +49,19 @@ impl ASM {
             // we have to get the variable from the call stack as call stack's where we set the
             // variable offset and stuff. The func_params themselves all have an offset of 0
 
-            let (call_stack_var, _) = call_stack.get_var_with_name(&var.var_name);
+            let (call_stack_var, _) = call_stack.get_var_with_name(&var.borrow().var_name);
 
             match call_stack_var {
                 Some(var) => {
                     instructions.extend([
-                        format!(";; param name {}", var.var_name),
-                        format!("mov [rbp - {}], {}", var.offset, register),
+                        format!(";; param name {}", var.borrow().var_name),
+                        format!("mov [rbp - {}], {}", var.borrow().offset, register),
                     ]);
                 }
 
                 None => unreachable!(
                     "Did not find variable {} in the call stack. Must be a bug in function definition AST",
-                    var.var_name
+                    var.borrow().var_name
                 ),
             }
         }

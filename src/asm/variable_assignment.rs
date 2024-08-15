@@ -236,7 +236,7 @@ impl ASM {
                     ActivationRecordType::Global => {
                         match assignment_type {
                             AssignmentTypes::Equals => {
-                                match &var.var_type {
+                                match &var.borrow().var_type {
                                     VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                                         instructions.extend([format!("pop rax")])
                                     }
@@ -253,7 +253,7 @@ impl ASM {
                                     }
 
                                     VarType::Ptr(ptr_var_type) => {
-                                        trace!("{}", var.var_type);
+                                        trace!("{}", var.borrow().var_type);
 
                                         match **ptr_var_type {
                                             VarType::Struct(_, _) => todo!(),
@@ -261,7 +261,7 @@ impl ASM {
                                                 // Store whatever's on the top of the stack into
                                                 // this memory location
                                                 instructions
-                                                    .extend([format!("pop rax"), format!("mov rbx, {}", var.var_name)]);
+                                                    .extend([format!("pop rax"), format!("mov rbx, {}", var.borrow().var_name)]);
                                                 instructions.extend(
                                                     std::iter::repeat(format!("mov rbx, [rbx]"))
                                                         .take(times_dereferenced),
@@ -314,7 +314,7 @@ impl ASM {
                         match assignment_type {
                             AssignmentTypes::Equals => {
                                 // var = variable from call stack
-                                match &var.var_type {
+                                match &var.borrow().var_type {
                                     VarType::Struct(name, members) => {
                                         // Assignment to the struct variable
                                         if variable_assigned_to.member_access.len() == 0 {
@@ -350,12 +350,12 @@ impl ASM {
                                     }
 
                                     VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                        self.assign_local_number(var.offset, is_function_call_assign, &var.var_type)
+                                        self.assign_local_number(var.borrow().offset, is_function_call_assign, &var.borrow().var_type)
                                     }
 
                                     VarType::Float => todo!(),
 
-                                    VarType::Str => self.assign_local_string(var.offset),
+                                    VarType::Str => self.assign_local_string(var.borrow().offset),
 
                                     VarType::Char => {
                                         // TODO: Update this
@@ -367,7 +367,7 @@ impl ASM {
                                         instructions.extend([
                                             format!("mov rbx, 1"),
                                             format!("pop rax"),
-                                            format!("mov [rbp - {}], rax", var.offset),
+                                            format!("mov [rbp - {}], rax", var.borrow().offset),
                                         ]);
 
                                         is_string = true;
@@ -375,10 +375,10 @@ impl ASM {
 
                                     // Assignment to a pointer should be simple enough
                                     VarType::Ptr(var_ptr_type) => {
-                                        self.assign_local_pointer(var_ptr_type, var.offset, times_dereferenced)
+                                        self.assign_local_pointer(var_ptr_type, var.borrow().offset, times_dereferenced)
                                     }
                                     VarType::Array(type_, size) => {
-                                        self.assign_local_array(var.offset, &array_access_index, type_, size)
+                                        self.assign_local_array(var.borrow().offset, &array_access_index, type_, size)
                                     }
 
                                     VarType::Unknown => todo!(),
@@ -387,20 +387,20 @@ impl ASM {
 
                             AssignmentTypes::PlusEquals => self.extend_current_label(
                                 [
-                                    format!("mov rax, [rbp - {}]", var.offset),
+                                    format!("mov rax, [rbp - {}]", var.borrow().offset),
                                     format!("pop rbx"),
                                     format!("add rax, rbx"),
-                                    format!("mov [rbp - {}], rax", var.offset),
+                                    format!("mov [rbp - {}], rax", var.borrow().offset),
                                 ]
                                 .into(),
                             ),
 
                             AssignmentTypes::MinusEquals => self.extend_current_label(
                                 [
-                                    format!("mov rax, [rbp - {}]", var.offset),
+                                    format!("mov rax, [rbp - {}]", var.borrow().offset),
                                     format!("pop rbx"),
                                     format!("sub rax, rbx"),
-                                    format!("mov [rbp - {}], rax", var.offset),
+                                    format!("mov [rbp - {}], rax", var.borrow().offset),
                                 ]
                                 .into(),
                             ),

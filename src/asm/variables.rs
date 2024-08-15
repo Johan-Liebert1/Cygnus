@@ -262,7 +262,7 @@ impl ASM {
                         VarType::Int16 => todo!(),
                         VarType::Int32 => todo!(),
 
-                        VarType::Ptr(_) => self.handle_global_ptr(variable, ar_var),
+                        VarType::Ptr(_) => self.handle_global_ptr(variable, &ar_var.borrow()),
 
                         VarType::Array(..) => todo!(),
                         VarType::Unknown => todo!(),
@@ -273,18 +273,18 @@ impl ASM {
                         // cannot use ar_var here as it does not have the computed types
                         match &variable.var_type {
                             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                self.handle_local_int(variable, ar_var.offset, &variable.var_type)
+                                self.handle_local_int(variable, ar_var.borrow().offset, &variable.var_type)
                             }
 
-                            VarType::Str => self.handle_local_str(variable, ar_var.offset),
+                            VarType::Str => self.handle_local_str(variable, ar_var.borrow().offset),
 
                             // TODO: Handle pointer to pointer to something
-                            VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, ar_var.offset),
+                            VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, ar_var.borrow().offset),
 
                             VarType::Float => todo!(),
                             VarType::Char => todo!(),
 
-                            VarType::Array(var_type, _) => self.handle_asm_for_array(var_type, variable, ar_var),
+                            VarType::Array(var_type, _) => self.handle_asm_for_array(var_type, variable, &ar_var.borrow()),
 
                             VarType::Struct(_, member_access) => {
                                 let first = &member_access.borrow()[0];

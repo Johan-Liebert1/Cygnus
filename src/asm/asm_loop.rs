@@ -1,4 +1,5 @@
 use core::panic;
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{ast::variable::Variable, semantic_analyzer::semantic_analyzer::CallStack, trace};
 
@@ -18,7 +19,7 @@ impl ASM {
         ]);
     }
 
-    pub fn gen_loop_start(&mut self, loop_number: usize, call_stack: &CallStack, with_var: &Option<Variable>) {
+    pub fn gen_loop_start(&mut self, loop_number: usize, call_stack: &CallStack, with_var: &Option<Rc<RefCell<Variable>>>) {
         // we should have in the stack
         //
         // step <- stack top
@@ -37,9 +38,9 @@ impl ASM {
 
         match (from, to, step) {
             ((Some(from), _), (Some(to), _), (Some(step), _)) => {
-                from_offset = from.offset;
-                to_offset = to.offset;
-                step_offset = step.offset;
+                from_offset = from.borrow().offset;
+                to_offset = to.borrow().offset;
+                step_offset = step.borrow().offset;
             }
 
             _ => {
@@ -59,14 +60,14 @@ impl ASM {
         let mut call_stack_var = None;
 
         if let Some(v) = with_var {
-            (call_stack_var, _) = call_stack.get_var_with_name(&v.var_name);
+            (call_stack_var, _) = call_stack.get_var_with_name(&v.borrow().var_name);
 
             if call_stack_var.is_none() {
                 panic!("`call_stack_var` is none but loop has a variable")
             }
 
             // here rax contains the from value
-            loop_start.extend(vec![format!("mov [rbp - {}], rax", call_stack_var.unwrap().offset)]);
+            loop_start.extend(vec![format!("mov [rbp - {}], rax", call_stack_var.unwrap().borrow().offset)]);
         }
 
         loop_start.push(format!(".loop_{}:", loop_number));
@@ -74,7 +75,7 @@ impl ASM {
         self.extend_current_label(loop_start);
     }
 
-    pub fn gen_loop_end(&mut self, loop_number: usize, call_stack: &CallStack, with_var: &Option<Variable>) {
+    pub fn gen_loop_end(&mut self, loop_number: usize, call_stack: &CallStack, with_var: &Option<Rc<RefCell<Variable>>>) {
         let mut loop_end: Vec<String> = vec![];
 
         let (from, _) = call_stack.get_var_with_name(&format!("loop_{}_from", loop_number));
@@ -85,9 +86,9 @@ impl ASM {
 
         match (from, to, step) {
             (Some(from), Some(to), Some(step)) => {
-                from_offset = from.offset;
-                to_offset = to.offset;
-                step_offset = step.offset;
+                from_offset = from.borrow().offset;
+                to_offset = to.borrow().offset;
+                step_offset = step.borrow().offset;
             }
 
             _ => {
@@ -96,7 +97,7 @@ impl ASM {
         };
 
         if let Some(v) = with_var {
-            let (call_stack_var, _) = call_stack.get_var_with_name(&v.var_name);
+            let (call_stack_var, _) = call_stack.get_var_with_name(&v.borrow().var_name);
 
             if call_stack_var.is_none() {
                 panic!("`call_stack_var` is none but loop has a variable")
@@ -105,10 +106,10 @@ impl ASM {
             // add step to variable
             loop_end.extend([
                 format!(";; inc the loop variable"),
-                format!("mov rdx, [rbp - {}]", call_stack_var.unwrap().offset),
+                format!("mov rdx, [rbp - {}]", call_stack_var.unwrap().borrow().offset),
                 format!("mov rcx, [rbp - {}]", step_offset),
                 format!("add rdx, rcx"),
-                format!("mov [rbp - {}], rdx", call_stack_var.unwrap().offset),
+                format!("mov [rbp - {}], rdx", call_stack_var.unwrap().borrow().offset),
             ]);
         }
 

@@ -252,13 +252,15 @@ impl AST for FunctionCall {
                         let binding = formal_param.borrow();
                         let binding = binding.get_node();
 
-                        let (is_var_assignment_okay, rhs_type) = binding.is_var_assignment_okay(actual_param);
+                        let borrowed_actual_param = actual_param.borrow();
+
+                        let (is_var_assignment_okay, rhs_type) = binding.is_var_assignment_okay(&borrowed_actual_param);
 
                         if !is_var_assignment_okay {
                             compiler_error(
                                 format!(
                                     "Cannot assign param of type {} to '{}', as '{}' is defined as type {}",
-                                    rhs_type, actual_param.var_name, actual_param.var_name, actual_param.result_type
+                                    rhs_type, borrowed_actual_param.var_name, borrowed_actual_param.var_name, borrowed_actual_param.result_type
                                 ),
                                 &self.token,
                             )

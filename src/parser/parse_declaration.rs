@@ -190,6 +190,6 @@ impl Parser {
             self.parse_logical_expression()
         };
 
-        return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(left, right))));
+        return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(Rc::new(RefCell::new(left)), right))));
     }
 }

@@ -32,7 +32,7 @@ impl Parser {
 
             variable.is_memory_block = true;
 
-            let memory_alloc = MemoryAlloc::new(variable, memory_size);
+            let memory_alloc = MemoryAlloc::new(Rc::new(RefCell::new(variable)), memory_size);
 
             return Rc::new(RefCell::new(Box::new(memory_alloc)));
         }
