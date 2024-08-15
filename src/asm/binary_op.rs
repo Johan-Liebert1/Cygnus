@@ -111,13 +111,9 @@ impl ASM {
         // result will always be in rax
         // We will also never dereference a string as we want the character address
         match result_type {
-            VarType::Int => {
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                 instructions.push(format!("push rax"));
             }
-
-            VarType::Int8 => todo!(),
-            VarType::Int16 => todo!(),
-            VarType::Int32 => todo!(),
 
             VarType::Str => todo!(),
             VarType::Float => todo!(),
