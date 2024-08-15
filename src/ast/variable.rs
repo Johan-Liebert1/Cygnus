@@ -122,18 +122,33 @@ impl AST for Variable {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        let (mut variable_in_stack, _) = call_stack.get_var_with_name(&self.var_name);
+        let (variable_in_stack, _) = call_stack.get_var_with_name(&self.var_name);
 
         if let Some(variable_in_stack) = variable_in_stack {
-            self.var_type = if let Some(casted_type) = &self.type_cast {
-                casted_type.clone()
+            if let Some(casted_type) = &self.type_cast {
+                self.var_type = casted_type.clone();
             } else {
-                variable_in_stack.var_type.clone()
-            };
+                // actually need this as we don't have type information for the variable all
+                // the time. We only have it at time of decleration and store it in the call
+                // stack
+                //
+                // have to do this here as the variable_in_stack comes from variable definition, which
+                // is the only AST node where we have the information about this variable
 
-            // have to do this here as the variable_in_stack comes from variable definition, which
-            // is the only AST node where we have the information about this variable
-            self.is_const = variable_in_stack.is_const;
+                //
+                // In decleration statement we borrow_mut the current variable to call
+                // semantic_visit on the variable. So borrowing again will panic with
+                // AlreadyBorrowed mutable error
+
+                match variable_in_stack.try_borrow() {
+                    Ok(variable_in_stack_borrowed) => {
+                        self.var_type = variable_in_stack.borrow().var_type.clone();
+                        self.is_const = variable_in_stack.borrow().is_const;
+                    }
+
+                    Err(_) => { /* do nothign here */ }
+                };
+            };
 
             self.result_type = self.var_type.clone();
 
@@ -155,7 +170,7 @@ impl AST for Variable {
                 match call_stack
                     .user_defined_types
                     .iter()
-                    .find(|x| x.name == format!("{}", self.var_type))
+                    .find(|x| x.name == format!("{}", self.var_type.get_pointer_type()))
                 {
                     Some(user_defined_type) => match &user_defined_type.type_ {
                         // TODO: Handle struct -> struct -> member_access here
@@ -176,12 +191,19 @@ impl AST for Variable {
                         }
                     },
 
-                    None => {
-                        compiler_error(format!("Type '{}' not defined", self.var_type), self.get_token());
-                    }
-                }
+                    None => match &self.var_type {
+                        VarType::Unknown => {
+                            compiler_error(format!("Type '{}' not defined", self.var_type), self.get_token())
+                        }
 
-                trace!("Final var type: {}, {}", self.result_type, self.member_access[0]);
+                        tt => {
+                            compiler_error(
+                                format!("Cannot access '{}' on type '{}'", self.member_access[0], tt),
+                                self.get_token(),
+                            );
+                        }
+                    },
+                }
             }
         } else {
             helpers::compiler_error(
@@ -193,10 +215,6 @@ impl AST for Variable {
         if self.store_address {
             self.result_type = VarType::Ptr(Box::new(self.var_type.clone()))
         }
-
-        // if self.token.line_number == 30 {
-        //     trace!("{}, {}", self.var_name, self.result_type);
-        // }
     }
 
     fn get_node(&self) -> ASTNodeEnum {

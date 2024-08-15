@@ -19,13 +19,13 @@ use super::{
 
 #[derive(Debug)]
 pub struct MemoryAlloc {
-    variable: Variable,
+    variable: Rc<RefCell<Variable>>,
     size: Rc<RefCell<Box<dyn AST>>>,
     pub result_type: VarType,
 }
 
 impl MemoryAlloc {
-    pub fn new(variable: Variable, size: Rc<RefCell<Box<dyn AST>>>) -> Self {
+    pub fn new(variable: Rc<RefCell<Variable>>, size: Rc<RefCell<Box<dyn AST>>>) -> Self {
         Self {
             variable,
             size,
@@ -40,7 +40,7 @@ impl AST for MemoryAlloc {
     }
 
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        call_stack.insert_variable(self.variable.clone());
+        call_stack.insert_variable(Rc::clone(&self.variable));
 
         // The size has to be known at compile time
 
@@ -78,11 +78,11 @@ impl AST for MemoryAlloc {
             }
         };
 
-        asm.generate_memory_alloc(&self.variable.var_name, size as usize)
+        asm.generate_memory_alloc(&self.variable.borrow().var_name, size as usize)
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        call_stack.insert_variable(self.variable.clone());
+        call_stack.insert_variable(Rc::clone(&self.variable));
 
         self.size.borrow_mut().semantic_visit(call_stack, f);
     }

@@ -13,7 +13,7 @@ use crate::{
 use super::parser::{Parser, ParserFunctions};
 
 impl Parser {
-    fn parse_function_definition_parameters(&mut self) -> Vec<Variable> {
+    fn parse_function_definition_parameters(&mut self) -> Vec<Rc<RefCell<Variable>>> {
         let mut parameters = vec![];
 
         loop {
@@ -38,7 +38,7 @@ impl Parser {
 
                 _ => {
                     let variable = self.parse_variable();
-                    parameters.push(variable);
+                    parameters.push(Rc::new(RefCell::new(variable)));
                 }
             };
         }

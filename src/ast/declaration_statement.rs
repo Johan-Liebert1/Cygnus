@@ -23,12 +23,12 @@ use super::{
 
 #[derive(Debug)]
 pub struct DeclarationStatement {
-    left: Variable,
+    left: Rc<RefCell<Variable>>,
     right: ASTNode,
 }
 
 impl DeclarationStatement {
-    pub fn new(left: Variable, right: ASTNode) -> Self {
+    pub fn new(left: Rc<RefCell<Variable>>, right: ASTNode) -> Self {
         Self { left, right }
     }
 
@@ -36,7 +36,7 @@ impl DeclarationStatement {
         let node_borrow = self.right.borrow();
         let node = node_borrow.get_node();
 
-        let (is_assignment_okay, rhs_type) = node.is_var_assignment_okay(&self.left);
+        let (is_assignment_okay, rhs_type) = node.is_var_assignment_okay(&self.left.borrow());
 
         if !is_assignment_okay {
             trace!("Decleration statement: self.left: {:#?}", self.left);
@@ -44,9 +44,9 @@ impl DeclarationStatement {
             helpers::compiler_error(
                 format!(
                     "Cannot assign variable (LHS) of type {} to RHS {}",
-                    self.left.result_type, rhs_type
+                    self.left.borrow().result_type, rhs_type
                 ),
-                self.left.get_token(),
+                self.left.borrow().get_token(),
             );
         }
     }
@@ -54,9 +54,9 @@ impl DeclarationStatement {
 
 impl AST for DeclarationStatement {
     fn visit_com(&self, vars: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        call_stack.insert_variable(self.left.clone());
+        call_stack.insert_variable(Rc::clone(&self.left));
 
-        asm.variable_declaration(&self.left.var_name, call_stack);
+        asm.variable_declaration(&self.left.borrow().var_name, call_stack);
 
         self.right.borrow().visit_com(vars, f, asm, call_stack);
 
@@ -78,14 +78,14 @@ impl AST for DeclarationStatement {
         };
 
         asm.variable_assignment(
-            &self.left.var_name,
+            &self.left.borrow().var_name,
             &AssignmentTypes::Equals,
             call_stack,
             0,
             function_call_assign,
             &None,
             member_order,
-            &self.left,
+            &self.left.borrow(),
         );
     }
 
@@ -97,7 +97,7 @@ impl AST for DeclarationStatement {
     ) -> VisitResult {
         let right_visit = self.right.borrow().visit(vars, functions, call_stack);
 
-        let var_name = String::from(self.left.var_name.as_str());
+        let var_name = String::from(self.left.borrow().var_name.as_str());
 
         // TODO: change this so that the expression is stored here and we need to visit the varible
         // to evaluate the value
@@ -116,7 +116,7 @@ impl AST for DeclarationStatement {
             _ => {
                 helpers::compiler_error(
                     "Variable value is not a Number, String or Variable",
-                    self.left.get_token(),
+                    self.left.borrow().get_token(),
                 );
             }
         }
@@ -136,8 +136,8 @@ impl AST for DeclarationStatement {
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         self.right.borrow_mut().semantic_visit(call_stack, f.clone());
-        call_stack.insert_variable(self.left.clone());
-        self.left.semantic_visit(call_stack, f);
+        call_stack.insert_variable(Rc::clone(&self.left));
+        self.left.borrow_mut().semantic_visit(call_stack, f);
         self.verify_type();
     }
 

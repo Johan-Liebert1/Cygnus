@@ -1,10 +1,7 @@
-fun thingy() -> int8 {
-    def thin: int8 = 300;
-    return thin;
-}
-
 fun main() {
-    write("thingy() = ", thingy());
+    def a: int = 0;
+
+    a += 2;
 }
 
 main()

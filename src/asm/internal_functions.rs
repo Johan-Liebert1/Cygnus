@@ -60,7 +60,8 @@ impl ASM {
         times_dereferenced: usize,
     ) -> Vec<String> {
         match **pointer_var_type {
-            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+            // a char is always represented as an 8 bit number
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => {
                 vec![format!("pop rax"), format!("call _printRAX")]
             }
 
@@ -71,11 +72,6 @@ impl ASM {
                 } else {
                     vec![format!("pop rax"), format!("call _printRAX")]
                 }
-            }
-
-            // a char is always represented as an 8 bit number
-            VarType::Char => {
-                vec![format!("pop rax"), format!("call _printRAX")]
             }
 
             _ => panic!("Unknown type '{pointer_var_type}'"),

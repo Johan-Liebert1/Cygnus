@@ -1,4 +1,5 @@
 use core::panic;
+use std::fmt::format;
 
 use crate::{
     ast::variable::{self, Variable},
@@ -36,7 +37,10 @@ impl ASM {
                 } else if variable.store_address {
                     self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
                 } else {
-                    self.extend_current_label(vec![format!("mov {}, [rbp - {}]", reg_name, ar_var_offset), format!("push rax")]);
+                    self.extend_current_label(vec![
+                        format!("mov {}, [rbp - {}]", reg_name, ar_var_offset),
+                        format!("push rax"),
+                    ]);
                 }
             }
 
@@ -82,6 +86,11 @@ impl ASM {
                 } else {
                     self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
                 }
+            }
+
+            VarType::Struct(name, members) => {
+                self.extend_current_label(vec![format!(";; TODO: handle parsing {}", name)]);
+                trace!("{name}, members = {:?}", members);
             }
 
             type_ => {
@@ -253,7 +262,7 @@ impl ASM {
                         VarType::Int16 => todo!(),
                         VarType::Int32 => todo!(),
 
-                        VarType::Ptr(_) => self.handle_global_ptr(variable, ar_var),
+                        VarType::Ptr(_) => self.handle_global_ptr(variable, &ar_var.borrow()),
 
                         VarType::Array(..) => todo!(),
                         VarType::Unknown => todo!(),
@@ -264,18 +273,18 @@ impl ASM {
                         // cannot use ar_var here as it does not have the computed types
                         match &variable.var_type {
                             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                self.handle_local_int(variable, ar_var.offset, &variable.var_type)
+                                self.handle_local_int(variable, ar_var.borrow().offset, &variable.var_type)
                             }
 
-                            VarType::Str => self.handle_local_str(variable, ar_var.offset),
+                            VarType::Str => self.handle_local_str(variable, ar_var.borrow().offset),
 
                             // TODO: Handle pointer to pointer to something
-                            VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, ar_var.offset),
+                            VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, ar_var.borrow().offset),
 
                             VarType::Float => todo!(),
                             VarType::Char => todo!(),
 
-                            VarType::Array(var_type, _) => self.handle_asm_for_array(var_type, variable, ar_var),
+                            VarType::Array(var_type, _) => self.handle_asm_for_array(var_type, variable, &ar_var.borrow()),
 
                             VarType::Struct(_, member_access) => {
                                 let first = &member_access.borrow()[0];

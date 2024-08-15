@@ -126,14 +126,14 @@ impl Parser {
 
                         // the next token has to be a variable
                         match peek_next_token.token {
-                            TokenEnum::Variable(var_name) => Some(Variable::new(
+                            TokenEnum::Variable(var_name) => Some(Rc::new(RefCell::new(Variable::new(
                                 Box::new(self.get_next_token()),
                                 VarType::Int,
                                 var_name,
                                 false,
                                 false,
                                 0,
-                            )),
+                            )))),
 
                             (ref t) => {
                                 unexpected_token(&peek_next_token, Some(&TokenEnum::Variable("".into())));
