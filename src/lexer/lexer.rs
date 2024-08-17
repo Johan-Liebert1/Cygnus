@@ -10,7 +10,7 @@ use crate::{
 };
 
 use super::{
-    keywords::{self, LOGICAL_AND, LOGICAL_OR, LOGICAL_NOT},
+    keywords::{self, LOGICAL_AND, LOGICAL_NOT, LOGICAL_OR},
     tokens::{Bracket, LogicalOps, Number, Operations, TokenEnum},
     types::{VarType, PREDEFINED_TYPES, TYPE_CHAR, TYPE_INT, TYPE_INT16, TYPE_INT32, TYPE_INT8},
 };

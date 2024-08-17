@@ -260,8 +260,10 @@ impl ASM {
                                             VarType::Int => {
                                                 // Store whatever's on the top of the stack into
                                                 // this memory location
-                                                instructions
-                                                    .extend([format!("pop rax"), format!("mov rbx, {}", var.borrow().var_name)]);
+                                                instructions.extend([
+                                                    format!("pop rax"),
+                                                    format!("mov rbx, {}", var.borrow().var_name),
+                                                ]);
                                                 instructions.extend(
                                                     std::iter::repeat(format!("mov rbx, [rbx]"))
                                                         .take(times_dereferenced),
@@ -349,9 +351,12 @@ impl ASM {
                                         }
                                     }
 
-                                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                        self.assign_local_number(var.borrow().offset, is_function_call_assign, &var.borrow().var_type)
-                                    }
+                                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => self
+                                        .assign_local_number(
+                                            var.borrow().offset,
+                                            is_function_call_assign,
+                                            &var.borrow().var_type,
+                                        ),
 
                                     VarType::Float => todo!(),
 

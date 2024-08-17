@@ -216,6 +216,10 @@ impl<'a> CallStack<'a> {
 
         let var_name = &variable.borrow().var_name;
 
+        // if var_name == "bb" {
+        //     trace!("insert_variable: {:#?}", variable.borrow());
+        // }
+
         match self.call_stack.last_mut() {
             Some(last_record) => {
                 match last_record.variable_members.get(var_name) {

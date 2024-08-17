@@ -44,7 +44,8 @@ impl DeclarationStatement {
             helpers::compiler_error(
                 format!(
                     "Cannot assign variable (LHS) of type {} to RHS {}",
-                    self.left.borrow().result_type, rhs_type
+                    self.left.borrow().result_type,
+                    rhs_type
                 ),
                 self.left.borrow().get_token(),
             );

@@ -19,7 +19,12 @@ impl ASM {
         ]);
     }
 
-    pub fn gen_loop_start(&mut self, loop_number: usize, call_stack: &CallStack, with_var: &Option<Rc<RefCell<Variable>>>) {
+    pub fn gen_loop_start(
+        &mut self,
+        loop_number: usize,
+        call_stack: &CallStack,
+        with_var: &Option<Rc<RefCell<Variable>>>,
+    ) {
         // we should have in the stack
         //
         // step <- stack top
@@ -67,7 +72,10 @@ impl ASM {
             }
 
             // here rax contains the from value
-            loop_start.extend(vec![format!("mov [rbp - {}], rax", call_stack_var.unwrap().borrow().offset)]);
+            loop_start.extend(vec![format!(
+                "mov [rbp - {}], rax",
+                call_stack_var.unwrap().borrow().offset
+            )]);
         }
 
         loop_start.push(format!(".loop_{}:", loop_number));
@@ -75,7 +83,12 @@ impl ASM {
         self.extend_current_label(loop_start);
     }
 
-    pub fn gen_loop_end(&mut self, loop_number: usize, call_stack: &CallStack, with_var: &Option<Rc<RefCell<Variable>>>) {
+    pub fn gen_loop_end(
+        &mut self,
+        loop_number: usize,
+        call_stack: &CallStack,
+        with_var: &Option<Rc<RefCell<Variable>>>,
+    ) {
         let mut loop_end: Vec<String> = vec![];
 
         let (from, _) = call_stack.get_var_with_name(&format!("loop_{}_from", loop_number));

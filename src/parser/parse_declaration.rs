@@ -70,8 +70,6 @@ impl Parser {
 
                             // This could be a user defined type
                             TokenEnum::Variable(var_type_name) => {
-                                trace!("var_type_name {}", var_type_name);
-
                                 let var_name_clone = var_type_name.clone();
 
                                 let found = self.user_defined_types.iter().find(|var| var.name == *var_name_clone);
@@ -120,11 +118,7 @@ impl Parser {
 
                                     let var_type = found.unwrap().type_.clone();
 
-                                    trace!("{var_type}");
-
                                     let mut actual_var_type = var_type.clone();
-
-                                    trace!("{actual_var_type}");
 
                                     self.check_if_array_type(&mut actual_var_type, &var_type);
 
@@ -190,6 +184,9 @@ impl Parser {
             self.parse_logical_expression()
         };
 
-        return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(Rc::new(RefCell::new(left)), right))));
+        return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(
+            Rc::new(RefCell::new(left)),
+            right,
+        ))));
     }
 }

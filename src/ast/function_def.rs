@@ -44,7 +44,10 @@ impl FunctionDefinition {
 
 impl AST for FunctionDefinition {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        call_stack.push(self.name.to_string(), ActivationRecordType::Function(self.stack_var_size));
+        call_stack.push(
+            self.name.to_string(),
+            ActivationRecordType::Function(self.stack_var_size),
+        );
 
         for arg in &self.parameters {
             // params cannot be dereferenced

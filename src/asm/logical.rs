@@ -19,9 +19,8 @@ impl ASM {
                 instructions.pop();
                 instructions.pop();
                 format!("not rax")
-            },
+            }
         };
-
 
         instructions.push(thing);
         instructions.push(format!("push rax"));

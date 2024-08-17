@@ -290,7 +290,7 @@ impl VarType {
                 }
 
                 return type_.get_size();
-            },
+            }
 
             VarType::Struct(_, members) => {
                 if variable.member_access.len() == 0 {
@@ -305,7 +305,7 @@ impl VarType {
                 }
 
                 return 0;
-            },
+            }
 
             _ => self.get_size(),
         };

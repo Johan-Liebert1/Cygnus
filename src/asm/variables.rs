@@ -89,8 +89,47 @@ impl ASM {
             }
 
             VarType::Struct(name, members) => {
-                self.extend_current_label(vec![format!(";; TODO: handle parsing {}", name)]);
-                trace!("{name}, members = {:?}", members);
+                let borrow = members.borrow();
+                let found = borrow.iter().find(|x| x.name == variable.member_access[0]);
+
+                // trace!("found: {found:#?}");
+                // trace!("variable: {variable:#?}");
+
+                self.add_to_current_label(format!(";; Handling ptr to struct for Ptr -> {}", name));
+
+                match found {
+                    Some(struct_member_type) => match &struct_member_type.member_type {
+                        // accessing an integer on a ptr to a structure
+                        // We will dereference it automatically here
+                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                            let reg_name = struct_member_type.member_type.get_register_name(Register::RAX);
+                            let reg_name_rbx = struct_member_type.member_type.get_register_name(Register::RBX);
+
+                            self.extend_current_label(vec![
+                                format!("mov rbx, [rbp - {}]", ar_var_offset),
+                                format!("add rbx, {}", struct_member_type.offset),
+                                // Since memeber type is an integer
+                                format!("xor {}, {}", Register::RAX, Register::RAX),
+                                format!("mov {}, [{}]", reg_name, reg_name_rbx),
+                                format!("push rax"),
+                            ]);
+                        }
+
+                        VarType::Str => self.handle_local_str(variable, struct_member_type.offset),
+                        VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, struct_member_type.offset),
+
+                        VarType::Float => todo!(),
+                        VarType::Char => todo!(),
+                        VarType::Array(_, _) => todo!(),
+                        VarType::Struct(_, _) => todo!(),
+                        VarType::Unknown => todo!(),
+                    },
+
+                    None => unreachable!(
+                        "Could not find memeber {} of struct while generating ASM",
+                        variable.member_access[0]
+                    ),
+                }
             }
 
             type_ => {
@@ -284,7 +323,9 @@ impl ASM {
                             VarType::Float => todo!(),
                             VarType::Char => todo!(),
 
-                            VarType::Array(var_type, _) => self.handle_asm_for_array(var_type, variable, &ar_var.borrow()),
+                            VarType::Array(var_type, _) => {
+                                self.handle_asm_for_array(var_type, variable, &ar_var.borrow())
+                            }
 
                             VarType::Struct(_, member_access) => {
                                 let first = &member_access.borrow()[0];
@@ -321,10 +362,6 @@ impl ASM {
                                         VarType::Ptr(var_type) => {
                                             self.handle_local_ptr(var_type, variable, struct_member_type.offset)
                                         }
-
-                                        VarType::Int8 => todo!(),
-                                        VarType::Int16 => todo!(),
-                                        VarType::Int32 => todo!(),
 
                                         VarType::Float => todo!(),
                                         VarType::Char => todo!(),

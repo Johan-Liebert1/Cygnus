@@ -51,8 +51,8 @@ impl AST for FunctionCall {
 
                     match arg.borrow().get_node() {
                         ASTNodeEnum::Variable(v) => {
-                            println!("token: {:?}",arg.borrow().get_token());
-                            asm.func_write_var(v);
+                            println!("token: {:?}", arg.borrow().get_token());
+                            asm.func_write_var(v, call_stack);
                         }
 
                         ASTNodeEnum::BinaryOp(bo) => match &bo.result_type {
@@ -62,7 +62,9 @@ impl AST for FunctionCall {
 
                             VarType::Float => todo!(),
 
-                            VarType::Ptr(ptr_type) => asm.func_write_pointer(&ptr_type, bo.times_dereferenced),
+                            VarType::Ptr(ptr_type) => {
+                                asm.func_write_pointer(&ptr_type, bo.times_dereferenced, &call_stack, None)
+                            }
 
                             VarType::Int8 => todo!(),
                             VarType::Int16 => todo!(),
@@ -93,8 +95,10 @@ impl AST for FunctionCall {
                             let func_def = borrow.get(&fc.name).unwrap();
 
                             match func_def.return_type {
-                                VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => asm.func_write_number(),
-                                _ => unimplemented!()
+                                VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                                    asm.func_write_number()
+                                }
+                                _ => unimplemented!(),
                             };
                         }
 
@@ -260,7 +264,10 @@ impl AST for FunctionCall {
                             compiler_error(
                                 format!(
                                     "Cannot assign param of type {} to '{}', as '{}' is defined as type {}",
-                                    rhs_type, borrowed_actual_param.var_name, borrowed_actual_param.var_name, borrowed_actual_param.result_type
+                                    rhs_type,
+                                    borrowed_actual_param.var_name,
+                                    borrowed_actual_param.var_name,
+                                    borrowed_actual_param.result_type
                                 ),
                                 &self.token,
                             )

@@ -25,8 +25,19 @@ pub struct Variable {
     token: Box<Token>,
 
     pub var_name: String,
+
+    /// The actual var type. Example if
+    /// def a: Array<int>; then var_type is Array<int>
+    /// def a: my_struct; then var_type is my_struct
+    /// a.c; then var_type is still my_struct
     pub var_type: VarType,
+
+    /// The resulting var type. Example if
+    /// def a: Array<int>; then result_type is int
+    /// def a: my_struct; then result_type is my_struct
+    /// a.c; then result_type is the type of member 'c'
     pub result_type: VarType,
+
     pub dereference: bool,
     pub store_address: bool,
     pub times_dereferenced: usize,
@@ -142,11 +153,12 @@ impl AST for Variable {
 
                 match variable_in_stack.try_borrow() {
                     Ok(variable_in_stack_borrowed) => {
-                        self.var_type = variable_in_stack.borrow().var_type.clone();
-                        self.is_const = variable_in_stack.borrow().is_const;
+                        self.var_type = variable_in_stack_borrowed.var_type.clone();
+                        self.is_const = variable_in_stack_borrowed.is_const;
+                        self.offset = variable_in_stack_borrowed.offset;
                     }
 
-                    Err(_) => { /* do nothign here */ }
+                    Err(_) => { /* do nothing here */ }
                 };
             };
 
@@ -211,6 +223,8 @@ impl AST for Variable {
                 &self.token,
             );
         }
+
+        trace!("type: {}", self.var_type);
 
         if self.store_address {
             self.result_type = VarType::Ptr(Box::new(self.var_type.clone()))

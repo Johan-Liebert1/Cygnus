@@ -1,7 +1,6 @@
-use core::panic;
-
 use crate::{
     ast::variable::Variable,
+    helpers::compiler_error,
     interpreter::interpreter::Variables,
     lexer::{
         tokens::VariableEnum,
@@ -49,8 +48,14 @@ impl ASM {
         self.extend_current_label(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec());
     }
 
-    pub fn func_write_pointer(&mut self, pointer_var_type: &Box<VarType>, times_dereferenced: usize) {
-        let vec = self.func_write_pointer_internal(pointer_var_type, times_dereferenced);
+    pub fn func_write_pointer(
+        &mut self,
+        pointer_var_type: &Box<VarType>,
+        times_dereferenced: usize,
+        call_stack: &CallStack,
+        var: Option<&Variable>,
+    ) {
+        let vec = self.func_write_pointer_internal(pointer_var_type, times_dereferenced, call_stack, var);
         self.extend_current_label(vec);
     }
 
@@ -58,6 +63,8 @@ impl ASM {
         &mut self,
         pointer_var_type: &Box<VarType>,
         times_dereferenced: usize,
+        call_stack: &CallStack,
+        variable: Option<&Variable>,
     ) -> Vec<String> {
         match **pointer_var_type {
             // a char is always represented as an 8 bit number
@@ -74,7 +81,57 @@ impl ASM {
                 }
             }
 
-            _ => panic!("Unknown type '{pointer_var_type}'"),
+            // Might be pointer to a user defined type
+            _ => {
+                let user_defined_type = call_stack
+                    .user_defined_types
+                    .iter()
+                    .find(|x| x.name == format!("{}", pointer_var_type));
+
+                match user_defined_type {
+                    Some(user_defined_type) => match &user_defined_type.type_ {
+                        VarType::Struct(name, members) => {
+                            let memebers_borrow = members.borrow();
+                            let var = variable.expect("Expected a variable to be passed in");
+                            let found = memebers_borrow.iter().find(|x| x.name == var.member_access[0]);
+
+                            match found {
+                                Some(struct_member) => match struct_member.member_type {
+                                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                                        self.func_write_number();
+                                        vec![]
+                                    }
+                                    VarType::Str => {
+                                        self.func_write_string();
+                                        vec![]
+                                    }
+                                    VarType::Float => todo!(),
+                                    VarType::Char => todo!(),
+                                    VarType::Ptr(_) => todo!(),
+                                    VarType::Array(_, _) => todo!(),
+                                    VarType::Struct(_, _) => todo!(),
+                                    VarType::Unknown => todo!(),
+                                },
+
+                                None => {
+                                    panic!(
+                                        "Member '{}' not present in struct '{}'",
+                                        var.member_access[0], user_defined_type.type_
+                                    );
+                                }
+                            }
+                        }
+
+                        type_ => {
+                            panic!("Cannot have user defined primitive type: '{}'", type_);
+                        }
+                    },
+
+                    None => {
+                        panic!("Unknown type '{pointer_var_type}'")
+                    }
+                }
+            }
         }
     }
 
@@ -90,7 +147,7 @@ impl ASM {
         self.extend_current_label(instructions);
     }
 
-    pub fn func_write_var(&mut self, var: &Variable) {
+    pub fn func_write_var(&mut self, var: &Variable, call_stack: &CallStack) {
         let var_name = &var.var_name;
 
         let instructions = match var_name.as_str() {
@@ -145,9 +202,12 @@ impl ASM {
 
                     VarType::Char => WRITE_CHAR_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
 
-                    VarType::Ptr(pointer_var_type) => {
-                        self.func_write_pointer_internal(pointer_var_type, var.times_dereferenced)
-                    }
+                    VarType::Ptr(pointer_var_type) => self.func_write_pointer_internal(
+                        pointer_var_type,
+                        var.times_dereferenced,
+                        call_stack,
+                        Some(var),
+                    ),
 
                     VarType::Float => todo!(),
 
@@ -167,13 +227,12 @@ impl ASM {
 
                                 VarType::Str => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
 
-                                VarType::Ptr(var_type) => {
-                                    self.func_write_pointer_internal(var_type, var.times_dereferenced)
-                                }
-
-                                VarType::Int8 => todo!(),
-                                VarType::Int16 => todo!(),
-                                VarType::Int32 => todo!(),
+                                VarType::Ptr(var_type) => self.func_write_pointer_internal(
+                                    var_type,
+                                    var.times_dereferenced,
+                                    call_stack,
+                                    Some(var),
+                                ),
 
                                 VarType::Float => todo!(),
                                 VarType::Char => todo!(),

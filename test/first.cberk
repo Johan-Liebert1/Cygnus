@@ -1,7 +1,15 @@
-fun main() {
-    def a: int = 0;
+struct A {
+    b: int,
+}
 
-    a += 2;
+fun main() {
+    def a: A = A {
+        b: 69,
+    };
+
+    def bb: *A = &a;
+
+    write(bb.a)
 }
 
 main()

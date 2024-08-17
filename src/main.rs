@@ -26,7 +26,7 @@ mod types;
 
 pub fn generate_asm() -> io::Result<()> {
     let mut nasm = std::process::Command::new("nasm");
-    nasm.args(["-f", "elf64", "-o", "output.o", "output.asm"]);
+    nasm.args(["-f", "elf64", "-g", "-o", "output.o", "output.asm"]);
     let mut spawn = nasm.spawn()?;
     spawn.wait()?;
 

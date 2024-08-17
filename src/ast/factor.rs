@@ -87,7 +87,8 @@ impl AST for Factor {
                 let (variable, _) = call_stack.get_var_with_name(v);
 
                 if let Some(var) = variable {
-                    var.borrow().var_type
+                    var.borrow()
+                        .var_type
                         .get_actual_type(var.borrow().times_dereferenced, &self.token)
                         .clone()
                 } else {
