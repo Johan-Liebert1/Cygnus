@@ -46,7 +46,9 @@ impl AST for FunctionDefinition {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         call_stack.push(
             self.name.to_string(),
-            ActivationRecordType::Function(self.stack_var_size),
+            // TODO: This used to be  ActivationRecordType::Function(self.stack_var_size)
+            // but 0 also works
+            ActivationRecordType::Function(0),
         );
 
         for arg in &self.parameters {

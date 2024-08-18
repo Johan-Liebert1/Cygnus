@@ -168,7 +168,12 @@ impl<'a> CallStack<'a> {
     fn update_function_variable_size_and_get_offset(&mut self, var: &ARVariable) -> usize {
         let borrowed_var = var.borrow();
 
+        println!("var_name {}", borrowed_var.var_name);
+
         let actual_var_size = borrowed_var.var_type.get_size_handle_array_and_struct(&borrowed_var);
+
+        println!("actual_var_size {actual_var_size:?}");
+
         let mut offset = 0;
 
         for record in self.call_stack.iter_mut().rev() {
@@ -176,6 +181,10 @@ impl<'a> CallStack<'a> {
                 match &self.current_function_name {
                     Some(fname) => {
                         if fname == &record.name {
+                            println!("record.current_offset {:?}", record.current_offset);
+                            println!("record.var_size_sum {:?}", record.var_size_sum);
+                            println!("stack_var_size {stack_var_size:?}");
+
                             // This means semantic analysis has been finished and we're on the
                             // visiting stage
                             if stack_var_size > 0 {
@@ -208,6 +217,8 @@ impl<'a> CallStack<'a> {
             }
         }
 
+        println!("offset {offset:?}\n\n");
+
         return offset;
     }
 
@@ -215,10 +226,6 @@ impl<'a> CallStack<'a> {
         variable.borrow_mut().offset = self.update_function_variable_size_and_get_offset(&variable);
 
         let var_name = &variable.borrow().var_name;
-
-        // if var_name == "bb" {
-        //     trace!("insert_variable: {:#?}", variable.borrow());
-        // }
 
         match self.call_stack.last_mut() {
             Some(last_record) => {
@@ -236,7 +243,7 @@ impl<'a> CallStack<'a> {
                     }
 
                     None => {
-                        if let VarType::Struct(_, struct_members) = &variable.borrow().result_type {
+                        if let VarType::Struct(struct_name, struct_members) = &variable.borrow().result_type {
                             if struct_members.borrow().len() == 0 {
                                 last_record
                                     .variable_members
@@ -245,19 +252,21 @@ impl<'a> CallStack<'a> {
                             }
 
                             // the struct has members
-                            struct_members.borrow_mut().first_mut().unwrap().offset = variable.borrow().offset;
 
-                            let mut prev_member_offset = variable.borrow().offset;
-                            let mut prev_member_size = struct_members.borrow().first().unwrap().member_type.get_size();
+                            let mut prev_member_offset = 0;
+                            let mut prev_member_size = 0;
 
                             // variable.offset will be equal to the first struct member
-                            for member in struct_members.borrow_mut().iter_mut().skip(1) {
-                                member.offset = prev_member_offset - prev_member_size;
+                            for member in struct_members.borrow_mut().iter_mut() {
+                                member.offset = prev_member_offset + prev_member_size;
 
-                                prev_member_offset = member.offset;
                                 prev_member_size = member.member_type.get_size();
+                                prev_member_offset = member.offset;
                             }
+
+                            trace!("name: {struct_name}, struct_members: {struct_members:#?}");
                         }
+
 
                         last_record
                             .variable_members
@@ -270,6 +279,10 @@ impl<'a> CallStack<'a> {
                 panic!("Call stack is empty");
             }
         };
+
+        if var_name == "bb" {
+            trace!("insert_variable: {:#?}", variable.borrow());
+        }
     }
 
     pub fn get_func_var_stack_size(&self, function_name: &String) -> usize {

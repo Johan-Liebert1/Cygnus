@@ -163,6 +163,7 @@ impl ASM {
 
     fn assign_local_struct(
         &mut self,
+        struct_offset: usize,
         struct_assign_order: Option<Vec<&String>>,
         struct_name: &String,
         call_stack: &CallStack,
@@ -186,17 +187,17 @@ impl ASM {
 
                 match &member_type.member_type {
                     VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                        self.assign_local_number(member_type.offset, is_function_call_assign, &member_type.member_type)
+                        self.assign_local_number(struct_offset - member_type.offset, is_function_call_assign, &member_type.member_type)
                     }
 
                     VarType::Float => todo!(),
 
-                    VarType::Str => self.assign_local_string(member_type.offset),
+                    VarType::Str => self.assign_local_string(struct_offset - member_type.offset),
 
                     // times_dereferenced = 0 as you cannot dereference a struct member while
                     // initializing
-                    VarType::Ptr(inner_type) => self.assign_local_pointer(&inner_type, member_type.offset, 0),
-                    VarType::Array(type_, size) => self.assign_local_array(member_type.offset, &None, &type_, &size),
+                    VarType::Ptr(inner_type) => self.assign_local_pointer(&inner_type, struct_offset - member_type.offset, 0),
+                    VarType::Array(type_, size) => self.assign_local_array(struct_offset - member_type.offset, &None, &type_, &size),
 
                     VarType::Char => todo!(),
                     VarType::Struct(_, _) => todo!(),
@@ -321,6 +322,7 @@ impl ASM {
                                         // Assignment to the struct variable
                                         if variable_assigned_to.member_access.len() == 0 {
                                             self.assign_local_struct(
+                                                var.borrow().offset,
                                                 struct_assign_order,
                                                 name,
                                                 call_stack,

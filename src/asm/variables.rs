@@ -89,6 +89,23 @@ impl ASM {
             }
 
             VarType::Struct(name, members) => {
+                if variable.member_access.len() == 0 {
+                    // it's of the type
+                    // def var: *MyStruct = &another_var;
+
+                    let first = &members.borrow()[0];
+
+                    self.extend_current_label(vec![
+                        format!(
+                            ";; Storing address of struct {} for variable {} in handle_local_ptr",
+                            name, variable.var_name
+                        ),
+                        format!("lea rax, [rbp - {}]", first.offset),
+                        format!("push rax"),
+                    ]);
+                    return;
+                }
+
                 let borrow = members.borrow();
                 let found = borrow.iter().find(|x| x.name == variable.member_access[0]);
 
@@ -105,9 +122,11 @@ impl ASM {
                             let reg_name = struct_member_type.member_type.get_register_name(Register::RAX);
                             let reg_name_rbx = struct_member_type.member_type.get_register_name(Register::RBX);
 
+                            println!("struct_member_type: {:#?}", struct_member_type);
+
                             self.extend_current_label(vec![
                                 format!("mov rbx, [rbp - {}]", ar_var_offset),
-                                format!("add rbx, {}", struct_member_type.offset),
+                                // format!("add rbx, {}", struct_member_type.offset),
                                 // Since memeber type is an integer
                                 format!("xor {}, {}", Register::RAX, Register::RAX),
                                 format!("mov {}, [{}]", reg_name, reg_name_rbx),
@@ -327,7 +346,7 @@ impl ASM {
                                 self.handle_asm_for_array(var_type, variable, &ar_var.borrow())
                             }
 
-                            VarType::Struct(_, member_access) => {
+                            VarType::Struct(struct_name, member_access) => {
                                 let first = &member_access.borrow()[0];
 
                                 // 'variable' has the member access properties
@@ -336,6 +355,10 @@ impl ASM {
                                 // print the memory address
                                 if variable.member_access.len() == 0 {
                                     self.extend_current_label(vec![
+                                        format!(
+                                            ";; Storing address of struct {} for variable {} not in handle_local_ptr",
+                                            struct_name, variable.var_name
+                                        ),
                                         format!("lea rax, [rbp - {}]", first.offset),
                                         format!("push rax"),
                                     ]);
@@ -354,14 +377,19 @@ impl ASM {
                                         VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => self
                                             .handle_local_int(
                                                 variable,
-                                                struct_member_type.offset,
+                                                ar_var.borrow().offset - struct_member_type.offset,
                                                 &struct_member_type.member_type,
                                             ),
 
-                                        VarType::Str => self.handle_local_str(variable, struct_member_type.offset),
-                                        VarType::Ptr(var_type) => {
-                                            self.handle_local_ptr(var_type, variable, struct_member_type.offset)
-                                        }
+                                        VarType::Str => self.handle_local_str(
+                                            variable,
+                                            ar_var.borrow().offset - struct_member_type.offset,
+                                        ),
+                                        VarType::Ptr(var_type) => self.handle_local_ptr(
+                                            var_type,
+                                            variable,
+                                            ar_var.borrow().offset - struct_member_type.offset,
+                                        ),
 
                                         VarType::Float => todo!(),
                                         VarType::Char => todo!(),

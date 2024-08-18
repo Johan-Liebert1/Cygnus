@@ -10,7 +10,7 @@ use super::asm::ASM;
 
 impl ASM {
     /// Pushes whatever token's in here onto the stack
-    pub fn generate_asm_factor(&mut self, token: &TokenEnum, vars: &Variables, call_stack: &CallStack) {
+    pub fn generate_asm_factor(&mut self, token: &TokenEnum, call_stack: &CallStack) {
         let mut instructions: Vec<String> = vec![];
 
         match token {

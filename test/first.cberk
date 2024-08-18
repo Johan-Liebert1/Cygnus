@@ -1,15 +1,19 @@
 struct A {
-    b: int,
+    val: int,
 }
+
+-- fun modify(b: *A) {
+--     b.b = 420
+-- }
 
 fun main() {
     def a: A = A {
-        b: 69,
+        val: 69,
     };
 
-    def bb: *A = &a;
+    def b: *A = &a;
 
-    write(bb.a)
+    write(b.val)
 }
 
 main()
