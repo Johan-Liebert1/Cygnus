@@ -134,7 +134,23 @@ impl ASM {
                             ]);
                         }
 
-                        VarType::Str => self.handle_local_str(variable, struct_member_type.offset),
+                        VarType::Str => {
+                            self.extend_current_label(vec![
+                                format!("mov rbx, [rbp - {}]", ar_var_offset),
+                                format!("add rbx, {}", struct_member_type.offset),
+                                format!("xor rax, rax"),
+                                format!("mov rax, [rbx]"),
+                                format!("push rax"),
+                                // length is pushed last
+                                // we add 8 here instead of subtracting 8 because we are
+                                // calculating this offset from the beginning of the struct and not
+                                // the beginning of the address where the address of the string is
+                                // kept
+                                format!("mov rax, [rbx + 8]"),
+                                format!("push rax"),
+                            ]);
+                        }
+
                         VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, struct_member_type.offset),
 
                         VarType::Float => todo!(),

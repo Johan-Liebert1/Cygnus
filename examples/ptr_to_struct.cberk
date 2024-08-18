@@ -1,20 +1,18 @@
 struct A {
     val: int,
-    hello: str,
+    val2: str,
 }
 
 fun main() {
     def a: A = A {
         val: 69,
-        hello: "hello world\n",
+        val2: "wow\n",
     };
 
     def b: *A = &a;
 
-    def c: str = a.hello;
-
-    write(c);
-
+    write(b.val)
+    write(b.val2)
 }
 
 main()
