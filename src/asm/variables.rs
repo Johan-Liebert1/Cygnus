@@ -126,7 +126,7 @@ impl ASM {
 
                             self.extend_current_label(vec![
                                 format!("mov rbx, [rbp - {}]", ar_var_offset),
-                                // format!("add rbx, {}", struct_member_type.offset),
+                                format!("add rbx, {}", struct_member_type.offset),
                                 // Since memeber type is an integer
                                 format!("xor {}, {}", Register::RAX, Register::RAX),
                                 format!("mov {}, [{}]", reg_name, reg_name_rbx),
@@ -359,7 +359,7 @@ impl ASM {
                                             ";; Storing address of struct {} for variable {} not in handle_local_ptr",
                                             struct_name, variable.var_name
                                         ),
-                                        format!("lea rax, [rbp - {}]", first.offset),
+                                        format!("lea rax, [rbp - {}]", ar_var.borrow().offset + first.offset),
                                         format!("push rax"),
                                     ]);
 
