@@ -1,7 +1,7 @@
 fun main() {
-    def a: float = 2.33;
-    def b: float = 3.33;
-    write(a + b)
+    def a: float = 6.28;
+    def b: float = 3.14;
+    write(a / b)
 }
 
 main()

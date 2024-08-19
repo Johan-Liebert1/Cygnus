@@ -12,16 +12,12 @@ impl ASM {
                 if matches!(result_type, VarType::Float) {
                     vec![
                         format!(";; Floating point addition"),
-
                         format!(";; Get the first operand"),
                         format!("pop QWORD [float_imm]"),
                         format!("movsd xmm0, [float_imm]"),
-
                         format!(";; Get the second operand"),
                         format!("pop QWORD [float_imm]"),
                         format!("movsd xmm1, [float_imm]"),
-
-
                         format!(";; floating point addition"),
                         format!("addsd xmm0, xmm1"),
                         format!("movsd [float_imm], xmm0"),
@@ -38,36 +34,84 @@ impl ASM {
             }
 
             Operations::Minus => {
-                vec![
-                    format!(";; Minus get the two operands from the stack"),
-                    format!("pop rbx"),
-                    format!("pop rax"),
-                    format!("sub rax, rbx"),
-                ]
+                if matches!(result_type, VarType::Float) {
+                    vec![
+                        format!(";; Floating point subtraction"),
+                        format!(";; Get the first operand"),
+                        format!("pop QWORD [float_imm]"),
+                        format!("movsd xmm1, [float_imm]"),
+                        format!(";; Get the second operand"),
+                        format!("pop QWORD [float_imm]"),
+                        format!("movsd xmm0, [float_imm]"),
+                        format!(";; floating point subtraction"),
+                        format!("subsd xmm0, xmm1"),
+                        format!("movsd [float_imm], xmm0"),
+                        format!("mov rax, [float_imm]"),
+                    ]
+                } else {
+                    vec![
+                        format!(";; Minus get the two operands from the stack"),
+                        format!("pop rbx"),
+                        format!("pop rax"),
+                        format!("sub rax, rbx"),
+                    ]
+                }
             }
 
             Operations::Divide => {
-                vec![
-                    // 40 / 5
-                    // push 40
-                    // push 5
-                    format!(";; Divide clean up rdx as this might mess up the final output"),
-                    format!("xor rdx, rdx"),
-                    format!(";; get the two operands from the stack"),
-                    format!("pop rbx"),
-                    format!("pop rax"),
-                    format!("div rbx"),
-                ]
+                if matches!(result_type, VarType::Float) {
+                    vec![
+                        format!(";; Floating point subtraction"),
+                        format!(";; Get the first operand"),
+                        format!("pop QWORD [float_imm]"),
+                        format!("movsd xmm1, [float_imm]"),
+                        format!(";; Get the second operand"),
+                        format!("pop QWORD [float_imm]"),
+                        format!("movsd xmm0, [float_imm]"),
+                        format!(";; floating point subtraction"),
+                        format!("divsd xmm0, xmm1"),
+                        format!("movsd [float_imm], xmm0"),
+                        format!("mov rax, [float_imm]"),
+                    ]
+                } else {
+                    vec![
+                        // 40 / 5
+                        // push 40
+                        // push 5
+                        format!(";; Divide clean up rdx as this might mess up the final output"),
+                        format!("xor rdx, rdx"),
+                        format!(";; get the two operands from the stack"),
+                        format!("pop rbx"),
+                        format!("pop rax"),
+                        format!("div rbx"),
+                    ]
+                }
             }
 
             Operations::Multiply => {
-                vec![
-                    format!(";; Multiply get the two operands from the stack"),
-                    format!("xor rdx, rdx"),
-                    format!("pop rax"),
-                    format!("pop rbx"),
-                    format!("mul rbx"),
-                ]
+                if matches!(result_type, VarType::Float) {
+                    vec![
+                        format!(";; Floating point addition"),
+                        format!(";; Get the first operand"),
+                        format!("pop QWORD [float_imm]"),
+                        format!("movsd xmm0, [float_imm]"),
+                        format!(";; Get the second operand"),
+                        format!("pop QWORD [float_imm]"),
+                        format!("movsd xmm1, [float_imm]"),
+                        format!(";; floating point addition"),
+                        format!("mulsd xmm0, xmm1"),
+                        format!("movsd [float_imm], xmm0"),
+                        format!("mov rax, [float_imm]"),
+                    ]
+                } else {
+                    vec![
+                        format!(";; Multiply get the two operands from the stack"),
+                        format!("xor rdx, rdx"),
+                        format!("pop rax"),
+                        format!("pop rbx"),
+                        format!("mul rbx"),
+                    ]
+                }
             }
 
             Operations::ShiftLeft => {
