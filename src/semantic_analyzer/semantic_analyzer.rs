@@ -168,11 +168,11 @@ impl<'a> CallStack<'a> {
     fn update_function_variable_size_and_get_offset(&mut self, var: &ARVariable) -> usize {
         let borrowed_var = var.borrow();
 
-        println!("var_name {}", borrowed_var.var_name);
+        // println!("var_name {}", borrowed_var.var_name);
 
         let actual_var_size = borrowed_var.var_type.get_size_handle_array_and_struct(&borrowed_var);
 
-        println!("actual_var_size {actual_var_size:?}");
+        // println!("actual_var_size {actual_var_size:?}");
 
         let mut offset = 0;
 
@@ -181,9 +181,9 @@ impl<'a> CallStack<'a> {
                 match &self.current_function_name {
                     Some(fname) => {
                         if fname == &record.name {
-                            println!("record.current_offset {:?}", record.current_offset);
-                            println!("record.var_size_sum {:?}", record.var_size_sum);
-                            println!("stack_var_size {stack_var_size:?}");
+                            // println!("record.current_offset {:?}", record.current_offset);
+                            // println!("record.var_size_sum {:?}", record.var_size_sum);
+                            // println!("stack_var_size {stack_var_size:?}");
 
                             // This means semantic analysis has been finished and we're on the
                             // visiting stage
@@ -217,7 +217,7 @@ impl<'a> CallStack<'a> {
             }
         }
 
-        println!("offset {offset:?}\n\n");
+        // println!("offset {offset:?}\n\n");
 
         return offset;
     }

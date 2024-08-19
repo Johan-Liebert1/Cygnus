@@ -44,6 +44,17 @@ impl ASM {
                 }
             }
 
+            // VarType::Float => {
+            //     if variable.dereference {
+            //     } else if variable.store_address {
+            //         self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+            //     } else {
+            //         self.extend_current_label(vec![
+            //             format!("mov rax, [rbp - {}]", ar_var_offset),
+            //             format!("push rax"),
+            //         ]);
+            //     }
+            // }
             VarType::Str => {
                 if variable.dereference {
                     let mut v = vec![
@@ -212,7 +223,7 @@ impl ASM {
     }
 
     // need the var_type for struct member access as struct_name.member as the type 'struct_name'
-    fn handle_local_int(&mut self, variable: &Variable, ar_var_offset: usize, actual_var_type: &VarType) {
+    fn handle_local_int_float(&mut self, variable: &Variable, ar_var_offset: usize, actual_var_type: &VarType) {
         if variable.dereference {
             panic!("Cannot dereference a number")
         } else if variable.store_address {
@@ -342,23 +353,14 @@ impl ASM {
     fn gen_asm_for_var_local_scope(&mut self, variable: &Variable, ar_var: &Rc<RefCell<Variable>>) {
         // cannot use ar_var here as it does not have the computed types
         match &variable.var_type {
-            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                self.handle_local_int(variable, ar_var.borrow().offset, &variable.var_type)
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Float => {
+                self.handle_local_int_float(variable, ar_var.borrow().offset, &variable.var_type)
             }
 
             VarType::Str => self.handle_local_str(variable, ar_var.borrow().offset),
 
             // TODO: Handle pointer to pointer to something
             VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, ar_var.borrow().offset),
-
-            VarType::Float => {
-                self.extend_current_label(vec![
-                    ";; Always, the address to the float is pushed onto the stack".into(),
-                    format!("mov rax, [rbp - {}]", ar_var.borrow().offset),
-                    // format!("mov rax, [rax]"),
-                    format!("push rax")
-                ])
-            },
 
             VarType::Char => todo!(),
 
@@ -392,7 +394,7 @@ impl ASM {
 
                 match found {
                     Some(struct_member_type) => match &struct_member_type.member_type {
-                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => self.handle_local_int(
+                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => self.handle_local_int_float(
                             variable,
                             ar_var.borrow().offset - struct_member_type.offset,
                             &struct_member_type.member_type,
