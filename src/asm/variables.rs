@@ -351,7 +351,12 @@ impl ASM {
             // TODO: Handle pointer to pointer to something
             VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, ar_var.borrow().offset),
 
-            VarType::Float => todo!(),
+            VarType::Float => {
+                self.extend_current_label(vec![
+                    ";; TODO: asm/variable.rs float".into()
+                ])
+            },
+
             VarType::Char => todo!(),
 
             VarType::Array(var_type, _) => self.handle_asm_for_array(var_type, variable, &ar_var.borrow()),

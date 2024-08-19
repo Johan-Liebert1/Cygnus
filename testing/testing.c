@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 int main() {
-    double pi = 3.1415;
-    printf("%lb\n", *(uint64_t*)&pi);
+    double pi = 2.33;
+    printf("%ld\n", *(uint64_t*)&pi);
 
     printf("%f\n", pi);
 }

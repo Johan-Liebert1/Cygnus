@@ -20,7 +20,7 @@ impl ASM {
                 // We cannot have immediate float values in nasm
                 Number::Float(f) => {
                     // add the floating point in the data segement
-                    self.data.push(format!("float_{} db {f}", self.num_floats));
+                    self.data.push(format!("float_{} dq {f}", self.num_floats));
 
                     instructions.extend(vec![
                         format!("mov rax, float_{}", self.num_floats),

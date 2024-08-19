@@ -209,7 +209,10 @@ impl ASM {
                         Some(var),
                     ),
 
-                    VarType::Float => todo!(),
+                    VarType::Float => {
+                        // TODO: This is just for testing
+                        vec![format!("pop rax"), format!("call _printRAX")]
+                    }
 
                     VarType::Array(..) => {
                         vec![format!("pop rax"), format!("call _printRAX")]
