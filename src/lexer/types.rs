@@ -134,7 +134,7 @@ impl VarType {
 
             Str => *other == Str,
 
-            Float => todo!(),
+            Float => matches!(other, Float),
 
             Char => *other == Char || *other == Int8,
 
@@ -258,7 +258,8 @@ impl VarType {
             VarType::Int8 => 1,
             // 8 bytes for length + 8 bytes for pointer to the start of the string
             VarType::Str => 16,
-            VarType::Float => todo!(),
+            // We only have float64
+            VarType::Float => 8,
             // char is only 1 byte
             VarType::Char => 1,
             // Pointer will always consume 8 bytes

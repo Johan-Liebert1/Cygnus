@@ -48,6 +48,7 @@ pub struct Parser {
     pub inside_current_loop_number: i32,
 
     pub num_strings: usize,
+    pub num_floats: usize,
     pub times_dereferenced: usize,
 
     pub current_function_being_parsed: Option<String>,
@@ -72,6 +73,7 @@ impl Parser {
             inside_current_loop_number: -1,
 
             num_strings: 0,
+            num_floats: 0,
 
             times_dereferenced: 0,
 

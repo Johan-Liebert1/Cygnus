@@ -1,5 +1,5 @@
 use core::panic;
-use std::fmt::format;
+use std::{cell::RefCell, fmt::format, rc::Rc};
 
 use crate::{
     ast::variable::{self, Variable},
@@ -44,6 +44,17 @@ impl ASM {
                 }
             }
 
+            // VarType::Float => {
+            //     if variable.dereference {
+            //     } else if variable.store_address {
+            //         self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+            //     } else {
+            //         self.extend_current_label(vec![
+            //             format!("mov rax, [rbp - {}]", ar_var_offset),
+            //             format!("push rax"),
+            //         ]);
+            //     }
+            // }
             VarType::Str => {
                 if variable.dereference {
                     let mut v = vec![
@@ -212,7 +223,7 @@ impl ASM {
     }
 
     // need the var_type for struct member access as struct_name.member as the type 'struct_name'
-    fn handle_local_int(&mut self, variable: &Variable, ar_var_offset: usize, actual_var_type: &VarType) {
+    fn handle_local_int_float(&mut self, variable: &Variable, ar_var_offset: usize, actual_var_type: &VarType) {
         if variable.dereference {
             panic!("Cannot dereference a number")
         } else if variable.store_address {
@@ -294,6 +305,128 @@ impl ASM {
         }
     }
 
+    fn gen_asm_for_var_global_scope(&mut self, variable: &Variable, ar_var: &Rc<RefCell<Variable>>) {
+        let var_name = &variable.var_name;
+
+        match variable.var_type {
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                let register_name = variable.var_type.get_register_name(Register::RAX);
+
+                if variable.dereference {
+                    panic!("Cannot dereference a number")
+                } else if variable.store_address {
+                    self.extend_current_label(vec![format!("lea rax, {var_name}"), format!("push rax")]);
+                } else {
+                    self.extend_current_label(vec![
+                        format!("mov {}, [{var_name}]", register_name),
+                        format!("push rax"),
+                    ])
+                }
+            }
+
+            VarType::Str => {
+                if variable.dereference {
+                    panic!("Cannot dereference a string")
+                } else if variable.store_address {
+                    todo!()
+                } else {
+                    todo!("need to get the string length as well");
+                    self.extend_current_label(vec![format!("mov rax, [{var_name}]"), format!("push rax")])
+                }
+            }
+
+            VarType::Float => todo!(),
+            VarType::Char => todo!(),
+
+            VarType::Int8 => todo!(),
+            VarType::Int16 => todo!(),
+            VarType::Int32 => todo!(),
+
+            VarType::Ptr(_) => self.handle_global_ptr(variable, &ar_var.borrow()),
+
+            VarType::Array(..) => todo!(),
+            VarType::Unknown => todo!(),
+            VarType::Struct(_, _) => todo!(),
+        }
+    }
+
+    fn gen_asm_for_var_local_scope(&mut self, variable: &Variable, ar_var: &Rc<RefCell<Variable>>) {
+        // cannot use ar_var here as it does not have the computed types
+        match &variable.var_type {
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Float => {
+                self.handle_local_int_float(variable, ar_var.borrow().offset, &variable.var_type)
+            }
+
+            VarType::Str => self.handle_local_str(variable, ar_var.borrow().offset),
+
+            // TODO: Handle pointer to pointer to something
+            VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, ar_var.borrow().offset),
+
+            VarType::Char => todo!(),
+
+            VarType::Array(var_type, _) => self.handle_asm_for_array(var_type, variable, &ar_var.borrow()),
+
+            VarType::Struct(struct_name, member_access) => {
+                let first = &member_access.borrow()[0];
+
+                // 'variable' has the member access properties
+                // 'variable_from_stack' has the offset
+                // it's the entire struct
+                // print the memory address
+                if variable.member_access.len() == 0 {
+                    self.extend_current_label(vec![
+                        format!(
+                            ";; Storing address of struct {} for variable {} not in handle_local_ptr",
+                            struct_name, variable.var_name
+                        ),
+                        format!("lea rax, [rbp - {}]", ar_var.borrow().offset + first.offset),
+                        format!("push rax"),
+                    ]);
+
+                    return;
+                }
+
+                let offset = first;
+
+                // TODO: handle struct inside struct here
+                let borrow = member_access.borrow();
+                let found = borrow.iter().find(|x| x.name == variable.member_access[0]);
+
+                match found {
+                    Some(struct_member_type) => match &struct_member_type.member_type {
+                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => self.handle_local_int_float(
+                            variable,
+                            ar_var.borrow().offset - struct_member_type.offset,
+                            &struct_member_type.member_type,
+                        ),
+
+                        VarType::Str => {
+                            self.handle_local_str(variable, ar_var.borrow().offset - struct_member_type.offset)
+                        }
+                        VarType::Ptr(var_type) => self.handle_local_ptr(
+                            var_type,
+                            variable,
+                            ar_var.borrow().offset - struct_member_type.offset,
+                        ),
+
+                        VarType::Float => todo!(),
+                        VarType::Char => todo!(),
+                        VarType::Array(_, _) => todo!(),
+                        VarType::Struct(_, _) => todo!(),
+                        VarType::Unknown => todo!(),
+                    },
+
+                    None => unreachable!(
+                        "Could not find memeber {} of struct while generating ASM",
+                        variable.member_access[0]
+                    ),
+                }
+            }
+
+            VarType::Unknown => todo!(),
+        }
+    }
+
     pub fn gen_asm_for_var(&mut self, variable: &Variable, call_stack: &CallStack) {
         let var_name = &variable.var_name;
 
@@ -302,128 +435,8 @@ impl ASM {
         match variable_from_stack {
             Some(ar_var) => {
                 match variable_scope {
-                    ActivationRecordType::Global => match variable.var_type {
-                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                            let register_name = variable.var_type.get_register_name(Register::RAX);
-
-                            if variable.dereference {
-                                panic!("Cannot dereference a number")
-                            } else if variable.store_address {
-                                self.extend_current_label(vec![format!("lea rax, {var_name}"), format!("push rax")]);
-                            } else {
-                                self.extend_current_label(vec![
-                                    format!("mov {}, [{var_name}]", register_name),
-                                    format!("push rax"),
-                                ])
-                            }
-                        }
-
-                        VarType::Str => {
-                            if variable.dereference {
-                                panic!("Cannot dereference a string")
-                            } else if variable.store_address {
-                                todo!()
-                            } else {
-                                todo!("need to get the string length as well");
-                                self.extend_current_label(vec![format!("mov rax, [{var_name}]"), format!("push rax")])
-                            }
-                        }
-
-                        VarType::Float => todo!(),
-                        VarType::Char => todo!(),
-
-                        VarType::Int8 => todo!(),
-                        VarType::Int16 => todo!(),
-                        VarType::Int32 => todo!(),
-
-                        VarType::Ptr(_) => self.handle_global_ptr(variable, &ar_var.borrow()),
-
-                        VarType::Array(..) => todo!(),
-                        VarType::Unknown => todo!(),
-                        VarType::Struct(_, _) => todo!(),
-                    }, // global scope end
-
-                    _ => {
-                        // cannot use ar_var here as it does not have the computed types
-                        match &variable.var_type {
-                            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                self.handle_local_int(variable, ar_var.borrow().offset, &variable.var_type)
-                            }
-
-                            VarType::Str => self.handle_local_str(variable, ar_var.borrow().offset),
-
-                            // TODO: Handle pointer to pointer to something
-                            VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, ar_var.borrow().offset),
-
-                            VarType::Float => todo!(),
-                            VarType::Char => todo!(),
-
-                            VarType::Array(var_type, _) => {
-                                self.handle_asm_for_array(var_type, variable, &ar_var.borrow())
-                            }
-
-                            VarType::Struct(struct_name, member_access) => {
-                                let first = &member_access.borrow()[0];
-
-                                // 'variable' has the member access properties
-                                // 'variable_from_stack' has the offset
-                                // it's the entire struct
-                                // print the memory address
-                                if variable.member_access.len() == 0 {
-                                    self.extend_current_label(vec![
-                                        format!(
-                                            ";; Storing address of struct {} for variable {} not in handle_local_ptr",
-                                            struct_name, variable.var_name
-                                        ),
-                                        format!("lea rax, [rbp - {}]", ar_var.borrow().offset + first.offset),
-                                        format!("push rax"),
-                                    ]);
-
-                                    return;
-                                }
-
-                                let offset = first;
-
-                                // TODO: handle struct inside struct here
-                                let borrow = member_access.borrow();
-                                let found = borrow.iter().find(|x| x.name == variable.member_access[0]);
-
-                                match found {
-                                    Some(struct_member_type) => match &struct_member_type.member_type {
-                                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => self
-                                            .handle_local_int(
-                                                variable,
-                                                ar_var.borrow().offset - struct_member_type.offset,
-                                                &struct_member_type.member_type,
-                                            ),
-
-                                        VarType::Str => self.handle_local_str(
-                                            variable,
-                                            ar_var.borrow().offset - struct_member_type.offset,
-                                        ),
-                                        VarType::Ptr(var_type) => self.handle_local_ptr(
-                                            var_type,
-                                            variable,
-                                            ar_var.borrow().offset - struct_member_type.offset,
-                                        ),
-
-                                        VarType::Float => todo!(),
-                                        VarType::Char => todo!(),
-                                        VarType::Array(_, _) => todo!(),
-                                        VarType::Struct(_, _) => todo!(),
-                                        VarType::Unknown => todo!(),
-                                    },
-
-                                    None => unreachable!(
-                                        "Could not find memeber {} of struct while generating ASM",
-                                        variable.member_access[0]
-                                    ),
-                                }
-                            }
-
-                            VarType::Unknown => todo!(),
-                        }
-                    }
+                    ActivationRecordType::Global => self.gen_asm_for_var_global_scope(&variable, ar_var), // global scope end
+                    _ => self.gen_asm_for_var_local_scope(&variable, ar_var),
                 }
             }
 

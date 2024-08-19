@@ -17,7 +17,20 @@ impl ASM {
             TokenEnum::Number(n) => match n {
                 Number::Integer(i) => instructions.push(format!("push {i}")),
 
-                Number::Float(_) => todo!(),
+                // We cannot have immediate float values in nasm
+                Number::Float(f) => {
+                    // add the floating point in the data segement
+                    self.data.push(format!("float_{} dq {f}", self.num_floats));
+
+                    instructions.extend(vec![
+                        format!("mov rax, float_{}", self.num_floats),
+                        // rax contains the address of the float
+                        format!("mov rax, [rax]"),
+                        format!("push rax"),
+                    ]);
+
+                    self.num_floats += 1;
+                }
             },
 
             TokenEnum::StringLiteral(s) => {

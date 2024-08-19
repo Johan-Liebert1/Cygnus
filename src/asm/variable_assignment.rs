@@ -186,9 +186,11 @@ impl ASM {
                 let member_type = borrow.iter().find(|x| x.name == *order).unwrap();
 
                 match &member_type.member_type {
-                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                        self.assign_local_number(struct_offset - member_type.offset, is_function_call_assign, &member_type.member_type)
-                    }
+                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => self.assign_local_number(
+                        struct_offset - member_type.offset,
+                        is_function_call_assign,
+                        &member_type.member_type,
+                    ),
 
                     VarType::Float => todo!(),
 
@@ -196,8 +198,12 @@ impl ASM {
 
                     // times_dereferenced = 0 as you cannot dereference a struct member while
                     // initializing
-                    VarType::Ptr(inner_type) => self.assign_local_pointer(&inner_type, struct_offset - member_type.offset, 0),
-                    VarType::Array(type_, size) => self.assign_local_array(struct_offset - member_type.offset, &None, &type_, &size),
+                    VarType::Ptr(inner_type) => {
+                        self.assign_local_pointer(&inner_type, struct_offset - member_type.offset, 0)
+                    }
+                    VarType::Array(type_, size) => {
+                        self.assign_local_array(struct_offset - member_type.offset, &None, &type_, &size)
+                    }
 
                     VarType::Char => todo!(),
                     VarType::Struct(_, _) => todo!(),
@@ -206,6 +212,154 @@ impl ASM {
             }
         } else {
             unreachable!("Found non struct type for struct")
+        }
+    }
+
+    fn handle_local_eq_assignment(
+        &mut self,
+        ar_var: &Rc<RefCell<Variable>>,
+        call_stack: &CallStack,
+        variable_assigned_to: &Variable,
+        struct_assign_order: Option<Vec<&String>>,
+        is_function_call_assign: bool,
+        times_dereferenced: usize,
+        array_access_index: &Option<ASTNode>,
+    ) {
+        let mut instructions = vec![];
+        let mut is_string = false;
+
+        // var = variable from call stack
+        match &ar_var.borrow().var_type {
+            VarType::Struct(name, members) => {
+                // Assignment to the struct variable
+                if variable_assigned_to.member_access.len() == 0 {
+                    self.assign_local_struct(
+                        ar_var.borrow().offset,
+                        struct_assign_order,
+                        name,
+                        call_stack,
+                        is_function_call_assign,
+                    )
+                } else {
+                    match &variable_assigned_to.result_type {
+                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                            let borrowed = members.borrow();
+
+                            let member_offset = borrowed
+                                .iter()
+                                .find(|x| x.name == variable_assigned_to.member_access[0])
+                                .unwrap();
+
+                            self.assign_local_number(
+                                member_offset.offset,
+                                is_function_call_assign,
+                                &variable_assigned_to.result_type,
+                            )
+                        }
+
+                        v => unimplemented!("Assignment to var_type '{}' inside struct not handled", v),
+                    };
+                }
+            }
+
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => self.assign_local_number(
+                ar_var.borrow().offset,
+                is_function_call_assign,
+                &ar_var.borrow().var_type,
+            ),
+
+            VarType::Float => {
+                self.extend_current_label(vec![
+                    format!(";; For assignemt of float var name '{}'", ar_var.borrow().var_name),
+                    // rax contains the memory address of the floating point number
+                    format!("pop rax"),
+                    format!("mov [rbp - {}], rax", ar_var.borrow().offset)
+                ])
+            },
+
+            VarType::Str => self.assign_local_string(ar_var.borrow().offset),
+
+            VarType::Char => {
+                // TODO: Update this
+                //
+                // pop the string pointer into rax
+                // the string len should be in rbx as string len is pushed
+                // last
+                // Treat a character as a string with length of 1
+                instructions.extend([
+                    format!("mov rbx, 1"),
+                    format!("pop rax"),
+                    format!("mov [rbp - {}], rax", ar_var.borrow().offset),
+                ]);
+
+                is_string = true;
+            }
+
+            // Assignment to a pointer should be simple enough
+            VarType::Ptr(var_ptr_type) => {
+                self.assign_local_pointer(var_ptr_type, ar_var.borrow().offset, times_dereferenced)
+            }
+            VarType::Array(type_, size) => {
+                self.assign_local_array(ar_var.borrow().offset, &array_access_index, type_, size)
+            }
+
+            VarType::Unknown => todo!(),
+        }
+    }
+
+    fn handle_global_eq_assignment(
+        &mut self,
+        ar_var: &Rc<RefCell<Variable>>,
+        times_dereferenced: usize,
+        instructions: &mut Vec<String>,
+    ) {
+        let mut is_string = false;
+
+        match &ar_var.borrow().var_type {
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => instructions.extend([format!("pop rax")]),
+
+            VarType::Struct(_, _) => todo!(),
+
+            VarType::Str => {
+                // pop the string pointer into rax
+                // the string len should be in rbx as string len is pushed
+                // last
+                instructions.extend([format!("pop rbx"), format!("pop rax")]);
+
+                is_string = true;
+            }
+
+            VarType::Ptr(ptr_var_type) => {
+                trace!("{}", ar_var.borrow().var_type);
+
+                match **ptr_var_type {
+                    VarType::Struct(_, _) => todo!(),
+                    VarType::Int => {
+                        // Store whatever's on the top of the stack into
+                        // this memory location
+                        instructions.extend([format!("pop rax"), format!("mov rbx, {}", ar_var.borrow().var_name)]);
+                        instructions.extend(std::iter::repeat(format!("mov rbx, [rbx]")).take(times_dereferenced));
+
+                        instructions.push(format!("mov rbx, rax"));
+                    }
+
+                    VarType::Str => todo!(),
+
+                    VarType::Int8 => todo!(),
+                    VarType::Int16 => todo!(),
+                    VarType::Int32 => todo!(),
+                    VarType::Array(..) => todo!(),
+                    VarType::Float => todo!(),
+                    VarType::Char => todo!(),
+                    VarType::Ptr(_) => todo!(),
+                    VarType::Unknown => todo!(),
+                }
+            }
+
+            VarType::Array(..) => todo!(),
+            VarType::Float => todo!(),
+            VarType::Char => todo!(),
+            VarType::Unknown => todo!(),
         }
     }
 
@@ -228,69 +382,15 @@ impl ASM {
         let (var_from_call_stack, variable_scope) = call_stack.get_var_with_name(&var_name);
 
         let mut instructions = vec![];
-
         let mut is_string = false;
 
         match var_from_call_stack {
-            Some(var) => {
+            Some(ar_var) => {
                 match variable_scope {
                     ActivationRecordType::Global => {
                         match assignment_type {
                             AssignmentTypes::Equals => {
-                                match &var.borrow().var_type {
-                                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                        instructions.extend([format!("pop rax")])
-                                    }
-
-                                    VarType::Struct(_, _) => todo!(),
-
-                                    VarType::Str => {
-                                        // pop the string pointer into rax
-                                        // the string len should be in rbx as string len is pushed
-                                        // last
-                                        instructions.extend([format!("pop rbx"), format!("pop rax")]);
-
-                                        is_string = true;
-                                    }
-
-                                    VarType::Ptr(ptr_var_type) => {
-                                        trace!("{}", var.borrow().var_type);
-
-                                        match **ptr_var_type {
-                                            VarType::Struct(_, _) => todo!(),
-                                            VarType::Int => {
-                                                // Store whatever's on the top of the stack into
-                                                // this memory location
-                                                instructions.extend([
-                                                    format!("pop rax"),
-                                                    format!("mov rbx, {}", var.borrow().var_name),
-                                                ]);
-                                                instructions.extend(
-                                                    std::iter::repeat(format!("mov rbx, [rbx]"))
-                                                        .take(times_dereferenced),
-                                                );
-
-                                                instructions.push(format!("mov rbx, rax"));
-                                            }
-
-                                            VarType::Str => todo!(),
-
-                                            VarType::Int8 => todo!(),
-                                            VarType::Int16 => todo!(),
-                                            VarType::Int32 => todo!(),
-                                            VarType::Array(..) => todo!(),
-                                            VarType::Float => todo!(),
-                                            VarType::Char => todo!(),
-                                            VarType::Ptr(_) => todo!(),
-                                            VarType::Unknown => todo!(),
-                                        }
-                                    }
-
-                                    VarType::Array(..) => todo!(),
-                                    VarType::Float => todo!(),
-                                    VarType::Char => todo!(),
-                                    VarType::Unknown => todo!(),
-                                }
+                                self.handle_global_eq_assignment(ar_var, times_dereferenced, &mut instructions)
                             }
 
                             AssignmentTypes::PlusEquals => instructions.extend([
@@ -313,106 +413,37 @@ impl ASM {
                     }
 
                     // local variable
-                    _ => {
-                        match assignment_type {
-                            AssignmentTypes::Equals => {
-                                // var = variable from call stack
-                                match &var.borrow().var_type {
-                                    VarType::Struct(name, members) => {
-                                        // Assignment to the struct variable
-                                        if variable_assigned_to.member_access.len() == 0 {
-                                            self.assign_local_struct(
-                                                var.borrow().offset,
-                                                struct_assign_order,
-                                                name,
-                                                call_stack,
-                                                is_function_call_assign,
-                                            )
-                                        } else {
-                                            match &variable_assigned_to.result_type {
-                                                VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                                    let borrowed = members.borrow();
+                    _ => match assignment_type {
+                        AssignmentTypes::Equals => self.handle_local_eq_assignment(
+                            ar_var,
+                            call_stack,
+                            variable_assigned_to,
+                            struct_assign_order,
+                            is_function_call_assign,
+                            times_dereferenced,
+                            array_access_index,
+                        ),
 
-                                                    let member_offset = borrowed
-                                                        .iter()
-                                                        .find(|x| x.name == variable_assigned_to.member_access[0])
-                                                        .unwrap();
+                        AssignmentTypes::PlusEquals => self.extend_current_label(
+                            [
+                                format!("mov rax, [rbp - {}]", ar_var.borrow().offset),
+                                format!("pop rbx"),
+                                format!("add rax, rbx"),
+                                format!("mov [rbp - {}], rax", ar_var.borrow().offset),
+                            ]
+                            .into(),
+                        ),
 
-                                                    self.assign_local_number(
-                                                        member_offset.offset,
-                                                        is_function_call_assign,
-                                                        &variable_assigned_to.result_type,
-                                                    )
-                                                }
-
-                                                v => unimplemented!(
-                                                    "Assignment to var_type '{}' inside struct not handled",
-                                                    v
-                                                ),
-                                            };
-                                        }
-                                    }
-
-                                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => self
-                                        .assign_local_number(
-                                            var.borrow().offset,
-                                            is_function_call_assign,
-                                            &var.borrow().var_type,
-                                        ),
-
-                                    VarType::Float => todo!(),
-
-                                    VarType::Str => self.assign_local_string(var.borrow().offset),
-
-                                    VarType::Char => {
-                                        // TODO: Update this
-                                        //
-                                        // pop the string pointer into rax
-                                        // the string len should be in rbx as string len is pushed
-                                        // last
-                                        // Treat a character as a string with length of 1
-                                        instructions.extend([
-                                            format!("mov rbx, 1"),
-                                            format!("pop rax"),
-                                            format!("mov [rbp - {}], rax", var.borrow().offset),
-                                        ]);
-
-                                        is_string = true;
-                                    }
-
-                                    // Assignment to a pointer should be simple enough
-                                    VarType::Ptr(var_ptr_type) => {
-                                        self.assign_local_pointer(var_ptr_type, var.borrow().offset, times_dereferenced)
-                                    }
-                                    VarType::Array(type_, size) => {
-                                        self.assign_local_array(var.borrow().offset, &array_access_index, type_, size)
-                                    }
-
-                                    VarType::Unknown => todo!(),
-                                }
-                            }
-
-                            AssignmentTypes::PlusEquals => self.extend_current_label(
-                                [
-                                    format!("mov rax, [rbp - {}]", var.borrow().offset),
-                                    format!("pop rbx"),
-                                    format!("add rax, rbx"),
-                                    format!("mov [rbp - {}], rax", var.borrow().offset),
-                                ]
-                                .into(),
-                            ),
-
-                            AssignmentTypes::MinusEquals => self.extend_current_label(
-                                [
-                                    format!("mov rax, [rbp - {}]", var.borrow().offset),
-                                    format!("pop rbx"),
-                                    format!("sub rax, rbx"),
-                                    format!("mov [rbp - {}], rax", var.borrow().offset),
-                                ]
-                                .into(),
-                            ),
-                        }
-                    }
+                        AssignmentTypes::MinusEquals => self.extend_current_label(
+                            [
+                                format!("mov rax, [rbp - {}]", ar_var.borrow().offset),
+                                format!("pop rbx"),
+                                format!("sub rax, rbx"),
+                                format!("mov [rbp - {}], rax", ar_var.borrow().offset),
+                            ]
+                            .into(),
+                        ),
+                    },
                 }
             }
 

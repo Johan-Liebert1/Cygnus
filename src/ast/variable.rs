@@ -224,7 +224,7 @@ impl AST for Variable {
             );
         }
 
-        trace!("type: {}", self.var_type);
+        // trace!("type: {}", self.var_type);
 
         if self.store_address {
             self.result_type = VarType::Ptr(Box::new(self.var_type.clone()))
