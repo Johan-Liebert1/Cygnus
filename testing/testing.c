@@ -32,6 +32,9 @@ void double_div(double d, double e) {
 }
 
 int main() {
+    double_add(6.28, 3.14);
+    double_sub(6.28, 3.14);
+    double_mul(6.28, 3.14);
     double_div(6.28, 3.14);
     return 0;
 }

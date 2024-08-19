@@ -31,6 +31,12 @@ fn arithmetic() {
 }
 
 #[test]
+fn float_arithmetic() {
+    let (stdout_str, _, file_result) = get_stdout_and_actual_result("float_arithmetic.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
 fn if_elif_else() {
     let (stdout_str, _, file_result) = get_stdout_and_actual_result("if-elif-else.cberk");
     assert_eq!(stdout_str, file_result);

@@ -25,6 +25,7 @@ impl ASM {
                     instructions.extend(vec![
                         format!("mov rax, float_{}", self.num_floats),
                         // rax contains the address of the float
+                        format!("mov rax, [rax]"),
                         format!("push rax"),
                     ]);
 
