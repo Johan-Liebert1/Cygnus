@@ -2,3 +2,6 @@
 *.o
 generated/output
 generated/output.asm
+test
+test.asm
+bin/

@@ -1,0 +1,6 @@
+fun main() {
+    def a: float = 2.33;
+    write(a)
+}
+
+main()

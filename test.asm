@@ -9,19 +9,12 @@ SYS_EXIT equ 60
 section .bss
 	digitSpace resb 100
 	digitSpacePos resb 8
-	argc resb 8
-	clientaddr resb 1024
-	read_data resb 4096
-	serveraddr_mem resb 16
-	clientaddr_mem resb 16
-	file_len resb 32
-	req_method resb 32
-	req_path resb 256
-	file_to_read resb 256
+
+section .data
+    pi dq 3.14
 
 section .text
     global _start
-
 
 _printRAX:
     
@@ -89,15 +82,16 @@ _printString:
 
     ret
 
-function:
-    mov rax, 420
-    ret
-
 _start: 
-    mov rax, 69
+    movsd xmm0, [pi]
+    sub rsp, 16
+    movdqu [rsp], xmm0
+
+    mov rax, [rsp]
 
     call _printRAX
-    call function
-    call _printRAX
 
+    sub rsp, 16
+
+    mov rax, 0
     exit rax

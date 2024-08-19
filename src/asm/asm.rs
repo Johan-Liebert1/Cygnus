@@ -15,6 +15,7 @@ pub struct ASM {
     pub labels: Vec<Label>,
     pub comparison_num: usize,
     pub num_strings: usize,
+    pub num_floats: usize,
     pub num_ifs: usize,
 
     function_argument_number: Option<usize>,
@@ -26,6 +27,7 @@ impl Default for ASM {
     fn default() -> Self {
         Self {
             num_strings: 0,
+            num_floats: 0,
             comparison_num: 0,
             current_label: "_start".to_string(),
             num_ifs: 0,
