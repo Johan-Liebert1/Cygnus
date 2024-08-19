@@ -1,9 +1,19 @@
 #include <stdint.h>
 #include <stdio.h>
 
-int main() {
+void double_test() {
     double pi = 2.33;
-    printf("%ld\n", *(uint64_t*)&pi);
-
+    printf("%ld\n", *(uint64_t *)&pi);
     printf("%f\n", pi);
+}
+
+void double_add(double d, double e) {
+    double sum = d + e;
+    printf("%f\n", sum);
+    printf("%ld\n", *(uint64_t*)&sum);
+}
+
+int main() {
+    double_add(2.33, 3.33);
+    return 0;
 }

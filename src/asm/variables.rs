@@ -353,7 +353,10 @@ impl ASM {
 
             VarType::Float => {
                 self.extend_current_label(vec![
-                    ";; TODO: asm/variable.rs float".into()
+                    ";; Always, the address to the float is pushed onto the stack".into(),
+                    format!("mov rax, [rbp - {}]", ar_var.borrow().offset),
+                    format!("mov rax, [rax]"),
+                    format!("push rax")
                 ])
             },
 

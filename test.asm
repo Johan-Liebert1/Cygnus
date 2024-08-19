@@ -12,6 +12,7 @@ section .bss
 
 section .data
     pi dq 3.14
+    storage dq 0
 
 section .text
     global _start
@@ -83,15 +84,17 @@ _printString:
     ret
 
 _start: 
-    movsd xmm0, [pi]
-    sub rsp, 16
-    movdqu [rsp], xmm0
+    fld qword [pi]
+    fld qword [pi]
 
-    mov rax, [rsp]
+    movsd xmm0, [pi]
+    movsd xmm1, [pi]
+    addsd xmm0, xmm1
+
+    movsd [storage], xmm0
+    mov rax, [storage]
 
     call _printRAX
-
-    sub rsp, 16
 
     mov rax, 0
     exit rax

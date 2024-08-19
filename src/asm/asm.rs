@@ -36,7 +36,10 @@ impl Default for ASM {
 
             text: vec![String::from("global _start")],
 
-            data: vec![],
+            data: vec![
+                String::from(";; For floating point operations"),
+                String::from("float_imm dq 0")
+            ],
 
             bss: vec![
                 // for printing numbers

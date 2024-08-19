@@ -9,12 +9,34 @@ impl ASM {
     pub fn binary_op_nums(&mut self, op: Operations, times_dereferenced: usize, result_type: &VarType) {
         let mut instructions = match op {
             Operations::Plus => {
-                vec![
-                    format!(";; Plus get the two operands from the stack"),
-                    format!("pop rax"),
-                    format!("pop rbx"),
-                    format!("add rax, rbx"),
-                ]
+                if matches!(result_type, VarType::Float) {
+                    vec![
+                        format!(";; Floating point addition"),
+
+                        format!(";; Get the first operand"),
+                        format!("pop rax"),
+                        format!("mov [float_imm], rax"),
+                        format!("movsd xmm0, [float_imm]"),
+
+                        format!(";; Get the second operand"),
+                        format!("pop rax"),
+                        format!("mov [float_imm], rax"),
+                        format!("movsd xmm1, [float_imm]"),
+
+
+                        format!(";; floating point addition"),
+                        format!("addsd xmm0, xmm1"),
+                        format!("movsd [float_imm], xmm0"),
+                        format!("mov rax, [float_imm]"),
+                    ]
+                } else {
+                    vec![
+                        format!(";; Plus get the two operands from the stack"),
+                        format!("pop rax"),
+                        format!("pop rbx"),
+                        format!("add rax, rbx"),
+                    ]
+                }
             }
 
             Operations::Minus => {
@@ -116,7 +138,8 @@ impl ASM {
             }
 
             VarType::Str => todo!(),
-            VarType::Float => todo!(),
+
+            VarType::Float => instructions.push("push rax".into()),
 
             // this is basically an integer, a u8 to be precise
             VarType::Char => {

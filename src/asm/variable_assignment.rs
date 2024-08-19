@@ -272,7 +272,8 @@ impl ASM {
                 self.extend_current_label(vec![
                     format!(";; For assignemt of float var name '{}'", ar_var.borrow().var_name),
                     // rax contains the memory address of the floating point number
-                    format!("movsd xmm0, [rax]")
+                    format!("pop rax"),
+                    format!("mov [rbp - {}], rax", ar_var.borrow().offset)
                 ])
             },
 
