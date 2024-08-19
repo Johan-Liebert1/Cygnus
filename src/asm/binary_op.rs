@@ -14,13 +14,11 @@ impl ASM {
                         format!(";; Floating point addition"),
 
                         format!(";; Get the first operand"),
-                        format!("pop rax"),
-                        format!("mov [float_imm], rax"),
+                        format!("pop QWORD [float_imm]"),
                         format!("movsd xmm0, [float_imm]"),
 
                         format!(";; Get the second operand"),
-                        format!("pop rax"),
-                        format!("mov [float_imm], rax"),
+                        format!("pop QWORD [float_imm]"),
                         format!("movsd xmm1, [float_imm]"),
 
 
