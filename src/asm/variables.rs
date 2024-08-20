@@ -6,7 +6,7 @@ use crate::{
     lexer::{
         registers::Register,
         tokens::VariableEnum,
-        types::{VarType, TYPE_FLOAT, TYPE_INT},
+        types::{StructMemberType, VarType, TYPE_FLOAT, TYPE_INT},
     },
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
     trace,
@@ -14,168 +14,204 @@ use crate::{
 
 use super::asm::ASM;
 
+struct RequiredVarFields<'a> {
+    dereference: bool,
+    store_address: bool,
+    times_dereferenced: usize,
+    var_name: &'a String,
+    member_access: &'a Vec<String>,
+}
+
 impl ASM {
-    fn handle_local_ptr(&mut self, var_type: &Box<VarType>, variable: &Variable, ar_var_offset: usize) {
-        match *var_type.clone() {
-            VarType::Int | VarType::Int16 | VarType::Int32 | VarType::Int8 | VarType::Float => {
-                let reg_name = var_type.get_register_name(Register::RAX);
+    fn handle_local_ptr_int_float(
+        &mut self,
+        var_type: &Box<VarType>,
+        variable: &RequiredVarFields,
+        ar_var_offset: usize,
+    ) {
+        let reg_name = var_type.get_register_name(Register::RAX);
 
-                if variable.dereference {
-                    let mut v = vec![
-                        format!(";; Dereferencing variable {}", variable.var_name),
-                        format!("mov rax, [rbp - {}]", ar_var_offset),
-                    ];
+        if variable.dereference {
+            let mut v = vec![
+                format!(";; Dereferencing variable {}", variable.var_name),
+                format!("mov rax, [rbp - {}]", ar_var_offset),
+            ];
 
-                    v.extend(std::iter::repeat(format!("mov rax, [rax]")).take(variable.times_dereferenced));
+            v.extend(std::iter::repeat(format!("mov rax, [rax]")).take(variable.times_dereferenced));
 
-                    v.extend([
-                        format!("push rax"),
-                        format!(";; Finish dereferencing variable {}", variable.var_name),
-                    ]);
+            v.extend([
+                format!("push rax"),
+                format!(";; Finish dereferencing variable {}", variable.var_name),
+            ]);
 
-                    self.extend_current_label(v);
-                } else if variable.store_address {
-                    self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
-                } else {
-                    self.extend_current_label(vec![
-                        format!("mov {}, [rbp - {}]", reg_name, ar_var_offset),
-                        format!("push rax"),
-                    ]);
-                }
-            }
+            self.extend_current_label(v);
 
-            // VarType::Float => {
-            //     if variable.dereference {
-            //     } else if variable.store_address {
-            //         self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
-            //     } else {
-            //         self.extend_current_label(vec![
-            //             format!("mov rax, [rbp - {}]", ar_var_offset),
-            //             format!("push rax"),
-            //         ]);
-            //     }
-            // }
-            VarType::Str => {
-                if variable.dereference {
-                    let mut v = vec![
-                        format!(";; Dereferencing variable {}", variable.var_name),
-                        format!("mov rax, [rbp - {}]", ar_var_offset),
-                        // now rax contains the address of the pointer to the
-                        // string
-                        // now we move the length of the string into rbx
-                        format!("mov rbx, [rax - 8]"), // now rbx = length of
-                                                       // the string
-                    ];
-                    v.extend(std::iter::repeat(format!("mov rax, [rax]")).take(variable.times_dereferenced));
-                    v.extend([
-                        format!("push rax"),
-                        format!("push rbx"),
-                        format!(";; Finish dereferencing variable {}", variable.var_name),
-                    ]);
+            return;
+        }
 
-                    self.extend_current_label(v);
-                } else if variable.store_address {
-                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
-                } else {
-                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
-                }
-            }
+        if variable.store_address {
+            self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+            return;
+        }
 
-            VarType::Char => {
-                // TODO: Differentiate btw pointer to the first char of a string and a pointer to a
-                // single char
-                if variable.dereference {
-                    // mov al as we only want 8 bytes
+        self.extend_current_label(vec![
+            format!("mov {}, [rbp - {}]", reg_name, ar_var_offset),
+            format!("push rax"),
+        ]);
+    }
+
+    fn handle_local_ptr_str(&mut self, var_type: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
+        if variable.dereference {
+            let mut v = vec![
+                format!(";; Dereferencing variable {}", variable.var_name),
+                format!("mov rax, [rbp - {}]", ar_var_offset),
+                // now rax contains the address of the pointer to the
+                // string
+                // now we move the length of the string into rbx
+                format!("mov rbx, [rax - 8]"), // now rbx = length of
+                                               // the string
+            ];
+            v.extend(std::iter::repeat(format!("mov rax, [rax]")).take(variable.times_dereferenced));
+            v.extend([
+                format!("push rax"),
+                format!("push rbx"),
+                format!(";; Finish dereferencing variable {}", variable.var_name),
+            ]);
+
+            self.extend_current_label(v);
+            return;
+        }
+
+        if variable.store_address {
+            self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+            return;
+        }
+
+        self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+    }
+
+    fn handle_local_ptr_struct(
+        &mut self,
+        var_type: &Box<VarType>,
+        variable: &RequiredVarFields,
+        ar_var_offset: usize,
+        struct_name: &String,
+        members: Rc<RefCell<Vec<StructMemberType>>>,
+    ) {
+        if variable.member_access.len() == 0 {
+            // it's of the type
+            // def var: *MyStruct = &another_var;
+
+            let first = &members.borrow()[0];
+
+            self.extend_current_label(vec![
+                format!(
+                    ";; Storing address of struct {} for variable {} in handle_local_ptr",
+                    struct_name, variable.var_name
+                ),
+                format!("lea rax, [rbp - {}]", first.offset),
+                format!("push rax"),
+            ]);
+
+            return;
+        }
+
+        let borrow = members.borrow();
+        let found = borrow.iter().find(|x| x.name == variable.member_access[0]);
+
+        // trace!("found: {found:#?}");
+        // trace!("variable: {variable:#?}");
+
+        self.add_to_current_label(format!(";; Handling ptr to struct for Ptr -> {}", struct_name));
+
+        match found {
+            Some(struct_member_type) => match &struct_member_type.member_type {
+                // accessing an integer on a ptr to a structure
+                // We will dereference it automatically here
+                VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                    let reg_name = struct_member_type.member_type.get_register_name(Register::RAX);
+                    let reg_name_rbx = struct_member_type.member_type.get_register_name(Register::RBX);
+
+                    println!("struct_member_type: {:#?}", struct_member_type);
+
                     self.extend_current_label(vec![
                         format!("mov rbx, [rbp - {}]", ar_var_offset),
-                        format!("xor rax, rax"),
-                        format!("mov al, [rbx]"),
+                        format!("add rbx, {}", struct_member_type.offset),
+                        // Since memeber type is an integer
+                        format!("xor {}, {}", Register::RAX, Register::RAX),
+                        format!("mov {}, [{}]", reg_name, reg_name_rbx),
                         format!("push rax"),
                     ]);
-                } else if variable.store_address {
-                    todo!()
-                } else {
-                    self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
                 }
+
+                VarType::Str => {
+                    self.extend_current_label(vec![
+                        format!("mov rbx, [rbp - {}]", ar_var_offset),
+                        format!("add rbx, {}", struct_member_type.offset),
+                        format!("xor rax, rax"),
+                        format!("mov rax, [rbx]"),
+                        format!("push rax"),
+                        // length is pushed last
+                        // we add 8 here instead of subtracting 8 because we are
+                        // calculating this offset from the beginning of the struct and not
+                        // the beginning of the address where the address of the string is
+                        // kept
+                        format!("mov rax, [rbx + 8]"),
+                        format!("push rax"),
+                    ]);
+                }
+
+                VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, struct_member_type.offset),
+
+                VarType::Float => todo!(),
+                VarType::Char => todo!(),
+                VarType::Array(_, _) => todo!(),
+                VarType::Struct(_, _) => todo!(),
+                VarType::Unknown => todo!(),
+            },
+
+            None => unreachable!(
+                "Could not find memeber {} of struct while generating ASM",
+                variable.member_access[0]
+            ),
+        }
+    }
+
+    fn handle_local_ptr_char(&mut self, var_type: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
+        // TODO: Differentiate btw pointer to the first char of a string and a pointer to a
+        // single char
+        if variable.dereference {
+            // mov al as we only want 8 bytes
+            self.extend_current_label(vec![
+                format!("mov rbx, [rbp - {}]", ar_var_offset),
+                format!("xor rax, rax"),
+                format!("mov al, [rbx]"),
+                format!("push rax"),
+            ]);
+
+            return;
+        }
+
+        if variable.store_address {
+            todo!();
+            return;
+        }
+
+        self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+    }
+
+    fn handle_local_ptr(&mut self, var_type: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
+        match *var_type.clone() {
+            VarType::Int | VarType::Int16 | VarType::Int32 | VarType::Int8 | VarType::Float => {
+                self.handle_local_ptr_int_float(var_type, variable, ar_var_offset)
             }
 
-            VarType::Struct(name, members) => {
-                if variable.member_access.len() == 0 {
-                    // it's of the type
-                    // def var: *MyStruct = &another_var;
+            VarType::Str => self.handle_local_ptr_str(var_type, variable, ar_var_offset),
 
-                    let first = &members.borrow()[0];
+            VarType::Char => self.handle_local_ptr_char(var_type, variable, ar_var_offset),
 
-                    self.extend_current_label(vec![
-                        format!(
-                            ";; Storing address of struct {} for variable {} in handle_local_ptr",
-                            name, variable.var_name
-                        ),
-                        format!("lea rax, [rbp - {}]", first.offset),
-                        format!("push rax"),
-                    ]);
-                    return;
-                }
-
-                let borrow = members.borrow();
-                let found = borrow.iter().find(|x| x.name == variable.member_access[0]);
-
-                // trace!("found: {found:#?}");
-                // trace!("variable: {variable:#?}");
-
-                self.add_to_current_label(format!(";; Handling ptr to struct for Ptr -> {}", name));
-
-                match found {
-                    Some(struct_member_type) => match &struct_member_type.member_type {
-                        // accessing an integer on a ptr to a structure
-                        // We will dereference it automatically here
-                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                            let reg_name = struct_member_type.member_type.get_register_name(Register::RAX);
-                            let reg_name_rbx = struct_member_type.member_type.get_register_name(Register::RBX);
-
-                            println!("struct_member_type: {:#?}", struct_member_type);
-
-                            self.extend_current_label(vec![
-                                format!("mov rbx, [rbp - {}]", ar_var_offset),
-                                format!("add rbx, {}", struct_member_type.offset),
-                                // Since memeber type is an integer
-                                format!("xor {}, {}", Register::RAX, Register::RAX),
-                                format!("mov {}, [{}]", reg_name, reg_name_rbx),
-                                format!("push rax"),
-                            ]);
-                        }
-
-                        VarType::Str => {
-                            self.extend_current_label(vec![
-                                format!("mov rbx, [rbp - {}]", ar_var_offset),
-                                format!("add rbx, {}", struct_member_type.offset),
-                                format!("xor rax, rax"),
-                                format!("mov rax, [rbx]"),
-                                format!("push rax"),
-                                // length is pushed last
-                                // we add 8 here instead of subtracting 8 because we are
-                                // calculating this offset from the beginning of the struct and not
-                                // the beginning of the address where the address of the string is
-                                // kept
-                                format!("mov rax, [rbx + 8]"),
-                                format!("push rax"),
-                            ]);
-                        }
-
-                        VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, struct_member_type.offset),
-
-                        VarType::Float => todo!(),
-                        VarType::Char => todo!(),
-                        VarType::Array(_, _) => todo!(),
-                        VarType::Struct(_, _) => todo!(),
-                        VarType::Unknown => todo!(),
-                    },
-
-                    None => unreachable!(
-                        "Could not find memeber {} of struct while generating ASM",
-                        variable.member_access[0]
-                    ),
-                }
+            VarType::Struct(struct_name, members) => {
+                self.handle_local_ptr_struct(var_type, variable, ar_var_offset, &struct_name, members)
             }
 
             type_ => {
@@ -225,18 +261,22 @@ impl ASM {
     // need the var_type for struct member access as struct_name.member as the type 'struct_name'
     fn handle_local_int_float(&mut self, variable: &Variable, ar_var_offset: usize, actual_var_type: &VarType) {
         if variable.dereference {
-            panic!("Cannot dereference a number")
-        } else if variable.store_address {
-            self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
-        } else {
-            let reg_name = actual_var_type.get_register_name(Register::RAX);
-
-            self.extend_current_label(vec![
-                format!("xor {}, {}", Register::RAX, Register::RAX),
-                format!("mov {}, [rbp - {}]", reg_name, ar_var_offset),
-                format!("push rax"),
-            ]);
+            panic!("Cannot dereference a number");
+            return;
         }
+
+        if variable.store_address {
+            self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+            return;
+        }
+
+        let reg_name = actual_var_type.get_register_name(Register::RAX);
+
+        self.extend_current_label(vec![
+            format!("xor {}, {}", Register::RAX, Register::RAX),
+            format!("mov {}, [rbp - {}]", reg_name, ar_var_offset),
+            format!("push rax"),
+        ]);
     }
 
     fn handle_local_str(&mut self, variable: &Variable, ar_var_offset: usize) {
@@ -259,7 +299,10 @@ impl ASM {
             ]);
 
             self.extend_current_label(v);
-        } else if variable.store_address {
+            return;
+        }
+
+        if variable.store_address {
             // the pointer to the string is stored below the length
             // --- top of stack ---
             // .
@@ -267,15 +310,16 @@ impl ASM {
             // --- length ---
             // --- pointer to string ---
             self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
-        } else {
-            self.extend_current_label(vec![
-                format!("mov rax, [rbp - {}]", ar_var_offset),
-                format!("push rax"),
-                // length is pushed last
-                format!("mov rax, [rbp - {}]", ar_var_offset - 8),
-                format!("push rax"),
-            ])
+            return;
         }
+
+        self.extend_current_label(vec![
+            format!("mov rax, [rbp - {}]", ar_var_offset),
+            format!("push rax"),
+            // length is pushed last
+            format!("mov rax, [rbp - {}]", ar_var_offset - 8),
+            format!("push rax"),
+        ])
     }
 
     fn handle_global_ptr(&mut self, variable: &Variable, ar_var: &Variable) {
@@ -295,14 +339,18 @@ impl ASM {
                 ]);
 
                 self.extend_current_label(v);
-            } else if variable.store_address {
-                self.extend_current_label(vec![format!("lea rax, {}", var_name), format!("push rax")]);
-            } else {
-                self.extend_current_label(vec![format!("mov rax, {}", var_name), format!("push rax")]);
+                return;
             }
-        } else {
-            todo!()
+            if variable.store_address {
+                self.extend_current_label(vec![format!("lea rax, {}", var_name), format!("push rax")]);
+                return;
+            }
+
+            self.extend_current_label(vec![format!("mov rax, {}", var_name), format!("push rax")]);
+            return;
         }
+
+        todo!("not implemented for non memory block")
     }
 
     fn gen_asm_for_var_global_scope(&mut self, variable: &Variable, ar_var: &Rc<RefCell<Variable>>) {
@@ -351,6 +399,14 @@ impl ASM {
     }
 
     fn gen_asm_for_var_local_scope(&mut self, variable: &Variable, ar_var: &Rc<RefCell<Variable>>) {
+        let required_var = RequiredVarFields {
+            dereference: variable.dereference,
+            times_dereferenced: variable.times_dereferenced,
+            member_access: &variable.member_access,
+            var_name: &variable.var_name,
+            store_address: variable.store_address,
+        };
+
         // cannot use ar_var here as it does not have the computed types
         match &variable.var_type {
             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Float => {
@@ -360,7 +416,7 @@ impl ASM {
             VarType::Str => self.handle_local_str(variable, ar_var.borrow().offset),
 
             // TODO: Handle pointer to pointer to something
-            VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, ar_var.borrow().offset),
+            VarType::Ptr(var_type) => self.handle_local_ptr(var_type, &required_var, ar_var.borrow().offset),
 
             VarType::Char => todo!(),
 
@@ -394,7 +450,7 @@ impl ASM {
 
                 match found {
                     Some(struct_member_type) => match &struct_member_type.member_type {
-                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => self.handle_local_int_float(
+                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Float => self.handle_local_int_float(
                             variable,
                             ar_var.borrow().offset - struct_member_type.offset,
                             &struct_member_type.member_type,
@@ -403,14 +459,15 @@ impl ASM {
                         VarType::Str => {
                             self.handle_local_str(variable, ar_var.borrow().offset - struct_member_type.offset)
                         }
+
                         VarType::Ptr(var_type) => self.handle_local_ptr(
                             var_type,
-                            variable,
+                            &required_var,
                             ar_var.borrow().offset - struct_member_type.offset,
                         ),
 
-                        VarType::Float => todo!(),
                         VarType::Char => todo!(),
+
                         VarType::Array(_, _) => todo!(),
                         VarType::Struct(_, _) => todo!(),
                         VarType::Unknown => todo!(),
