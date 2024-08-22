@@ -1,8 +1,8 @@
 use crate::{
-    ast::{abstract_syntax_tree::AST, void::Void},
+    ast::{abstract_syntax_tree::AST, typedef::Typedef, void::Void},
     helpers::{self, compiler_error, unexpected_token},
     lexer::{
-        keywords::{CONST_VAR_DEFINE, INCLUDE, MEM, STRUCT},
+        keywords::{CONST_VAR_DEFINE, INCLUDE, MEM, STRUCT, TYPE_DEF},
         tokens::{Number, Operations},
         types::VarType,
     },
@@ -54,6 +54,8 @@ pub struct Parser {
     pub current_function_being_parsed: Option<String>,
 
     pub user_defined_types: Vec<UserDefinedType>,
+
+    pub type_aliases: Vec<Typedef>,
 }
 
 impl Parser {
@@ -79,6 +81,7 @@ impl Parser {
 
             current_function_being_parsed: None,
             user_defined_types: vec![],
+            type_aliases: vec![],
         }
     }
 
@@ -129,6 +132,10 @@ impl Parser {
 
                 match keyword as &str {
                     VAR_DEFINE => self.parse_declaration_statement(false),
+                    TYPE_DEF => {
+                        self.parse_typedef();
+                        Rc::new(RefCell::new(Box::new(Void)))
+                    }
                     CONST_VAR_DEFINE => self.parse_declaration_statement(true),
 
                     IF_STATEMENT => self.parse_conditional_statement(),

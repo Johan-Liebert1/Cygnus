@@ -1,6 +1,11 @@
 use crate::{
-    asm::structs, ast::variable::Variable, helpers::compiler_error, lexer::types::VarType,
-    parser::parser::UserDefinedType, trace, types::ASTNode,
+    asm::structs,
+    ast::{typedef::Typedef, variable::Variable},
+    helpers::compiler_error,
+    lexer::types::VarType,
+    parser::parser::UserDefinedType,
+    trace,
+    types::ASTNode,
 };
 
 use core::panic;
@@ -66,6 +71,7 @@ pub struct CallStack<'a> {
     current_function_name: Option<String>,
     loop_number: usize,
     pub user_defined_types: &'a Vec<UserDefinedType>,
+    pub type_aliases: &'a Vec<Typedef>,
 }
 
 impl<'a> CallStack<'a> {
@@ -267,7 +273,6 @@ impl<'a> CallStack<'a> {
                             trace!("name: {struct_name}, struct_members: {struct_members:#?}");
                         }
 
-
                         last_record
                             .variable_members
                             .insert(var_name.into(), Rc::clone(&variable))
@@ -312,13 +317,19 @@ pub struct SemanticAnalyzer<'a> {
 }
 
 impl<'a> SemanticAnalyzer<'a> {
-    pub fn new(ast: ASTNode, functions: Rc<RefCell<Functions>>, user_defined_types: &'a Vec<UserDefinedType>) -> Self {
+    pub fn new(
+        ast: ASTNode,
+        functions: Rc<RefCell<Functions>>,
+        user_defined_types: &'a Vec<UserDefinedType>,
+        type_aliases: &'a Vec<Typedef>,
+    ) -> Self {
         Self {
             call_stack: CallStack {
                 call_stack: vec![ActivationRecord::new("".into(), ActivationRecordType::Global)],
                 current_function_name: None,
                 loop_number: 0,
                 user_defined_types,
+                type_aliases,
             },
             ast,
             functions,

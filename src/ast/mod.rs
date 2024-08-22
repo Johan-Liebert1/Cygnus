@@ -14,5 +14,6 @@ pub mod logical_exp;
 pub mod memory_alloc;
 pub mod program;
 pub mod structs;
+pub mod typedef;
 pub mod variable;
 pub mod void;

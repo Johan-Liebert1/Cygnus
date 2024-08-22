@@ -1,15 +1,7 @@
-fun add(a: *float, b: *float) {
-    *a = 3.14
-    write(*a + *b)
-}
+type a = int;
 
 fun main() {
-    def a: float = 0.00003;
-    def b: float = 0.00003;
-
-    write(a != b)
-
-    loop from "hello" to 5.6 {
+    loop from 1 to 4 step 3 {
         write("hello")
     }
 }
