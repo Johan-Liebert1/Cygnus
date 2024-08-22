@@ -32,6 +32,8 @@ pub enum VarType {
     Ptr(Box<VarType>),
     Array(Box<VarType>, usize),
     Struct(String, Rc<RefCell<Vec<StructMemberType>>>), // string = name of struct
+    /// (Name, Parameters, ReturnType)
+    Function(String, Vec<VarType>, Box<VarType>),
     Unknown,
 }
 
@@ -172,6 +174,7 @@ impl VarType {
             },
 
             Unknown => todo!(),
+            Function(_, _, _) => todo!(),
         };
     }
 
@@ -280,6 +283,7 @@ impl VarType {
                     None => 0,
                 }
             }
+            VarType::Function(_, _, _) => todo!(),
         };
     }
 
@@ -336,6 +340,7 @@ impl Display for VarType {
             VarType::Unknown => "Unknown".to_string(),
             VarType::Struct(name, _) => name.into(),
             VarType::Array(var_type, sz) => format!("Array of {} of size {sz}", *var_type),
+            VarType::Function(_, _, _) => todo!(),
         };
 
         write!(f, "{}", msg)

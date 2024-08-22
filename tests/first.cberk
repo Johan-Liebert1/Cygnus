@@ -1,9 +1,7 @@
-type a = int;
+type my_int = int;
 
 fun main() {
-    loop from 1 to 4 step 3 {
-        write("hello")
-    }
+    def a: my_int = 4;
 }
 
 main()

@@ -229,11 +229,13 @@ impl ASM {
                 VarType::Array(_, _) => todo!(),
                 VarType::Struct(_, _) => todo!(),
                 VarType::Unknown => todo!(),
+                VarType::Function(_, _, _) => todo!(),
             },
 
             VarType::Array(_, _) => todo!(),
             VarType::Struct(_, _) => todo!(),
             VarType::Unknown => todo!(),
+            VarType::Function(_, _, _) => todo!(),
         };
 
         self.extend_current_label(instructions);

@@ -168,6 +168,7 @@ impl ASM {
                 VarType::Array(_, _) => todo!(),
                 VarType::Struct(_, _) => todo!(),
                 VarType::Unknown => todo!(),
+                VarType::Function(_, _, _) => todo!(),
             },
 
             None => unreachable!(
@@ -255,6 +256,7 @@ impl ASM {
             VarType::Ptr(_) => todo!(),
             VarType::Array(_, _) => todo!(),
             VarType::Unknown => todo!(),
+            VarType::Function(_, _, _) => todo!(),
         }
     }
 
@@ -395,6 +397,7 @@ impl ASM {
             VarType::Array(..) => todo!(),
             VarType::Unknown => todo!(),
             VarType::Struct(_, _) => todo!(),
+            VarType::Function(_, _, _) => todo!(),
         }
     }
 
@@ -471,6 +474,7 @@ impl ASM {
                         VarType::Array(_, _) => todo!(),
                         VarType::Struct(_, _) => todo!(),
                         VarType::Unknown => todo!(),
+                        VarType::Function(_, _, _) => todo!(),
                     },
 
                     None => unreachable!(
@@ -481,6 +485,7 @@ impl ASM {
             }
 
             VarType::Unknown => todo!(),
+            VarType::Function(_, _, _) => todo!(),
         }
     }
 

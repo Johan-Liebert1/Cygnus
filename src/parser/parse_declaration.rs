@@ -70,16 +70,18 @@ impl Parser {
 
                             // This could be a user defined type
                             TokenEnum::Variable(var_type_name) => {
+                                println!("TokenEnum::Variable(var_type_name): {var_type_name}" );
+
                                 let var_name_clone = var_type_name.clone();
 
                                 let found = self.user_defined_types.iter().find(|var| var.name == *var_name_clone);
 
-                                if found.is_none() {
-                                    compiler_error(format!("No such type '{}'", var_type_name), &token);
-                                    exit(1);
-                                }
-
-                                let var_type = found.unwrap().type_.clone();
+                                let var_type = if let Some(t) = found {
+                                    t.type_.clone()
+                                } else {
+                                    // This will be fixed in the semantic analysis
+                                    VarType::Unknown
+                                };
 
                                 let type_token = self.get_next_token();
 

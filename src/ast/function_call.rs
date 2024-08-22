@@ -75,6 +75,7 @@ impl AST for FunctionCall {
                             VarType::Array(..) => todo!(),
                             VarType::Struct(_, _) => todo!(),
                             VarType::Unknown => todo!(),
+                            VarType::Function(_, _, _) => todo!(),
                         },
 
                         ASTNodeEnum::Factor(f) => match &f.get_token().token {

@@ -137,8 +137,17 @@ impl AST for DeclarationStatement {
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         self.right.borrow_mut().semantic_visit(call_stack, f.clone());
+
+        // Before inserting in the call stack we need the type of the variable to calculate its
+        // size
+        {
+            let left_mut = self.left.borrow_mut();
+        }
+
         call_stack.insert_variable(Rc::clone(&self.left));
+
         self.left.borrow_mut().semantic_visit(call_stack, f);
+
         self.verify_type();
     }
 

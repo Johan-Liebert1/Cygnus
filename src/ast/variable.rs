@@ -103,6 +103,7 @@ impl Variable {
             VarType::Unknown => todo!(),
             VarType::Array(..) => todo!(),
             VarType::Struct(_, _) => todo!(),
+            VarType::Function(_, _, _) => todo!(),
         };
     }
 
@@ -224,7 +225,9 @@ impl AST for Variable {
             );
         }
 
-        // trace!("type: {}", self.var_type);
+        trace!("Variable self.var_type: {}", self.var_type);
+
+        // if ()
 
         if self.store_address {
             self.result_type = VarType::Ptr(Box::new(self.var_type.clone()))

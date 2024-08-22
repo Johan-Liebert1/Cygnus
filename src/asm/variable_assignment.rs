@@ -208,6 +208,7 @@ impl ASM {
                     VarType::Char => todo!(),
                     VarType::Struct(_, _) => todo!(),
                     VarType::Unknown => todo!(),
+                    VarType::Function(_, _, _) => todo!(),
                 };
             }
         } else {
@@ -304,6 +305,7 @@ impl ASM {
             }
 
             VarType::Unknown => todo!(),
+            VarType::Function(_, _, _) => todo!(),
         }
     }
 
@@ -353,6 +355,7 @@ impl ASM {
                     VarType::Char => todo!(),
                     VarType::Ptr(_) => todo!(),
                     VarType::Unknown => todo!(),
+                    VarType::Function(_, _, _) => todo!(),
                 }
             }
 
@@ -360,6 +363,7 @@ impl ASM {
             VarType::Float => todo!(),
             VarType::Char => todo!(),
             VarType::Unknown => todo!(),
+            VarType::Function(_, _, _) => todo!(),
         }
     }
 
