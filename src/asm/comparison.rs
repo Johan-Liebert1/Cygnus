@@ -24,32 +24,44 @@ impl ASM {
         }
     }
 
+    pub fn compare_ints(&self) -> Vec<String> {
+        vec![
+            format!(";; We pop in the opposite order of comparison as we push onto the stack"),
+            format!("pop rbx"),
+            format!("pop rax"),
+            format!("cmp rax, rbx"),
+        ]
+    }
+
+    pub fn compare_floats(&self) -> Vec<String> {
+        vec![
+            format!(";; Floating point comparison"),
+            format!(";; Get the first operand"),
+            format!("pop QWORD [float_imm]"),
+            format!("movsd xmm1, [float_imm]"),
+            format!(";; Get the second operand"),
+            format!("pop QWORD [float_imm]"),
+            format!("movsd xmm0, [float_imm]"),
+            format!(";; floating point comparison"),
+            format!("ucomisd xmm0, xmm1",),
+        ]
+    }
+
     pub fn compare_two_numbers(&mut self, op: Comparators, result_type: &VarType) {
         println!("result_type: {}", result_type);
 
         let mut instructions = match result_type {
-            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => {
-                vec![
-                    format!(";; We pop in the opposite order of comparison as we push onto the stack"),
-                    format!("pop rbx"),
-                    format!("pop rax"),
-                    format!("cmp rax, rbx"),
-                ]
-            }
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => self.compare_ints(),
+            VarType::Float => self.compare_floats(),
 
-            VarType::Float => {
-                vec![
-                    format!(";; Floating point comparison"),
-                    format!(";; Get the first operand"),
-                    format!("pop QWORD [float_imm]"),
-                    format!("movsd xmm1, [float_imm]"),
-                    format!(";; Get the second operand"),
-                    format!("pop QWORD [float_imm]"),
-                    format!("movsd xmm0, [float_imm]"),
-                    format!(";; floating point comparison"),
-                    format!("ucomisd xmm0, xmm1",),
-                ]
-            }
+            VarType::Ptr(inner_type) => match **inner_type {
+                VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => self.compare_ints(),
+                VarType::Float => self.compare_floats(),
+
+                _ => {
+                    unreachable!("Found type {result_type} while generating ASM for comparison op for a pointer type. This must be a bug in the semantic analysis step")
+                }
+            },
 
             _ => {
                 unreachable!("Found type {result_type} while generating ASM for comparison op. This must be a bug in the semantic analysis step")
