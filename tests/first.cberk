@@ -2,6 +2,9 @@ type my_int = int;
 
 fun main() {
     def a: my_int = 4;
+    def b: int = 5;
+
+    write(a + b)
 }
 
 main()

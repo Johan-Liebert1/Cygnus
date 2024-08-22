@@ -1,4 +1,4 @@
-use std::{cell::RefCell, process::exit, rc::Rc};
+use std::{cell::RefCell, clone, process::exit, rc::Rc};
 
 use crate::{
     ast::typedef::{Typedef, TypedefType},
@@ -7,7 +7,7 @@ use crate::{
     types::ASTNode,
 };
 
-use super::parser::Parser;
+use super::parser::{Parser, UserDefinedType};
 
 impl Parser {
     // We get here after parsing 'type'
@@ -28,7 +28,7 @@ impl Parser {
 
         let typedef_type = match &next_token.token {
             // Type alias
-            TokenEnum::Type(type_) => TypedefType::Primitive(type_.clone()),
+            TokenEnum::Type(type_) => type_.clone(),
 
             // Struct typedef alias
             TokenEnum::Variable(type_name) => {
@@ -48,7 +48,6 @@ impl Parser {
         // consume the type
         self.get_next_token();
 
-        let t = Typedef::new(type_name, next_token, typedef_type);
-        self.type_aliases.push(t);
+        self.user_defined_types.push(UserDefinedType { name: type_name, type_: typedef_type });
     }
 }
