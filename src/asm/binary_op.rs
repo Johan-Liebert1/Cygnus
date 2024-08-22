@@ -61,7 +61,7 @@ impl ASM {
             Operations::Divide => {
                 if matches!(result_type, VarType::Float) {
                     vec![
-                        format!(";; Floating point subtraction"),
+                        format!(";; Floating point division"),
                         format!(";; Get the first operand"),
                         format!("pop QWORD [float_imm]"),
                         format!("movsd xmm1, [float_imm]"),
@@ -91,7 +91,7 @@ impl ASM {
             Operations::Multiply => {
                 if matches!(result_type, VarType::Float) {
                     vec![
-                        format!(";; Floating point addition"),
+                        format!(";; Floating point multiplication"),
                         format!(";; Get the first operand"),
                         format!("pop QWORD [float_imm]"),
                         format!("movsd xmm0, [float_imm]"),

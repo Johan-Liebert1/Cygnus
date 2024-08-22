@@ -87,6 +87,9 @@ impl AST for FunctionCall {
                         // This will always be an integer
                         ASTNodeEnum::LogicalExp(lo) => asm.func_write_number(),
 
+                        // This will always be an integer
+                        ASTNodeEnum::ComparisonExp(..) => asm.func_write_number(),
+
                         ASTNodeEnum::FunctionCall(fc) => {
                             // if the function returns anything, then that will be in rax
 

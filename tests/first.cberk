@@ -4,12 +4,12 @@ fun add(a: *float, b: *float) {
 }
 
 fun main() {
-    def a: float = 6.28;
-    def b: float = 3.14;
+    def a: float = 0.00003;
+    def b: float = 0.00003;
+    -- def a: int = 5;
+    -- def b: int = 6;
 
-    write(a + b)
-
-    add(&a, &b)
+    write(a != b)
 }
 
 main()

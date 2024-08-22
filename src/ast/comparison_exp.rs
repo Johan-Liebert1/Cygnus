@@ -132,7 +132,7 @@ impl AST for ComparisonExp {
 
         match &self.comp_op.token {
             TokenEnum::Comparator(c) => {
-                asm.compare_two_numbers(c.clone());
+                asm.compare_two_numbers(c.clone(), &self.left.borrow().get_type().1);
             }
 
             _ => unreachable!("Found non comparator for a Comparison Expression"),

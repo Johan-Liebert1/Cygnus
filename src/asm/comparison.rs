@@ -1,15 +1,60 @@
-use crate::lexer::tokens::Comparators;
+use crate::lexer::{tokens::Comparators, types::VarType};
 
 use super::asm::ASM;
 
 impl ASM {
-    pub fn compare_two_numbers(&mut self, op: Comparators) {
-        let mut instructions = vec![
-            format!(";; We pop in the opposite order of comparison as we push onto the stack"),
-            format!("pop rbx"),
-            format!("pop rax"),
-            format!("cmp rax, rbx"),
-        ];
+    /// Only needed for comsd
+    ///
+    /// CMPEQSD    xmm1, xmm2	    CMPSD xmm1, xmm2, 0
+    /// CMPLTSD    xmm1, xmm2	    CMPSD xmm1, xmm2, 1
+    /// CMPLESD    xmm1, xmm2	    CMPSD xmm1, xmm2, 2
+    /// CMPUNORDSD xmm1, xmm2	    CMPSD xmm1, xmm2, 3
+    /// CMPNEQSD   xmm1, xmm2	    CMPSD xmm1, xmm2, 4
+    /// CMPNLTSD   xmm1, xmm2	    CMPSD xmm1, xmm2, 5
+    /// CMPNLESD   xmm1, xmm2	    CMPSD xmm1, xmm2, 6
+    /// CMPORDSD   xmm1, xmm2	    CMPSD xmm1, xmm2, 7
+    fn get_cmpsd_immediate_for_comparison_op(&self, op: &Comparators) -> i8 {
+        match op {
+            Comparators::DoubleEquals => 0,
+            Comparators::NotEquals => 4,
+            Comparators::LessThan => 1,
+            Comparators::GreaterThan => 6,
+            Comparators::LessThanEq => 2,
+            Comparators::GreaterThanEq => 5,
+        }
+    }
+
+    pub fn compare_two_numbers(&mut self, op: Comparators, result_type: &VarType) {
+        println!("result_type: {}", result_type);
+
+        let mut instructions = match result_type {
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => {
+                vec![
+                    format!(";; We pop in the opposite order of comparison as we push onto the stack"),
+                    format!("pop rbx"),
+                    format!("pop rax"),
+                    format!("cmp rax, rbx"),
+                ]
+            }
+
+            VarType::Float => {
+                vec![
+                    format!(";; Floating point comparison"),
+                    format!(";; Get the first operand"),
+                    format!("pop QWORD [float_imm]"),
+                    format!("movsd xmm1, [float_imm]"),
+                    format!(";; Get the second operand"),
+                    format!("pop QWORD [float_imm]"),
+                    format!("movsd xmm0, [float_imm]"),
+                    format!(";; floating point comparison"),
+                    format!("ucomisd xmm0, xmm1",),
+                ]
+            }
+
+            _ => {
+                unreachable!("Found type {result_type} while generating ASM for comparison op. This must be a bug in the semantic analysis step")
+            }
+        };
 
         let inst = match op {
             Comparators::LessThan => format!("jl .skip_{}", self.comparison_num),
