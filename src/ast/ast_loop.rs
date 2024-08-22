@@ -223,25 +223,29 @@ impl AST for Loop {
                     from_type,
                     VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32
                 ) {
-                    compiler_error(format!("Expected Integer found {}", from_type), from_range.borrow().get_token());
+                    compiler_error(
+                        format!("Expected Integer found {}", from_type),
+                        from_range.borrow().get_token(),
+                    );
                 }
 
-
-                let to_type = from_range.borrow().get_type().1;
-                if !matches!(
-                    to_type,
-                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32
-                ) {
-                    compiler_error(format!("Expected Integer found {}", to_type), to_range.borrow().get_token());
+                let to_type = to_range.borrow().get_type().1;
+                if !matches!(to_type, VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32) {
+                    compiler_error(
+                        format!("Expected Integer found {}", to_type),
+                        to_range.borrow().get_token(),
+                    );
                 }
-
 
                 let step_type = step_by.borrow().get_type().1;
                 if !matches!(
                     step_type,
                     VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32
                 ) {
-                    compiler_error(format!("Expected Integer found {}", step_type), step_by.borrow().get_token());
+                    compiler_error(
+                        format!("Expected Integer found {}", step_type),
+                        step_by.borrow().get_token(),
+                    );
                 }
             }
 
