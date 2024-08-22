@@ -1,10 +1,6 @@
-type my_int = int;
+type my_int = def (int, float, str, char, int, float) -> int;
 
 fun main() {
-    def a: my_int = 4;
-    def b: int = 5;
-
-    write(a + b)
 }
 
 main()
