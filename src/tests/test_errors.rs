@@ -43,3 +43,19 @@ fn const_reassign() {
 
     assert_eq!(stderr, file_result);
 }
+
+#[test]
+fn function_pointer_incorrect_arg() {
+    compile_binary();
+    let (stderr, file_result) = try_to_compile_example("errors/function_pointer_incorrect_arg.cberk");
+
+    assert_eq!(stderr, file_result);
+}
+
+#[test]
+fn function_pointer_non_function() {
+    compile_binary();
+    let (stderr, file_result) = try_to_compile_example("errors/function_pointer_non_function.cberk");
+
+    assert_eq!(stderr, file_result);
+}
