@@ -1,14 +1,14 @@
-type mah_function = def (float) -> int;
+type mah_function = def (int) -> int;
 
 fun foo(a: int) -> int {
 }
 
 fun bar(f: mah_function, a: int) {
-    f(3.44)
+    f(344)
 }
 
 fun main() {
-    bar(&foo);
+    bar(&foo, 1);
 }
 
 main()

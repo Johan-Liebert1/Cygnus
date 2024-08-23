@@ -219,15 +219,26 @@ impl AST for Variable {
                 }
             }
         } else {
-            helpers::compiler_error(
-                format!("Variable with name '{}' not found in current scope", self.var_name),
-                &self.token,
-            );
+            // This might be a function pointer
+            if let Some(function) = f.borrow().get(&self.var_name) {
+                if let ASTNodeEnum::FunctionDef(fd) = function.func.borrow().get_node() {
+                    self.var_type = VarType::Function(
+                        self.var_name.clone(),
+                        fd.parameters.iter().map(|param| param.borrow().var_type.clone()).collect(),
+                        Box::new(function.return_type.clone()),
+                    );
+                } else {
+                    unreachable!("Found non function_definition node inside functions hash map")
+                }
+            } else {
+                helpers::compiler_error(
+                    format!("Variable with name '{}' not found in current scope", self.var_name),
+                    &self.token,
+                );
+            }
         }
 
         trace!("Variable self.var_type: {}", self.var_type);
-
-        // if ()
 
         if self.store_address {
             self.result_type = VarType::Ptr(Box::new(self.var_type.clone()))
