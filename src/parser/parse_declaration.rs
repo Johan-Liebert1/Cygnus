@@ -126,7 +126,6 @@ impl Parser {
                     // : after variable name, so can only be VAR_NAME: VAR_TYPE
                     TokenEnum::Colon => {
                         let (token, var_type) = self.parse_var_type();
-
                         return Variable::new(Box::new(token), var_type, var_name.into(), false, false, 0);
                     }
 

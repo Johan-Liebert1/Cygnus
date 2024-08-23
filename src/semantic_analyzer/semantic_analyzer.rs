@@ -48,7 +48,7 @@ pub enum PopTypes {
 pub struct ActivationRecord {
     name: String,
     record_type: ActivationRecordType,
-    variable_members: ActivationRecordVariables,
+    pub variable_members: ActivationRecordVariables,
     var_size_sum: usize,
     current_offset: usize,
 }

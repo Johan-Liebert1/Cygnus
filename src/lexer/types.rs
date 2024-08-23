@@ -283,7 +283,9 @@ impl VarType {
                     None => 0,
                 }
             }
-            VarType::Function(_, _, _) => todo!(),
+
+            // Doesn't matter how large the definition is, it's always just a pointer
+            VarType::Function(_, _, _) => 8,
         };
     }
 

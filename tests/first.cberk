@@ -1,6 +1,14 @@
-type my_int = def (int, float, str, char, int, float) -> int;
+type mah_function = def (float) -> int;
+
+fun foo(a: int) -> int {
+}
+
+fun bar(f: mah_function, a: int) {
+    f(3.44)
+}
 
 fun main() {
+    bar(&foo);
 }
 
 main()
