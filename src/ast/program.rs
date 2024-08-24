@@ -21,6 +21,10 @@ impl Program {
     pub fn new(statements: Vec<ASTNode>) -> Self {
         Self { statements }
     }
+
+    pub fn get_statements(&self) -> &Vec<ASTNode> {
+        return &self.statements;
+    }
 }
 
 impl AST for Program {

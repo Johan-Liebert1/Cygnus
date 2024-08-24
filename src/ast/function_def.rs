@@ -1,3 +1,4 @@
+use crate::helpers::compiler_error;
 use crate::lexer::types::VarType;
 use crate::trace;
 use crate::types::ASTNode;
@@ -15,6 +16,7 @@ use crate::{
 use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut};
+use super::jump::JumpType;
 use super::{
     abstract_syntax_tree::{VisitResult, AST},
     variable::Variable,
@@ -28,17 +30,35 @@ pub struct FunctionDefinition {
     /// How much to allocate on the stack to make room for local variables
     stack_var_size: usize,
     pub return_type: VarType,
+    token: Token,
 }
 
 impl FunctionDefinition {
-    pub fn new(name: String, arguments: Vec<Rc<RefCell<Variable>>>, block: ASTNode, return_type: VarType) -> Self {
+    pub fn new(
+        name: String,
+        arguments: Vec<Rc<RefCell<Variable>>>,
+        block: ASTNode,
+        return_type: VarType,
+        token: Token,
+    ) -> Self {
         Self {
             name,
             parameters: arguments,
             block,
             stack_var_size: 0,
             return_type,
+            token,
         }
+    }
+
+    fn return_type_error(&self) {
+        compiler_error(
+            format!(
+                "Function '{}' needs to return '{}' but nothing was returned",
+                self.name, self.return_type
+            ),
+            &self.token,
+        );
     }
 }
 
@@ -102,7 +122,7 @@ impl AST for FunctionDefinition {
     }
 
     fn get_token(&self) -> &Token {
-        todo!()
+        &self.token
     }
 
     fn print(&self) {
@@ -119,6 +139,39 @@ impl AST for FunctionDefinition {
         self.block.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
 
         self.stack_var_size = call_stack.get_func_var_stack_size(&self.name);
+
+        // In the AST of return statement we check the type of the returned value
+        // But here we also need to check whether the function even returns something
+
+        if !matches!(self.return_type, VarType::Unknown) {
+            // The very last statement needs to be a return statement
+            // Else, nothing is being returned from a function that doesn't have void return type
+
+            match self.block.borrow().get_node() {
+                ASTNodeEnum::Program(program) => {
+                    match program.get_statements().last() {
+                        Some(last_statement) => match last_statement.borrow().get_node() {
+                            ASTNodeEnum::Jump(jump) => match jump.typ {
+                                JumpType::Return => {}
+
+                                JumpType::Break => self.return_type_error(),
+                            },
+
+                            _ => self.return_type_error(),
+                        },
+
+                        None => {
+                            // function has a return type but is empty
+                            self.return_type_error();
+                        }
+                    }
+                }
+
+                t => {
+                    unreachable!("Block inside function was of type {}, where 'Program' was expected.", t)
+                }
+            };
+        }
 
         // pop the record here
         call_stack.pop();
