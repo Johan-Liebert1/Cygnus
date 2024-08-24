@@ -49,13 +49,13 @@ impl Parser {
     /// FUNCTION_DEF -> fun VAR_NAME LPAREN (VAR_NAME : VAR_TYPE)* RPAREN (-> VarType)* LCURLY (STATEMENT[] - FUNCTION_DEF) RCURLY
     pub fn parse_function_definition(&mut self, f: ParserFunctions) -> ASTNode {
         // we get here after consuming 'fun'
-        let token = self.get_next_token();
+        let func_name_token = self.get_next_token();
 
-        let function_name = match token.token {
+        let function_name = match &func_name_token.token {
             TokenEnum::Variable(n) => n,
 
             _ => {
-                unexpected_token(&token, None);
+                unexpected_token(&func_name_token, None);
                 exit(1);
             }
         };
@@ -102,7 +102,13 @@ impl Parser {
         let ff = function_name.clone();
 
         // Create an Rc from the Box
-        let function_def = FunctionDefinition::new(function_name, parameters, block, return_type.clone());
+        let function_def = FunctionDefinition::new(
+            function_name.into(),
+            parameters,
+            block,
+            return_type.clone(),
+            func_name_token,
+        );
 
         let fdef: ASTNode = Rc::new(RefCell::new(Box::new(function_def)));
 

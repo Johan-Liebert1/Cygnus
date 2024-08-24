@@ -24,7 +24,7 @@ pub enum JumpType {
 
 #[derive(Debug)]
 pub struct Jump {
-    typ: JumpType,
+    pub typ: JumpType,
     loop_number: usize,
     function_name: Option<String>,
     return_node: Option<ASTNode>,

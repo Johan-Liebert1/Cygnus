@@ -58,12 +58,12 @@ pub fn parse_input_file(
     let ast = parser.parse_program();
 
     let mut semantic_analyzer =
-        SemanticAnalyzer::new(ast.clone(), Rc::clone(&parser.functions), &parser.user_defined_types);
+        SemanticAnalyzer::new(ast.clone(), Rc::clone(&parser.functions), &parser.user_defined_types, &parser.type_aliases);
     semantic_analyzer.analyze();
 
     let mut interpreter = Interpreter::new(ast.clone(), parser.functions.clone());
 
-    let mut semantic_analyzer = SemanticAnalyzer::new(ast, parser.functions, &parser.user_defined_types);
+    let mut semantic_analyzer = SemanticAnalyzer::new(ast, parser.functions, &parser.user_defined_types, &parser.type_aliases);
 
     if compile_mode {
         let _result = interpreter.compile(&mut semantic_analyzer.call_stack);

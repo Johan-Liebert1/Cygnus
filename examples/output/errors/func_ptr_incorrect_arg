@@ -1,0 +1,1 @@
+./examples/errors/func_ptr_incorrect_arg.cberk:4:6 Cannot assign param 1 of type 'Floating Point' to param 1 of 'mah_function' defined as of type 'Integer'

@@ -103,6 +103,7 @@ impl Variable {
             VarType::Unknown => todo!(),
             VarType::Array(..) => todo!(),
             VarType::Struct(_, _) => todo!(),
+            VarType::Function(_, _, _) => todo!(),
         };
     }
 
@@ -114,10 +115,10 @@ impl Variable {
 impl AST for Variable {
     fn visit_com(&self, x: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         if let Some(ast_node) = &self.array_aceess_index {
-            ast_node.borrow().visit_com(x, f, asm, call_stack);
+            ast_node.borrow().visit_com(x, Rc::clone(&f), asm, call_stack);
         }
 
-        asm.gen_asm_for_var(&self, &call_stack);
+        asm.gen_asm_for_var(&self, f, &call_stack);
     }
 
     fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
@@ -218,17 +219,33 @@ impl AST for Variable {
                 }
             }
         } else {
-            helpers::compiler_error(
-                format!("Variable with name '{}' not found in current scope", self.var_name),
-                &self.token,
-            );
+            // This might be a function pointer
+            if let Some(function) = f.borrow().get(&self.var_name) {
+                if let ASTNodeEnum::FunctionDef(fd) = function.func.borrow().get_node() {
+                    self.var_type = VarType::Function(
+                        self.var_name.clone(),
+                        fd.parameters
+                            .iter()
+                            .map(|param| param.borrow().var_type.clone())
+                            .collect(),
+                        Box::new(function.return_type.clone()),
+                    );
+                } else {
+                    unreachable!("Found non function_definition node inside functions hash map")
+                }
+            } else {
+                helpers::compiler_error(
+                    format!("Variable with name '{}' not found in current scope", self.var_name),
+                    &self.token,
+                );
+            }
         }
-
-        // trace!("type: {}", self.var_type);
 
         if self.store_address {
             self.result_type = VarType::Ptr(Box::new(self.var_type.clone()))
         }
+
+        trace!("Variable self.var_type: {}", self.var_type);
     }
 
     fn get_node(&self) -> ASTNodeEnum {

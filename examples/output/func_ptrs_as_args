@@ -1,0 +1,10 @@
+from function foo a = 200
+first_ret = 205
+from function foo a = 1
+second_ret = 6
+from function bar2 b = 4614253070214989087
+from function foo a = 200
+first_ret = 205
+from function foo a = 5
+second_ret = 10
+from function bar2 b = 4614253070214989087

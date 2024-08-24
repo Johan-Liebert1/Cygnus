@@ -2,7 +2,7 @@ use core::panic;
 use std::{cell::RefCell, fmt::Display, process::exit, rc::Rc};
 
 use crate::{
-    ast::{abstract_syntax_tree::AST, variable::Variable},
+    ast::{abstract_syntax_tree::AST, typedef::FunctionType, variable::Variable},
     helpers::compiler_error,
     trace,
 };
@@ -32,6 +32,8 @@ pub enum VarType {
     Ptr(Box<VarType>),
     Array(Box<VarType>, usize),
     Struct(String, Rc<RefCell<Vec<StructMemberType>>>), // string = name of struct
+    /// (Name, Parameters, ReturnType)
+    Function(String, Vec<VarType>, Box<VarType>),
     Unknown,
 }
 
@@ -81,6 +83,26 @@ impl PartialEq for VarType {
 
                 return true;
             }
+
+            (VarType::Function(_, params_1, return_type_1), VarType::Function(_, params_2, return_type_2)) => {
+                if return_type_1 != return_type_2 {
+                    return false;
+                }
+
+                if params_1.len() != params_2.len() {
+                    return false;
+                }
+
+                for (p1, p2) in params_1.iter().zip(params_2) {
+                    if p1 != p2 {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            (VarType::Ptr(boxed), other2) | (other2, VarType::Ptr(boxed)) => **boxed == *other2,
 
             _ => false,
         }
@@ -140,6 +162,7 @@ impl VarType {
 
             Ptr(inner) => match other {
                 Ptr(inner2) => inner.can_assign(inner2),
+                Function(..) => inner.can_assign(other),
 
                 _ => false,
             },
@@ -168,6 +191,30 @@ impl VarType {
 
                     name1 == name2
                 }
+                _ => false,
+            },
+
+            Function(_, params_1, return_type_1) => match other {
+                Ptr(inner) => other.can_assign(inner),
+
+                Function(_, params_2, return_type_2) => {
+                    if !return_type_1.can_assign(return_type_2) {
+                        return false;
+                    }
+
+                    if params_1.len() != params_2.len() {
+                        return false;
+                    }
+
+                    for (p1, p2) in params_1.iter().zip(params_2) {
+                        if !p1.can_assign(p2) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+
                 _ => false,
             },
 
@@ -280,6 +327,9 @@ impl VarType {
                     None => 0,
                 }
             }
+
+            // Doesn't matter how large the definition is, it's always just a pointer
+            VarType::Function(_, _, _) => 8,
         };
     }
 
@@ -336,6 +386,9 @@ impl Display for VarType {
             VarType::Unknown => "Unknown".to_string(),
             VarType::Struct(name, _) => name.into(),
             VarType::Array(var_type, sz) => format!("Array of {} of size {sz}", *var_type),
+            VarType::Function(name, params, return_type) => {
+                format!("Function type < Name: {name}, params: {params:?}, return_type: {return_type} >")
+            }
         };
 
         write!(f, "{}", msg)

@@ -7,6 +7,7 @@ use crate::{trace, types::ASTNode};
 
 use crate::semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack};
 
+use std::fs::read;
 use std::{cell::RefCell, process::exit, rc::Rc};
 
 use crate::{
@@ -56,7 +57,9 @@ impl AST for FunctionCall {
                         }
 
                         ASTNodeEnum::BinaryOp(bo) => match &bo.result_type {
-                            VarType::Int => asm.func_write_number(),
+                            VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Int | VarType::Char => {
+                                asm.func_write_number()
+                            }
 
                             VarType::Str => asm.func_write_string(),
 
@@ -66,15 +69,10 @@ impl AST for FunctionCall {
                                 asm.func_write_pointer(&ptr_type, bo.times_dereferenced, &call_stack, None)
                             }
 
-                            VarType::Int8 => todo!(),
-                            VarType::Int16 => todo!(),
-                            VarType::Int32 => todo!(),
-
-                            VarType::Char => todo!(),
-
                             VarType::Array(..) => todo!(),
                             VarType::Struct(_, _) => todo!(),
                             VarType::Unknown => todo!(),
+                            VarType::Function(_, _, _) => todo!(),
                         },
 
                         ASTNodeEnum::Factor(f) => match &f.get_token().token {
@@ -129,6 +127,8 @@ impl AST for FunctionCall {
                 asm.func_syscall(self.arguments.len());
             }
 
+            // This should be caught in the semantica analysis step
+            //
             name => match f.borrow().get(name) {
                 // args -> rax, rdi, rsi, rdx, r10, r8, r9
                 Some(func) => {
@@ -137,10 +137,45 @@ impl AST for FunctionCall {
                         argument.borrow().visit_com(v, f.clone(), asm, call_stack);
                     }
 
-                    asm.function_call(&String::from(name), self.arguments.len(), &func.return_type);
+                    asm.function_call(&String::from(name), self.arguments.len(), &func.return_type, false, call_stack);
                 }
 
-                None => compiler_error(format!("Function {} unimplemented", self.name), &self.token),
+                // Calling a function pointer
+                None => {
+                    let mut found = false;
+                    let mut return_type = VarType::Unknown;
+
+                    if let Some(last_activation_record) = call_stack.peek() {
+                        for (var_name, ar_var) in &last_activation_record.variable_members {
+                            if *var_name != self.name {
+                                continue;
+                            }
+
+                            found = true;
+
+                            match &ar_var.borrow().var_type {
+                                VarType::Function(_, _, func_return_type) => {
+                                    return_type = *func_return_type.clone();
+                                }
+
+                                _ => {
+                                    compiler_error(format!("'{}' is not a function", &self.name), &self.token);
+                                    exit(1);
+                                }
+                            }
+                        }
+                    }
+
+                    if !found {
+                        compiler_error(format!("Function {} unimplemented", self.name), &self.token)
+                    }
+
+                    for argument in self.arguments.iter().rev() {
+                        argument.borrow().visit_com(v, f.clone(), asm, call_stack);
+                    }
+
+                    asm.function_call(&String::from(name), self.arguments.len(), &return_type, true, call_stack);
+                }
             },
         }
     }
@@ -214,7 +249,7 @@ impl AST for FunctionCall {
             arg.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));
         }
 
-        let binding = f.borrow();
+        let all_functions_map_borrow = f.borrow();
 
         match self.name.as_str() {
             FUNC_WRITE => {}
@@ -230,54 +265,113 @@ impl AST for FunctionCall {
                     todo!("Functions with more than {} args not handled", FUNCTION_ARGS_REGS.len())
                 }
 
-                let function_definition = match binding.get(&self.name) {
-                    Some(f) => f,
-                    None => {
+                if let Some(function_definition) = all_functions_map_borrow.get(&self.name) {
+                    if let ASTNodeEnum::FunctionDef(fd) = function_definition.func.borrow().get_node() {
+                        if fd.parameters.len() != self.arguments.len() {
+                            compiler_error(
+                                format!(
+                                    "Function '{}' expects {} arguments but got {}",
+                                    &self.name,
+                                    fd.parameters.len(),
+                                    self.arguments.len()
+                                ),
+                                &self.token,
+                            );
+                        }
+
+                        self.result_type = fd.return_type.clone();
+
+                        for (actual_param, formal_param) in fd.parameters.iter().zip(&self.arguments) {
+                            let binding = formal_param.borrow();
+                            let binding = binding.get_node();
+
+                            let borrowed_actual_param = actual_param.borrow();
+
+                            let (is_var_assignment_okay, rhs_type) =
+                                binding.is_var_assignment_okay(&borrowed_actual_param);
+
+                            if !is_var_assignment_okay {
+                                compiler_error(
+                                    format!(
+                                        "Cannot assign param of type {} to '{}', as '{}' is defined as type {}",
+                                        rhs_type,
+                                        borrowed_actual_param.var_name,
+                                        borrowed_actual_param.var_name,
+                                        borrowed_actual_param.result_type
+                                    ),
+                                    &self.token,
+                                )
+                            }
+                        }
+                    } else {
+                        unreachable!("Found non function_definition node inside functions hash map")
+                    }
+                } else {
+                    // This might be a function pointer
+                    // TODO: Handle function pointers inside structs
+                    let mut function_found = false;
+
+                    if let Some(last_activation_record) = call_stack.peek() {
+                        for (var_name, ar_var) in &last_activation_record.variable_members {
+                            if *var_name != self.name {
+                                continue;
+                            }
+
+                            function_found = true;
+
+                            match &ar_var.borrow().var_type {
+                                VarType::Function(func_def_name, params, return_type) => {
+                                    if self.arguments.len() != params.len() {
+                                        compiler_error(
+                                            format!(
+                                                "Function '{}' of type '{}' takes {} arguments but {} were given",
+                                                self.name,
+                                                func_def_name,
+                                                params.len(),
+                                                self.arguments.len()
+                                            ),
+                                            &self.token,
+                                        );
+                                    }
+
+                                    for (index, (actual_param, formal_param)) in
+                                        params.iter().zip(&self.arguments).enumerate()
+                                    {
+                                        let binding = formal_param.borrow();
+                                        let binding = binding.get_node();
+
+                                        let binding_result_type = binding.get_result_type();
+
+                                        let is_var_assignment_okay = actual_param.can_assign(binding_result_type);
+
+                                        if !is_var_assignment_okay {
+                                            compiler_error(
+                                                format!(
+                                                    "Cannot assign param {} of type '{}' to param {} of '{}' defined as of type '{}'",
+                                                    index + 1, binding_result_type, index + 1, func_def_name, actual_param
+                                                ),
+                                                &self.token,
+                                            );
+                                        }
+                                    }
+
+                                    self.result_type = *return_type.clone();
+                                }
+
+                                _ => {
+                                    compiler_error(format!("'{}' is not a function", &self.name), &self.token);
+                                    exit(1);
+                                }
+                            }
+
+                            break;
+                        }
+                    }
+
+                    if !function_found {
                         compiler_error(format!("Function '{}' is not defined", &self.name), &self.token);
                         exit(1);
                     }
-                };
-
-                if let ASTNodeEnum::FunctionDef(fd) = function_definition.func.borrow().get_node() {
-                    if fd.parameters.len() != self.arguments.len() {
-                        compiler_error(
-                            format!(
-                                "Function '{}' expects {} arguments but got {}",
-                                &self.name,
-                                fd.parameters.len(),
-                                self.arguments.len()
-                            ),
-                            &self.token,
-                        );
-
-                        exit(1);
-                    }
-
-                    self.result_type = fd.return_type.clone();
-
-                    for (actual_param, formal_param) in fd.parameters.iter().zip(&self.arguments) {
-                        let binding = formal_param.borrow();
-                        let binding = binding.get_node();
-
-                        let borrowed_actual_param = actual_param.borrow();
-
-                        let (is_var_assignment_okay, rhs_type) = binding.is_var_assignment_okay(&borrowed_actual_param);
-
-                        if !is_var_assignment_okay {
-                            compiler_error(
-                                format!(
-                                    "Cannot assign param of type {} to '{}', as '{}' is defined as type {}",
-                                    rhs_type,
-                                    borrowed_actual_param.var_name,
-                                    borrowed_actual_param.var_name,
-                                    borrowed_actual_param.result_type
-                                ),
-                                &self.token,
-                            )
-                        }
-                    }
-                } else {
-                    unreachable!("Found non function_definition node inside functions hash map")
                 }
             }
         };

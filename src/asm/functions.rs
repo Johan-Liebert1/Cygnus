@@ -9,14 +9,37 @@ pub const FUNCTION_RETURN_INSTRUCTIONS: [&str; 3] = [("mov rsp, rbp"), ("pop rbp
 pub const FUNCTION_ARGS_REGS: [&str; 7] = ["rax", "rdi", "rsi", "rdx", "r10", "r8", "r9"];
 
 impl ASM {
-    pub fn function_call(&mut self, function_name: &String, num_args: usize, func_return_type: &VarType) {
+    pub fn function_call(
+        &mut self,
+        function_name: &String,
+        num_args: usize,
+        func_return_type: &VarType,
+        is_function_pointer_call: bool,
+        call_stack: &CallStack,
+    ) {
         let mut instructions = vec![];
 
         for i in 0..num_args {
             instructions.push(format!("pop {}", FUNCTION_ARGS_REGS[i]))
         }
 
-        instructions.push(format!("call _{function_name}"));
+        if !is_function_pointer_call {
+            instructions.push(format!("call _{function_name}"));
+        } else {
+            // we get the function pointer stored on the stack and call that
+            // the function name is the variable name of the function pointer
+
+            let (ar_var, _) = call_stack.get_var_with_name(function_name);
+
+            if let Some(ar_var) = ar_var {
+                instructions.extend(vec![
+                    format!("mov rbx, [rbp - {}]", ar_var.borrow().offset),
+                    format!("call rbx"),
+                ]);
+            } else {
+                unreachable!("Function pointer variable '{function_name}' not found on call stack. This must be a bug in the semantic analysis step.");
+            }
+        }
 
         // if the function returns anything, push it onto the stack
         if !matches!(func_return_type, VarType::Unknown) {
