@@ -402,6 +402,13 @@ impl ASM {
         }
     }
 
+    fn handle_local_function_pointer(&mut self, variable: &Variable, ar_var: &Rc<RefCell<Variable>>) {
+        self.extend_current_label(vec![
+            format!("mov rax, [rbp - {}]", ar_var.borrow().offset),
+            format!("push rax"),
+        ]);
+    }
+
     fn gen_asm_for_var_local_scope(&mut self, variable: &Variable, ar_var: &Rc<RefCell<Variable>>) {
         let required_var = RequiredVarFields {
             dereference: variable.dereference,
@@ -486,8 +493,11 @@ impl ASM {
                 }
             }
 
+            VarType::Function(_, _, _) => {
+                self.handle_local_function_pointer(variable, ar_var);
+            }
+
             VarType::Unknown => todo!(),
-            VarType::Function(_, _, _) => todo!(),
         }
     }
 
@@ -513,7 +523,7 @@ impl ASM {
                     self.extend_current_label(vec![
                         format!(";; Function pointer {var_name}"),
                         format!("mov rax, _{var_name}"),
-                        format!("push rax")
+                        format!("push rax"),
                     ]);
                 }
 
