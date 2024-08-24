@@ -31,6 +31,7 @@ pub struct FunctionDefinition {
     stack_var_size: usize,
     pub return_type: VarType,
     token: Token,
+    pub is_extern_func: bool,
 }
 
 impl FunctionDefinition {
@@ -40,6 +41,7 @@ impl FunctionDefinition {
         block: ASTNode,
         return_type: VarType,
         token: Token,
+        is_extern_func: bool,
     ) -> Self {
         Self {
             name,
@@ -48,6 +50,7 @@ impl FunctionDefinition {
             stack_var_size: 0,
             return_type,
             token,
+            is_extern_func,
         }
     }
 
@@ -60,10 +63,19 @@ impl FunctionDefinition {
             &self.token,
         );
     }
+
+    fn visit_com_external_func(&self, asm: &mut ASM) {
+        asm.extern_function_def(&self.name);
+    }
 }
 
 impl AST for FunctionDefinition {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+        if self.is_extern_func {
+            self.visit_com_external_func(asm);
+            return;
+        }
+
         call_stack.push(
             self.name.to_string(),
             // TODO: This used to be  ActivationRecordType::Function(self.stack_var_size)

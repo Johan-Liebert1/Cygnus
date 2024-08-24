@@ -3,7 +3,7 @@
 use std::{
     char,
     io::{self, BufReader, Read},
-    process::{ChildStderr, ChildStdout, Stdio},
+    process::{exit, ChildStderr, ChildStdout, Stdio},
     rc::Rc,
     time::Duration,
 };
@@ -24,14 +24,27 @@ mod semantic_analyzer;
 mod tests;
 mod types;
 
-pub fn generate_asm() -> io::Result<()> {
+pub fn generate_asm(linker_flags: &Vec<String>) -> io::Result<()> {
     let mut nasm = std::process::Command::new("nasm");
     nasm.args(["-f", "elf64", "-g", "-o", "output.o", "output.asm"]);
     let mut spawn = nasm.spawn()?;
     spawn.wait()?;
 
     let mut linker = std::process::Command::new("ld");
-    linker.args(["output.o", "-o", "output"]);
+
+    let mut args = vec![String::from("output.o"), String::from("-o"), String::from("output")];
+
+    for flag in linker_flags {
+        args.push(flag.into());
+    }
+
+    if linker_flags.len() > 0 {
+        args.push("-dynamic-linker".into());
+        args.push("/lib64/ld-linux-x86-64.so.2".into());
+    }
+
+    linker.args(args);
+
     let mut spawn = linker.spawn()?;
     spawn.wait()?;
 
@@ -43,6 +56,7 @@ pub fn parse_input_file(
     compile_mode: bool,
     run_asm: bool,
     is_test: bool,
+    linker_flags: &Vec<String>,
 ) -> Option<(ChildStdout, ChildStderr)> {
     println!("Parsing file {path}");
 
@@ -57,13 +71,18 @@ pub fn parse_input_file(
     let mut parser = Parser::new(file, path);
     let ast = parser.parse_program();
 
-    let mut semantic_analyzer =
-        SemanticAnalyzer::new(ast.clone(), Rc::clone(&parser.functions), &parser.user_defined_types, &parser.type_aliases);
+    let mut semantic_analyzer = SemanticAnalyzer::new(
+        ast.clone(),
+        Rc::clone(&parser.functions),
+        &parser.user_defined_types,
+        &parser.type_aliases,
+    );
     semantic_analyzer.analyze();
 
     let mut interpreter = Interpreter::new(ast.clone(), parser.functions.clone());
 
-    let mut semantic_analyzer = SemanticAnalyzer::new(ast, parser.functions, &parser.user_defined_types, &parser.type_aliases);
+    let mut semantic_analyzer =
+        SemanticAnalyzer::new(ast, parser.functions, &parser.user_defined_types, &parser.type_aliases);
 
     if compile_mode {
         let _result = interpreter.compile(&mut semantic_analyzer.call_stack);
@@ -71,7 +90,7 @@ pub fn parse_input_file(
         let current_dir = std::env::current_dir().unwrap();
         std::env::set_current_dir("./generated").unwrap();
 
-        match generate_asm() {
+        match generate_asm(linker_flags) {
             Ok(_) => {
                 println!("Successful!{}", if run_asm { "" } else { " Not running the program" });
             }
@@ -136,12 +155,38 @@ fn main() {
 
     let mut file_name = "test/first.cberk";
 
-    for arg in cmd_args.iter().skip(1) {
+    let mut linker_flags: Vec<String> = vec![];
+
+    let mut iterartor = cmd_args.iter().skip(1);
+
+    while let Some(arg) = iterartor.next() {
         match arg.as_str() {
             "com" => COMPILE_MODE = true,
             "int" => COMPILE_MODE = false,
             "-r" => RUN_PROGRAM = true,
             "-f" => file_name_next = true,
+
+            e if e.starts_with("-L") => {
+                linker_flags.push("-L".into());
+
+                if let Some(dash_l) = iterartor.next() {
+                    linker_flags.push(dash_l.into());
+                } else {
+                    eprintln!("No arguments provided for -L");
+                    exit(1);
+                }
+            }
+
+            e if e.starts_with("-l") => {
+                linker_flags.push("-l".into());
+
+                if let Some(dash_l) = iterartor.next() {
+                    linker_flags.push(dash_l.into());
+                } else {
+                    eprintln!("No arguments provided for -l");
+                    exit(1);
+                }
+            }
 
             e => {
                 if !file_name_next {
@@ -154,7 +199,7 @@ fn main() {
         };
     }
 
-    if let Some(ref mut stdout) = parse_input_file(file_name.into(), COMPILE_MODE, RUN_PROGRAM, false) {
+    if let Some(ref mut stdout) = parse_input_file(file_name.into(), COMPILE_MODE, RUN_PROGRAM, false, &linker_flags) {
         let mut str = String::new();
         stdout.0.read_to_string(&mut str);
         println!("{:?}", str);

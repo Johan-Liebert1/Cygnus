@@ -16,6 +16,7 @@ impl ASM {
         func_return_type: &VarType,
         is_function_pointer_call: bool,
         call_stack: &CallStack,
+        is_extern_func: bool,
     ) {
         let mut instructions = vec![];
 
@@ -24,7 +25,11 @@ impl ASM {
         }
 
         if !is_function_pointer_call {
-            instructions.push(format!("call _{function_name}"));
+            if is_extern_func {
+                instructions.push(format!("call {function_name}"));
+            } else {
+                instructions.push(format!("call _{function_name}"));
+            }
         } else {
             // we get the function pointer stored on the stack and call that
             // the function name is the variable name of the function pointer
@@ -90,6 +95,10 @@ impl ASM {
         }
 
         self.extend_current_label(instructions);
+    }
+
+    pub fn extern_function_def(&mut self, function_name: &String) {
+        self.data.push(format!("extern {function_name}"))
     }
 
     pub fn function_def_end(&mut self, _function_name: &String) {

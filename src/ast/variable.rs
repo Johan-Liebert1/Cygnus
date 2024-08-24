@@ -244,8 +244,6 @@ impl AST for Variable {
         if self.store_address {
             self.result_type = VarType::Ptr(Box::new(self.var_type.clone()))
         }
-
-        trace!("Variable self.var_type: {}", self.var_type);
     }
 
     fn get_node(&self) -> ASTNodeEnum {

@@ -48,7 +48,7 @@ impl Parser {
     }
 
     // Returns parameters and return type
-    fn parse_function_typedef(&mut self) -> (Vec<VarType>, VarType) {
+    pub fn parse_function_typedef(&mut self) -> (Vec<VarType>, VarType) {
         // Consume 'def'
         self.validate_token(TokenEnum::Keyword(FUNCTION_DEFINE.into()));
 
@@ -111,5 +111,13 @@ impl Parser {
             name: type_name,
             type_: typedef_type,
         });
+    }
+
+    // we arrive here after parsing the 'extren' keyword
+    //
+    // extern fun FuncName(type1, type2, type3, ...) (-> ReturnType)*
+    pub fn parse_extern_func_definition(&mut self) {
+        self.validate_token(TokenEnum::Keyword(FUNCTION_DEFINE.into()));
+        todo!()
     }
 }

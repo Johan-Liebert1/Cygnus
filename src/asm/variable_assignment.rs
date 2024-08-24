@@ -274,9 +274,9 @@ impl ASM {
                     format!(";; For assignemt of float var name '{}'", ar_var.borrow().var_name),
                     // rax contains the memory address of the floating point number
                     format!("pop rax"),
-                    format!("mov [rbp - {}], rax", ar_var.borrow().offset)
+                    format!("mov [rbp - {}], rax", ar_var.borrow().offset),
                 ])
-            },
+            }
 
             VarType::Str => self.assign_local_string(ar_var.borrow().offset),
 

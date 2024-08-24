@@ -1,6 +1,6 @@
 use crate::{
-    helpers::unexpected_token, interpreter::interpreter::FunctionHashMapValue, lexer::types::VarType, trace,
-    types::ASTNode,
+    ast::void::Void, helpers::unexpected_token, interpreter::interpreter::FunctionHashMapValue, lexer::types::VarType,
+    trace, types::ASTNode,
 };
 
 use std::{cell::RefCell, process::exit, rc::Rc};
@@ -47,7 +47,7 @@ impl Parser {
     }
 
     /// FUNCTION_DEF -> fun VAR_NAME LPAREN (VAR_NAME : VAR_TYPE)* RPAREN (-> VarType)* LCURLY (STATEMENT[] - FUNCTION_DEF) RCURLY
-    pub fn parse_function_definition(&mut self, f: ParserFunctions) -> ASTNode {
+    pub fn parse_function_definition(&mut self, f: ParserFunctions, is_extern_function_definition: bool) -> ASTNode {
         // we get here after consuming 'fun'
         let func_name_token = self.get_next_token();
 
@@ -87,28 +87,40 @@ impl Parser {
             }
         };
 
-        self.validate_token(TokenEnum::Bracket(Bracket::LCurly));
-
-        // As we can fit an entire program inside a function
-        // TODO: This introduces function and variable scoping issues
-        self.inside_function_depth += 1;
-        let block = self.parse_program();
-        self.inside_function_depth -= 1;
-
-        // println!("next token after parse_statements in parse_function_definition {:?}", self.peek_next_token().token);
-
-        self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
-
         let ff = function_name.clone();
 
-        // Create an Rc from the Box
-        let function_def = FunctionDefinition::new(
-            function_name.into(),
-            parameters,
-            block,
-            return_type.clone(),
-            func_name_token,
-        );
+        let function_def = if !is_extern_function_definition {
+            self.validate_token(TokenEnum::Bracket(Bracket::LCurly));
+
+            // As we can fit an entire program inside a function
+            // TODO: This introduces function and variable scoping issues
+            self.inside_function_depth += 1;
+            let block = self.parse_program();
+            self.inside_function_depth -= 1;
+
+            // println!("next token after parse_statements in parse_function_definition {:?}", self.peek_next_token().token);
+
+            self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
+
+            // Create an Rc from the Box
+            FunctionDefinition::new(
+                function_name.into(),
+                parameters,
+                block,
+                return_type.clone(),
+                func_name_token,
+                is_extern_function_definition,
+            )
+        } else {
+            FunctionDefinition::new(
+                function_name.into(),
+                parameters,
+                Rc::new(RefCell::new(Box::new(Void))),
+                return_type.clone(),
+                func_name_token,
+                is_extern_function_definition,
+            )
+        };
 
         let fdef: ASTNode = Rc::new(RefCell::new(Box::new(function_def)));
 
@@ -118,6 +130,7 @@ impl Parser {
             FunctionHashMapValue {
                 func: Rc::clone(&fdef),
                 return_type,
+                is_extern_func: is_extern_function_definition,
             },
         );
 

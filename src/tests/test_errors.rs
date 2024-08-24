@@ -60,7 +60,6 @@ fn function_pointer_non_function() {
     assert_eq!(stderr, file_result);
 }
 
-
 #[test]
 fn function_no_return() {
     compile_binary();
@@ -68,7 +67,6 @@ fn function_no_return() {
 
     assert_eq!(stderr, file_result);
 }
-
 
 #[test]
 fn function_no_statements() {

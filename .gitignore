@@ -1,5 +1,6 @@
 /target
 *.o
+*.so
 generated/output
 generated/output.asm
 test

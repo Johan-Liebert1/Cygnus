@@ -19,6 +19,7 @@ use crate::{
 pub struct FunctionHashMapValue {
     pub func: ASTNode,
     pub return_type: VarType,
+    pub is_extern_func: bool,
 }
 
 pub type Variables = HashMap<String, VariableEnum>;
