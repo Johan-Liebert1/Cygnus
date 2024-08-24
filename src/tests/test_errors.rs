@@ -47,7 +47,7 @@ fn const_reassign() {
 #[test]
 fn function_pointer_incorrect_arg() {
     compile_binary();
-    let (stderr, file_result) = try_to_compile_example("errors/function_pointer_incorrect_arg.cberk");
+    let (stderr, file_result) = try_to_compile_example("errors/func_ptr_incorrect_arg.cberk");
 
     assert_eq!(stderr, file_result);
 }
@@ -55,7 +55,25 @@ fn function_pointer_incorrect_arg() {
 #[test]
 fn function_pointer_non_function() {
     compile_binary();
-    let (stderr, file_result) = try_to_compile_example("errors/function_pointer_non_function.cberk");
+    let (stderr, file_result) = try_to_compile_example("errors/func_ptr_non_func.cberk");
+
+    assert_eq!(stderr, file_result);
+}
+
+
+#[test]
+fn function_no_return() {
+    compile_binary();
+    let (stderr, file_result) = try_to_compile_example("errors/func_no_ret.cberk");
+
+    assert_eq!(stderr, file_result);
+}
+
+
+#[test]
+fn function_no_statements() {
+    compile_binary();
+    let (stderr, file_result) = try_to_compile_example("errors/func_no_statements.cberk");
 
     assert_eq!(stderr, file_result);
 }

@@ -1,6 +1,10 @@
 type mah_function = def (int) -> int;
 
+fun hello() {
+}
+
 fun foo(a: int) -> int {
+    return -1
 }
 
 fun bar(f: mah_function, a: int) {
