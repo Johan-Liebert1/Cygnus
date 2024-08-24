@@ -185,3 +185,9 @@ fn ptr_to_struct() {
     let (stdout_str, _, file_result) = get_stdout_and_actual_result("ptr_to_struct.cberk");
     assert_eq!(stdout_str, file_result);
 }
+
+#[test]
+fn function_pointers() {
+    let (stdout_str, _, file_result) = get_stdout_and_actual_result("func_ptrs.cberk");
+    assert_eq!(stdout_str, file_result);
+}
