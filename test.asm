@@ -84,17 +84,9 @@ _printString:
     ret
 
 _start: 
-    fld qword [pi]
-    fld qword [pi]
-
-    movsd xmm0, [pi]
-    movsd xmm1, [pi]
-    addsd xmm0, xmm1
-
-    movsd [storage], xmm0
-    mov rax, [storage]
-
-    call _printRAX
+    mov rbx, _printRAX
+    mov rax, 1069
+    call rbx
 
     mov rax, 0
     exit rax

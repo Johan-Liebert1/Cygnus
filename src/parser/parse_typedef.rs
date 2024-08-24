@@ -107,8 +107,6 @@ impl Parser {
         // consume the type
         self.get_next_token();
 
-        trace!("{typedef_type:#?}");
-
         self.user_defined_types.push(UserDefinedType {
             name: type_name,
             type_: typedef_type,

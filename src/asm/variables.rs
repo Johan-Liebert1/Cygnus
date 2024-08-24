@@ -3,6 +3,7 @@ use std::{cell::RefCell, fmt::format, rc::Rc};
 
 use crate::{
     ast::variable::{self, Variable},
+    interpreter::interpreter::Functions,
     lexer::{
         registers::Register,
         tokens::VariableEnum,
@@ -453,11 +454,12 @@ impl ASM {
 
                 match found {
                     Some(struct_member_type) => match &struct_member_type.member_type {
-                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Float => self.handle_local_int_float(
-                            variable,
-                            ar_var.borrow().offset - struct_member_type.offset,
-                            &struct_member_type.member_type,
-                        ),
+                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Float => self
+                            .handle_local_int_float(
+                                variable,
+                                ar_var.borrow().offset - struct_member_type.offset,
+                                &struct_member_type.member_type,
+                            ),
 
                         VarType::Str => {
                             self.handle_local_str(variable, ar_var.borrow().offset - struct_member_type.offset)
@@ -489,7 +491,7 @@ impl ASM {
         }
     }
 
-    pub fn gen_asm_for_var(&mut self, variable: &Variable, call_stack: &CallStack) {
+    pub fn gen_asm_for_var(&mut self, variable: &Variable, functions: Rc<RefCell<Functions>>, call_stack: &CallStack) {
         let var_name = &variable.var_name;
 
         let (variable_from_stack, variable_scope) = call_stack.get_var_with_name(var_name);
@@ -502,11 +504,25 @@ impl ASM {
                 }
             }
 
-            None => unreachable!(
-                "Could not find variable with name '{}' in function `variable_declaration`. \
-            This is a bug in the semantic analying step.",
-                var_name,
-            ),
+            // Might be a function pointer
+            None => match functions.borrow().get(var_name) {
+                Some(..) => {
+                    // var name is the name of the function
+                    // TODO: This won't work if we are passing around this pointer
+
+                    self.extend_current_label(vec![
+                        format!(";; Function pointer {var_name}"),
+                        format!("mov rax, _{var_name}"),
+                        format!("push rax")
+                    ]);
+                }
+
+                None => unreachable!(
+                    "Could not find variable with name '{}' in function `variable_declaration`. \
+                        This is a bug in the semantic analying step.",
+                    var_name,
+                ),
+            },
         };
     }
 }

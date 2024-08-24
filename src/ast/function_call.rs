@@ -57,7 +57,9 @@ impl AST for FunctionCall {
                         }
 
                         ASTNodeEnum::BinaryOp(bo) => match &bo.result_type {
-                            VarType::Int => asm.func_write_number(),
+                            VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Int | VarType::Char => {
+                                asm.func_write_number()
+                            }
 
                             VarType::Str => asm.func_write_string(),
 
@@ -66,12 +68,6 @@ impl AST for FunctionCall {
                             VarType::Ptr(ptr_type) => {
                                 asm.func_write_pointer(&ptr_type, bo.times_dereferenced, &call_stack, None)
                             }
-
-                            VarType::Int8 => todo!(),
-                            VarType::Int16 => todo!(),
-                            VarType::Int32 => todo!(),
-
-                            VarType::Char => todo!(),
 
                             VarType::Array(..) => todo!(),
                             VarType::Struct(_, _) => todo!(),
@@ -131,6 +127,8 @@ impl AST for FunctionCall {
                 asm.func_syscall(self.arguments.len());
             }
 
+            // This should be caught in the semantica analysis step
+            //
             name => match f.borrow().get(name) {
                 // args -> rax, rdi, rsi, rdx, r10, r8, r9
                 Some(func) => {
@@ -139,10 +137,45 @@ impl AST for FunctionCall {
                         argument.borrow().visit_com(v, f.clone(), asm, call_stack);
                     }
 
-                    asm.function_call(&String::from(name), self.arguments.len(), &func.return_type);
+                    asm.function_call(&String::from(name), self.arguments.len(), &func.return_type, false, call_stack);
                 }
 
-                None => compiler_error(format!("Function {} unimplemented", self.name), &self.token),
+                // Calling a function pointer
+                None => {
+                    let mut found = false;
+                    let mut return_type = VarType::Unknown;
+
+                    if let Some(last_activation_record) = call_stack.peek() {
+                        for (var_name, ar_var) in &last_activation_record.variable_members {
+                            if *var_name != self.name {
+                                continue;
+                            }
+
+                            found = true;
+
+                            match &ar_var.borrow().var_type {
+                                VarType::Function(_, _, func_return_type) => {
+                                    return_type = *func_return_type.clone();
+                                }
+
+                                _ => {
+                                    compiler_error(format!("'{}' is not a function", &self.name), &self.token);
+                                    exit(1);
+                                }
+                            }
+                        }
+                    }
+
+                    if !found {
+                        compiler_error(format!("Function {} unimplemented", self.name), &self.token)
+                    }
+
+                    for argument in self.arguments.iter().rev() {
+                        argument.borrow().visit_com(v, f.clone(), asm, call_stack);
+                    }
+
+                    asm.function_call(&String::from(name), self.arguments.len(), &return_type, true, call_stack);
+                }
             },
         }
     }

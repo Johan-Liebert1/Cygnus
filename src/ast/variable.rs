@@ -115,10 +115,10 @@ impl Variable {
 impl AST for Variable {
     fn visit_com(&self, x: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         if let Some(ast_node) = &self.array_aceess_index {
-            ast_node.borrow().visit_com(x, f, asm, call_stack);
+            ast_node.borrow().visit_com(x, Rc::clone(&f), asm, call_stack);
         }
 
-        asm.gen_asm_for_var(&self, &call_stack);
+        asm.gen_asm_for_var(&self, f, &call_stack);
     }
 
     fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
@@ -224,7 +224,10 @@ impl AST for Variable {
                 if let ASTNodeEnum::FunctionDef(fd) = function.func.borrow().get_node() {
                     self.var_type = VarType::Function(
                         self.var_name.clone(),
-                        fd.parameters.iter().map(|param| param.borrow().var_type.clone()).collect(),
+                        fd.parameters
+                            .iter()
+                            .map(|param| param.borrow().var_type.clone())
+                            .collect(),
                         Box::new(function.return_type.clone()),
                     );
                 } else {
@@ -238,11 +241,11 @@ impl AST for Variable {
             }
         }
 
-        trace!("Variable self.var_type: {}", self.var_type);
-
         if self.store_address {
             self.result_type = VarType::Ptr(Box::new(self.var_type.clone()))
         }
+
+        trace!("Variable self.var_type: {}", self.var_type);
     }
 
     fn get_node(&self) -> ASTNodeEnum {

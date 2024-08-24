@@ -1,6 +1,7 @@
 type mah_function = def (int) -> int;
 
 fun foo(a: int) -> int {
+    write("hello from foo. ", a, " was passed as argument")
 }
 
 fun bar(f: mah_function, a: int) {
