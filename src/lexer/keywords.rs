@@ -1,4 +1,5 @@
 pub const FUNCTION_DEFINE: &str = "fun";
+pub const EXTERN: &str = "extern";
 pub const VAR_DEFINE: &str = "def";
 pub const CONST_VAR_DEFINE: &str = "const";
 
@@ -26,7 +27,7 @@ pub const STRUCT: &str = "struct";
 pub const INCLUDE: &str = "include";
 pub const TYPE_DEF: &str = "type";
 
-pub const KEYWORDS: [&str; 22] = [
+pub const KEYWORDS: [&str; 23] = [
     VAR_DEFINE,
     CONST_VAR_DEFINE,
     IF_STATEMENT,
@@ -49,6 +50,7 @@ pub const KEYWORDS: [&str; 22] = [
     STRUCT,
     INCLUDE,
     TYPE_DEF,
+    EXTERN,
 ];
 
 // Predefined functions

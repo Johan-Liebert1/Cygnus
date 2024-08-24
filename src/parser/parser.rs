@@ -2,7 +2,7 @@ use crate::{
     ast::{abstract_syntax_tree::AST, typedef::Typedef, void::Void},
     helpers::{self, compiler_error, unexpected_token},
     lexer::{
-        keywords::{CONST_VAR_DEFINE, INCLUDE, MEM, STRUCT, TYPE_DEF},
+        keywords::{CONST_VAR_DEFINE, EXTERN, INCLUDE, MEM, STRUCT, TYPE_DEF},
         tokens::{Number, Operations},
         types::VarType,
     },
@@ -136,6 +136,7 @@ impl Parser {
                         self.parse_typedef();
                         Rc::new(RefCell::new(Box::new(Void)))
                     }
+
                     CONST_VAR_DEFINE => self.parse_declaration_statement(true),
 
                     IF_STATEMENT => self.parse_conditional_statement(),
@@ -148,7 +149,14 @@ impl Parser {
                             compiler_error("Defining function inside functions is not allowed", &current_token);
                         }
 
-                        self.parse_function_definition(Rc::clone(&self.functions))
+                        self.parse_function_definition(Rc::clone(&self.functions), false)
+                    }
+
+                    EXTERN => {
+                        // as parse_function_definition expectes 'fun' to be already consumed
+                        self.validate_token(TokenEnum::Keyword(FUNCTION_DEFINE.into()));
+
+                        self.parse_function_definition(Rc::clone(&self.functions), true)
                     }
 
                     BREAK => {

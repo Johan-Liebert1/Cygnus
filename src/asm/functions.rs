@@ -92,6 +92,10 @@ impl ASM {
         self.extend_current_label(instructions);
     }
 
+    pub fn extern_function_def(&mut self, function_name: &String) {
+        self.data.push(format!("extern {function_name}"))
+    }
+
     pub fn function_def_end(&mut self, _function_name: &String) {
         // mov rsp, rbp        ; Reset stack pointer
         // pop rbp             ; Restore old base pointer
