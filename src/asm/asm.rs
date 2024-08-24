@@ -38,7 +38,7 @@ impl Default for ASM {
 
             data: vec![
                 String::from(";; For floating point operations"),
-                String::from("float_imm dq 0")
+                String::from("float_imm dq 0"),
             ],
 
             bss: vec![

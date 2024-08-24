@@ -3,6 +3,7 @@ type mah_function = def (int) -> int;
 extern fun print_thingy();
 
 fun main() {
+    print_thingy()
 }
 
 main()

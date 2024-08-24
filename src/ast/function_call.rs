@@ -137,7 +137,14 @@ impl AST for FunctionCall {
                         argument.borrow().visit_com(v, f.clone(), asm, call_stack);
                     }
 
-                    asm.function_call(&String::from(name), self.arguments.len(), &func.return_type, false, call_stack);
+                    asm.function_call(
+                        &String::from(name),
+                        self.arguments.len(),
+                        &func.return_type,
+                        false,
+                        call_stack,
+                        func.is_extern_func,
+                    );
                 }
 
                 // Calling a function pointer
@@ -174,7 +181,14 @@ impl AST for FunctionCall {
                         argument.borrow().visit_com(v, f.clone(), asm, call_stack);
                     }
 
-                    asm.function_call(&String::from(name), self.arguments.len(), &return_type, true, call_stack);
+                    asm.function_call(
+                        &String::from(name),
+                        self.arguments.len(),
+                        &return_type,
+                        true,
+                        call_stack,
+                        false,
+                    );
                 }
             },
         }

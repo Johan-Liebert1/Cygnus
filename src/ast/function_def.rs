@@ -31,7 +31,7 @@ pub struct FunctionDefinition {
     stack_var_size: usize,
     pub return_type: VarType,
     token: Token,
-    is_extern_func: bool,
+    pub is_extern_func: bool,
 }
 
 impl FunctionDefinition {
@@ -64,10 +64,7 @@ impl FunctionDefinition {
         );
     }
 
-    fn visit_com_external_func(
-        &self,
-        asm: &mut ASM,
-    ) {
+    fn visit_com_external_func(&self, asm: &mut ASM) {
         asm.extern_function_def(&self.name);
     }
 }

@@ -130,6 +130,7 @@ impl Parser {
             FunctionHashMapValue {
                 func: Rc::clone(&fdef),
                 return_type,
+                is_extern_func: is_extern_function_definition,
             },
         );
 
