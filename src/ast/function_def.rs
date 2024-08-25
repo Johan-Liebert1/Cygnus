@@ -170,7 +170,7 @@ impl AST for FunctionDefinition {
                             ASTNodeEnum::Jump(jump) => match jump.typ {
                                 JumpType::Return => {}
 
-                                JumpType::Break => self.return_type_error(),
+                                JumpType::Break | JumpType::Continue  => self.return_type_error(),
                             },
 
                             _ => self.return_type_error(),

@@ -20,6 +20,7 @@ use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST}
 pub enum JumpType {
     Return,
     Break,
+    Continue,
 }
 
 #[derive(Debug)]
@@ -81,6 +82,8 @@ impl AST for Jump {
                 // call_stack.pop_special(PopTypes::LoopBreak);
                 asm.loop_break(self.loop_number)
             }
+
+            JumpType::Continue => asm.loop_continue(self.loop_number)
         }
     }
 

@@ -18,6 +18,7 @@ pub const TO: &str = "to";
 pub const STEP: &str = "step";
 pub const RETURN: &str = "return";
 pub const BREAK: &str = "break";
+pub const CONTINUE: &str = "continue";
 pub const WITH: &str = "with";
 pub const AS: &str = "as";
 
@@ -27,7 +28,7 @@ pub const STRUCT: &str = "struct";
 pub const INCLUDE: &str = "include";
 pub const TYPE_DEF: &str = "type";
 
-pub const KEYWORDS: [&str; 23] = [
+pub const KEYWORDS: [&str; 24] = [
     VAR_DEFINE,
     CONST_VAR_DEFINE,
     IF_STATEMENT,
@@ -44,6 +45,7 @@ pub const KEYWORDS: [&str; 23] = [
     FUNCTION_DEFINE,
     RETURN,
     BREAK,
+    CONTINUE,
     WITH,
     MEM,
     AS,

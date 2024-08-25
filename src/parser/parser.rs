@@ -2,7 +2,7 @@ use crate::{
     ast::{abstract_syntax_tree::AST, typedef::Typedef, void::Void},
     helpers::{self, compiler_error, unexpected_token},
     lexer::{
-        keywords::{CONST_VAR_DEFINE, EXTERN, INCLUDE, MEM, STRUCT, TYPE_DEF},
+        keywords::{CONST_VAR_DEFINE, CONTINUE, EXTERN, INCLUDE, MEM, STRUCT, TYPE_DEF},
         tokens::{Number, Operations},
         types::VarType,
     },
@@ -172,6 +172,21 @@ impl Parser {
                             current_token.clone(),
                         ))))
                     }
+
+                    CONTINUE => {
+                        if self.inside_loop_depth == 0 || self.inside_current_loop_number == -1 {
+                            compiler_error("Found `continue` outside of a loop", &current_token);
+                        }
+
+                        Rc::new(RefCell::new(Box::new(Jump::new(
+                            JumpType::Continue,
+                            self.inside_current_loop_number as usize,
+                            None,
+                            None,
+                            current_token.clone(),
+                        ))))
+                    }
+
 
                     RETURN => self.parse_return_statement(&current_token),
 

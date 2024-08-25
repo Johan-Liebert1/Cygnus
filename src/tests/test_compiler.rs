@@ -55,6 +55,12 @@ fn loop_break() {
 }
 
 #[test]
+fn loop_continue() {
+    let (stdout_str, _, file_result) = get_stdout_and_actual_result("loop_continue.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
 fn early_return() {
     let (stdout_str, _, file_result) = get_stdout_and_actual_result("early_return.cberk");
     assert_eq!(stdout_str, file_result);

@@ -1,35 +1,47 @@
-mem buffer 1000
+type mah_function = def (int) -> int;
 
-fun strlen(string: *char) -> int {
-    def len: int = 0;
-}
-
-fun strcmp(first: *char, second: *char) -> int {
-    def idx: int = 0;
-
-    loop from 1 to 6 {
-        def char1: *char = (first + idx);
-        def char2: *char = (second + idx);
-
-        write(*char1, *char2, "\n")
-
-        if *char1 != *char2 {
-            return 0;
-        }
-
-        idx += 1
-    }
-
-    return 1;
-}
+extern fun SDL_Init(flags: int) -> int;
+extern fun SDL_CreateWindow(windowName: *char, x: int, y: int, width: int, height: int, flags: int) -> *int;
+extern fun SDL_GetTicks() -> int;
+extern fun SDL_GetError() -> str;
 
 fun main() {
-    def a: str = "hello";
-    def b: str = "hello";
+    def sdl_init: int = SDL_Init(32);
+    write("sdl_init = ", sdl_init)
 
-    def eq: int = strcmp(a as *char, b as *char)
+    def NULL: int = 0;
 
-    write("eq = ", eq)
+    def name: str = "hello\0";
+    def window: *int = SDL_CreateWindow(name as *char, 10, 10, 800, 600, 8196);
+
+    write("window = ", window)
+
+    if window == NULL as *int {
+        def error: str = SDL_GetError();
+        write(error)
+    }
+
+    def FPS: int = 60;
+
+    def quit: int = 0;
+
+    def a: int = SDL_GetTicks();
+    def b: int = SDL_GetTicks();
+
+    def delta: int = 0;
+
+    loop {
+        if quit == 1 {
+            break;
+        }
+
+        a = SDL_GetTicks();
+        delta += (a - b);
+
+        if (delta > FPS) {
+            write(delta)
+        }
+    }
 }
 
 main()
