@@ -355,6 +355,7 @@ impl ASM {
                 self.extend_current_label(v);
                 return;
             }
+
             if variable.store_address {
                 self.extend_current_label(vec![format!("lea rax, {}", var_name), format!("push rax")]);
                 return;
@@ -365,6 +366,7 @@ impl ASM {
                 format!("mov {reg_name}, {}", var_name),
                 format!("push rax"),
             ]);
+
             return;
         }
 

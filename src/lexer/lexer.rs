@@ -61,14 +61,29 @@ impl Lexer {
     }
 
     pub fn construct_number(&mut self) -> TokenEnum {
-        let mut int_string = String::new();
+        if self.index + 1 > self.file.len() {
+            return TokenEnum::EOF;
+        }
 
+        let is_hex = self.file[self.index + 1] == 'x' as u8;
+
+        trace!("is_hex: {is_hex}, {:?}", self.file[self.index..self.index + 5].to_vec());
+
+        let mut int_string = String::new();
         let mut is_float = false;
+
+        if is_hex {
+            self.index += 2
+        }
 
         while self.index < self.file.len() {
             let char = self.file[self.index] as char;
 
-            if !char.is_numeric() && char != '.' {
+            if !is_hex && !char.is_numeric() && char != '.' {
+                break;
+            }
+
+            if is_hex && !char.is_ascii_hexdigit() {
                 break;
             }
 
@@ -84,8 +99,12 @@ impl Lexer {
 
         self.index -= 1;
 
+        trace!("int_string: {int_string}");
+
         if !is_float {
-            TokenEnum::Number(Number::Integer(int_string.parse::<i32>().unwrap()))
+            TokenEnum::Number(Number::Integer(
+                i32::from_str_radix(&int_string, if is_hex { 16 } else { 10 }).unwrap(),
+            ))
         } else {
             TokenEnum::Number(Number::Float(int_string.parse::<f32>().unwrap()))
         }
