@@ -269,8 +269,6 @@ impl<'a> CallStack<'a> {
                                 prev_member_size = member.member_type.get_size();
                                 prev_member_offset = member.offset;
                             }
-
-                            trace!("name: {struct_name}, struct_members: {struct_members:#?}");
                         }
 
                         last_record
