@@ -1,10 +1,69 @@
+include "../examples/include/std.cberk"
+
+type mah_function = def (int) -> int;
+
+extern fun SDL_Init(flags: int) -> int;
+extern fun SDL_CreateWindow(windowName: *char, x: int, y: int, width: int, height: int, flags: int) -> *int;
+extern fun SDL_PollEvent(event: *char) -> int;
+extern fun SDL_GetTicks() -> int;
+extern fun SDL_GetError() -> str;
+
+-- struct SDL_Event {
+--     event: int,
+--     rest: 
+-- }
+
+-- The SDL_Event
+mem event 256
+
+def SDL_QUIT: int = 256;
+
 fun main() {
-    loop from 1 to 10 with i {
-        if i % 2 == 0 {
+    def sdl_init: int = SDL_Init(32);
+    write("sdl_init = ", sdl_init)
+
+    def NULL: int = 0;
+
+    def name: str = "hello\0";
+    def window: *int = SDL_CreateWindow(name as *char, 10, 10, 800, 600, 8196);
+
+    write("window = ", window)
+
+    if window == NULL as *int {
+        def error: str = SDL_GetError();
+        write(error)
+    }
+
+    def FPS: int = 60;
+
+    def quit: int = 0;
+
+    def a: int = SDL_GetTicks();
+    def b: int = SDL_GetTicks();
+
+    def delta: int = 0;
+
+    loop {
+        if quit == 1 {
+            break;
+        }
+
+        a = SDL_GetTicks();
+        delta += (a - b);
+
+        if (delta < FPS) {
             continue
         }
 
-        write(i)
+        def x: int = SDL_PollEvent(event);
+
+        if x != 0 {
+            write(*(event as *int32))
+
+            if *(event as *int) == SDL_QUIT {
+                quit = 1;
+            }
+        }
     }
 }
 

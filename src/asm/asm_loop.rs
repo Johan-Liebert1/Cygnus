@@ -12,6 +12,7 @@ impl ASM {
 
     pub fn gen_inf_loop_end(&mut self, loop_number: usize) {
         self.extend_current_label(vec![
+            format!(".loop_{loop_number}_end_start:"),
             // unconditional jump to loop start
             format!("jmp .loop_{}", loop_number),
             // we jump here when the loop ends

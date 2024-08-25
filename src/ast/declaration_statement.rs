@@ -61,12 +61,6 @@ impl AST for DeclarationStatement {
 
         self.right.borrow().visit_com(vars, f, asm, call_stack);
 
-        let function_call_assign = if let ASTNodeEnum::FunctionCall(..) = self.right.borrow().get_node() {
-            true
-        } else {
-            false
-        };
-
         let borrow = self.right.borrow();
 
         let member_order = match borrow.get_node() {
