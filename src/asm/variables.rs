@@ -35,12 +35,14 @@ impl ASM {
         if variable.dereference {
             let mut v = vec![
                 format!(";; Dereferencing variable {}", variable.var_name),
-                format!("mov rax, [rbp - {}]", ar_var_offset),
+                format!("mov rbx, [rbp - {}]", ar_var_offset),
             ];
 
-            v.extend(std::iter::repeat(format!("mov rax, [rax]")).take(variable.times_dereferenced));
+            v.extend(std::iter::repeat(format!("mov rbx, [rbx]")).take(variable.times_dereferenced));
 
             v.extend([
+                format!("xor rax, rax"),
+                format!("mov {reg_name}, {}", var_type.get_register_name(Register::RBX)),
                 format!("push rax"),
                 format!(";; Finish dereferencing variable {}", variable.var_name),
             ]);
@@ -64,7 +66,7 @@ impl ASM {
     fn handle_local_ptr_str(&mut self, var_type: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
         if variable.dereference {
             let mut v = vec![
-                format!(";; Dereferencing variable {}", variable.var_name),
+                format!(";; Dereferencing variable {}. handle_local_ptr_str", variable.var_name),
                 format!("mov rax, [rbp - {}]", ar_var_offset),
                 // now rax contains the address of the pointer to the
                 // string
@@ -285,7 +287,7 @@ impl ASM {
     fn handle_local_str(&mut self, variable: &Variable, ar_var_offset: usize) {
         if variable.dereference {
             let mut v = vec![
-                format!(";; Dereferencing variable {}", variable.var_name),
+                format!(";; Dereferencing variable {}. handle_local_str", variable.var_name),
                 format!("mov rax, [rbp - {}]", ar_var_offset),
                 // now rax contains the address of the pointer to the
                 // string
@@ -328,15 +330,24 @@ impl ASM {
     fn handle_global_ptr(&mut self, variable: &Variable, ar_var: &Variable) {
         let var_name = &variable.var_name;
 
+        let reg_name = variable.var_type.get_pointer_type().get_register_name(Register::RAX);
+
         if ar_var.is_memory_block {
             // this will be in the bss section
             if variable.dereference {
                 let mut v = vec![
-                    format!(";; Dereferencing variable {}", var_name),
-                    format!("mov rax, {}", var_name),
+                    format!(";; Dereferencing variable {}. handle_global_ptr", var_name),
+                    format!("mov rbx, {}", var_name),
                 ];
-                v.extend(std::iter::repeat(format!("mov rax, [rax]")).take(variable.times_dereferenced));
+
+                v.extend(std::iter::repeat(format!("mov rbx, [rbx]")).take(variable.times_dereferenced));
+
                 v.extend([
+                    format!("xor rax, rax"),
+                    format!(
+                        "mov {reg_name}, {}",
+                        variable.var_type.get_pointer_type().get_register_name(Register::RBX)
+                    ),
                     format!("push rax"),
                     format!(";; Finish dereferencing variable {}", var_name),
                 ]);
@@ -349,7 +360,11 @@ impl ASM {
                 return;
             }
 
-            self.extend_current_label(vec![format!("mov rax, {}", var_name), format!("push rax")]);
+            self.extend_current_label(vec![
+                format!("xor rax, rax"),
+                format!("mov {reg_name}, {}", var_name),
+                format!("push rax"),
+            ]);
             return;
         }
 

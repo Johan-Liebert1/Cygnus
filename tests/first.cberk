@@ -16,7 +16,7 @@ extern fun SDL_GetError() -> str;
 -- The SDL_Event
 mem event 256
 
-def SDL_QUIT: int = 256;
+def SDL_QUIT: int32 = 256;
 
 fun main() {
     def sdl_init: int = SDL_Init(32);
@@ -60,7 +60,7 @@ fun main() {
         if x != 0 {
             write(*(event as *int32))
 
-            if *(event as *int) == SDL_QUIT {
+            if *(event as *int32) == SDL_QUIT {
                 quit = 1;
             }
         }

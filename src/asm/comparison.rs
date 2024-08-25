@@ -48,8 +48,6 @@ impl ASM {
     }
 
     pub fn compare_two_numbers(&mut self, op: Comparators, result_type: &VarType) {
-        println!("result_type: {}", result_type);
-
         let mut instructions = match result_type {
             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => self.compare_ints(),
             VarType::Float => self.compare_floats(),
