@@ -6,7 +6,8 @@ use super::asm::ASM;
 
 pub const FUNCTION_RETURN_INSTRUCTIONS: [&str; 3] = [("mov rsp, rbp"), ("pop rbp"), ("ret")];
 
-pub const FUNCTION_ARGS_REGS: [&str; 7] = ["rax", "rdi", "rsi", "rdx", "r10", "r8", "r9"];
+pub const FUNCTION_ARGS_REGS: [&str; 6] = ["rdi", "rsi", "rdx", "rcx", "r8", "r9"];
+pub const SYSCALL_ARGS_REGS: [&str; 7] = ["rax", "rdi", "rsi", "rdx", "r10", "r8", "r9"];
 
 impl ASM {
     pub fn function_call(
@@ -70,7 +71,8 @@ impl ASM {
         let mut instructions = vec![
             format!("push rbp"),
             format!("mov rbp, rsp"),
-            format!("sub rsp, {}", local_var_size),
+            format!(";; Make sure that the stack pointer is 16 byte aligned always"),
+            format!("sub rsp, {}", local_var_size + local_var_size % 16),
         ];
 
         for (var, register) in func_params.iter().zip(FUNCTION_ARGS_REGS) {

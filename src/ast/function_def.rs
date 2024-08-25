@@ -142,6 +142,10 @@ impl AST for FunctionDefinition {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+        if self.is_extern_func {
+            return
+        }
+
         call_stack.push(self.name.to_string(), ActivationRecordType::Function(0));
 
         for arg in &self.parameters {

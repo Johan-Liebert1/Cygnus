@@ -10,7 +10,7 @@ use crate::{
     trace,
 };
 
-use super::{asm::ASM, functions::FUNCTION_ARGS_REGS};
+use super::{asm::ASM, functions::{FUNCTION_ARGS_REGS, SYSCALL_ARGS_REGS}};
 
 const WRITE_STRING_ASM_INSTRUCTIONS: [&str; 9] = [
     ";; Assuming length is pushed last",
@@ -140,10 +140,11 @@ impl ASM {
         let mut instructions = vec![];
 
         for i in 0..num_args {
-            instructions.push(format!("pop {}", FUNCTION_ARGS_REGS[i]));
+            instructions.push(format!("pop {}", SYSCALL_ARGS_REGS[i]));
         }
 
         instructions.push("syscall".into());
+        instructions.push("push rax".into());
 
         self.extend_current_label(instructions);
     }

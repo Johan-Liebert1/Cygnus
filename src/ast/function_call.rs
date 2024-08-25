@@ -52,7 +52,6 @@ impl AST for FunctionCall {
 
                     match arg.borrow().get_node() {
                         ASTNodeEnum::Variable(v) => {
-                            println!("token: {:?}", arg.borrow().get_token());
                             asm.func_write_var(v, call_stack);
                         }
 
@@ -99,6 +98,7 @@ impl AST for FunctionCall {
                                 VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                                     asm.func_write_number()
                                 }
+
                                 _ => unimplemented!(),
                             };
                         }

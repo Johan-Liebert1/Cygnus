@@ -83,7 +83,6 @@ impl AST for DeclarationStatement {
             &AssignmentTypes::Equals,
             call_stack,
             0,
-            function_call_assign,
             &None,
             member_order,
             &self.left.borrow(),

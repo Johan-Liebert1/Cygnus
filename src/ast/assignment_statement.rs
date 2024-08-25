@@ -77,11 +77,6 @@ impl AST for AssignmentStatement {
             &self.assignment_type,
             call_stack,
             self.left.times_dereferenced,
-            if let ASTNodeEnum::FunctionCall(..) = self.right.borrow().get_node() {
-                true
-            } else {
-                false
-            },
             &self.left.array_aceess_index,
             None,
             &self.left,

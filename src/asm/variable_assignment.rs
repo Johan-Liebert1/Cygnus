@@ -34,20 +34,16 @@ impl ASM {
         self.extend_current_label(instructions);
     }
 
-    fn assign_local_number(&mut self, var_offset: usize, is_function_call_assign: bool, var_type: &VarType) {
+    fn assign_local_number(&mut self, var_offset: usize, var_type: &VarType) {
         let reg_name = var_type.get_register_name(Register::RAX);
 
         let mut instructions = vec![];
 
-        // if it is a function call assignment, then the value is
-        // already in rax
-        if !is_function_call_assign {
-            instructions.extend([
-                format!(";; assign_local_number of type {}", var_type),
-                format!("xor rax, rax"),
-                format!("pop rax"),
-            ])
-        }
+        instructions.extend([
+            format!(";; assign_local_number of type {}", var_type),
+            format!("xor rax, rax"),
+            format!("pop rax"),
+        ]);
 
         instructions.push(format!("mov [rbp - {}], {}", var_offset, reg_name));
 
@@ -167,7 +163,6 @@ impl ASM {
         struct_assign_order: Option<Vec<&String>>,
         struct_name: &String,
         call_stack: &CallStack,
-        is_function_call_assign: bool,
     ) {
         if struct_assign_order.is_none() {
             panic!("Need struct_assign_order")
@@ -186,11 +181,9 @@ impl ASM {
                 let member_type = borrow.iter().find(|x| x.name == *order).unwrap();
 
                 match &member_type.member_type {
-                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => self.assign_local_number(
-                        struct_offset - member_type.offset,
-                        is_function_call_assign,
-                        &member_type.member_type,
-                    ),
+                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                        self.assign_local_number(struct_offset - member_type.offset, &member_type.member_type)
+                    }
 
                     VarType::Float => todo!(),
 
@@ -222,7 +215,6 @@ impl ASM {
         call_stack: &CallStack,
         variable_assigned_to: &Variable,
         struct_assign_order: Option<Vec<&String>>,
-        is_function_call_assign: bool,
         times_dereferenced: usize,
         array_access_index: &Option<ASTNode>,
     ) {
@@ -234,13 +226,7 @@ impl ASM {
             VarType::Struct(name, members) => {
                 // Assignment to the struct variable
                 if variable_assigned_to.member_access.len() == 0 {
-                    self.assign_local_struct(
-                        ar_var.borrow().offset,
-                        struct_assign_order,
-                        name,
-                        call_stack,
-                        is_function_call_assign,
-                    )
+                    self.assign_local_struct(ar_var.borrow().offset, struct_assign_order, name, call_stack)
                 } else {
                     match &variable_assigned_to.result_type {
                         VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
@@ -251,11 +237,7 @@ impl ASM {
                                 .find(|x| x.name == variable_assigned_to.member_access[0])
                                 .unwrap();
 
-                            self.assign_local_number(
-                                member_offset.offset,
-                                is_function_call_assign,
-                                &variable_assigned_to.result_type,
-                            )
+                            self.assign_local_number(member_offset.offset, &variable_assigned_to.result_type)
                         }
 
                         v => unimplemented!("Assignment to var_type '{}' inside struct not handled", v),
@@ -263,11 +245,9 @@ impl ASM {
                 }
             }
 
-            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => self.assign_local_number(
-                ar_var.borrow().offset,
-                is_function_call_assign,
-                &ar_var.borrow().var_type,
-            ),
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                self.assign_local_number(ar_var.borrow().offset, &ar_var.borrow().var_type)
+            }
 
             VarType::Float => {
                 self.extend_current_label(vec![
@@ -374,7 +354,6 @@ impl ASM {
         assignment_type: &AssignmentTypes,
         call_stack: &CallStack,
         times_dereferenced: usize,
-        is_function_call_assign: bool,
         array_access_index: &Option<ASTNode>,
         struct_assign_order: Option<Vec<&String>>,
         // This is not from the call stack. Only required for structs.
@@ -423,7 +402,6 @@ impl ASM {
                             call_stack,
                             variable_assigned_to,
                             struct_assign_order,
-                            is_function_call_assign,
                             times_dereferenced,
                             array_access_index,
                         ),
