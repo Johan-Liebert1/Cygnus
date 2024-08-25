@@ -370,7 +370,7 @@ impl ASM {
             return;
         }
 
-        todo!("not implemented for non memory block")
+        todo!("not implemented for non memory block. {variable:#?}")
     }
 
     fn gen_asm_for_var_global_scope(&mut self, variable: &Variable, ar_var: &Rc<RefCell<Variable>>) {

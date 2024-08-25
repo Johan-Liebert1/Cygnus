@@ -67,8 +67,6 @@ impl Lexer {
 
         let is_hex = self.file[self.index + 1] == 'x' as u8;
 
-        trace!("is_hex: {is_hex}, {:?}", self.file[self.index..self.index + 5].to_vec());
-
         let mut int_string = String::new();
         let mut is_float = false;
 
@@ -98,8 +96,6 @@ impl Lexer {
         }
 
         self.index -= 1;
-
-        trace!("int_string: {int_string}");
 
         if !is_float {
             TokenEnum::Number(Number::Integer(
