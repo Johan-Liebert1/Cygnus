@@ -150,6 +150,17 @@ impl Parser {
         let mut left = self.parse_variable();
         left.is_const = is_const;
 
+        let next_token = self.peek_next_token();
+
+        // Not actually assigning
+        // def a: int;
+        if !matches!(next_token.token, TokenEnum::Equals) {
+            return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(
+                Rc::new(RefCell::new(left)),
+                None,
+            ))));
+        }
+
         self.validate_token(TokenEnum::Equals);
 
         let peeked = self.peek_next_token();
@@ -172,7 +183,7 @@ impl Parser {
 
         return Rc::new(RefCell::new(Box::new(DeclarationStatement::new(
             Rc::new(RefCell::new(left)),
-            right,
+            Some(right),
         ))));
     }
 }
