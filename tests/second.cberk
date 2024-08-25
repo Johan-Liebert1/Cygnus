@@ -1,46 +1,12 @@
-type mah_function = def (int) -> int;
-
-extern fun SDL_Init(flags: int) -> int;
-extern fun SDL_CreateWindow(windowName: *char, x: int, y: int, width: int, height: int, flags: int) -> *int;
-extern fun SDL_GetTicks() -> int;
-extern fun SDL_GetError() -> str;
-
 fun main() {
-    def sdl_init: int = SDL_Init(32);
-    write("sdl_init = ", sdl_init)
+    def array: int[50];
 
-    def NULL: int = 0;
-
-    def name: str = "hello\0";
-    def window: *int = SDL_CreateWindow(name as *char, 10, 10, 800, 600, 8196);
-
-    write("window = ", window)
-
-    if window == NULL as *int {
-        def error: str = SDL_GetError();
-        write(error)
+    loop from 0 to 50 with i {
+        array[i] = 50 - i
     }
 
-    def FPS: int = 60;
-
-    def quit: int = 0;
-
-    def a: int = SDL_GetTicks();
-    def b: int = SDL_GetTicks();
-
-    def delta: int = 0;
-
-    loop {
-        if quit == 1 {
-            break;
-        }
-
-        a = SDL_GetTicks();
-        delta += (a - b);
-
-        if (delta > FPS) {
-            write(delta)
-        }
+    loop from 0 to 50 with i {
+        write("array[i] = ", array[i])
     }
 }
 

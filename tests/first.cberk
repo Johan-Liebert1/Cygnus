@@ -1,38 +1,62 @@
 include "../examples/include/std.cberk"
 
+type renderer = int;
+type window = int;
+
 type mah_function = def (int) -> int;
 
+struct SDL_Rect {
+    x: int32,
+    y: int32,
+    w: int32,
+    h: int32,
+};
+
 extern fun SDL_Init(flags: int) -> int;
-extern fun SDL_CreateWindow(windowName: *char, x: int, y: int, width: int, height: int, flags: int) -> *int;
+extern fun SDL_CreateWindow(windowName: *char, x: int, y: int, width: int, height: int, flags: int) -> *window;
 extern fun SDL_PollEvent(event: *char) -> int;
 extern fun SDL_GetTicks() -> int;
 extern fun SDL_GetError() -> str;
 
--- struct SDL_Event {
---     event: int,
---     rest: 
--- }
+extern fun SDL_CreateRenderer(window: *window, index: int, flags: int) -> *renderer;
+extern fun SDL_SetRenderDrawColor(renderer: *renderer, r: int, g: int, b: int, a: int) -> int;
+extern fun SDL_RenderFillRect(renderer: *renderer, dst_rect: *SDL_Rect) -> int;
+extern fun SDL_RenderPresent(renderer: *renderer);
 
 -- The SDL_Event
 mem event 256
 
 def SDL_QUIT: int32 = 256;
 
+def SDL_RENDERER_SOFTWARE: int = 0x00000001;      -- < The renderer is a software fallback */
+def SDL_RENDERER_ACCELERATED: int = 0x00000002;   -- < The renderer uses hardware
+def SDL_RENDERER_PRESENTVSYNC: int = 0x00000004;  -- < Present is synchronized
+def SDL_RENDERER_TARGETTEXTURE: int = 0x00000008;  -- < The renderer supports
+
+fun gol() {
+    def array: int[50];
+}
+
 fun main() {
     def sdl_init: int = SDL_Init(32);
     write("sdl_init = ", sdl_init)
 
-    def NULL: int = 0;
-
     def name: str = "hello\0";
     def window: *int = SDL_CreateWindow(name as *char, 10, 10, 800, 600, 8196);
 
-    write("window = ", window)
+    write("window = ", window);
+
+    def NULL: int = 0;
 
     if window == NULL as *int {
         def error: str = SDL_GetError();
         write(error)
+        return;
     }
+
+    def renderer: *int = SDL_CreateRenderer(window, 0, SDL_RENDERER_ACCELERATED);
+
+    write("renderer = ", renderer);
 
     def FPS: int = 60;
 
@@ -42,6 +66,8 @@ fun main() {
     def b: int = SDL_GetTicks();
 
     def delta: int = 0;
+
+    def ret: int = 0;
 
     loop {
         if quit == 1 {
@@ -55,15 +81,28 @@ fun main() {
             continue
         }
 
-        def x: int = SDL_PollEvent(event);
+        ret = SDL_PollEvent(event);
 
-        if x != 0 {
-            write(*(event as *int32))
-
+        if ret != 0 {
             if *(event as *int32) == SDL_QUIT {
                 quit = 1;
             }
         }
+
+        def rect: SDL_Rect = SDL_Rect {
+            x: 100 + 45,
+            y: 100,
+            w: 50,
+            h: 50,
+        };
+
+        ret = SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+
+        ret = SDL_RenderFillRect(renderer, &rect);
+
+        SDL_RenderPresent(renderer);
+
+        b = SDL_GetTicks();
     }
 }
 
