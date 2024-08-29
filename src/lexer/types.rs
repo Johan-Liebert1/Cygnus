@@ -229,10 +229,27 @@ impl VarType {
 
         return match (self, other) {
             // No matter what the op is, the result will always be an integer
+            // and always we type cast to the higher int
             (Int, Int) => Int,
-            (Int8, Int8) => Int8,
-            (Int16, Int16) => Int16,
+            (Int, Int32) => Int,
+            (Int, Int16) => Int,
+            (Int, Int8) => Int,
+
+            (Int32, Int) => Int,
             (Int32, Int32) => Int32,
+            (Int32, Int16) => Int32,
+            (Int32, Int8) => Int32,
+
+            (Int16, Int) => Int,
+            (Int16, Int32) => Int32,
+            (Int16, Int16) => Int16,
+            (Int16, Int8) => Int16,
+
+            (Int8, Int) => Int,
+            (Int8, Int32) => Int32,
+            (Int8, Int16) => Int16,
+            (Int8, Int8) => Int8,
+
 
             // No matter what the op is, the result will always be an float
             (Float, Float) => Float,
