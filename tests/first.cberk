@@ -29,11 +29,42 @@ extern fun SDL_RenderClear(renderer: *renderer) -> int;
 mem event 256
 
 def SDL_QUIT: int32 = 256;
+def SDL_KEYDOWN: int32 = 0x300
+
+def SDL_ESC: int32 = 27;
+def SDLK_a: int32 = 97;
+def SDLK_b: int32 = 98;
+def SDLK_c: int32 = 99;
+def SDLK_d: int32 = 100;
+def SDLK_e: int32 = 101;
+def SDLK_f: int32 = 102;
+def SDLK_g: int32 = 103;
+def SDLK_h: int32 = 104;
+def SDLK_i: int32 = 105;
+def SDLK_j: int32 = 106;
+def SDLK_k: int32 = 107;
+def SDLK_l: int32 = 108;
+def SDLK_m: int32 = 109;
+def SDLK_n: int32 = 110;
+def SDLK_o: int32 = 111;
+def SDLK_p: int32 = 112;
+def SDLK_q: int32 = 113;
+def SDLK_r: int32 = 114;
+def SDLK_s: int32 = 115;
+def SDLK_t: int32 = 116;
+def SDLK_u: int32 = 117;
+def SDLK_v: int32 = 118;
+def SDLK_w: int32 = 119;
+def SDLK_x: int32 = 120;
+def SDLK_y: int32 = 121;
+def SDLK_z: int32 = 122;
 
 def SDL_RENDERER_SOFTWARE: int32 = 0x00000001;      -- < The renderer is a software fallback */
 def SDL_RENDERER_ACCELERATED: int32 = 0x00000002;   -- < The renderer uses hardware
 def SDL_RENDERER_PRESENTVSYNC: int32 = 0x00000004;  -- < Present is synchronized
 def SDL_RENDERER_TARGETTEXTURE: int32 = 0x00000008;  -- < The renderer supports
+
+def RECT_SPEED: int32 = 10;
 
 fun gol() {
     def array: int[50];
@@ -84,8 +115,6 @@ fun main() {
         a = SDL_GetTicks();
         delta += (a - b);
 
-        write(delta)
-
         if (delta < FPS) {
             continue
         }
@@ -98,15 +127,26 @@ fun main() {
         if ret != 0 {
             if *(event as *int32) == SDL_QUIT {
                 quit = 1;
+            } elif *(event as *int32) == SDL_KEYDOWN {
+                def keysym: *int32 = event + 4 * 5;
+
+                if *keysym == SDL_ESC or *keysym == SDLK_q {
+                    quit = 1;
+                } elif *keysym == SDLK_j {
+                    rect.y = rect.y - RECT_SPEED
+                } elif *keysym == SDLK_k {
+                    rect.y = rect.y + RECT_SPEED
+                }  elif *keysym == SDLK_h {
+                    rect.x = rect.x - RECT_SPEED
+                } elif *keysym == SDLK_l {
+                    rect.x = rect.x + RECT_SPEED
+                }
             }
         }
 
         ret = SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 
         ret = SDL_RenderFillRect(renderer, &rect);
-
-        rect.x += 1;
-        rect.y += 1;
 
         SDL_RenderPresent(renderer);
 

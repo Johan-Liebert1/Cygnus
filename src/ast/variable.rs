@@ -244,10 +244,6 @@ impl AST for Variable {
         if self.store_address {
             self.result_type = VarType::Ptr(Box::new(self.var_type.clone()))
         }
-
-        if self.var_name == "event" {
-            trace!("Token: {:?}, var_type: {}, result_type: {}", self.token, self.var_type, self.result_type);
-        }
     }
 
     fn get_node(&self) -> ASTNodeEnum {

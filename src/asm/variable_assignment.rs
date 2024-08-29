@@ -224,20 +224,23 @@ impl ASM {
         // var = variable from call stack
         match &ar_var.borrow().var_type {
             VarType::Struct(name, members) => {
+
                 // Assignment to the struct variable
                 if variable_assigned_to.member_access.len() == 0 {
                     self.assign_local_struct(ar_var.borrow().offset, struct_assign_order, name, call_stack)
                 } else {
+                    // trace!("\n\nvariable_assigned_to: {variable_assigned_to:#?}");
+
                     match &variable_assigned_to.result_type {
                         VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                             let borrowed = members.borrow();
 
-                            let member_offset = borrowed
+                            let member = borrowed
                                 .iter()
                                 .find(|x| x.name == variable_assigned_to.member_access[0])
                                 .unwrap();
 
-                            self.assign_local_number(member_offset.offset, &variable_assigned_to.result_type)
+                            self.assign_local_number(ar_var.borrow().offset - member.offset, &variable_assigned_to.result_type)
                         }
 
                         v => unimplemented!("Assignment to var_type '{}' inside struct not handled", v),

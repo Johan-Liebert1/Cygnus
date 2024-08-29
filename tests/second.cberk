@@ -1,42 +1,17 @@
-mem event 256
-
-def SDL_QUIT: int32 = 256;
-
-fun update_event(a: int) -> int {
-    if a == 10 {
-        def m: *int32 = event as *int32;
-        *m = 256
-        return 1
-    }
-
-    return 0
+struct Rect {
+    x: int,
+    y: int,
 }
 
 fun main() {
-    def a: int = 0;
+    def r: Rect = Rect { x: 20, y: 30 };
 
-    def quit: int = 0;
+    write(r.x, r.y)
 
-    def ret: int;
+    r.x = r.x + 15;
+    r.y = r.y + 15;
 
-    loop {
-        if quit == 1 {
-            break;
-        }
-
-        a += 1
-
-        ret = update_event(a)
-
-        if ret != 0 {
-            if *(event as *int32) == SDL_QUIT {
-                quit = 1;
-            }
-        }
-    }
-
-    write("after loop\n")
-    write("a = ", a)
+    write(r.x, r.y)
 }
 
 main()
