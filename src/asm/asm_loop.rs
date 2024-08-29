@@ -157,9 +157,7 @@ impl ASM {
     }
 
     pub fn loop_continue(&mut self, loop_number: usize) {
-        // encountered a break, so an unconditional jump to the end of the loop
-        // self.num_loops - 1 as we increment the loop number as soon as we enter the loop
-        // and break statement is outside of the loop
+        // encountered a continue, so an unconditional jump to the condition computer section of the loop
         let instructions = vec![
             format!(";; --- continue ----"),
             format!("jmp .loop_{loop_number}_end_start"),
