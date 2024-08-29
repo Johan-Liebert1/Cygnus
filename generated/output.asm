@@ -20,6 +20,7 @@ section .data
 	extern SDL_RenderFillRect
 	extern SDL_RenderPresent
 	extern SDL_DestroyRenderer
+	extern SDL_RenderClear
 	SDL_QUIT dq 0
 	SDL_RENDERER_SOFTWARE dq 0
 	SDL_RENDERER_ACCELERATED dq 0
@@ -29,9 +30,6 @@ section .data
 	string_1 db 104,101,108,108,111,0
 	string_2 db 119,105,110,100,111,119,32,61,32
 	string_3 db 114,101,110,100,101,114,101,114,32,61,32
-	string_4 db 98,114,101,97,107,105,110,103,10
-	string_5 db 114,101,116,32,61,32
-	string_6 db 111,117,116,115,105,100,101,32,116,104,101,32,108,111,111,112,10
 
 section .text
 	global _start
@@ -370,20 +368,6 @@ _main:
 	;; if the comparison value is false, jump to the next label altogether
 	je .if_end_1
 	
-	mov rax, string_4
-	push rax
-	push 9
-	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
-	syscall
-	
 	;; --- break ----
 	jmp .loop_end_0
 	
@@ -421,6 +405,13 @@ _main:
 	mov rax, [rbp - 96]
 	push rax
 	
+	pop rax
+	call _printRAX
+	
+	xor rax, rax
+	mov rax, [rbp - 96]
+	push rax
+	
 	xor rax, rax
 	mov rax, [rbp - 64]
 	push rax
@@ -450,6 +441,42 @@ _main:
 	jmp .if_end_2
 	.if_end_2:
 	
+	push 255
+	
+	push 0
+	
+	push 0
+	
+	push 0
+	
+	mov rax, [rbp - 56]
+	push rax
+	
+	pop rdi
+	pop rsi
+	pop rdx
+	pop rcx
+	pop r8
+	call SDL_SetRenderDrawColor
+	push rax
+	
+	;; assign_local_number of type Integer
+	xor rax, rax
+	pop rax
+	mov [rbp - 104], rax
+	
+	mov rax, [rbp - 56]
+	push rax
+	
+	pop rdi
+	call SDL_RenderClear
+	push rax
+	
+	;; assign_local_number of type Integer
+	xor rax, rax
+	pop rax
+	mov [rbp - 104], rax
+	
 	xor rax, rax
 	mov rax, event
 	push rax
@@ -462,27 +489,6 @@ _main:
 	xor rax, rax
 	pop rax
 	mov [rbp - 104], rax
-	
-	mov rax, string_5
-	push rax
-	push 6
-	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
-	syscall
-	
-	xor rax, rax
-	mov rax, [rbp - 104]
-	push rax
-	
-	pop rax
-	call _printRAX
 	
 	xor rax, rax
 	mov rax, [rbp - 104]
@@ -593,6 +599,20 @@ _main:
 	pop rax
 	mov [rbp - 104], rax
 	
+	push 1
+	
+	mov rax, [rbp - 120]
+	pop rbx
+	add rax, rbx
+	mov [rbp - 120], rax
+	
+	push 1
+	
+	mov rax, [rbp - 120]
+	pop rbx
+	add rax, rbx
+	mov [rbp - 120], rax
+	
 	mov rax, [rbp - 56]
 	push rax
 	
@@ -610,20 +630,6 @@ _main:
 	.loop_0_end_start:
 	jmp .loop_0
 	.loop_end_0:
-	
-	mov rax, string_6
-	push rax
-	push 17
-	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
-	syscall
 	
 	mov rax, [rbp - 56]
 	push rax

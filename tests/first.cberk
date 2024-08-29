@@ -23,6 +23,7 @@ extern fun SDL_SetRenderDrawColor(renderer: *renderer, r: int, g: int, b: int, a
 extern fun SDL_RenderFillRect(renderer: *renderer, dst_rect: *SDL_Rect) -> int;
 extern fun SDL_RenderPresent(renderer: *renderer);
 extern fun SDL_DestroyRenderer(renderer: *renderer);
+extern fun SDL_RenderClear(renderer: *renderer) -> int;
 
 -- The SDL_Event
 mem event 256
@@ -83,9 +84,14 @@ fun main() {
         a = SDL_GetTicks();
         delta += (a - b);
 
+        write(delta)
+
         if (delta < FPS) {
             continue
         }
+
+        ret = SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        ret = SDL_RenderClear(renderer);
 
         ret = SDL_PollEvent(event);
 
@@ -98,6 +104,9 @@ fun main() {
         ret = SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 
         ret = SDL_RenderFillRect(renderer, &rect);
+
+        rect.x += 1;
+        rect.y += 1;
 
         SDL_RenderPresent(renderer);
 
