@@ -373,17 +373,17 @@ _main:
 	
 	push 400
 	
-	mov rax, [rbp - 31]
+	mov rax, [rbp - 23]
 	pop rbx
 	add rax, rbx
-	mov [rbp - 31], rax
+	mov [rbp - 23], rax
 	
 	push 20
 	
-	mov rax, [rbp - 31]
+	mov rax, [rbp - 17]
 	pop rbx
 	add rax, rbx
-	mov [rbp - 31], rax
+	mov [rbp - 17], rax
 	
 	mov rax, string_12
 	push rax
