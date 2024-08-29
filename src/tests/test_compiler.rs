@@ -151,6 +151,12 @@ fn basic_struct() {
 }
 
 #[test]
+fn struct_assignment() {
+    let (stdout_str, _, file_result) = get_stdout_and_actual_result("struct_assignment.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
 fn assignment() {
     let (stdout_str, _, file_result) = get_stdout_and_actual_result("assignment.cberk");
     assert_eq!(stdout_str, file_result);
@@ -203,7 +209,6 @@ fn function_pointers_as_args() {
     let (stdout_str, _, file_result) = get_stdout_and_actual_result("func_ptrs_as_args.cberk");
     assert_eq!(stdout_str, file_result);
 }
-
 
 #[test]
 fn decleration_only() {

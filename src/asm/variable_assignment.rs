@@ -351,6 +351,58 @@ impl ASM {
         }
     }
 
+    fn handle_local_plus_minus_eq_assignment_integer(&mut self, op: &str, offset: usize) {
+        self.extend_current_label(vec![
+            format!("mov rax, [rbp - {}]", offset),
+            format!("pop rbx"),
+            format!("{} rax, rbx", op),
+            format!("mov [rbp - {}], rax", offset),
+        ])
+    }
+
+    fn handle_local_plus_minus_eq_assignment(&mut self, op: &str, ar_var: &Rc<RefCell<Variable>>, variable_assigned_to: &Variable) {
+        let borrowed_ar_var = ar_var.borrow();
+
+        match &borrowed_ar_var.var_type {
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                self.handle_local_plus_minus_eq_assignment_integer(op, borrowed_ar_var.offset)
+            }
+
+            VarType::Struct(name, members) => {
+                if variable_assigned_to.member_access.len() == 0 {
+                    trace!("{borrowed_ar_var:#?}");
+
+                    unreachable!(
+                        "Found '{}=' operator for a struct. This should've been caught in the semantic analysis step.",
+                        if op == "add" { "+" } else { "-" }
+                    )
+                }
+
+                let member = members.borrow();
+                let member = member
+                    .iter()
+                    .find(|x| x.name == variable_assigned_to.member_access[0])
+                    .unwrap();
+
+                match variable_assigned_to.result_type {
+                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                        self.handle_local_plus_minus_eq_assignment_integer(op, borrowed_ar_var.offset - member.offset)
+                    }
+
+                    _ => unimplemented!(""),
+                }
+            }
+
+            VarType::Str => todo!(),
+            VarType::Float => todo!(),
+            VarType::Char => todo!(),
+            VarType::Ptr(_) => todo!(),
+            VarType::Array(_, _) => todo!(),
+            VarType::Function(_, _, _) => todo!(),
+            VarType::Unknown => todo!(),
+        }
+    }
+
     /// pops the top most element on the stack and assigns it to the variable
     pub fn variable_assignment(
         &mut self,
@@ -360,7 +412,7 @@ impl ASM {
         times_dereferenced: usize,
         array_access_index: &Option<ASTNode>,
         struct_assign_order: Option<Vec<&String>>,
-        // This is not from the call stack. Only required for structs.
+        // This is not from the call stack. Only required for structs and arrays for member access
         // TODO: Fix the inconsistency between call_stack variables and actual variables
         variable_assigned_to: &Variable,
     ) {
@@ -410,25 +462,9 @@ impl ASM {
                             array_access_index,
                         ),
 
-                        AssignmentTypes::PlusEquals => self.extend_current_label(
-                            [
-                                format!("mov rax, [rbp - {}]", ar_var.borrow().offset),
-                                format!("pop rbx"),
-                                format!("add rax, rbx"),
-                                format!("mov [rbp - {}], rax", ar_var.borrow().offset),
-                            ]
-                            .into(),
-                        ),
+                        AssignmentTypes::PlusEquals => self.handle_local_plus_minus_eq_assignment("add", ar_var, variable_assigned_to),
 
-                        AssignmentTypes::MinusEquals => self.extend_current_label(
-                            [
-                                format!("mov rax, [rbp - {}]", ar_var.borrow().offset),
-                                format!("pop rbx"),
-                                format!("sub rax, rbx"),
-                                format!("mov [rbp - {}], rax", ar_var.borrow().offset),
-                            ]
-                            .into(),
-                        ),
+                        AssignmentTypes::MinusEquals => self.handle_local_plus_minus_eq_assignment("sub", ar_var, variable_assigned_to),
                     },
                 }
             }
