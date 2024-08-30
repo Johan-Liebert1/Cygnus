@@ -120,11 +120,13 @@ impl AST for FunctionCall {
             }
 
             FUNC_SYSCALL => {
-                for arg in self.arguments.iter().rev() {
+                for (index, arg) in self.arguments.iter().enumerate() {
                     arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+                    asm.func_syscall_add_arg(index);
                 }
 
-                asm.func_syscall(self.arguments.len());
+                asm.func_syscall_call();
+
             }
 
             // This should be caught in the semantica analysis step

@@ -197,15 +197,19 @@ impl ASM {
         }
     }
 
-    pub fn func_syscall(&mut self, num_args: usize) {
+    pub fn func_syscall_add_arg(&mut self, arg_num: usize) {
         let mut instructions = vec![];
 
-        for i in 0..num_args {
-            let stack_member = self.stack_pop().unwrap();
-            instructions.push(format!("mov {}, {}", SYSCALL_ARGS_REGS[i], stack_member));
-        }
+        let stack_member = self.stack_pop().unwrap();
+        instructions.push(format!("mov {}, {}", SYSCALL_ARGS_REGS[arg_num], stack_member));
 
-        instructions.push("syscall".into());
+        self.extend_current_label(instructions);
+    }
+
+    pub fn func_syscall_call(&mut self) {
+        // instructions.push("syscall".into());
+
+        self.add_to_current_label("syscall".into());
 
         // TODO: Remove
         //
@@ -213,7 +217,6 @@ impl ASM {
 
         self.stack_push("rax".into());
 
-        self.extend_current_label(instructions);
     }
 
     pub fn func_write_var(&mut self, var: &Variable, call_stack: &CallStack) {

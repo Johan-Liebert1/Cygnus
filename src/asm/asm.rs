@@ -1,5 +1,7 @@
 use core::panic;
 
+use crate::{lexer::registers::{Register, ALL_REGISTERS}, trace};
+
 #[derive(Debug)]
 pub struct Label {
     pub name: String,
@@ -19,10 +21,10 @@ pub struct ASM {
     pub num_ifs: usize,
 
     stack: Vec<String>,
-
     function_argument_number: Option<usize>,
-
     current_label: String,
+
+    used_regsiters: Vec<Register>,
 }
 
 impl Default for ASM {
@@ -62,6 +64,8 @@ impl Default for ASM {
 
             function_argument_number: None,
             stack: vec![],
+
+            used_regsiters: vec![],
         }
     }
 }
@@ -144,5 +148,43 @@ impl ASM {
 
     pub fn stack_extend(&mut self, to_push: Vec<String>) {
         self.stack.extend(to_push);
+    }
+
+    pub fn lock_register(&mut self, reg_name: Register) {
+        let idx = self.used_regsiters.iter().find(|x| **x == reg_name);
+
+        match idx {
+            Some(idx) => {
+                self.used_regsiters.push(reg_name);
+            }
+
+            None => {
+                panic!("Register {reg_name} already in list.")
+            }
+        }
+    }
+
+    pub fn unlock_register(&mut self, reg_name: Register) {
+        let idx = self.used_regsiters.iter().enumerate().find(|x| *x.1 == reg_name);
+
+        match idx {
+            Some((idx, _)) => {
+                self.used_regsiters.remove(idx);
+            }
+
+            None => {
+                panic!("Register {reg_name} not found in list.")
+            }
+        }
+    }
+
+    pub fn get_free_register(&self) -> Register {
+        for reg in ALL_REGISTERS {
+            if !self.used_regsiters.contains(&reg) {
+                return reg;
+            }
+        }
+
+        panic!("Ran out of registers");
     }
 }

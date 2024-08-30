@@ -6,19 +6,11 @@
 // 8-bit: r8b to r15b (lower 8 bits)
 
 use core::panic;
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
 use super::types::VarType;
 
-const RAX: &str = "rax";
-const RBX: &str = "rbx";
-const RCX: &str = "rcx";
-const RDX: &str = "rdx";
-const RSI: &str = "rsi";
-const RDI: &str = "rdi";
-const RBP: &str = "rbp";
-
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum Register {
     RAX,
     RBX,
@@ -27,7 +19,25 @@ pub enum Register {
     RSI,
     RDI,
     RBP,
+    R8,
+    R9,
+    R10,
+    R11,
 }
+
+pub const ALL_REGISTERS: [Register; 11] = [
+    Register::RAX,
+    Register::RBX,
+    Register::RCX,
+    Register::RDX,
+    Register::RSI,
+    Register::RDI,
+    Register::RBP,
+    Register::R8,
+    Register::R9,
+    Register::R10,
+    Register::R11,
+];
 
 impl Display for Register {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -39,9 +49,19 @@ impl Display for Register {
             Register::RSI => "rsi",
             Register::RDI => "rdi",
             Register::RBP => "rbp",
+            Register::R8 => "r8",
+            Register::R9 => "r9",
+            Register::R10 => "r10",
+            Register::R11 => "r11",
         };
 
         write!(f, "{}", s)
+    }
+}
+
+impl Debug for Register {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self)
     }
 }
 
@@ -90,7 +110,7 @@ pub fn get_register_name_for_bits(register: &Register, bits: u8) -> &'static str
             _ => "rbp",
         },
 
-        _ => panic!(),
+        _ => todo!(),
     };
 }
 

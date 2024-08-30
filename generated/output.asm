@@ -4,9 +4,6 @@ section .bss
 	digitSpace resb 100
 	digitSpacePos resb 8
 	argc resb 8
-	file resb 4096
-	lower_char_occurances resb 208
-	upper_char_occurances resb 208
 
 section .data
 	;; For floating point operations
@@ -34,14 +31,18 @@ _main:
 	mov QWORD [rbp - 16], string_0
 	
 	
+	mov rax, 2
 	
 	mov rax, [rbp - 16]
 	
-	
-	mov rax, 2
 	mov rdi, rax
+	
+	
 	mov rsi, 0
+	
+	
 	mov rdx, 0
+	
 	syscall
 	
 	;; assign_local_number of type Integer
