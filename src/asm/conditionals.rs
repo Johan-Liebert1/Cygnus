@@ -19,11 +19,21 @@ impl ASM {
             ConditionalJumpTo::Else => format!(".else_{}", if_num),
         };
 
+        // let instructions = vec![
+        //     // if label
+        //     format!(".if_{}:", if_num),
+        //     format!("pop rcx"),
+        //     format!("cmp rcx, 0"),
+        //     format!(";; if the comparison value is false, jump to the next label altogether"),
+        //     format!("je {}", jump_to_label),
+        // ];
+
+        let stack_member = self.stack.pop().unwrap();
+
         let instructions = vec![
             // if label
             format!(".if_{}:", if_num),
-            format!("pop rcx"),
-            format!("cmp rcx, 0"),
+            format!("cmp {stack_member}, 0"),
             format!(";; if the comparison value is false, jump to the next label altogether"),
             format!("je {}", jump_to_label),
         ];
@@ -61,11 +71,21 @@ impl ASM {
             ConditionalJumpTo::Else => format!(".else_{}", if_num),
         };
 
+        // let instructions = vec![
+        //     // elif label
+        //     format!(".elif_{}_{}:", if_num, elif_number),
+        //     format!("pop rcx"),
+        //     format!("cmp rcx, 0"),
+        //     format!(";; if the comparison value is false, jump to the next label altogether"),
+        //     format!("je {}", jump_to_label),
+        // ];
+
+        let stack_member = self.stack.pop().unwrap();
+
         let instructions = vec![
-            // elif label
+            // if label
             format!(".elif_{}_{}:", if_num, elif_number),
-            format!("pop rcx"),
-            format!("cmp rcx, 0"),
+            format!("cmp {stack_member}, 0"),
             format!(";; if the comparison value is false, jump to the next label altogether"),
             format!("je {}", jump_to_label),
         ];

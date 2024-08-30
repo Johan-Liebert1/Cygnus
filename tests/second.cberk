@@ -1,5 +1,9 @@
 fun main() {
-    write((6 + 2) * 3 - 6 / 2);
+    if 0 < 6 {
+        write("0 < 6")
+    } else {
+        write("0 > 6")
+    }
 }
 
 main()
