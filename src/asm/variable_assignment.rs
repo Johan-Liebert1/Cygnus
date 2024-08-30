@@ -33,7 +33,6 @@ impl ASM {
         //     format!("mov [rbp - {}], rax", var_offset),
         // ]);
 
-
         // pop the string pointer into rax
         // the string len should be in rbx as string len is pushed
         // last
@@ -84,6 +83,9 @@ impl ASM {
 
         match array_access_index {
             Some(index) => {
+                let index = self.stack.pop().unwrap();
+                let value = self.stack.pop().unwrap();
+
                 // we visit the right side first and then the left
                 // side. So the array index is at topand the
                 // actual value to set is at the top - 1 of the stack
@@ -93,8 +95,10 @@ impl ASM {
                     // rcx stores the index, rdx has the actual
                     // value
                     format!(";; rbx stores the index, rcx has the actual value"),
-                    format!("pop rbx"),                                       // rcx has 1
-                    format!("pop rcx"),                                       // rdx has 10
+                    // format!("pop rbx"),                                       // rcx has 1
+                    // format!("pop rcx"),                                       // rdx has 10
+                    format!("mov rbx, {}", index),                            // rcx has 1
+                    format!("mov rcx, {}", value),                            // rdx has 10
                     format!("mov rax, {}", type_.get_underlying_type_size()), // rax = 8
                     format!("mul rbx"),                                       // now rax has = rax * rbx
                     // = 1 * 8 = 8
@@ -107,9 +111,15 @@ impl ASM {
             None => {
                 // Assignment to the array variable itself
                 for i in 0..*size {
+                    let val = self.stack.pop().unwrap();
                     instructions.extend([
-                        format!("pop rax"),
-                        format!("mov [rbp - {}], rax", var_offset - type_.get_underlying_type_size() * i),
+                        // format!("pop rax"),
+                        format!(
+                            "mov {} [rbp - {}], {}",
+                            type_.get_operation_size(),
+                            var_offset - type_.get_underlying_type_size() * i,
+                            val
+                        ),
                     ]);
                 }
             }
@@ -153,7 +163,13 @@ impl ASM {
                 // mov [rbx], rax
 
                 instructions.push(format!(";; assign_local_pointer of type {}", t));
-                instructions.push(format!("pop rax"));
+
+                // TODO: Remove
+                //
+                // instructions.push(format!("pop rax"));
+
+                let stack_member = self.stack.pop().unwrap();
+                instructions.push(format!("mov rax, {stack_member}"));
 
                 if is_ptr_deref {
                     instructions.push(format!("mov rbx, [rbp - {}]", var_offset));
@@ -277,10 +293,14 @@ impl ASM {
             }
 
             VarType::Float => {
+                let stack_member = self.stack.pop().unwrap();
+
                 self.extend_current_label(vec![
                     format!(";; For assignemt of float var name '{}'", ar_var.borrow().var_name),
                     // rax contains the memory address of the floating point number
-                    format!("pop rax"),
+                    // TODO: Remove
+                    // format!("pop rax"),
+                    format!("mov rax, {}", stack_member),
                     format!("mov [rbp - {}], rax", ar_var.borrow().offset),
                 ])
             }
@@ -288,6 +308,8 @@ impl ASM {
             VarType::Str => self.assign_local_string(ar_var.borrow().offset),
 
             VarType::Char => {
+                let stack_member = self.stack.pop().unwrap();
+
                 // TODO: Update this
                 //
                 // pop the string pointer into rax
@@ -296,7 +318,8 @@ impl ASM {
                 // Treat a character as a string with length of 1
                 instructions.extend([
                     format!("mov rbx, 1"),
-                    format!("pop rax"),
+                    // format!("pop rax"),
+                    format!("mov rax, {}", stack_member),
                     format!("mov [rbp - {}], rax", ar_var.borrow().offset),
                 ]);
 
@@ -333,20 +356,35 @@ impl ASM {
                 // pop the string pointer into rax
                 // the string len should be in rbx as string len is pushed
                 // last
-                instructions.extend([format!("pop rbx"), format!("pop rax")]);
+
+                // TODO: Remove
+                // instructions.extend([format!("pop rbx"), format!("pop rax")]);
+                
+                let str_len = self.stack.pop().unwrap();
+                let str_addr = self.stack.pop().unwrap();
+
+                instructions.extend([
+                    format!("mov rbx, {}", str_len),
+                    format!("mov rax, {}", str_addr)
+                ]);
 
                 is_string = true;
             }
 
             VarType::Ptr(ptr_var_type) => {
-                trace!("{}", ar_var.borrow().var_type);
+                let stack_member = self.stack.pop().unwrap();
 
                 match **ptr_var_type {
                     VarType::Struct(_, _) => todo!(),
                     VarType::Int => {
                         // Store whatever's on the top of the stack into
                         // this memory location
-                        instructions.extend([format!("pop rax"), format!("mov rbx, {}", ar_var.borrow().var_name)]);
+                        instructions.extend([
+                            // TODO: Remove
+                            // format!("pop rax"),
+                            format!("mov rax, {}", stack_member),
+                            format!("mov rbx, {}", ar_var.borrow().var_name)
+                        ]);
                         instructions.extend(std::iter::repeat(format!("mov rbx, [rbx]")).take(times_dereferenced));
 
                         instructions.push(format!("mov rbx, rax"));
@@ -375,9 +413,16 @@ impl ASM {
     }
 
     fn handle_local_plus_minus_eq_assignment_integer(&mut self, op: &str, offset: usize) {
+        let stack_member = self.stack.pop().unwrap();
+
         self.extend_current_label(vec![
             format!("mov rax, [rbp - {}]", offset),
-            format!("pop rbx"),
+
+            // TODO: Remove
+            //
+            // format!("pop rbx"),
+
+            format!("mov rbx, {}", stack_member),
             format!("{} rax, rbx", op),
             format!("mov [rbp - {}], rax", offset),
         ])

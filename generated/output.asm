@@ -210,26 +210,25 @@ _memset:
 	.loop_0:
 	
 	mov rax, [rbp - 8]
-	push rax
 	
 	;; Plus get the two operands from the stack
-	mov rbx, 63
+	mov rbx, rax
 	mov rax, [rbp - 32]
 	add rax, rbx
 	push rax
 	
 	;; assign_local_pointer of type Integer
-	pop rax
+	mov rax, rax
 	mov [rbp - 64], rax
 	
 	;; assign_local_pointer of type Integer
-	pop rax
+	mov rax, [rbp - 16]
 	mov rbx, [rbp - 64]
 	mov [rbx], rax
 	
 	
 	mov rax, [rbp - 32]
-	pop rbx
+	mov rbx, 8
 	add rax, rbx
 	mov [rbp - 32], rax
 	
@@ -266,10 +265,9 @@ _strlen_cstr:
 	.loop_1:
 	
 	mov rax, [rbp - 8]
-	push rax
 	
 	;; Plus get the two operands from the stack
-	mov rbx, 8
+	mov rbx, rax
 	mov rax, [rbp - 16]
 	add rax, rbx
 	;; binary op ptr -> char
@@ -298,7 +296,7 @@ _strlen_cstr:
 	
 	
 	mov rax, [rbp - 16]
-	pop rbx
+	mov rbx, 1
 	add rax, rbx
 	mov [rbp - 16], rax
 	
@@ -326,18 +324,17 @@ _strlen:
 	mov [rbp - 8], rdi
 	
 	mov rax, [rbp - 8]
-	push rax
 	
 	
 	;; Plus get the two operands from the stack
-	mov rbx, [rbp - 16]
+	mov rbx, rax
 	mov rax, 8
 	add rax, rbx
 	;; binary op ptr -> char
 	push rax
 	
 	;; assign_local_pointer of type String
-	pop rax
+	mov rax, rax
 	mov [rbp - 16], rax
 	
 	;; Dereferencing variable len
@@ -345,8 +342,6 @@ _strlen:
 	mov rbx, [rbx]
 	xor rax, rax
 	mov rax, rbx
-	push rax
-	;; Finish dereferencing variable len
 	
 	;; assign_local_number of type Integer
 	mov QWORD [rbp - 24], rax
@@ -377,10 +372,8 @@ _read_file_into_memory:
 	
 	
 	mov rax, [rbp - 24]
-	push rax
 	
 	mov rax, [OPEN_SYSCALL]
-	push rax
 	
 	pop rax
 	pop rdi
@@ -390,7 +383,7 @@ _read_file_into_memory:
 	push rax
 	
 	;; assign_local_number of type Integer
-	mov QWORD [rbp - 32], 0
+	mov QWORD [rbp - 32], rax
 	
 	
 	mov rax, 1
@@ -425,7 +418,6 @@ _read_file_into_memory:
 	.if_end_2:
 	
 	mov rax, [rbp - 8]
-	push rax
 	
 	
 	pop rax
@@ -439,7 +431,6 @@ _read_file_into_memory:
 	mov QWORD [rbp - 40], 0
 	
 	mov rax, [CLOSE_SYSCALL]
-	push rax
 	
 	pop rax
 	pop rdi
@@ -493,7 +484,7 @@ _write_int_into_mem:
 	
 	
 	mov rax, [rbp - 40]
-	pop rbx
+	mov rbx, 1
 	add rax, rbx
 	mov [rbp - 40], rax
 	
@@ -545,16 +536,15 @@ _write_int_into_mem:
 	mov QWORD [rbp - 56], rax
 	
 	mov rax, [rbp - 8]
-	push rax
 	
 	;; Plus get the two operands from the stack
-	mov rbx, 1
+	mov rbx, rax
 	mov rax, [rbp - 48]
 	add rax, rbx
 	push rax
 	
 	;; assign_local_pointer of type Integer8
-	pop rax
+	mov rax, rax
 	mov [rbp - 64], rax
 	
 	;; Plus get the two operands from the stack
@@ -563,7 +553,7 @@ _write_int_into_mem:
 	add rax, rbx
 	
 	;; assign_local_pointer of type Integer8
-	pop rax
+	mov rax, rax
 	mov rbx, [rbp - 64]
 	mov [rbx], al
 	
@@ -580,7 +570,7 @@ _write_int_into_mem:
 	
 	
 	mov rax, [rbp - 48]
-	pop rbx
+	mov rbx, 1
 	sub rax, rbx
 	mov [rbp - 48], rax
 	
@@ -673,21 +663,19 @@ _string_ends_with:
 	.loop_4:
 	
 	mov rax, [rbp - 8]
-	push rax
 	
 	;; Plus get the two operands from the stack
-	mov rbx, 0
+	mov rbx, rax
 	mov rax, [rbp - 40]
 	add rax, rbx
 	;; binary op ptr -> char
 	push rax
 	
 	;; assign_local_pointer of type Character
-	pop rax
+	mov rax, rax
 	mov [rbp - 56], rax
 	
 	mov rax, [rbp - 24]
-	push rax
 	
 	;; Plus get the two operands from the stack
 	mov rbx, rax
@@ -697,22 +685,20 @@ _string_ends_with:
 	push rax
 	
 	;; assign_local_pointer of type Character
-	pop rax
+	mov rax, rax
 	mov [rbp - 64], rax
 	
 	mov rbx, [rbp - 56]
 	xor rax, rax
 	mov al, [rbx]
-	push rax
 	
 	mov rbx, [rbp - 64]
 	xor rax, rax
 	mov al, [rbx]
-	push rax
 	
 	;; We pop in the opposite order of comparison as we push onto the stack
 	mov rbx, rax
-	mov rax, [rbp - 40]
+	mov rax, rax
 	cmp rax, rbx
 	setne al
 	
@@ -733,13 +719,13 @@ _string_ends_with:
 	
 	
 	mov rax, [rbp - 40]
-	pop rbx
+	mov rbx, 1
 	sub rax, rbx
 	mov [rbp - 40], rax
 	
 	
 	mov rax, [rbp - 48]
-	pop rbx
+	mov rbx, 1
 	sub rax, rbx
 	mov [rbp - 48], rax
 	
@@ -828,21 +814,19 @@ _string_starts_with:
 	.loop_5:
 	
 	mov rax, [rbp - 8]
-	push rax
 	
 	;; Plus get the two operands from the stack
-	mov rbx, 0
+	mov rbx, rax
 	mov rax, [rbp - 40]
 	add rax, rbx
 	;; binary op ptr -> char
 	push rax
 	
 	;; assign_local_pointer of type Character
-	pop rax
+	mov rax, rax
 	mov [rbp - 56], rax
 	
 	mov rax, [rbp - 24]
-	push rax
 	
 	;; Plus get the two operands from the stack
 	mov rbx, rax
@@ -852,18 +836,16 @@ _string_starts_with:
 	push rax
 	
 	;; assign_local_pointer of type Character
-	pop rax
+	mov rax, rax
 	mov [rbp - 64], rax
 	
 	mov rbx, [rbp - 56]
 	xor rax, rax
 	mov al, [rbx]
-	push rax
 	
 	mov rbx, [rbp - 64]
 	xor rax, rax
 	mov al, [rbx]
-	push rax
 	
 	;; We pop in the opposite order of comparison as we push onto the stack
 	mov rbx, rax
@@ -888,13 +870,13 @@ _string_starts_with:
 	
 	
 	mov rax, [rbp - 40]
-	pop rbx
+	mov rbx, 1
 	add rax, rbx
 	mov [rbp - 40], rax
 	
 	
 	mov rax, [rbp - 48]
-	pop rbx
+	mov rbx, 1
 	add rax, rbx
 	mov [rbp - 48], rax
 	
@@ -983,21 +965,19 @@ _string_eq:
 	.loop_6:
 	
 	mov rax, [rbp - 8]
-	push rax
 	
 	;; Plus get the two operands from the stack
-	mov rbx, 0
+	mov rbx, rax
 	mov rax, [rbp - 40]
 	add rax, rbx
 	;; binary op ptr -> char
 	push rax
 	
 	;; assign_local_pointer of type Character
-	pop rax
+	mov rax, rax
 	mov [rbp - 56], rax
 	
 	mov rax, [rbp - 24]
-	push rax
 	
 	;; Plus get the two operands from the stack
 	mov rbx, rax
@@ -1007,22 +987,20 @@ _string_eq:
 	push rax
 	
 	;; assign_local_pointer of type Character
-	pop rax
+	mov rax, rax
 	mov [rbp - 64], rax
 	
 	mov rbx, [rbp - 56]
 	xor rax, rax
 	mov al, [rbx]
-	push rax
 	
 	mov rbx, [rbp - 64]
 	xor rax, rax
 	mov al, [rbx]
-	push rax
 	
 	;; We pop in the opposite order of comparison as we push onto the stack
 	mov rbx, rax
-	mov rax, 1
+	mov rax, rax
 	cmp rax, rbx
 	setne al
 	
@@ -1043,13 +1021,13 @@ _string_eq:
 	
 	
 	mov rax, [rbp - 40]
-	pop rbx
+	mov rbx, 1
 	add rax, rbx
 	mov [rbp - 40], rax
 	
 	
 	mov rax, [rbp - 48]
-	pop rbx
+	mov rbx, 1
 	add rax, rbx
 	mov [rbp - 48], rax
 	
@@ -1121,21 +1099,19 @@ _str_concat:
 	.loop_7:
 	
 	mov rax, [rbp - 40]
-	push rax
 	
 	;; Plus get the two operands from the stack
-	mov rbx, 1
+	mov rbx, rax
 	mov rax, [rbp - 48]
 	add rax, rbx
 	;; binary op ptr -> char
 	push rax
 	
 	;; assign_local_pointer of type Character
-	pop rax
+	mov rax, rax
 	mov [rbp - 88], rax
 	
 	mov rax, [rbp - 8]
-	push rax
 	
 	;; Plus get the two operands from the stack
 	mov rbx, rax
@@ -1145,22 +1121,21 @@ _str_concat:
 	push rax
 	
 	;; assign_local_pointer of type Character
-	pop rax
+	mov rax, rax
 	mov [rbp - 96], rax
 	
 	mov rbx, [rbp - 96]
 	xor rax, rax
 	mov al, [rbx]
-	push rax
 	
 	;; assign_local_pointer of type Character
-	pop rax
+	mov rax, rax
 	mov rbx, [rbp - 88]
 	mov [rbx], al
 	
 	
 	mov rax, [rbp - 48]
-	pop rbx
+	mov rbx, 1
 	add rax, rbx
 	mov [rbp - 48], rax
 	
@@ -1191,21 +1166,19 @@ _str_concat:
 	.loop_8:
 	
 	mov rax, [rbp - 40]
-	push rax
 	
 	;; Plus get the two operands from the stack
-	mov rbx, 1
+	mov rbx, rax
 	mov rax, [rbp - 48]
 	add rax, rbx
 	;; binary op ptr -> char
 	push rax
 	
 	;; assign_local_pointer of type Character
-	pop rax
+	mov rax, rax
 	mov [rbp - 136], rax
 	
 	mov rax, [rbp - 24]
-	push rax
 	
 	;; Plus get the two operands from the stack
 	mov rbx, rax
@@ -1215,22 +1188,21 @@ _str_concat:
 	push rax
 	
 	;; assign_local_pointer of type Character
-	pop rax
+	mov rax, rax
 	mov [rbp - 144], rax
 	
 	mov rbx, [rbp - 144]
 	xor rax, rax
 	mov al, [rbx]
-	push rax
 	
 	;; assign_local_pointer of type Character
-	pop rax
+	mov rax, rax
 	mov rbx, [rbp - 136]
 	mov [rbx], al
 	
 	
 	mov rax, [rbp - 48]
-	pop rbx
+	mov rbx, 1
 	add rax, rbx
 	mov [rbp - 48], rax
 	
@@ -1274,14 +1246,13 @@ _main:
 	mov QWORD [rbp - 16], string_2
 	
 	lea rax, [rbp - 16]
-	push rax
 	
 	pop rdi
 	call _strlen
 	push rax
 	
 	;; assign_local_number of type Integer
-	mov QWORD [rbp - 24], [rbp - 48]
+	mov QWORD [rbp - 24], rax
 	
 	
 	mov rax, 1
@@ -1298,17 +1269,15 @@ _main:
 	mov QWORD [rbp - 40], string_4
 	
 	lea rax, [rbp - 40]
-	push rax
 	
 	pop rdi
 	call _strlen
 	push rax
 	
 	;; assign_local_number of type Integer
-	mov QWORD [rbp - 48], 1
+	mov QWORD [rbp - 48], rax
 	
 	mov rax, [rbp - 40]
-	push rax
 	
 	pop rdi
 	call _strlen_cstr

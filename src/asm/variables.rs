@@ -43,24 +43,34 @@ impl ASM {
             v.extend([
                 format!("xor rax, rax"),
                 format!("mov {reg_name}, {}", var_type.get_register_name(Register::RBX)),
-                format!("push rax"),
-                format!(";; Finish dereferencing variable {}", variable.var_name),
+                // format!("push rax"),
+                // format!(";; Finish dereferencing variable {}", variable.var_name),
             ]);
 
             self.extend_current_label(v);
+
+            self.stack.push("rax".into());
 
             return;
         }
 
         if variable.store_address {
-            self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+            self.extend_current_label(vec![
+                format!("lea rax, [rbp - {}]", ar_var_offset),
+                // format!("push rax")
+            ]);
+
+            self.stack.push("rax".into());
+
             return;
         }
 
         self.extend_current_label(vec![
             format!("mov {}, [rbp - {}]", reg_name, ar_var_offset),
-            format!("push rax"),
+            // format!("push rax"),
         ]);
+
+        self.stack.push("rax".into());
     }
 
     fn handle_local_ptr_str(&mut self, var_type: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
@@ -76,21 +86,31 @@ impl ASM {
             ];
             v.extend(std::iter::repeat(format!("mov rax, [rax]")).take(variable.times_dereferenced));
             v.extend([
-                format!("push rax"),
-                format!("push rbx"),
+                // format!("push rax"),
+                // format!("push rbx"),
                 format!(";; Finish dereferencing variable {}", variable.var_name),
             ]);
+
+            self.stack.push("rax".into());
+            self.stack.push("rbx".into());
 
             self.extend_current_label(v);
             return;
         }
 
         if variable.store_address {
-            self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+            self.extend_current_label(vec![
+                format!("mov rax, [rbp - {}]", ar_var_offset),
+                // format!("push rax")
+            ]);
+            self.stack.push("rax".into());
             return;
         }
 
-        self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+        self.extend_current_label(vec![
+            format!("mov rax, [rbp - {}]", ar_var_offset), // format!("push rax")
+        ]);
+        self.stack.push("rax".into());
     }
 
     fn handle_local_ptr_struct(
@@ -113,8 +133,10 @@ impl ASM {
                     struct_name, variable.var_name
                 ),
                 format!("lea rax, [rbp - {}]", first.offset),
-                format!("push rax"),
+                // format!("push rax"),
             ]);
+
+            self.stack.push("rax".into());
 
             return;
         }
@@ -140,8 +162,10 @@ impl ASM {
                         // Since memeber type is an integer
                         format!("xor {}, {}", Register::RAX, Register::RAX),
                         format!("mov {}, [{}]", reg_name, reg_name_rbx),
-                        format!("push rax"),
+                        // format!("push rax"),
                     ]);
+
+                    self.stack.push("rax".into());
                 }
 
                 VarType::Str => {
@@ -150,15 +174,18 @@ impl ASM {
                         format!("add rbx, {}", struct_member_type.offset),
                         format!("xor rax, rax"),
                         format!("mov rax, [rbx]"),
-                        format!("push rax"),
+                        // format!("push rax"),
                         // length is pushed last
                         // we add 8 here instead of subtracting 8 because we are
                         // calculating this offset from the beginning of the struct and not
                         // the beginning of the address where the address of the string is
                         // kept
-                        format!("mov rax, [rbx + 8]"),
-                        format!("push rax"),
+                        format!("mov rcx, [rbx + 8]"),
+                        // format!("push rax"),
                     ]);
+
+                    self.stack.push("rax".into());
+                    self.stack.push("rcx".into());
                 }
 
                 VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, struct_member_type.offset),
@@ -187,8 +214,10 @@ impl ASM {
                 format!("mov rbx, [rbp - {}]", ar_var_offset),
                 format!("xor rax, rax"),
                 format!("mov al, [rbx]"),
-                format!("push rax"),
+                // format!("push rax"),
             ]);
+
+            self.stack.push("rax".into());
 
             return;
         }
@@ -198,7 +227,12 @@ impl ASM {
             return;
         }
 
-        self.extend_current_label(vec![format!("mov rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+        self.extend_current_label(vec![
+            format!("mov rax, [rbp - {}]", ar_var_offset),
+            // format!("push rax")
+        ]);
+
+        self.stack.push("rax".into());
     }
 
     fn handle_local_ptr(&mut self, var_type: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
@@ -224,24 +258,32 @@ impl ASM {
     fn handle_asm_for_array(&mut self, var_type: &Box<VarType>, variable: &Variable, ar_var: &Variable) {
         if variable.array_aceess_index.is_none() {
             // if it's just printing the array, then print the address
-            self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var.offset), format!("push rax")]);
+            self.extend_current_label(vec![
+                format!("lea rax, [rbp - {}]", ar_var.offset), // format!("push rax")
+            ]);
+            self.stack.push("rax".into());
             return;
         }
 
         match *var_type.clone() {
             VarType::Int => {
+                let index = self.stack.pop().unwrap();
+
                 self.extend_current_label(vec![
                     format!(";; Start array index access"),
                     // rax has the index into the array
-                    format!("pop rax"),
+                    // format!("pop rax"),
+                    format!("mov rax, {}", index),
                     format!("mov rbx, {}", variable.result_type.get_underlying_type_size()),
                     format!("mul rbx"),
                     // now rax has index * 8
                     format!("mov rbx, rbp"),
                     format!("add rbx, rax"),
                     format!("mov rax, [rbx - {}]", ar_var.offset),
-                    format!("push rax"),
+                    // format!("push rax"),
                 ]);
+
+                self.stack.push("rax".into());
             }
 
             VarType::Int8 => todo!(),
@@ -268,7 +310,11 @@ impl ASM {
         }
 
         if variable.store_address {
-            self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+            self.extend_current_label(vec![
+                format!("lea rax, [rbp - {}]", ar_var_offset), // format!("push rax")
+            ]);
+
+            self.stack.push("rax".into());
             return;
         }
 
@@ -296,11 +342,17 @@ impl ASM {
                 //
                 // NOTE: Not doing the above as a string derefed should only be the first character
             ];
+
             v.extend(std::iter::repeat(format!("mov rax, [rax]")).take(variable.times_dereferenced - 1));
-            v.extend([
-                format!("push rax"),
-                // format!("push rbx"),
-            ]);
+
+            // TODO: Remove
+            //
+            // v.extend([
+            //     format!("push rax"),
+            //     // format!("push rbx"),
+            // ]);
+
+            self.stack.push("rax".into());
 
             self.extend_current_label(v);
             return;
@@ -313,7 +365,10 @@ impl ASM {
             // .
             // --- length ---
             // --- pointer to string ---
-            self.extend_current_label(vec![format!("lea rax, [rbp - {}]", ar_var_offset), format!("push rax")]);
+            self.extend_current_label(vec![
+                format!("lea rax, [rbp - {}]", ar_var_offset), //  format!("push rax")
+            ]);
+            self.stack.push("rax".into());
             return;
         }
 
@@ -327,11 +382,10 @@ impl ASM {
         //     format!("push rax"),
         // ])
 
-
         self.stack.extend(vec![
             format!("[rbp - {}]", ar_var_offset),
             // length is pushed last
-            format!("[rbp - {}]", ar_var_offset - 8)
+            format!("[rbp - {}]", ar_var_offset - 8),
         ]);
     }
 
@@ -356,24 +410,31 @@ impl ASM {
                         "mov {reg_name}, {}",
                         variable.var_type.get_pointer_type().get_register_name(Register::RBX)
                     ),
-                    format!("push rax"),
+                    // format!("push rax"),
                     format!(";; Finish dereferencing variable {}", var_name),
                 ]);
+
+                self.stack.push("rax".into());
 
                 self.extend_current_label(v);
                 return;
             }
 
             if variable.store_address {
-                self.extend_current_label(vec![format!("lea rax, {}", var_name), format!("push rax")]);
+                self.extend_current_label(vec![
+                    format!("lea rax, {}", var_name),
+                    //  format!("push rax")
+                ]);
+                self.stack.push("rax".into());
                 return;
             }
 
             self.extend_current_label(vec![
                 format!("xor rax, rax"),
                 format!("mov {reg_name}, {}", var_name),
-                format!("push rax"),
+                // format!("push rax"),
             ]);
+            self.stack.push("rax".into());
 
             return;
         }
@@ -391,12 +452,18 @@ impl ASM {
                 if variable.dereference {
                     panic!("Cannot dereference a number")
                 } else if variable.store_address {
-                    self.extend_current_label(vec![format!("lea rax, {var_name}"), format!("push rax")]);
+                    self.extend_current_label(vec![
+                        format!("lea rax, {var_name}"),
+                        // format!("push rax")
+                    ]);
+
+                    self.stack.push("rax".into());
                 } else {
                     self.extend_current_label(vec![
                         format!("mov {}, [{var_name}]", register_name),
-                        format!("push rax"),
-                    ])
+                        // format!("push rax"),
+                    ]);
+                    self.stack.push("rax".into());
                 }
             }
 
@@ -407,7 +474,11 @@ impl ASM {
                     todo!()
                 } else {
                     todo!("need to get the string length as well");
-                    self.extend_current_label(vec![format!("mov rax, [{var_name}]"), format!("push rax")])
+                    self.extend_current_label(vec![
+                        format!("mov rax, [{var_name}]"),
+                        // format!("push rax")
+                    ]);
+                    self.stack.push("rax".into());
                 }
             }
 
@@ -430,8 +501,10 @@ impl ASM {
     fn handle_local_function_pointer(&mut self, variable: &Variable, ar_var: &Rc<RefCell<Variable>>) {
         self.extend_current_label(vec![
             format!("mov rax, [rbp - {}]", ar_var.borrow().offset),
-            format!("push rax"),
+            // format!("push rax"),
         ]);
+
+        self.stack.push("rax".into());
     }
 
     fn gen_asm_for_var_local_scope(&mut self, variable: &Variable, ar_var: &Rc<RefCell<Variable>>) {
@@ -472,8 +545,10 @@ impl ASM {
                             struct_name, variable.var_name
                         ),
                         format!("lea rax, [rbp - {}]", ar_var.borrow().offset + first.offset),
-                        format!("push rax"),
+                        // format!("push rax"),
                     ]);
+
+                    self.stack.push("rax".into());
 
                     return;
                 }
@@ -548,8 +623,11 @@ impl ASM {
                     self.extend_current_label(vec![
                         format!(";; Function pointer {var_name}"),
                         format!("mov rax, _{var_name}"),
-                        format!("push rax"),
+                        // format!("push rax"),
                     ]);
+
+                    self.stack.push("rax".into());
+
                 }
 
                 None => unreachable!(
