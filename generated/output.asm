@@ -39,12 +39,9 @@ _main:
 	
 	
 	
-	pop rcx
-	pop rbx
-	pop rax
-	mov [rbp - 32], rcx
-	mov [rbp - 24], rbx
-	mov [rbp - 16], rax
+	mov QWORD [rbp - 32], 1
+	mov QWORD [rbp - 24], 5
+	mov QWORD [rbp - 16], 1
 	.loop_0:
 	
 	
@@ -70,12 +67,9 @@ _main:
 	
 	
 	
-	pop rcx
-	pop rbx
-	pop rax
-	mov [rbp - 56], rcx
-	mov [rbp - 48], rbx
-	mov [rbp - 40], rax
+	mov QWORD [rbp - 56], 1
+	mov QWORD [rbp - 48], 4
+	mov QWORD [rbp - 40], 1
 	.loop_1:
 	
 	
@@ -178,12 +172,9 @@ _main:
 	
 	
 	
-	pop rcx
-	pop rbx
-	pop rax
-	mov [rbp - 80], rcx
-	mov [rbp - 72], rbx
-	mov [rbp - 64], rax
+	mov QWORD [rbp - 80], 1
+	mov QWORD [rbp - 72], 3
+	mov QWORD [rbp - 64], 1
 	.loop_2:
 	
 	
@@ -236,12 +227,9 @@ _main:
 	
 	
 	
-	pop rcx
-	pop rbx
-	pop rax
-	mov [rbp - 104], rcx
-	mov [rbp - 96], rbx
-	mov [rbp - 88], rax
+	mov QWORD [rbp - 104], 2
+	mov QWORD [rbp - 96], 11
+	mov QWORD [rbp - 88], 1
 	.loop_3:
 	
 	

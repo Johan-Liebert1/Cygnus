@@ -19,6 +19,8 @@ impl ASM {
             ConditionalJumpTo::Else => format!(".else_{}", if_num),
         };
 
+        // TODO: Remove
+        //
         // let instructions = vec![
         //     // if label
         //     format!(".if_{}:", if_num),
@@ -71,6 +73,8 @@ impl ASM {
             ConditionalJumpTo::Else => format!(".else_{}", if_num),
         };
 
+        // TODO: Remove
+        //
         // let instructions = vec![
         //     // elif label
         //     format!(".elif_{}_{}:", if_num, elif_number),

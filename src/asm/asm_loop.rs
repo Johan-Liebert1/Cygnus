@@ -54,13 +54,25 @@ impl ASM {
             }
         };
 
+        // TODO: Remove
+        //
+        // let mut loop_start: Vec<String> = vec![
+        //     format!("pop rcx"), // step
+        //     format!("pop rbx"), // to
+        //     format!("pop rax"), // from
+        //     format!("mov [rbp - {}], rcx", step_offset),
+        //     format!("mov [rbp - {}], rbx", to_offset),
+        //     format!("mov [rbp - {}], rax", from_offset),
+        // ];
+
+        let step = self.stack.pop().unwrap();
+        let to = self.stack.pop().unwrap();
+        let from = self.stack.pop().unwrap();
+
         let mut loop_start: Vec<String> = vec![
-            format!("pop rcx"), // step
-            format!("pop rbx"), // to
-            format!("pop rax"), // from
-            format!("mov [rbp - {}], rcx", step_offset),
-            format!("mov [rbp - {}], rbx", to_offset),
-            format!("mov [rbp - {}], rax", from_offset),
+            format!("mov QWORD [rbp - {}], {}", step_offset, step),
+            format!("mov QWORD [rbp - {}], {}", to_offset, to),
+            format!("mov QWORD [rbp - {}], {}", from_offset, from),
         ];
 
         let mut call_stack_var = None;
