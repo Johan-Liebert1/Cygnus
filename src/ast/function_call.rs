@@ -135,8 +135,9 @@ impl AST for FunctionCall {
                 // args -> rax, rdi, rsi, rdx, r10, r8, r9
                 Some(func) => {
                     // we reverse here as we want to push into the stack backwards
-                    for argument in self.arguments.iter().rev() {
+                    for (index, argument) in self.arguments.iter().enumerate() {
                         argument.borrow().visit_com(v, f.clone(), asm, call_stack);
+                        asm.function_call_add_arg(index);
                     }
 
                     asm.function_call(

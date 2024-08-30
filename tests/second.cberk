@@ -1,9 +1,14 @@
+fun add(a: int, b: int) -> int {
+    write("a = ", a)
+    write("b = ", b)
+
+    return 69
+}
+
 fun main() {
-    def file_name: str = "./examples/test_files/read_a_file\0";
+    def a: int = add(5, 6)
 
-    def fd: int = syscall(2, file_name as *char, 0, 0);
-
-    write("fd = ", fd)
+    write("ret = ", a)
 }
 
 main()

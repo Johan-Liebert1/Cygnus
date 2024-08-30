@@ -100,21 +100,16 @@ impl ASM {
             // a char is always represented as an 8 bit number
             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => {
                 self.get_vec_for_write_number()
-                // TODO: Remove
-                //
-                // vec![
-                //     // format!("pop rax"),
-                //     format!("call _printRAX"),
-                // ]
             }
 
             // TODO: Check here whether the pointer is dereferenced or not
             VarType::Str => {
                 if times_dereferenced > 0 {
-                    // WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
-
                     let str_len = self.stack_pop().unwrap();
                     let str_addr = self.stack_pop().unwrap();
+
+                    self.unlock_register_from_stack_value(&str_len);
+                    self.unlock_register_from_stack_value(&str_addr);
 
                     vec![
                         "mov rax, 1".into(),
@@ -125,13 +120,6 @@ impl ASM {
                     ]
                 } else {
                     self.get_vec_for_write_number()
-
-                    // TODO: Remove
-                    //
-                    // vec![
-                    //     // format!("pop rax"),
-                    //     format!("call _printRAX"),
-                    // ]
                 }
             }
 
@@ -198,6 +186,8 @@ impl ASM {
 
         self.lock_register(SYSCALL_ARGS_REGS[arg_num]);
         self.regs_locked_for_function_call.push(SYSCALL_ARGS_REGS[arg_num]);
+
+        self.unlock_register_from_stack_value(&stack_member);
 
         self.extend_current_label(instructions);
     }
@@ -266,11 +256,9 @@ impl ASM {
                 // pushed into rax beforehand in `factor` AST
                 match &var.var_type {
                     VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                        // TODO: Remove
-                        //
-                        // vec![format!("pop rax"), format!("call _printRAX")]
-
                         let stack_member = self.stack_pop().unwrap();
+
+                        self.unlock_register_from_stack_value(&stack_member);
 
                         vec![
                             format!("mov rax, {} {}", var.var_type.get_operation_size(), stack_member),
@@ -279,11 +267,11 @@ impl ASM {
                     }
 
                     VarType::Str => {
-                        // TODO: Remove
-                        // WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
-
                         let str_len = self.stack_pop().unwrap();
                         let str_addr = self.stack_pop().unwrap();
+
+                        self.unlock_register_from_stack_value(&str_len);
+                        self.unlock_register_from_stack_value(&str_addr);
 
                         vec![
                             "mov rax, 1".into(),
@@ -306,13 +294,9 @@ impl ASM {
                     VarType::Float => {
                         // TODO: This is just for testing
                         self.get_vec_for_write_number()
-                        // vec![format!("pop rax"), format!("call _printRAX")]
                     }
 
-                    VarType::Array(..) => {
-                        self.get_vec_for_write_number()
-                        // vec![format!("pop rax"), format!("call _printRAX")]
-                    }
+                    VarType::Array(..) => self.get_vec_for_write_number(),
 
                     VarType::Struct(_, member_access) => {
                         let borrow = member_access.borrow();
@@ -322,18 +306,14 @@ impl ASM {
                             Some(struct_member_type) => match &struct_member_type.member_type {
                                 VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                                     self.get_vec_for_write_number()
-                                    // vec![
-                                    //     // format!("pop rax"),
-                                    //     format!("call _printRAX")
-                                    // ]
                                 }
 
                                 VarType::Str => {
-                                    // TODO: Remove
-                                    // WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
-
                                     let str_len = self.stack_pop().unwrap();
                                     let str_addr = self.stack_pop().unwrap();
+
+                                    self.unlock_register_from_stack_value(&str_len);
+                                    self.unlock_register_from_stack_value(&str_addr);
 
                                     vec![
                                         "mov rax, 1".into(),

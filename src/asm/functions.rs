@@ -10,9 +10,30 @@ use super::asm::ASM;
 
 pub const FUNCTION_RETURN_INSTRUCTIONS: [&str; 3] = [("mov rsp, rbp"), ("pop rbp"), ("ret")];
 
-pub const FUNCTION_ARGS_REGS: [&str; 6] = ["rdi", "rsi", "rdx", "rcx", "r8", "r9"];
+pub const FUNCTION_ARGS_REGS: [Register; 6] = [
+    Register::RDI,
+    Register::RSI,
+    Register::RDX,
+    Register::RCX,
+    Register::R8,
+    Register::R9,
+];
 
 impl ASM {
+    pub fn function_call_add_arg(&mut self, arg_num: usize) {
+        let mut instructions = vec![];
+
+        let stack_member = self.stack_pop().unwrap();
+        instructions.push(format!("mov {}, {}", FUNCTION_ARGS_REGS[arg_num], stack_member));
+
+        self.lock_register(FUNCTION_ARGS_REGS[arg_num]);
+        self.regs_locked_for_function_call.push(FUNCTION_ARGS_REGS[arg_num]);
+
+        self.unlock_register_from_stack_value(&stack_member);
+
+        self.extend_current_label(instructions);
+    }
+
     pub fn function_call(
         &mut self,
         function_name: &String,
@@ -23,10 +44,6 @@ impl ASM {
         is_extern_func: bool,
     ) {
         let mut instructions = vec![];
-
-        for i in 0..num_args {
-            instructions.push(format!("pop {}", FUNCTION_ARGS_REGS[i]))
-        }
 
         if !is_function_pointer_call {
             if is_extern_func {
@@ -40,18 +57,32 @@ impl ASM {
 
             let (ar_var, _) = call_stack.get_var_with_name(function_name);
 
+            let rax = self.get_free_register();
+
             if let Some(ar_var) = ar_var {
                 instructions.extend(vec![
-                    format!("mov rbx, [rbp - {}]", ar_var.borrow().offset),
-                    format!("call rbx"),
+                    format!("mov {rax}, [rbp - {}]", ar_var.borrow().offset),
+                    format!("call {rax}"),
                 ]);
+
+                self.unlock_register(rax);
             } else {
                 unreachable!("Function pointer variable '{function_name}' not found on call stack. This must be a bug in the semantic analysis step.");
             }
         }
 
+        // this clone is fine as these are ints anyway and will be 10 at most
+        let regs: Vec<Register> = self.regs_locked_for_function_call.iter().cloned().collect();
+
+        self.regs_locked_for_function_call = vec![];
+
+        for reg in regs {
+            self.unlock_register(reg);
+        }
+
         // if the function returns anything, push it onto the stack
         if !matches!(func_return_type, VarType::Unknown) {
+            self.lock_register(Register::RAX);
             instructions.push(format!("push rax"));
         }
 
@@ -115,7 +146,19 @@ impl ASM {
     }
 
     pub fn function_return(&mut self, return_value_exists: bool) {
-        self.add_to_current_label(format!("pop rax"));
+        // move the return value into rax
+        if return_value_exists {
+            let stack_member = self.stack_pop().unwrap();
+
+            let rax = Register::RAX;
+
+            self.add_to_current_label(format!("mov {rax}, {stack_member}"));
+
+            self.stack_push(String::from(rax));
+
+            self.unlock_register_from_stack_value(&stack_member);
+        }
+
         self.extend_current_label(FUNCTION_RETURN_INSTRUCTIONS.map(|x| x.into()).to_vec());
     }
 }

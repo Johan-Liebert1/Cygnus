@@ -8,8 +8,7 @@ section .bss
 section .data
 	;; For floating point operations
 	float_imm dq 0
-	string_0 db 46,47,101,120,97,109,112,108,101,115,47,116,101,115,116,95,102,105,108,101,115,47,114,101,97,100,95,97,95,102,105,108,101,0
-	string_1 db 102,100,32,61,32
+	string_0 db 119,111,119,10
 
 section .text
 	global _start
@@ -27,36 +26,45 @@ _main:
 	sub rsp, 32
 	
 	
-	mov QWORD [rbp - 8], 34
-	mov QWORD [rbp - 16], string_0
-	
-	
-	mov rax, 2
-	
-	mov rbx, [rbp - 16]
-	
-	mov rdi, rbx
-	
-	
-	mov rsi, 0
-	
-	
-	mov rdx, 0
-	
-	syscall
 	
 	;; assign_local_number of type Integer
-	mov QWORD [rbp - 24], rax
+	mov QWORD [rbp - 24], 69
 	
+	mov QWORD [rbp - 8], 4
+	mov QWORD [rbp - 16], string_0
+	
+	;; Storing address of struct A for variable a not in handle_local_ptr
+	lea rax, [rbp - 24]
+	
+	;; assign_local_pointer of type A
+	mov rbx, rax
+	mov [rbp - 32], rax
+	
+	;; Handling ptr to struct for Ptr -> A
+	
+	mov rbx, [rbp - 32]
+	add rbx, 0
+	xor rax, rax
+	mov rax, [rbx]
+	
+	mov rax, rax
+	call _printRAX
+	
+	
+	;; Handling ptr to struct for Ptr -> A
+	
+	mov rcx, [rbp - 32]
+	add rcx, 8
+	xor rbx, rbx
+	mov rbx, [rcx]
+	mov rdx, [rcx + 8]
 	
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, string_1
-	mov rdx, 5
+	mov rsi, rbx
+	mov rdx, rdx
 	syscall
 	
-	mov rax, QWORD [rbp - 24]
-	call _printRAX
 	
 	mov rsp, rbp
 	pop rbp
