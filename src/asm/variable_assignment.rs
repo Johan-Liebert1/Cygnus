@@ -1,5 +1,5 @@
 use core::panic;
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, fmt::format, rc::Rc};
 
 use crate::{
     ast::{abstract_syntax_tree::ASTNodeEnum, variable::Variable},
@@ -37,17 +37,26 @@ impl ASM {
     fn assign_local_number(&mut self, var_offset: usize, var_type: &VarType) {
         let reg_name = var_type.get_register_name(Register::RAX);
 
-        let mut instructions = vec![];
+        // TODO: Remove
+        //
+        // instructions.extend([
+        //     format!(";; assign_local_number of type {}", var_type),
+        //     format!("xor rax, rax"),
+        //     format!("pop rax"),
+        // ]);
+        // instructions.push(format!("mov [rbp - {}], {}", var_offset, reg_name));
 
-        instructions.extend([
+        let stack_item = self.stack.pop().unwrap();
+
+        self.extend_current_label(vec![
             format!(";; assign_local_number of type {}", var_type),
-            format!("xor rax, rax"),
-            format!("pop rax"),
+            format!(
+                "mov {} [rbp - {}], {}",
+                var_type.get_operation_size(),
+                var_offset,
+                stack_item
+            ),
         ]);
-
-        instructions.push(format!("mov [rbp - {}], {}", var_offset, reg_name));
-
-        self.extend_current_label(instructions);
     }
 
     fn assign_local_array(
@@ -360,7 +369,12 @@ impl ASM {
         ])
     }
 
-    fn handle_local_plus_minus_eq_assignment(&mut self, op: &str, ar_var: &Rc<RefCell<Variable>>, variable_assigned_to: &Variable) {
+    fn handle_local_plus_minus_eq_assignment(
+        &mut self,
+        op: &str,
+        ar_var: &Rc<RefCell<Variable>>,
+        variable_assigned_to: &Variable,
+    ) {
         let borrowed_ar_var = ar_var.borrow();
 
         match &borrowed_ar_var.var_type {
@@ -462,9 +476,13 @@ impl ASM {
                             array_access_index,
                         ),
 
-                        AssignmentTypes::PlusEquals => self.handle_local_plus_minus_eq_assignment("add", ar_var, variable_assigned_to),
+                        AssignmentTypes::PlusEquals => {
+                            self.handle_local_plus_minus_eq_assignment("add", ar_var, variable_assigned_to)
+                        }
 
-                        AssignmentTypes::MinusEquals => self.handle_local_plus_minus_eq_assignment("sub", ar_var, variable_assigned_to),
+                        AssignmentTypes::MinusEquals => {
+                            self.handle_local_plus_minus_eq_assignment("sub", ar_var, variable_assigned_to)
+                        }
                     },
                 }
             }

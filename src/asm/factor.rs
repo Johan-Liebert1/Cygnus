@@ -15,7 +15,12 @@ impl ASM {
 
         match token {
             TokenEnum::Number(n) => match n {
-                Number::Integer(i) => instructions.push(format!("push {i}")),
+                Number::Integer(i) => {
+                    // TODO: Remove
+                    //
+                    // instructions.push(format!("push {i}"))
+                    self.stack.push(format!("{i}"))
+                },
 
                 // We cannot have immediate float values in nasm
                 Number::Float(f) => {

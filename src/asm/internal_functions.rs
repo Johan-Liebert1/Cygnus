@@ -10,7 +10,10 @@ use crate::{
     trace,
 };
 
-use super::{asm::ASM, functions::{FUNCTION_ARGS_REGS, SYSCALL_ARGS_REGS}};
+use super::{
+    asm::ASM,
+    functions::{FUNCTION_ARGS_REGS, SYSCALL_ARGS_REGS},
+};
 
 const WRITE_STRING_ASM_INSTRUCTIONS: [&str; 9] = [
     ";; Assuming length is pushed last",
@@ -37,7 +40,12 @@ const WRITE_CHAR_ASM_INSTRUCTIONS: [&str; 8] = [
 
 impl ASM {
     pub fn func_write_number(&mut self) {
-        self.extend_current_label(vec![String::from("pop rax"), String::from("call _printRAX")]);
+        let stack_member = self.stack.pop().unwrap();
+
+        self.extend_current_label(vec![
+            format!("mov rax, {}", stack_member),
+            String::from("call _printRAX"),
+        ]);
     }
 
     pub fn func_exit(&mut self) {
@@ -197,7 +205,16 @@ impl ASM {
                 // pushed into rax beforehand in `factor` AST
                 match &var.var_type {
                     VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                        vec![format!("pop rax"), format!("call _printRAX")]
+                        // TODO: Remove
+                        //
+                        // vec![format!("pop rax"), format!("call _printRAX")]
+
+                        let stack_member = self.stack.pop().unwrap();
+
+                        vec![
+                            format!("mov rax, {} {}", var.var_type.get_operation_size(), stack_member),
+                            format!("call _printRAX"),
+                        ]
                     }
 
                     VarType::Str => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),

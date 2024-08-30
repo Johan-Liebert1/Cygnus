@@ -1,17 +1,8 @@
-struct Rect {
-    x: int,
-    y: int,
-}
-
 fun main() {
-    def r: Rect = Rect { x: 20, y: 30 };
+    def a: int = 5;
 
-    write(r.x, r.y)
-
-    r.x = r.x + 15;
-    r.y = r.y + 15;
-
-    write(r.x, r.y)
+    write(a)
+    write(10)
 }
 
 main()

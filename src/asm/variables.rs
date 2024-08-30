@@ -122,9 +122,6 @@ impl ASM {
         let borrow = members.borrow();
         let found = borrow.iter().find(|x| x.name == variable.member_access[0]);
 
-        // trace!("found: {found:#?}");
-        // trace!("variable: {variable:#?}");
-
         self.add_to_current_label(format!(";; Handling ptr to struct for Ptr -> {}", struct_name));
 
         match found {
@@ -277,11 +274,13 @@ impl ASM {
 
         let reg_name = actual_var_type.get_register_name(Register::RAX);
 
-        self.extend_current_label(vec![
-            format!("xor {}, {}", Register::RAX, Register::RAX),
-            format!("mov {}, [rbp - {}]", reg_name, ar_var_offset),
-            format!("push rax"),
-        ]);
+        // self.extend_current_label(vec![
+        //     format!("xor {}, {}", Register::RAX, Register::RAX),
+        //     format!("mov {}, [rbp - {}]", reg_name, ar_var_offset),
+        //     format!("push rax"),
+        // ]);
+
+        self.stack.push(format!("[rbp - {}]", ar_var_offset));
     }
 
     fn handle_local_str(&mut self, variable: &Variable, ar_var_offset: usize) {

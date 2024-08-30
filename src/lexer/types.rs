@@ -387,6 +387,24 @@ impl VarType {
             _ => self.get_size(),
         };
     }
+
+    pub fn get_operation_size(&self) -> &str {
+        match self {
+            VarType::Int => "QWORD",
+            VarType::Int8 => "BYTE",
+            VarType::Int16 => "WORD",
+            VarType::Int32 => "DWORD",
+
+            VarType::Str => todo!(),
+            VarType::Float => todo!(),
+            VarType::Char => todo!(),
+            VarType::Ptr(_) => todo!(),
+            VarType::Array(_, _) => todo!(),
+            VarType::Struct(_, _) => todo!(),
+            VarType::Function(_, _, _) => todo!(),
+            VarType::Unknown => todo!(),
+        }
+    }
 }
 
 impl Display for VarType {

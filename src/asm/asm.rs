@@ -18,6 +18,8 @@ pub struct ASM {
     pub num_floats: usize,
     pub num_ifs: usize,
 
+    pub stack: Vec<String>,
+
     function_argument_number: Option<usize>,
 
     current_label: String,
@@ -59,6 +61,7 @@ impl Default for ASM {
             }],
 
             function_argument_number: None,
+            stack: vec![],
         }
     }
 }
