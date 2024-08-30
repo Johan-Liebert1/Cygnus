@@ -238,11 +238,14 @@ impl ASM {
             }
 
             Operations::Modulo => {
+                let first = self.stack.pop().unwrap();
+                let second = self.stack.pop().unwrap();
+
                 vec![
                     format!(";; Modulo get the two operands from the stack"),
                     format!("xor rdx, rdx"),
-                    format!("pop rbx"),
-                    format!("pop rax"),
+                    format!("mov rbx, {}", first),
+                    format!("mov rax, {}", second),
                     format!("div rbx"),
                     format!("mov rax, rdx"),
                 ]
