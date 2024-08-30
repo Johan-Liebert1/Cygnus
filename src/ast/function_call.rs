@@ -1,7 +1,7 @@
 use crate::asm::functions::FUNCTION_ARGS_REGS;
 use crate::ast::function_def::FunctionDefinition;
 use crate::helpers::{self, compiler_error};
-use crate::lexer::keywords::FUNC_SYSCALL;
+use crate::lexer::keywords::{self, FUNC_SYSCALL};
 use crate::lexer::types::VarType;
 use crate::{trace, types::ASTNode};
 

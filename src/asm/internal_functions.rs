@@ -201,11 +201,17 @@ impl ASM {
         let mut instructions = vec![];
 
         for i in 0..num_args {
-            instructions.push(format!("pop {}", SYSCALL_ARGS_REGS[i]));
+            let stack_member = self.stack.pop().unwrap();
+            instructions.push(format!("mov {}, {}", SYSCALL_ARGS_REGS[i], stack_member));
         }
 
         instructions.push("syscall".into());
-        instructions.push("push rax".into());
+
+        // TODO: Remove
+        //
+        // instructions.push("push rax".into());
+
+        self.stack.push("rax".into());
 
         self.extend_current_label(instructions);
     }

@@ -59,17 +59,25 @@ impl ASM {
         // ]);
         // instructions.push(format!("mov [rbp - {}], {}", var_offset, reg_name));
 
-        let stack_item = self.stack.pop().unwrap();
+        let mut stack_item = self.stack.pop().unwrap();
 
-        self.extend_current_label(vec![
-            format!(";; assign_local_number of type {}", var_type),
-            format!(
-                "mov {} [rbp - {}], {}",
-                var_type.get_operation_size(),
-                var_offset,
-                stack_item
-            ),
-        ]);
+        let mut v = vec![format!(";; assign_local_number of type {}", var_type)];
+
+        if stack_item.starts_with('[') {
+            // trying to move a memory location into another one which is not allowed
+            v.push(format!("mov r10, {}", stack_item));
+
+            stack_item = "r10".into();
+        }
+
+        v.push(format!(
+            "mov {} [rbp - {}], {}",
+            var_type.get_operation_size(),
+            var_offset,
+            stack_item
+        ));
+
+        self.extend_current_label(v);
     }
 
     fn assign_local_array(
@@ -359,14 +367,11 @@ impl ASM {
 
                 // TODO: Remove
                 // instructions.extend([format!("pop rbx"), format!("pop rax")]);
-                
+
                 let str_len = self.stack.pop().unwrap();
                 let str_addr = self.stack.pop().unwrap();
 
-                instructions.extend([
-                    format!("mov rbx, {}", str_len),
-                    format!("mov rax, {}", str_addr)
-                ]);
+                instructions.extend([format!("mov rbx, {}", str_len), format!("mov rax, {}", str_addr)]);
 
                 is_string = true;
             }
@@ -383,7 +388,7 @@ impl ASM {
                             // TODO: Remove
                             // format!("pop rax"),
                             format!("mov rax, {}", stack_member),
-                            format!("mov rbx, {}", ar_var.borrow().var_name)
+                            format!("mov rbx, {}", ar_var.borrow().var_name),
                         ]);
                         instructions.extend(std::iter::repeat(format!("mov rbx, [rbx]")).take(times_dereferenced));
 
@@ -417,11 +422,9 @@ impl ASM {
 
         self.extend_current_label(vec![
             format!("mov rax, [rbp - {}]", offset),
-
             // TODO: Remove
             //
             // format!("pop rbx"),
-
             format!("mov rbx, {}", stack_member),
             format!("{} rax, rbx", op),
             format!("mov [rbp - {}], rax", offset),

@@ -1,15 +1,21 @@
 use std::{
     fs::{self},
-    io::Read,
+    io::Read, process::exit,
 };
 
 use crate::parse_input_file;
 
 pub fn get_file_result(file_name: &str) -> String {
     let file_name_wo_ext = file_name.split('.').collect::<Vec<&str>>();
-    let file_result = fs::read_to_string(format!("./examples/output/{}", file_name_wo_ext[0])).unwrap();
+    let file_result = fs::read_to_string(format!("./examples/output/{}", file_name_wo_ext[0]));
 
-    file_result
+    match file_result {
+        Ok(res) => res,
+        Err(err) => {
+            eprint!("No such file {file_name}");
+            exit(1);
+        },
+    }
 }
 
 pub fn get_stdout_and_actual_result(file_name: &str) -> (String, String, String) {

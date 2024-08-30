@@ -65,15 +65,34 @@ impl ASM {
         //     format!("mov [rbp - {}], rax", from_offset),
         // ];
 
-        let step = self.stack.pop().unwrap();
-        let to = self.stack.pop().unwrap();
-        let from = self.stack.pop().unwrap();
+        let mut step = self.stack.pop().unwrap();
+        let mut to = self.stack.pop().unwrap();
+        let mut from = self.stack.pop().unwrap();
 
         let mut loop_start: Vec<String> = vec![
-            format!("mov QWORD [rbp - {}], {}", step_offset, step),
-            format!("mov QWORD [rbp - {}], {}", to_offset, to),
-            format!("mov QWORD [rbp - {}], {}", from_offset, from),
+            format!(";; loop_{loop_number} start")
         ];
+
+        if step.starts_with('[') {
+            loop_start.push(format!("mov r10, {}", step));
+            step = "r10".into();
+        }
+
+        loop_start.push(format!("mov QWORD [rbp - {}], {}", step_offset, step));
+
+        if to.starts_with('[') {
+            loop_start.push(format!("mov r10, {}", to));
+            to = "r10".into();
+        }
+
+        loop_start.push(format!("mov QWORD [rbp - {}], {}", to_offset, to));
+
+        if from.starts_with('[') {
+            loop_start.push(format!("mov r10, {}", from));
+            from = "r10".into();
+        }
+
+        loop_start.push(format!("mov QWORD [rbp - {}], {}", from_offset, from));
 
         let mut call_stack_var = None;
 

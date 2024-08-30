@@ -1,4 +1,19 @@
+-- Count the number of occurances of all alphabets in a file
+
+mem file 4096
+
+-- int * num alphabets
+mem lower_char_occurances 8 * 26
+
+-- int * num alphabets
+mem upper_char_occurances 8 * 26
+
 fun main() {
+    def file_name: str = "./examples/test_files/read_a_file\0";
+
+    def fd: int = syscall(2, file_name as *char, 0, 0);
+
+    write("fd = ", fd)
 }
 
 main()
