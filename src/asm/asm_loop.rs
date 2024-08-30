@@ -86,7 +86,7 @@ impl ASM {
 
             // here rax contains the from value
             loop_start.extend(vec![format!(
-                "mov [rbp - {}], rax",
+                "mov QWORD [rbp - {}], {from}",
                 call_stack_var.unwrap().borrow().offset
             )]);
         }

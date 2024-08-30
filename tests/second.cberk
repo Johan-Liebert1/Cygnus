@@ -1,6 +1,6 @@
 fun main() {
-    loop from 1 to 5 step 3 {
-        write("hi\n")
+    loop from 1 to 5 step 1 with i {
+        write(i)
     }
 }
 
