@@ -1,6 +1,5 @@
 fun main() {
-    def a: str = "hello\n";
-    write(a)
+    write((6 + 2) * 3 - 6 / 2);
 }
 
 main()

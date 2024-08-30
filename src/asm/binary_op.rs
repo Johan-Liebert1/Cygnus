@@ -6,7 +6,17 @@ use crate::{
 use super::asm::ASM;
 
 impl ASM {
+    fn reg_to_use(&self, reg_from_stack: &String) -> &str {
+        if reg_from_stack == "rax" {
+            "rcx"
+        } else {
+            "rax"
+        }
+    }
+
     pub fn binary_op_nums(&mut self, op: Operations, times_dereferenced: usize, result_type: &VarType) {
+        let mut reg_to_use = "rax";
+
         let mut instructions = match op {
             Operations::Plus => {
                 if matches!(result_type, VarType::Float) {
@@ -24,12 +34,33 @@ impl ASM {
                         format!("mov rax, [float_imm]"),
                     ]
                 } else {
-                    vec![
+                    // TODO: Remove
+                    // vec![
+                    //     format!(";; Plus get the two operands from the stack"),
+                    //     format!("pop rax"),
+                    //     format!("pop rbx"),
+                    //     format!("add rax, rbx"),
+                    // ]
+
+                    let first = self.stack.pop().unwrap();
+                    let second = self.stack.pop().unwrap();
+
+                    let mut inst = vec![
                         format!(";; Plus get the two operands from the stack"),
-                        format!("pop rax"),
-                        format!("pop rbx"),
-                        format!("add rax, rbx"),
-                    ]
+                        // format!("mov {}, {}", reg_to_use, first),
+                        // format!("mov rbx, {}", second),
+                        // format!("add {}, rbx", reg_to_use),
+                    ];
+
+                    inst.push(format!("mov rbx, {second}"));
+
+                    if first != "rax" {
+                        inst.push(format!("mov rax, {first}"));
+                    }
+
+                    inst.push("add rax, rbx".into());
+
+                    inst
                 }
             }
 
@@ -49,12 +80,26 @@ impl ASM {
                         format!("mov rax, [float_imm]"),
                     ]
                 } else {
-                    vec![
+                    let first = self.stack.pop().unwrap();
+                    let second = self.stack.pop().unwrap();
+
+                    // TODO: Remove
+                    //
+                    // vec![
+                    //     format!(";; Minus get the two operands from the stack"),
+                    //     format!("pop rbx"),
+                    //     format!("pop rax"),
+                    //     format!("sub rax, rbx"),
+                    // ]
+
+                    let mut inst = vec![
                         format!(";; Minus get the two operands from the stack"),
-                        format!("pop rbx"),
-                        format!("pop rax"),
-                        format!("sub rax, rbx"),
-                    ]
+                        format!("mov rbx, {}", first),
+                        format!("mov rax, {}", second),
+                        format!("sub {}, rbx", reg_to_use),
+                    ];
+
+                    inst
                 }
             }
 
@@ -74,15 +119,33 @@ impl ASM {
                         format!("mov rax, [float_imm]"),
                     ]
                 } else {
+                    // TODO: Remove
+
+                    // vec![
+                    //     // 40 / 5
+                    //     // push 40
+                    //     // push 5
+                    //     format!(";; Divide clean up rdx as this might mess up the final output"),
+                    //     format!("xor rdx, rdx"),
+                    //     format!(";; get the two operands from the stack"),
+                    //     format!("pop rbx"),
+                    //     format!("pop rax"),
+                    //     format!("div rbx"),
+                    // ]
+                    //
+
+                    let first = self.stack.pop().unwrap();
+                    let second = self.stack.pop().unwrap();
+
                     vec![
                         // 40 / 5
                         // push 40
                         // push 5
-                        format!(";; Divide clean up rdx as this might mess up the final output"),
+                        format!(";; Divide clean up rdx as this might mess up the final output as 'div' divides rdx:rax with the register we pass to div inst"),
                         format!("xor rdx, rdx"),
                         format!(";; get the two operands from the stack"),
-                        format!("pop rbx"),
-                        format!("pop rax"),
+                        format!("mov rbx, {}", first),
+                        format!("mov rax, {}", second),
                         format!("div rbx"),
                     ]
                 }
@@ -104,13 +167,36 @@ impl ASM {
                         format!("mov rax, [float_imm]"),
                     ]
                 } else {
-                    vec![
+                    // TODO: Remove
+                    //
+                    // vec![
+                    //     format!(";; Multiply get the two operands from the stack"),
+                    //     format!("xor rdx, rdx"),
+                    //     format!("pop rax"),
+                    //     format!("pop rbx"),
+                    //     format!("mul rbx"),
+                    // ]
+
+                    let first = self.stack.pop().unwrap();
+                    let second = self.stack.pop().unwrap();
+
+                    let mut inst = vec![
                         format!(";; Multiply get the two operands from the stack"),
                         format!("xor rdx, rdx"),
-                        format!("pop rax"),
-                        format!("pop rbx"),
-                        format!("mul rbx"),
-                    ]
+                        // format!("mov rax, {}", first),
+                        // format!("mov rbx, {}", second),
+                        // format!("mul rbx"),
+                    ];
+
+                    inst.push(format!("mov rbx, {second}"));
+
+                    if first != "rax" {
+                        inst.push(format!("mov rax, {first}"));
+                    }
+
+                    inst.push("mul rbx".into());
+
+                    inst
                 }
             }
 
@@ -163,6 +249,9 @@ impl ASM {
             }
         };
 
+        self.stack.push("rax".into());
+        // self.stack.push(reg_to_use.into());
+
         // trace!(
         //     "result_type: {}, times_dereferenced: {}",
         //     result_type,
@@ -176,7 +265,7 @@ impl ASM {
         // We will also never dereference a string as we want the character address
         match result_type {
             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                instructions.push(format!("push rax"));
+                // instructions.push(format!("push rax"));
             }
 
             VarType::Str => todo!(),

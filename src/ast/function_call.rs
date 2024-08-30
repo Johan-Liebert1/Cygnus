@@ -57,12 +57,12 @@ impl AST for FunctionCall {
 
                         ASTNodeEnum::BinaryOp(bo) => match &bo.result_type {
                             VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Int | VarType::Char => {
-                                asm.func_write_number()
+                                asm.func_write_number(true)
                             }
 
                             VarType::Str => asm.func_write_string(),
 
-                            VarType::Float => asm.func_write_number(),
+                            VarType::Float => asm.func_write_number(true),
 
                             VarType::Ptr(ptr_type) => {
                                 asm.func_write_pointer(&ptr_type, bo.times_dereferenced, &call_stack, None)
@@ -75,17 +75,17 @@ impl AST for FunctionCall {
                         },
 
                         ASTNodeEnum::Factor(f) => match &f.get_token().token {
-                            TokenEnum::Number(_) => asm.func_write_number(),
+                            TokenEnum::Number(_) => asm.func_write_number(false),
                             TokenEnum::StringLiteral(_) => asm.func_write_string(),
 
                             tok => unreachable!("This should be unreachable"),
                         },
 
                         // This will always be an integer
-                        ASTNodeEnum::LogicalExp(lo) => asm.func_write_number(),
+                        ASTNodeEnum::LogicalExp(lo) => asm.func_write_number(todo!()),
 
                         // This will always be an integer
-                        ASTNodeEnum::ComparisonExp(..) => asm.func_write_number(),
+                        ASTNodeEnum::ComparisonExp(..) => asm.func_write_number(todo!()),
 
                         ASTNodeEnum::FunctionCall(fc) => {
                             // if the function returns anything, then that will be in rax
@@ -96,7 +96,7 @@ impl AST for FunctionCall {
 
                             match func_def.return_type {
                                 VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                    asm.func_write_number()
+                                    asm.func_write_number(todo!())
                                 }
 
                                 _ => unimplemented!(),

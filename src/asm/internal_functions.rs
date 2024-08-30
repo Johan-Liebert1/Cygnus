@@ -39,13 +39,24 @@ const WRITE_CHAR_ASM_INSTRUCTIONS: [&str; 8] = [
 ];
 
 impl ASM {
-    pub fn func_write_number(&mut self) {
+    pub fn func_write_number(&mut self, is_binary_op_result: bool) {
+        // we pop this anyway because in binary op we push "rax" to stack no matter what
         let stack_member = self.stack.pop().unwrap();
 
-        self.extend_current_label(vec![
-            format!("mov rax, {}", stack_member),
-            String::from("call _printRAX"),
-        ]);
+            self.extend_current_label(vec![
+                format!("mov rax, {}", stack_member),
+                String::from("call _printRAX"),
+            ]);
+
+        // if !is_binary_op_result {
+        //     self.extend_current_label(vec![
+        //         format!("mov rax, {}", stack_member),
+        //         String::from("call _printRAX"),
+        //     ]);
+        // } else {
+        //     // the value is already in rax
+        //     self.extend_current_label(vec![String::from("call _printRAX")]);
+        // }
     }
 
     pub fn func_exit(&mut self) {
@@ -119,7 +130,7 @@ impl ASM {
                             match found {
                                 Some(struct_member) => match struct_member.member_type {
                                     VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                        self.func_write_number();
+                                        self.func_write_number(false);
                                         vec![]
                                     }
                                     VarType::Str => {
