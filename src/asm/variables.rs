@@ -50,6 +50,7 @@ impl ASM {
 
             self.extend_current_label(v);
 
+            // already locked by self.get_free_register
             self.stack_push(String::from(rax));
 
             self.unlock_register(rbx);
@@ -59,12 +60,14 @@ impl ASM {
 
         if variable.store_address {
             self.extend_current_label(vec![format!("lea {rax}, [rbp - {}]", ar_var_offset)]);
+            // already locked by self.get_free_register
             self.stack_push(String::from(rax));
             return;
         }
 
         self.extend_current_label(vec![format!("mov {}, [rbp - {}]", rax_actual_name, ar_var_offset)]);
 
+        // already locked by self.get_free_register
         self.stack_push(String::from(rax));
     }
 
@@ -96,12 +99,12 @@ impl ASM {
 
         if variable.store_address {
             self.extend_current_label(vec![format!("mov {rax}, [rbp - {}]", ar_var_offset)]);
-            self.stack_push(format!("{rax}"));
+            self.stack_push(String::from(rax));
             return;
         }
 
         self.extend_current_label(vec![format!("mov {rax}, [rbp - {}]", ar_var_offset)]);
-        self.stack_push(format!("{rax}"));
+        self.stack_push(String::from(rax));
     }
 
     fn handle_local_ptr_struct(
@@ -128,7 +131,7 @@ impl ASM {
                 format!("lea {rax}, [rbp - {}]", first.offset),
             ]);
 
-            self.stack_push(format!("{rax}"));
+            self.stack_push(String::from(rax));
 
             return;
         }
@@ -220,7 +223,7 @@ impl ASM {
                 format!("mov {}, [{rbx}]", get_register_name_for_bits(&rax, 8)),
             ]);
 
-            self.stack_push(format!("{rax}"));
+            self.stack_push(String::from(rax));
 
             self.unlock_register(rbx);
 
@@ -235,7 +238,7 @@ impl ASM {
         let rax = self.get_free_register();
 
         self.extend_current_label(vec![format!("mov {rax}, [rbp - {}]", ar_var_offset)]);
-        self.stack_push(format!("{rax}"));
+        self.stack_push(String::from(rax));
     }
 
     fn handle_local_ptr(&mut self, var_type: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
@@ -263,11 +266,9 @@ impl ASM {
             let rax = self.get_free_register();
 
             // if it's just printing the array, then print the address
-            self.extend_current_label(vec![
-                format!("lea {rax}, [rbp - {}]", ar_var.offset)
-            ]);
+            self.extend_current_label(vec![format!("lea {rax}, [rbp - {}]", ar_var.offset)]);
 
-            self.stack_push(format!("{rax}"));
+            self.stack_push(String::from(rax));
             return;
         }
 
@@ -292,7 +293,7 @@ impl ASM {
 
                 self.unlock_register(rbx);
 
-                self.stack_push(format!("{rax}"));
+                self.stack_push(String::from(rax));
             }
 
             VarType::Int8 => todo!(),
@@ -325,7 +326,7 @@ impl ASM {
                 format!("lea {rax}, [rbp - {}]", ar_var_offset), // format!("push rax")
             ]);
 
-            self.stack_push(format!("{rax}"));
+            self.stack_push(String::from(rax));
             return;
         }
 
@@ -350,7 +351,7 @@ impl ASM {
 
             v.extend(std::iter::repeat(format!("mov {rax}, [{rax}]")).take(variable.times_dereferenced - 1));
 
-            self.stack_push(format!("{rax}"));
+            self.stack_push(String::from(rax));
 
             self.extend_current_label(v);
             return;
@@ -368,7 +369,7 @@ impl ASM {
             self.extend_current_label(vec![
                 format!("lea {rax}, [rbp - {}]", ar_var_offset), //  format!("push rax")
             ]);
-            self.stack_push(format!("{rax}"));
+            self.stack_push(String::from(rax));
             return;
         }
 
@@ -490,7 +491,7 @@ impl ASM {
 
         self.extend_current_label(vec![format!("mov {rax}, [rbp - {}]", ar_var.borrow().offset)]);
 
-        self.stack_push(format!("{rax}"));
+        self.stack_push(String::from(rax));
     }
 
     fn gen_asm_for_var_local_scope(&mut self, variable: &Variable, ar_var: &Rc<RefCell<Variable>>) {
@@ -535,7 +536,7 @@ impl ASM {
                         format!("lea {rax}, [rbp - {}]", ar_var.borrow().offset + first.offset),
                     ]);
 
-                    self.stack_push(format!("{rax}"));
+                    self.stack_push(String::from(rax));
 
                     return;
                 }
@@ -614,7 +615,7 @@ impl ASM {
                         format!("mov {rax}, _{var_name}"),
                     ]);
 
-                    self.stack_push(format!("{rax}"));
+                    self.stack_push(String::from(rax));
                 }
 
                 None => unreachable!(

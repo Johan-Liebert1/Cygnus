@@ -1,14 +1,13 @@
-fun add(a: int, b: int) -> int {
-    write("a = ", a)
-    write("b = ", b)
-
-    return 69
-}
-
 fun main() {
-    def a: int = add(5, 6)
+    def array: int[50];
 
-    write("ret = ", a)
+    loop from 0 to 50 with i {
+        array[i] = 50 - i
+    }
+
+    loop from 0 to 50 with i {
+        write("array[i] = ", array[i])
+    }
 }
 
 main()

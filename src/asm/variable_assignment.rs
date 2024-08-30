@@ -73,7 +73,11 @@ impl ASM {
                 let index = self.stack_pop().unwrap();
                 let value = self.stack_pop().unwrap();
 
+                trace!("index: {index}");
+                trace!("value: {value}");
+
                 let rax = self.get_free_register();
+                trace!("rax: {rax}");
                 let rbx = self.get_free_register();
                 let rcx = self.get_free_register();
 
@@ -98,12 +102,12 @@ impl ASM {
                     format!("mov [{rbx} - {}], {rcx}", var_offset),
                 ]);
 
+                self.unlock_register(rcx);
+                self.unlock_register(rbx);
+                self.unlock_register(rax);
+
                 self.unlock_register_from_stack_value(&index);
                 self.unlock_register_from_stack_value(&value);
-
-                self.unlock_register(rax);
-                self.unlock_register(rbx);
-                self.unlock_register(rcx);
             }
 
             None => {

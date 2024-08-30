@@ -1,5 +1,5 @@
 use crate::{
-    lexer::{tokens::Operations, types::VarType},
+    lexer::{registers::Register, tokens::Operations, types::VarType},
     trace,
 };
 
@@ -252,7 +252,8 @@ impl ASM {
             }
         };
 
-        self.stack_push("rax".into());
+        self.lock_register(Register::RAX);
+        self.stack_push(String::from(Register::RAX));
         // self.stack_push(reg_to_use.into());
 
         // trace!(

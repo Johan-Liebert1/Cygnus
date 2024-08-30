@@ -8,7 +8,7 @@ section .bss
 section .data
 	;; For floating point operations
 	float_imm dq 0
-	string_0 db 119,111,119,10
+	string_0 db 97,114,114,97,121,91,105,93,32,61,32
 
 section .text
 	global _start
@@ -23,48 +23,96 @@ _main:
 	push rbp
 	mov rbp, rsp
 	;; Make sure that the stack pointer is 16 byte aligned always
-	sub rsp, 32
+	sub rsp, 464
 	
 	
 	
-	;; assign_local_number of type Integer
-	mov QWORD [rbp - 24], 69
 	
-	mov QWORD [rbp - 8], 4
-	mov QWORD [rbp - 16], string_0
+	;; loop_0 start
+	mov QWORD [rbp - 424], 1
+	mov QWORD [rbp - 416], 50
+	mov QWORD [rbp - 408], 0
+	mov QWORD [rbp - 432], 0
+	.loop_0:
 	
-	;; Storing address of struct A for variable a not in handle_local_ptr
-	lea rax, [rbp - 24]
 	
-	;; assign_local_pointer of type A
-	mov rbx, rax
-	mov [rbp - 32], rax
+	;; Minus get the two operands from the stack
+	mov rbx, [rbp - 432]
+	mov rax, 50
+	sub rax, rbx
 	
-	;; Handling ptr to struct for Ptr -> A
+	;; rbx stores the index, rcx has the actual value
+	mov rcx, [rbp - 432]
+	mov rdx, rax
+	mov rbx, 8
+	mul rcx
+	mov rcx, rbp
+	add rcx, rbx
+	mov [rcx - 400], rdx
 	
-	mov rbx, [rbp - 32]
-	add rbx, 0
-	xor rax, rax
-	mov rax, [rbx]
+	.loop_0_end_start:
+	;; inc the loop variable
+	mov rax, [rbp - 432]
+	mov rbx, [rbp - 424]
+	add rax, rbx
+	mov [rbp - 432], rax
+	;; check exit condition
+	mov rcx, [rbp - 424] ;; step
+	mov rbx, [rbp - 416] ;; to
+	mov rax, [rbp - 408] ;; from
+	add rax, rcx
+	dec rbx
+	cmp rax, rbx
+	jg .loop_end_0
+	mov [rbp - 408], rax
+	jmp .loop_0
+	.loop_end_0:
+	
+	
+	
+	
+	;; loop_1 start
+	mov QWORD [rbp - 456], 1
+	mov QWORD [rbp - 448], 50
+	mov QWORD [rbp - 440], 0
+	mov QWORD [rbp - 464], 0
+	.loop_1:
+	
+	
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_0
+	mov rdx, 11
+	syscall
+	
+	;; Start array index access
+	mov rax, [rbp - 464]
+	mov rbx, 8
+	mul rbx
+	mov rbx, rbp
+	add rbx, rax
+	mov rax, [rbx - 400]
 	
 	mov rax, rax
 	call _printRAX
 	
-	
-	;; Handling ptr to struct for Ptr -> A
-	
-	mov rcx, [rbp - 32]
-	add rcx, 8
-	xor rbx, rbx
-	mov rbx, [rcx]
-	mov rdx, [rcx + 8]
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, rbx
-	mov rdx, rdx
-	syscall
-	
+	.loop_1_end_start:
+	;; inc the loop variable
+	mov rbx, [rbp - 464]
+	mov rcx, [rbp - 456]
+	add rbx, rcx
+	mov [rbp - 464], rbx
+	;; check exit condition
+	mov rdx, [rbp - 456] ;; step
+	mov rcx, [rbp - 448] ;; to
+	mov rbx, [rbp - 440] ;; from
+	add rbx, rdx
+	dec rcx
+	cmp rbx, rcx
+	jg .loop_end_1
+	mov [rbp - 440], rbx
+	jmp .loop_1
+	.loop_end_1:
 	
 	mov rsp, rbp
 	pop rbp
