@@ -42,8 +42,8 @@ impl ASM {
                     //     format!("add rax, rbx"),
                     // ]
 
-                    let first = self.stack.pop().unwrap();
-                    let second = self.stack.pop().unwrap();
+                    let first = self.stack_pop().unwrap();
+                    let second = self.stack_pop().unwrap();
 
                     let mut inst = vec![
                         format!(";; Plus get the two operands from the stack"),
@@ -80,8 +80,8 @@ impl ASM {
                         format!("mov rax, [float_imm]"),
                     ]
                 } else {
-                    let first = self.stack.pop().unwrap();
-                    let second = self.stack.pop().unwrap();
+                    let first = self.stack_pop().unwrap();
+                    let second = self.stack_pop().unwrap();
 
                     // TODO: Remove
                     //
@@ -134,8 +134,8 @@ impl ASM {
                     // ]
                     //
 
-                    let first = self.stack.pop().unwrap();
-                    let second = self.stack.pop().unwrap();
+                    let first = self.stack_pop().unwrap();
+                    let second = self.stack_pop().unwrap();
 
                     vec![
                         // 40 / 5
@@ -177,8 +177,8 @@ impl ASM {
                     //     format!("mul rbx"),
                     // ]
 
-                    let first = self.stack.pop().unwrap();
-                    let second = self.stack.pop().unwrap();
+                    let first = self.stack_pop().unwrap();
+                    let second = self.stack_pop().unwrap();
 
                     let mut inst = vec![
                         format!(";; Multiply get the two operands from the stack"),
@@ -238,8 +238,8 @@ impl ASM {
             }
 
             Operations::Modulo => {
-                let first = self.stack.pop().unwrap();
-                let second = self.stack.pop().unwrap();
+                let first = self.stack_pop().unwrap();
+                let second = self.stack_pop().unwrap();
 
                 vec![
                     format!(";; Modulo get the two operands from the stack"),
@@ -252,8 +252,8 @@ impl ASM {
             }
         };
 
-        self.stack.push("rax".into());
-        // self.stack.push(reg_to_use.into());
+        self.stack_push("rax".into());
+        // self.stack_push(reg_to_use.into());
 
         // trace!(
         //     "result_type: {}, times_dereferenced: {}",

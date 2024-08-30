@@ -18,7 +18,7 @@ pub struct ASM {
     pub num_floats: usize,
     pub num_ifs: usize,
 
-    pub stack: Vec<String>,
+    stack: Vec<String>,
 
     function_argument_number: Option<usize>,
 
@@ -132,5 +132,17 @@ impl ASM {
 
             None => panic!("Cannot call `parsing_next_function_arg` when not parsing function args"),
         }
+    }
+
+    pub fn stack_pop(&mut self) -> Option<String> {
+        self.stack.pop()
+    }
+
+    pub fn stack_push(&mut self, to_push: String) {
+        self.stack.push(to_push);
+    }
+
+    pub fn stack_extend(&mut self, to_push: Vec<String>) {
+        self.stack.extend(to_push);
     }
 }

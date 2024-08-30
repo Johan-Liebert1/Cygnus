@@ -25,8 +25,8 @@ impl ASM {
     }
 
     pub fn compare_ints(&mut self) -> Vec<String> {
-        let first = self.stack.pop().unwrap();
-        let second = self.stack.pop().unwrap();
+        let first = self.stack_pop().unwrap();
+        let second = self.stack_pop().unwrap();
 
         vec![
             format!(";; We pop in the opposite order of comparison as we push onto the stack"),
@@ -108,7 +108,7 @@ impl ASM {
 
         self.extend_current_label(instructions);
 
-        self.stack.push("al".into());
+        self.stack_push("al".into());
 
         self.comparison_num += 1;
     }

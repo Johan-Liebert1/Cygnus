@@ -19,7 +19,7 @@ impl ASM {
                     // TODO: Remove
                     //
                     // instructions.push(format!("push {i}"))
-                    self.stack.push(format!("{i}"))
+                    self.stack_push(format!("{i}"))
                 },
 
                 // We cannot have immediate float values in nasm
@@ -84,7 +84,7 @@ impl ASM {
                 //     format!("push {}", chars.len()),
                 // ]);
                 
-                self.stack.extend(vec![
+                self.stack_extend(vec![
                     format!("string_{}", self.num_strings),
                     format!("{}", chars.len()),
                 ]);

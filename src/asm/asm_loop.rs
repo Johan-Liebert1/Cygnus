@@ -65,9 +65,9 @@ impl ASM {
         //     format!("mov [rbp - {}], rax", from_offset),
         // ];
 
-        let mut step = self.stack.pop().unwrap();
-        let mut to = self.stack.pop().unwrap();
-        let mut from = self.stack.pop().unwrap();
+        let mut step = self.stack_pop().unwrap();
+        let mut to = self.stack_pop().unwrap();
+        let mut from = self.stack_pop().unwrap();
 
         let mut loop_start: Vec<String> = vec![
             format!(";; loop_{loop_number} start")

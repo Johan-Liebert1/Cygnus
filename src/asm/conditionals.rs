@@ -30,7 +30,7 @@ impl ASM {
         //     format!("je {}", jump_to_label),
         // ];
 
-        let stack_member = self.stack.pop().unwrap();
+        let stack_member = self.stack_pop().unwrap();
 
         let instructions = vec![
             // if label
@@ -84,7 +84,7 @@ impl ASM {
         //     format!("je {}", jump_to_label),
         // ];
 
-        let stack_member = self.stack.pop().unwrap();
+        let stack_member = self.stack_pop().unwrap();
 
         let instructions = vec![
             // if label

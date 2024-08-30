@@ -38,8 +38,8 @@ impl ASM {
         // last
         // Move the string length into the mem address above the addr
         // containing the string pointer
-        let str_len = self.stack.pop().unwrap();
-        let str_addr = self.stack.pop().unwrap();
+        let str_len = self.stack_pop().unwrap();
+        let str_addr = self.stack_pop().unwrap();
 
         self.extend_current_label(vec![
             format!("mov QWORD [rbp - {}], {}", var_offset - 8, str_len),
@@ -59,7 +59,7 @@ impl ASM {
         // ]);
         // instructions.push(format!("mov [rbp - {}], {}", var_offset, reg_name));
 
-        let mut stack_item = self.stack.pop().unwrap();
+        let mut stack_item = self.stack_pop().unwrap();
 
         let mut v = vec![format!(";; assign_local_number of type {}", var_type)];
 
@@ -91,8 +91,8 @@ impl ASM {
 
         match array_access_index {
             Some(index) => {
-                let index = self.stack.pop().unwrap();
-                let value = self.stack.pop().unwrap();
+                let index = self.stack_pop().unwrap();
+                let value = self.stack_pop().unwrap();
 
                 // we visit the right side first and then the left
                 // side. So the array index is at topand the
@@ -119,7 +119,7 @@ impl ASM {
             None => {
                 // Assignment to the array variable itself
                 for i in 0..*size {
-                    let val = self.stack.pop().unwrap();
+                    let val = self.stack_pop().unwrap();
                     instructions.extend([
                         // format!("pop rax"),
                         format!(
@@ -176,7 +176,7 @@ impl ASM {
                 //
                 // instructions.push(format!("pop rax"));
 
-                let stack_member = self.stack.pop().unwrap();
+                let stack_member = self.stack_pop().unwrap();
                 instructions.push(format!("mov rax, {stack_member}"));
 
                 if is_ptr_deref {
@@ -301,7 +301,7 @@ impl ASM {
             }
 
             VarType::Float => {
-                let stack_member = self.stack.pop().unwrap();
+                let stack_member = self.stack_pop().unwrap();
 
                 self.extend_current_label(vec![
                     format!(";; For assignemt of float var name '{}'", ar_var.borrow().var_name),
@@ -316,7 +316,7 @@ impl ASM {
             VarType::Str => self.assign_local_string(ar_var.borrow().offset),
 
             VarType::Char => {
-                let stack_member = self.stack.pop().unwrap();
+                let stack_member = self.stack_pop().unwrap();
 
                 // TODO: Update this
                 //
@@ -368,8 +368,8 @@ impl ASM {
                 // TODO: Remove
                 // instructions.extend([format!("pop rbx"), format!("pop rax")]);
 
-                let str_len = self.stack.pop().unwrap();
-                let str_addr = self.stack.pop().unwrap();
+                let str_len = self.stack_pop().unwrap();
+                let str_addr = self.stack_pop().unwrap();
 
                 instructions.extend([format!("mov rbx, {}", str_len), format!("mov rax, {}", str_addr)]);
 
@@ -377,7 +377,7 @@ impl ASM {
             }
 
             VarType::Ptr(ptr_var_type) => {
-                let stack_member = self.stack.pop().unwrap();
+                let stack_member = self.stack_pop().unwrap();
 
                 match **ptr_var_type {
                     VarType::Struct(_, _) => todo!(),
@@ -418,7 +418,7 @@ impl ASM {
     }
 
     fn handle_local_plus_minus_eq_assignment_integer(&mut self, op: &str, offset: usize) {
-        let stack_member = self.stack.pop().unwrap();
+        let stack_member = self.stack_pop().unwrap();
 
         self.extend_current_label(vec![
             format!("mov rax, [rbp - {}]", offset),

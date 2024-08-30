@@ -41,7 +41,7 @@ const WRITE_CHAR_ASM_INSTRUCTIONS: [&str; 8] = [
 impl ASM {
     fn get_vec_for_write_number(&mut self) -> Vec<String> {
         // we pop this anyway because in binary op we push "rax" to stack no matter what
-        let stack_member = self.stack.pop().unwrap();
+        let stack_member = self.stack_pop().unwrap();
 
         vec![
             format!("mov rax, {}", stack_member),
@@ -73,8 +73,8 @@ impl ASM {
         //
         // self.extend_current_label(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec());
 
-        let str_len = self.stack.pop().unwrap();
-        let str_addr = self.stack.pop().unwrap();
+        let str_len = self.stack_pop().unwrap();
+        let str_addr = self.stack_pop().unwrap();
 
         self.extend_current_label(vec![
             "mov rax, 1".into(),
@@ -120,8 +120,8 @@ impl ASM {
                 if times_dereferenced > 0 {
                     // WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
 
-                    let str_len = self.stack.pop().unwrap();
-                    let str_addr = self.stack.pop().unwrap();
+                    let str_len = self.stack_pop().unwrap();
+                    let str_addr = self.stack_pop().unwrap();
 
                     vec![
                         "mov rax, 1".into(),
@@ -201,7 +201,7 @@ impl ASM {
         let mut instructions = vec![];
 
         for i in 0..num_args {
-            let stack_member = self.stack.pop().unwrap();
+            let stack_member = self.stack_pop().unwrap();
             instructions.push(format!("mov {}, {}", SYSCALL_ARGS_REGS[i], stack_member));
         }
 
@@ -211,7 +211,7 @@ impl ASM {
         //
         // instructions.push("push rax".into());
 
-        self.stack.push("rax".into());
+        self.stack_push("rax".into());
 
         self.extend_current_label(instructions);
     }
@@ -268,7 +268,7 @@ impl ASM {
                         //
                         // vec![format!("pop rax"), format!("call _printRAX")]
 
-                        let stack_member = self.stack.pop().unwrap();
+                        let stack_member = self.stack_pop().unwrap();
 
                         vec![
                             format!("mov rax, {} {}", var.var_type.get_operation_size(), stack_member),
@@ -280,8 +280,8 @@ impl ASM {
                         // TODO: Remove
                         // WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
 
-                        let str_len = self.stack.pop().unwrap();
-                        let str_addr = self.stack.pop().unwrap();
+                        let str_len = self.stack_pop().unwrap();
+                        let str_addr = self.stack_pop().unwrap();
 
                         vec![
                             "mov rax, 1".into(),
@@ -330,8 +330,8 @@ impl ASM {
                                     // TODO: Remove
                                     // WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
 
-                                    let str_len = self.stack.pop().unwrap();
-                                    let str_addr = self.stack.pop().unwrap();
+                                    let str_len = self.stack_pop().unwrap();
+                                    let str_addr = self.stack_pop().unwrap();
 
                                     vec![
                                         "mov rax, 1".into(),

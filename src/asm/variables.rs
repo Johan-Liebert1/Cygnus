@@ -49,7 +49,7 @@ impl ASM {
 
             self.extend_current_label(v);
 
-            self.stack.push("rax".into());
+            self.stack_push("rax".into());
 
             return;
         }
@@ -60,7 +60,7 @@ impl ASM {
                 // format!("push rax")
             ]);
 
-            self.stack.push("rax".into());
+            self.stack_push("rax".into());
 
             return;
         }
@@ -70,7 +70,7 @@ impl ASM {
             // format!("push rax"),
         ]);
 
-        self.stack.push("rax".into());
+        self.stack_push("rax".into());
     }
 
     fn handle_local_ptr_str(&mut self, var_type: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
@@ -91,8 +91,8 @@ impl ASM {
                 format!(";; Finish dereferencing variable {}", variable.var_name),
             ]);
 
-            self.stack.push("rax".into());
-            self.stack.push("rbx".into());
+            self.stack_push("rax".into());
+            self.stack_push("rbx".into());
 
             self.extend_current_label(v);
             return;
@@ -103,14 +103,14 @@ impl ASM {
                 format!("mov rax, [rbp - {}]", ar_var_offset),
                 // format!("push rax")
             ]);
-            self.stack.push("rax".into());
+            self.stack_push("rax".into());
             return;
         }
 
         self.extend_current_label(vec![
             format!("mov rax, [rbp - {}]", ar_var_offset), // format!("push rax")
         ]);
-        self.stack.push("rax".into());
+        self.stack_push("rax".into());
     }
 
     fn handle_local_ptr_struct(
@@ -136,7 +136,7 @@ impl ASM {
                 // format!("push rax"),
             ]);
 
-            self.stack.push("rax".into());
+            self.stack_push("rax".into());
 
             return;
         }
@@ -165,7 +165,7 @@ impl ASM {
                         // format!("push rax"),
                     ]);
 
-                    self.stack.push("rax".into());
+                    self.stack_push("rax".into());
                 }
 
                 VarType::Str => {
@@ -184,8 +184,8 @@ impl ASM {
                         // format!("push rax"),
                     ]);
 
-                    self.stack.push("rax".into());
-                    self.stack.push("rcx".into());
+                    self.stack_push("rax".into());
+                    self.stack_push("rcx".into());
                 }
 
                 VarType::Ptr(var_type) => self.handle_local_ptr(var_type, variable, struct_member_type.offset),
@@ -217,7 +217,7 @@ impl ASM {
                 // format!("push rax"),
             ]);
 
-            self.stack.push("rax".into());
+            self.stack_push("rax".into());
 
             return;
         }
@@ -232,7 +232,7 @@ impl ASM {
             // format!("push rax")
         ]);
 
-        self.stack.push("rax".into());
+        self.stack_push("rax".into());
     }
 
     fn handle_local_ptr(&mut self, var_type: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
@@ -261,13 +261,13 @@ impl ASM {
             self.extend_current_label(vec![
                 format!("lea rax, [rbp - {}]", ar_var.offset), // format!("push rax")
             ]);
-            self.stack.push("rax".into());
+            self.stack_push("rax".into());
             return;
         }
 
         match *var_type.clone() {
             VarType::Int => {
-                let index = self.stack.pop().unwrap();
+                let index = self.stack_pop().unwrap();
 
                 self.extend_current_label(vec![
                     format!(";; Start array index access"),
@@ -283,7 +283,7 @@ impl ASM {
                     // format!("push rax"),
                 ]);
 
-                self.stack.push("rax".into());
+                self.stack_push("rax".into());
             }
 
             VarType::Int8 => todo!(),
@@ -314,7 +314,7 @@ impl ASM {
                 format!("lea rax, [rbp - {}]", ar_var_offset), // format!("push rax")
             ]);
 
-            self.stack.push("rax".into());
+            self.stack_push("rax".into());
             return;
         }
 
@@ -326,7 +326,7 @@ impl ASM {
         //     format!("push rax"),
         // ]);
 
-        self.stack.push(format!("[rbp - {}]", ar_var_offset));
+        self.stack_push(format!("[rbp - {}]", ar_var_offset));
     }
 
     fn handle_local_str(&mut self, variable: &Variable, ar_var_offset: usize) {
@@ -352,7 +352,7 @@ impl ASM {
             //     // format!("push rbx"),
             // ]);
 
-            self.stack.push("rax".into());
+            self.stack_push("rax".into());
 
             self.extend_current_label(v);
             return;
@@ -368,7 +368,7 @@ impl ASM {
             self.extend_current_label(vec![
                 format!("lea rax, [rbp - {}]", ar_var_offset), //  format!("push rax")
             ]);
-            self.stack.push("rax".into());
+            self.stack_push("rax".into());
             return;
         }
 
@@ -382,7 +382,7 @@ impl ASM {
         //     format!("push rax"),
         // ])
 
-        self.stack.extend(vec![
+        self.stack_extend(vec![
             format!("[rbp - {}]", ar_var_offset),
             // length is pushed last
             format!("[rbp - {}]", ar_var_offset - 8),
@@ -414,7 +414,7 @@ impl ASM {
                     format!(";; Finish dereferencing variable {}", var_name),
                 ]);
 
-                self.stack.push("rax".into());
+                self.stack_push("rax".into());
 
                 self.extend_current_label(v);
                 return;
@@ -425,7 +425,7 @@ impl ASM {
                     format!("lea rax, {}", var_name),
                     //  format!("push rax")
                 ]);
-                self.stack.push("rax".into());
+                self.stack_push("rax".into());
                 return;
             }
 
@@ -434,7 +434,7 @@ impl ASM {
                 format!("mov {reg_name}, {}", var_name),
                 // format!("push rax"),
             ]);
-            self.stack.push("rax".into());
+            self.stack_push("rax".into());
 
             return;
         }
@@ -457,13 +457,13 @@ impl ASM {
                         // format!("push rax")
                     ]);
 
-                    self.stack.push("rax".into());
+                    self.stack_push("rax".into());
                 } else {
                     self.extend_current_label(vec![
                         format!("mov {}, [{var_name}]", register_name),
                         // format!("push rax"),
                     ]);
-                    self.stack.push("rax".into());
+                    self.stack_push("rax".into());
                 }
             }
 
@@ -478,7 +478,7 @@ impl ASM {
                         format!("mov rax, [{var_name}]"),
                         // format!("push rax")
                     ]);
-                    self.stack.push("rax".into());
+                    self.stack_push("rax".into());
                 }
             }
 
@@ -504,7 +504,7 @@ impl ASM {
             // format!("push rax"),
         ]);
 
-        self.stack.push("rax".into());
+        self.stack_push("rax".into());
     }
 
     fn gen_asm_for_var_local_scope(&mut self, variable: &Variable, ar_var: &Rc<RefCell<Variable>>) {
@@ -548,7 +548,7 @@ impl ASM {
                         // format!("push rax"),
                     ]);
 
-                    self.stack.push("rax".into());
+                    self.stack_push("rax".into());
 
                     return;
                 }
@@ -626,7 +626,7 @@ impl ASM {
                         // format!("push rax"),
                     ]);
 
-                    self.stack.push("rax".into());
+                    self.stack_push("rax".into());
 
                 }
 
