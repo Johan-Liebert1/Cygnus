@@ -17,22 +17,6 @@ use super::asm::ASM;
 
 impl ASM {
     fn assign_local_string(&mut self, var_offset: usize) {
-        // TODO: Remove
-        //
-        // let mut instructions = vec![];
-
-        // // pop the string pointer into rax
-        // // the string len should be in rbx as string len is pushed
-        // // last
-        // // Move the string length into the mem address above the addr
-        // // containing the string pointer
-        // instructions.extend([
-        //     format!("pop rbx"),
-        //     format!("pop rax"),
-        //     format!("mov [rbp - {}], rbx", var_offset - 8),
-        //     format!("mov [rbp - {}], rax", var_offset),
-        // ]);
-
         // pop the string pointer into rax
         // the string len should be in rbx as string len is pushed
         // last
@@ -45,29 +29,22 @@ impl ASM {
             format!("mov QWORD [rbp - {}], {}", var_offset - 8, str_len),
             format!("mov QWORD [rbp - {}], {}", var_offset, str_addr),
         ]);
+
+        self.unlock_register_from_stack_value(&str_len);
+        self.unlock_register_from_stack_value(&str_addr);
     }
 
     fn assign_local_number(&mut self, var_offset: usize, var_type: &VarType) {
-        let reg_name = var_type.get_register_name(Register::RAX);
-
-        // TODO: Remove
-        //
-        // instructions.extend([
-        //     format!(";; assign_local_number of type {}", var_type),
-        //     format!("xor rax, rax"),
-        //     format!("pop rax"),
-        // ]);
-        // instructions.push(format!("mov [rbp - {}], {}", var_offset, reg_name));
-
         let mut stack_item = self.stack_pop().unwrap();
 
         let mut v = vec![format!(";; assign_local_number of type {}", var_type)];
 
         if stack_item.starts_with('[') {
-            // trying to move a memory location into another one which is not allowed
-            v.push(format!("mov r10, {}", stack_item));
+            let rax = self.get_free_register();
 
-            stack_item = "r10".into();
+            // trying to move a memory location into another one which is not allowed
+            v.push(format!("mov {rax}, {}", stack_item));
+            stack_item = String::from(rax);
         }
 
         v.push(format!(
@@ -76,6 +53,8 @@ impl ASM {
             var_offset,
             stack_item
         ));
+
+        self.unlock_register_from_stack_value(&stack_item);
 
         self.extend_current_label(v);
     }
@@ -94,6 +73,10 @@ impl ASM {
                 let index = self.stack_pop().unwrap();
                 let value = self.stack_pop().unwrap();
 
+                let rax = self.get_free_register();
+                let rbx = self.get_free_register();
+                let rcx = self.get_free_register();
+
                 // we visit the right side first and then the left
                 // side. So the array index is at topand the
                 // actual value to set is at the top - 1 of the stack
@@ -105,15 +88,22 @@ impl ASM {
                     format!(";; rbx stores the index, rcx has the actual value"),
                     // format!("pop rbx"),                                       // rcx has 1
                     // format!("pop rcx"),                                       // rdx has 10
-                    format!("mov rbx, {}", index),                            // rcx has 1
-                    format!("mov rcx, {}", value),                            // rdx has 10
-                    format!("mov rax, {}", type_.get_underlying_type_size()), // rax = 8
-                    format!("mul rbx"),                                       // now rax has = rax * rbx
+                    format!("mov {rbx}, {}", index), // rcx has 1
+                    format!("mov {rcx}, {}", value), // rdx has 10
+                    format!("mov {rax}, {}", type_.get_underlying_type_size()), // rax = 8
+                    format!("mul {rbx}"),            // now rax has = rax * rbx
                     // = 1 * 8 = 8
-                    format!("mov rbx, rbp"),
-                    format!("add rbx, rax"),
-                    format!("mov [rbx - {}], rcx", var_offset),
+                    format!("mov {rbx}, rbp"),
+                    format!("add {rbx}, {rax}"),
+                    format!("mov [{rbx} - {}], {rcx}", var_offset),
                 ]);
+
+                self.unlock_register_from_stack_value(&index);
+                self.unlock_register_from_stack_value(&value);
+
+                self.unlock_register(rax);
+                self.unlock_register(rbx);
+                self.unlock_register(rcx);
             }
 
             None => {
@@ -129,6 +119,8 @@ impl ASM {
                             val
                         ),
                     ]);
+
+                    self.unlock_register_from_stack_value(&val);
                 }
             }
         }
@@ -172,33 +164,37 @@ impl ASM {
 
                 instructions.push(format!(";; assign_local_pointer of type {}", t));
 
-                // TODO: Remove
-                //
-                // instructions.push(format!("pop rax"));
+                let rax = self.get_free_register();
+                let rbx = self.get_free_register();
 
                 let stack_member = self.stack_pop().unwrap();
-                instructions.push(format!("mov rax, {stack_member}"));
+                instructions.push(format!("mov {rax}, {stack_member}"));
 
                 if is_ptr_deref {
-                    instructions.push(format!("mov rbx, [rbp - {}]", var_offset));
+                    instructions.push(format!("mov {rbx}, [rbp - {}]", var_offset));
                 }
 
                 if times_dereferenced > 1 {
-                    instructions.extend(std::iter::repeat(format!("mov rbx, [rbx]")).take(times_dereferenced - 1));
+                    instructions.extend(std::iter::repeat(format!("mov {rbx}, [{rbx}]")).take(times_dereferenced - 1));
                 }
 
                 if is_ptr_deref {
-                    instructions.push(format!("mov [rbx], {}", t.get_register_name(Register::RAX)));
+                    instructions.push(format!("mov [{rbx}], {}", t.get_register_name(rax)));
                 }
 
-                // instructions.extend(vec![format!("pop rbx"), format!("mov rax, rbx")]);
+                self.unlock_register_from_stack_value(&stack_member);
+
+                self.unlock_register(rbx);
+                self.unlock_register(rax);
             }
         };
 
         // This is assignment to the pointer itself not to the value to which the pointer is
         // pointing to
         if !is_ptr_deref {
-            instructions.push(format!("mov [rbp - {}], rax", var_offset));
+            let rax = self.get_free_register();
+            instructions.push(format!("mov [rbp - {}], {rax}", var_offset));
+            self.unlock_register(rax);
         }
 
         self.extend_current_label(instructions);
@@ -266,7 +262,6 @@ impl ASM {
         array_access_index: &Option<ASTNode>,
     ) {
         let mut instructions = vec![];
-        let mut is_string = false;
 
         // var = variable from call stack
         match &ar_var.borrow().var_type {
@@ -303,20 +298,26 @@ impl ASM {
             VarType::Float => {
                 let stack_member = self.stack_pop().unwrap();
 
+                let rax = self.get_free_register();
+
                 self.extend_current_label(vec![
                     format!(";; For assignemt of float var name '{}'", ar_var.borrow().var_name),
                     // rax contains the memory address of the floating point number
-                    // TODO: Remove
-                    // format!("pop rax"),
-                    format!("mov rax, {}", stack_member),
-                    format!("mov [rbp - {}], rax", ar_var.borrow().offset),
-                ])
+                    format!("mov {rax}, {}", stack_member),
+                    format!("mov [rbp - {}], {rax}", ar_var.borrow().offset),
+                ]);
+
+                self.unlock_register_from_stack_value(&stack_member);
+                self.unlock_register(rax);
             }
 
             VarType::Str => self.assign_local_string(ar_var.borrow().offset),
 
             VarType::Char => {
                 let stack_member = self.stack_pop().unwrap();
+
+                let rax = self.get_free_register();
+                let rbx = self.get_free_register();
 
                 // TODO: Update this
                 //
@@ -325,13 +326,15 @@ impl ASM {
                 // last
                 // Treat a character as a string with length of 1
                 instructions.extend([
-                    format!("mov rbx, 1"),
+                    format!("mov {rbx}, 1"),
                     // format!("pop rax"),
-                    format!("mov rax, {}", stack_member),
-                    format!("mov [rbp - {}], rax", ar_var.borrow().offset),
+                    format!("mov {rax}, {}", stack_member),
+                    format!("mov [rbp - {}], {rax}", ar_var.borrow().offset),
                 ]);
 
-                is_string = true;
+                self.unlock_register_from_stack_value(&stack_member);
+                self.unlock_register(rax);
+                self.unlock_register(rbx);
             }
 
             // Assignment to a pointer should be simple enough
@@ -420,15 +423,19 @@ impl ASM {
     fn handle_local_plus_minus_eq_assignment_integer(&mut self, op: &str, offset: usize) {
         let stack_member = self.stack_pop().unwrap();
 
+        let rax = self.get_free_register();
+        let rbx = self.get_free_register();
+
         self.extend_current_label(vec![
-            format!("mov rax, [rbp - {}]", offset),
-            // TODO: Remove
-            //
-            // format!("pop rbx"),
-            format!("mov rbx, {}", stack_member),
-            format!("{} rax, rbx", op),
-            format!("mov [rbp - {}], rax", offset),
-        ])
+            format!("mov {rax}, [rbp - {}]", offset),
+            format!("mov {rbx}, {}", stack_member),
+            format!("{} {rax}, {rbx}", op),
+            format!("mov [rbp - {}], {rax}", offset),
+        ]);
+
+        self.unlock_register(rax);
+        self.unlock_register(rbx);
+        self.unlock_register_from_stack_value(&stack_member);
     }
 
     fn handle_local_plus_minus_eq_assignment(

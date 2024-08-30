@@ -1,6 +1,9 @@
 use core::panic;
 
-use crate::{lexer::registers::{Register, ALL_REGISTERS}, trace};
+use crate::{
+    lexer::registers::{Register, ALL_REGISTERS},
+    trace,
+};
 
 #[derive(Debug)]
 pub struct Label {
@@ -25,6 +28,8 @@ pub struct ASM {
     current_label: String,
 
     used_regsiters: Vec<Register>,
+
+    pub regs_locked_for_function_call: Vec<Register>,
 }
 
 impl Default for ASM {
@@ -66,6 +71,7 @@ impl Default for ASM {
             stack: vec![],
 
             used_regsiters: vec![],
+            regs_locked_for_function_call: vec![],
         }
     }
 }
@@ -154,12 +160,15 @@ impl ASM {
         let idx = self.used_regsiters.iter().find(|x| **x == reg_name);
 
         match idx {
-            Some(idx) => {
-                self.used_regsiters.push(reg_name);
+            Some(..) => {
+                panic!(
+                    "Lock Register Failed: Register {reg_name} already in list. List: {:#?}",
+                    self.used_regsiters
+                )
             }
 
             None => {
-                panic!("Register {reg_name} already in list.")
+                self.used_regsiters.push(reg_name);
             }
         }
     }
@@ -173,18 +182,43 @@ impl ASM {
             }
 
             None => {
-                panic!("Register {reg_name} not found in list.")
+                panic!(
+                    "UnLock Register Failed: Register {reg_name} not found in list. List: {:#?}",
+                    self.used_regsiters
+                )
             }
         }
     }
 
-    pub fn get_free_register(&self) -> Register {
+    pub fn unlock_register_from_stack_value(&mut self, stack_pop_result: &String) {
+        let (is_reg, reg_name) = self.is_reg_name(stack_pop_result);
+
+        if !is_reg {
+            return;
+        }
+
+        self.unlock_register(reg_name)
+    }
+
+    /// Returns a free register and locks it
+    pub fn get_free_register(&mut self) -> Register {
         for reg in ALL_REGISTERS {
             if !self.used_regsiters.contains(&reg) {
+                self.lock_register(reg);
                 return reg;
             }
         }
 
         panic!("Ran out of registers");
+    }
+
+    pub fn is_reg_name(&mut self, name: &String) -> (bool, Register) {
+        for reg_name in ALL_REGISTERS {
+            if *name == String::from(reg_name) {
+                return (true, reg_name);
+            }
+        }
+
+        return (false, Register::R11);
     }
 }

@@ -33,9 +33,9 @@ _main:
 	
 	mov rax, 2
 	
-	mov rax, [rbp - 16]
+	mov rbx, [rbp - 16]
 	
-	mov rdi, rax
+	mov rdi, rbx
 	
 	
 	mov rsi, 0

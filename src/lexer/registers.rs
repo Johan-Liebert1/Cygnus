@@ -65,6 +65,12 @@ impl Debug for Register {
     }
 }
 
+impl From<Register> for String {
+    fn from(value: Register) -> Self {
+        format!("{value}")
+    }
+}
+
 pub fn get_register_name_for_bits(register: &Register, bits: u8) -> &'static str {
     return match register {
         Register::RAX => match bits {

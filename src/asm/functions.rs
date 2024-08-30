@@ -1,13 +1,16 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{ast::variable::Variable, lexer::types::VarType, semantic_analyzer::semantic_analyzer::CallStack};
+use crate::{
+    ast::variable::Variable,
+    lexer::{registers::Register, types::VarType},
+    semantic_analyzer::semantic_analyzer::CallStack,
+};
 
 use super::asm::ASM;
 
 pub const FUNCTION_RETURN_INSTRUCTIONS: [&str; 3] = [("mov rsp, rbp"), ("pop rbp"), ("ret")];
 
 pub const FUNCTION_ARGS_REGS: [&str; 6] = ["rdi", "rsi", "rdx", "rcx", "r8", "r9"];
-pub const SYSCALL_ARGS_REGS: [&str; 7] = ["rax", "rdi", "rsi", "rdx", "r10", "r8", "r9"];
 
 impl ASM {
     pub fn function_call(

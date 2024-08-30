@@ -3,6 +3,7 @@ use crate::{
     helpers::compiler_error,
     interpreter::interpreter::Variables,
     lexer::{
+        registers::Register,
         tokens::VariableEnum,
         types::{VarType, TYPE_INT, TYPE_STRING},
     },
@@ -10,22 +11,17 @@ use crate::{
     trace,
 };
 
-use super::{
-    asm::ASM,
-    functions::{FUNCTION_ARGS_REGS, SYSCALL_ARGS_REGS},
-};
+use super::{asm::ASM, functions::FUNCTION_ARGS_REGS};
 
-// const WRITE_STRING_ASM_INSTRUCTIONS: [&str; 9] = [
-//     ";; Assuming length is pushed last",
-//     "pop r8",
-//     ";; Assuming string address is pushed first",
-//     "pop r9",
-//     "mov rax, 1",
-//     "mov rdi, 1",
-//     "mov rsi, r9",
-//     "mov rdx, r8",
-//     "syscall",
-// ];
+pub const SYSCALL_ARGS_REGS: [Register; 7] = [
+    Register::RAX,
+    Register::RDI,
+    Register::RSI,
+    Register::RDX,
+    Register::R10,
+    Register::R8,
+    Register::R9,
+];
 
 const WRITE_CHAR_ASM_INSTRUCTIONS: [&str; 8] = [
     ";; Writing a character",
@@ -43,10 +39,7 @@ impl ASM {
         // we pop this anyway because in binary op we push "rax" to stack no matter what
         let stack_member = self.stack_pop().unwrap();
 
-        vec![
-            format!("mov rax, {}", stack_member),
-            String::from("call _printRAX"),
-        ]
+        vec![format!("mov rax, {}", stack_member), String::from("call _printRAX")]
     }
 
     pub fn func_write_number(&mut self, is_binary_op_result: bool) {
@@ -203,20 +196,26 @@ impl ASM {
         let stack_member = self.stack_pop().unwrap();
         instructions.push(format!("mov {}, {}", SYSCALL_ARGS_REGS[arg_num], stack_member));
 
+        self.lock_register(SYSCALL_ARGS_REGS[arg_num]);
+        self.regs_locked_for_function_call.push(SYSCALL_ARGS_REGS[arg_num]);
+
         self.extend_current_label(instructions);
     }
 
     pub fn func_syscall_call(&mut self) {
-        // instructions.push("syscall".into());
-
         self.add_to_current_label("syscall".into());
 
-        // TODO: Remove
-        //
-        // instructions.push("push rax".into());
+        // this clone is fine as these are ints anyway and will be 10 at most
+        let regs: Vec<Register> = self.regs_locked_for_function_call.iter().cloned().collect();
 
-        self.stack_push("rax".into());
+        self.regs_locked_for_function_call = vec![];
 
+        for reg in regs {
+            self.unlock_register(reg);
+        }
+
+        self.lock_register(Register::RAX);
+        self.stack_push(String::from(Register::RAX));
     }
 
     pub fn func_write_var(&mut self, var: &Variable, call_stack: &CallStack) {
@@ -324,7 +323,7 @@ impl ASM {
                                 VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                                     self.get_vec_for_write_number()
                                     // vec![
-                                    //     // format!("pop rax"), 
+                                    //     // format!("pop rax"),
                                     //     format!("call _printRAX")
                                     // ]
                                 }
