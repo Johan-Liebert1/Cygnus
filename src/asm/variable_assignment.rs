@@ -17,21 +17,35 @@ use super::asm::ASM;
 
 impl ASM {
     fn assign_local_string(&mut self, var_offset: usize) {
-        let mut instructions = vec![];
+        // TODO: Remove
+        //
+        // let mut instructions = vec![];
+
+        // // pop the string pointer into rax
+        // // the string len should be in rbx as string len is pushed
+        // // last
+        // // Move the string length into the mem address above the addr
+        // // containing the string pointer
+        // instructions.extend([
+        //     format!("pop rbx"),
+        //     format!("pop rax"),
+        //     format!("mov [rbp - {}], rbx", var_offset - 8),
+        //     format!("mov [rbp - {}], rax", var_offset),
+        // ]);
+
 
         // pop the string pointer into rax
         // the string len should be in rbx as string len is pushed
         // last
         // Move the string length into the mem address above the addr
         // containing the string pointer
-        instructions.extend([
-            format!("pop rbx"),
-            format!("pop rax"),
-            format!("mov [rbp - {}], rbx", var_offset - 8),
-            format!("mov [rbp - {}], rax", var_offset),
-        ]);
+        let str_len = self.stack.pop().unwrap();
+        let str_addr = self.stack.pop().unwrap();
 
-        self.extend_current_label(instructions);
+        self.extend_current_label(vec![
+            format!("mov QWORD [rbp - {}], {}", var_offset - 8, str_len),
+            format!("mov QWORD [rbp - {}], {}", var_offset, str_addr),
+        ]);
     }
 
     fn assign_local_number(&mut self, var_offset: usize, var_type: &VarType) {

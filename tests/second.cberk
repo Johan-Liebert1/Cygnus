@@ -1,8 +1,6 @@
 fun main() {
-    def a: int = 5;
-
+    def a: str = "hello\n";
     write(a)
-    write(10)
 }
 
 main()

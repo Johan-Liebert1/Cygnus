@@ -8,6 +8,7 @@ section .bss
 section .data
 	;; For floating point operations
 	float_imm dq 0
+	string_0 db 104,101,108,108,111,10
 
 section .text
 	global _start
@@ -25,15 +26,14 @@ _main:
 	sub rsp, 16
 	
 	
-	;; assign_local_number of type Integer
-	mov QWORD [rbp - 8], 5
+	mov QWORD [rbp - 8], 6
+	mov QWORD [rbp - 16], string_0
 	
-	mov rax, QWORD [rbp - 8]
-	call _printRAX
-	
-	
-	mov rax, 10
-	call _printRAX
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, [rbp - 16]
+	mov rdx, [rbp - 8]
+	syscall
 	
 	mov rsp, rbp
 	pop rbp

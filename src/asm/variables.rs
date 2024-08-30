@@ -317,13 +317,22 @@ impl ASM {
             return;
         }
 
-        self.extend_current_label(vec![
-            format!("mov rax, [rbp - {}]", ar_var_offset),
-            format!("push rax"),
+        // TODO: Remove
+        //
+        // self.extend_current_label(vec![
+        //     format!("mov rax, [rbp - {}]", ar_var_offset),
+        //     format!("push rax"),
+        //     // length is pushed last
+        //     format!("mov rax, [rbp - {}]", ar_var_offset - 8),
+        //     format!("push rax"),
+        // ])
+
+
+        self.stack.extend(vec![
+            format!("[rbp - {}]", ar_var_offset),
             // length is pushed last
-            format!("mov rax, [rbp - {}]", ar_var_offset - 8),
-            format!("push rax"),
-        ])
+            format!("[rbp - {}]", ar_var_offset - 8)
+        ]);
     }
 
     fn handle_global_ptr(&mut self, variable: &Variable, ar_var: &Variable) {

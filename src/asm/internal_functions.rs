@@ -53,7 +53,20 @@ impl ASM {
     }
 
     pub fn func_write_string(&mut self) {
-        self.extend_current_label(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec());
+        // TODO: Remove
+        //
+        // self.extend_current_label(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec());
+
+        let str_len = self.stack.pop().unwrap();
+        let str_addr = self.stack.pop().unwrap();
+
+        self.extend_current_label(vec![
+            "mov rax, 1".into(),
+            "mov rdi, 1".into(),
+            format!("mov rsi, {}", str_addr),
+            format!("mov rdx, {}", str_len),
+            "syscall".into(),
+        ]);
     }
 
     pub fn func_write_pointer(
@@ -217,7 +230,21 @@ impl ASM {
                         ]
                     }
 
-                    VarType::Str => WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
+                    VarType::Str => {
+                        // TODO: Remove
+                        // WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec()
+
+                        let str_len = self.stack.pop().unwrap();
+                        let str_addr = self.stack.pop().unwrap();
+
+                        vec![
+                            "mov rax, 1".into(),
+                            "mov rdi, 1".into(),
+                            format!("mov rsi, {}", str_addr),
+                            format!("mov rdx, {}", str_len),
+                            "syscall".into(),
+                        ]
+                    }
 
                     VarType::Char => WRITE_CHAR_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
 

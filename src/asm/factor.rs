@@ -76,11 +76,19 @@ impl ASM {
                 self.data
                     .push(format!("string_{} db {}", self.num_strings, chars.join(",")));
 
-                instructions.extend(vec![
-                    format!("mov rax, string_{}", self.num_strings),
-                    format!("push rax"),
-                    format!("push {}", chars.len()),
+                // TODO: Remove this
+                //
+                // instructions.extend(vec![
+                //     format!("mov rax, string_{}", self.num_strings),
+                //     format!("push rax"),
+                //     format!("push {}", chars.len()),
+                // ]);
+                
+                self.stack.extend(vec![
+                    format!("string_{}", self.num_strings),
+                    format!("{}", chars.len()),
                 ]);
+
 
                 self.num_strings += 1;
             }
