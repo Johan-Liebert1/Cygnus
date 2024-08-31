@@ -103,6 +103,10 @@ impl ASM {
 
         loop_start.push(format!(".loop_{}:", loop_number));
 
+        self.unlock_register_from_stack_value(&from);
+        self.unlock_register_from_stack_value(&to);
+        self.unlock_register_from_stack_value(&step);
+
         self.extend_current_label(loop_start);
     }
 

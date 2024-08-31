@@ -74,9 +74,7 @@ impl ASM {
                 let rax = if self.is_reg_locked(Register::RAX) {
                     let rbx = self.get_free_register(None);
 
-                    instructions.extend(vec![
-                        format!("mov {rbx}, rax")
-                    ]);
+                    instructions.extend(vec![format!("mov {rbx}, rax")]);
 
                     self.replace_reg_on_stack(Register::RAX, rbx);
 
@@ -89,7 +87,6 @@ impl ASM {
 
                 let index = self.stack_pop().unwrap();
                 let value = self.stack_pop().unwrap();
-
 
                 // cannot use rdx here as it will get cleared on multiplication
                 let regs_to_skip = vec![Register::RDX];
@@ -377,7 +374,21 @@ impl ASM {
         let mut is_string = false;
 
         match &ar_var.borrow().var_type {
-            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => instructions.extend([format!("pop rax")]),
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                let stack_member = self.stack_pop().unwrap();
+
+                let rax = self.get_free_register(None);
+
+                instructions.push(format!("mov {rax}, {stack_member}"));
+
+                self.unlock_register_from_stack_value(&stack_member);
+
+                instructions.push(format!("mov [{}], {rax}", ar_var.borrow().var_name));
+
+                self.unlock_register(rax);
+
+                // instructions.extend([format!("pop rax")])
+            }
 
             VarType::Struct(_, _) => todo!(),
 
@@ -386,34 +397,44 @@ impl ASM {
                 // the string len should be in rbx as string len is pushed
                 // last
 
-                // TODO: Remove
-                // instructions.extend([format!("pop rbx"), format!("pop rax")]);
-
                 let str_len = self.stack_pop().unwrap();
                 let str_addr = self.stack_pop().unwrap();
 
-                instructions.extend([format!("mov rbx, {}", str_len), format!("mov rax, {}", str_addr)]);
+                let rax = self.get_free_register(None);
+                let rbx = self.get_free_register(None);
+
+                instructions.extend([format!("mov {rbx}, {}", str_len), format!("mov {rax}, {}", str_addr)]);
+
+                unimplemented!();
 
                 is_string = true;
             }
 
             VarType::Ptr(ptr_var_type) => {
-                let stack_member = self.stack_pop().unwrap();
-
                 match **ptr_var_type {
                     VarType::Struct(_, _) => todo!(),
+
                     VarType::Int => {
+                        let stack_member = self.stack_pop().unwrap();
+                        self.unlock_register_from_stack_value(&stack_member);
+
+                        let rax = self.get_free_register(None);
+                        let rbx = self.get_free_register(None);
+
                         // Store whatever's on the top of the stack into
                         // this memory location
                         instructions.extend([
-                            // TODO: Remove
-                            // format!("pop rax"),
-                            format!("mov rax, {}", stack_member),
-                            format!("mov rbx, {}", ar_var.borrow().var_name),
+                            format!("mov {rax}, {}", stack_member),
+                            format!("mov {rbx}, {}", ar_var.borrow().var_name),
                         ]);
-                        instructions.extend(std::iter::repeat(format!("mov rbx, [rbx]")).take(times_dereferenced));
 
-                        instructions.push(format!("mov rbx, rax"));
+                        instructions.extend(std::iter::repeat(format!("mov {rbx}, [{rbx}]")).take(times_dereferenced));
+
+                        instructions.push(format!("mov {rbx}, {rax}"));
+                        instructions.push(format!("mov [{}], {rbx}", ar_var.borrow().var_name));
+
+                        self.unlock_register(rax);
+                        self.unlock_register(rbx);
                     }
 
                     VarType::Str => todo!(),
@@ -547,7 +568,7 @@ impl ASM {
                             ]),
                         }
 
-                        instructions.push(format!("mov [{}], rax", var_name));
+                        // instructions.push(format!("mov [{}], rax", var_name));
 
                         self.extend_current_label(instructions);
                     }

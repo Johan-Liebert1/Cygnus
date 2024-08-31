@@ -181,8 +181,7 @@ impl ASM {
             Some(..) => {
                 panic!(
                     "Lock Register Failed: Register {reg_name} already in list.\nList: {:#?}\nASM:{:#?}",
-                    self.used_regsiters,
-                    self.get_current_label_code()
+                    self.used_regsiters, self.labels
                 )
             }
 
@@ -251,5 +250,9 @@ impl ASM {
 
     pub fn is_reg_locked(&self, name: Register) -> bool {
         self.used_regsiters.contains(&name)
+    }
+
+    pub fn get_used_registers(&self) -> &Vec<Register> {
+        &self.used_regsiters
     }
 }

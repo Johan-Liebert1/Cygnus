@@ -1,4 +1,4 @@
-use crate::lexer::{tokens::Comparators, types::VarType};
+use crate::lexer::{registers::get_register_name_for_bits, tokens::Comparators, types::VarType};
 
 use super::asm::ASM;
 
@@ -28,11 +28,20 @@ impl ASM {
         let first = self.stack_pop().unwrap();
         let second = self.stack_pop().unwrap();
 
+        self.unlock_register_from_stack_value(&first);
+        self.unlock_register_from_stack_value(&second);
+
+        let rax = self.get_free_register(None);
+        let rbx = self.get_free_register(None);
+
+        self.unlock_register(rax);
+        self.unlock_register(rbx);
+
         vec![
             format!(";; We pop in the opposite order of comparison as we push onto the stack"),
-            format!("mov rbx, {first}"),
-            format!("mov rax, {second}"),
-            format!("cmp rax, rbx"),
+            format!("mov {rbx}, {first}"),
+            format!("mov {rax}, {second}"),
+            format!("cmp {rax}, {rbx}"),
         ]
     }
 
@@ -69,46 +78,23 @@ impl ASM {
             }
         };
 
-        // TODO: Remove
-        //
-        // let inst = match op {
-        //     Comparators::LessThan => format!("jl .skip_{}", self.comparison_num),
-        //     Comparators::GreaterThan => format!("jg .skip_{}", self.comparison_num),
-        //     Comparators::LessThanEq => format!("jle .skip_{}", self.comparison_num),
-        //     Comparators::GreaterThanEq => format!("jge .skip_{}", self.comparison_num),
-        //     Comparators::DoubleEquals => format!("je .skip_{}", self.comparison_num),
-        //     Comparators::NotEquals => format!("jne .skip_{}", self.comparison_num),
-        // };
+        let rax = self.get_free_register(None);
+        let rax_8_bits = get_register_name_for_bits(&rax, 8);
 
-        let inst = match op {
-            Comparators::LessThan => format!("setl al"),
-            Comparators::GreaterThan => format!("setg al"),
-            Comparators::LessThanEq => format!("setle al"),
-            Comparators::GreaterThanEq => format!("setge al"),
-            Comparators::DoubleEquals => format!("sete al"),
-            Comparators::NotEquals => format!("setne al"),
-        };
+        instructions.push(format!("xor {rax}, {rax}"));
 
-        // TODO: Remove
-        //
-        // instructions.extend(vec![
-        //     inst.into(),
-        //     // assume the comparison is true
-        //     format!("mov rax, 0"),
-        //     format!("jmp .skip_next{}", self.comparison_num),
-        //     // we'll skip to here if the comparison is false
-        //     format!(".skip_{}:", self.comparison_num),
-        //     format!("mov rax, 1"),
-        //     format!(".skip_next{}:", self.comparison_num),
-        //     format!(";; push onto the stack whatever's in rax so rest of the program can use it"),
-        //     format!("push rax"),
-        // ]);
-
-        instructions.extend(vec![inst]);
+        instructions.push(match op {
+            Comparators::LessThan => format!("setl {rax_8_bits}"),
+            Comparators::GreaterThan => format!("setg {rax_8_bits}"),
+            Comparators::LessThanEq => format!("setle {rax_8_bits}"),
+            Comparators::GreaterThanEq => format!("setge {rax_8_bits}"),
+            Comparators::DoubleEquals => format!("sete {rax_8_bits}"),
+            Comparators::NotEquals => format!("setne {rax_8_bits}"),
+        });
 
         self.extend_current_label(instructions);
 
-        self.stack_push("al".into());
+        self.stack_push(String::from(rax));
 
         self.comparison_num += 1;
     }

@@ -188,10 +188,10 @@ impl ASM {
         let stack_member = self.stack_pop().unwrap();
         instructions.push(format!("mov {}, {}", SYSCALL_ARGS_REGS[arg_num], stack_member));
 
+        self.unlock_register_from_stack_value(&stack_member);
+
         self.lock_register(SYSCALL_ARGS_REGS[arg_num]);
         self.regs_locked_for_function_call.push(SYSCALL_ARGS_REGS[arg_num]);
-
-        self.unlock_register_from_stack_value(&stack_member);
 
         self.extend_current_label(instructions);
     }

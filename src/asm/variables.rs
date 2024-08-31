@@ -30,22 +30,22 @@ impl ASM {
         variable: &RequiredVarFields,
         ar_var_offset: usize,
     ) {
-        let rax = self.get_free_register(None);
-        let rax_actual_name = var_type.get_register_name(rax);
-
         if variable.dereference {
+            let rax = self.get_free_register(None);
+            let rax_actual_name = var_type.get_register_name(rax);
+
             let rbx = self.get_free_register(None);
 
             let mut v = vec![
                 format!(";; Dereferencing variable {}", variable.var_name),
-                format!("mov {}, [rbp - {}]", rbx, ar_var_offset),
+                format!("mov {rbx}, [rbp - {}]", ar_var_offset),
             ];
 
             v.extend(std::iter::repeat(format!("mov {rbx}, [{rbx}]")).take(variable.times_dereferenced));
 
             v.extend([
                 format!("xor {rax}, {rax}"),
-                format!("mov {rax_actual_name}, {}", var_type.get_register_name(rax)),
+                format!("mov {rax_actual_name}, {}", var_type.get_register_name(rbx)),
             ]);
 
             self.extend_current_label(v);
@@ -59,11 +59,15 @@ impl ASM {
         }
 
         if variable.store_address {
+            let rax = self.get_free_register(None);
             self.extend_current_label(vec![format!("lea {rax}, [rbp - {}]", ar_var_offset)]);
             // already locked by self.get_free_register
             self.stack_push(String::from(rax));
             return;
         }
+
+        let rax = self.get_free_register(None);
+        let rax_actual_name = var_type.get_register_name(rax);
 
         self.extend_current_label(vec![format!("mov {}, [rbp - {}]", rax_actual_name, ar_var_offset)]);
 
@@ -383,14 +387,14 @@ impl ASM {
     fn handle_global_ptr(&mut self, variable: &Variable, ar_var: &Variable) {
         let var_name = &variable.var_name;
 
-        let rax = self.get_free_register(None);
-        let rax_actual_name = variable.var_type.get_pointer_type().get_register_name(rax);
-
         if ar_var.is_memory_block {
-            let rbx = self.get_free_register(None);
-
             // this will be in the bss section
             if variable.dereference {
+                let rax = self.get_free_register(None);
+                let rax_actual_name = variable.var_type.get_pointer_type().get_register_name(rax);
+
+                let rbx = self.get_free_register(None);
+
                 let mut v = vec![
                     format!(";; Dereferencing variable {}. handle_global_ptr", var_name),
                     format!("mov {rbx}, {}", var_name),
@@ -417,19 +421,26 @@ impl ASM {
             }
 
             if variable.store_address {
+                let rax = self.get_free_register(None);
+
                 self.extend_current_label(vec![format!("lea {rax}, {}", var_name)]);
 
-                self.stack_push(format!("{rax}"));
+                self.stack_push(String::from(rax));
 
                 return;
             }
+
+            trace!("Global ptr outside {var_name}: {:#?}", self.get_used_registers());
+
+            let rax = self.get_free_register(None);
+            let rax_actual_name = variable.var_type.get_pointer_type().get_register_name(rax);
 
             self.extend_current_label(vec![
                 format!("xor {rax}, {rax}"),
                 format!("mov {rax_actual_name}, {}", var_name),
             ]);
 
-            self.stack_push(format!("{rax}"));
+            self.stack_push(String::from(rax));
 
             return;
         }

@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     ast::variable::Variable,
     lexer::{registers::Register, types::VarType},
-    semantic_analyzer::semantic_analyzer::CallStack,
+    semantic_analyzer::semantic_analyzer::CallStack, trace,
 };
 
 use super::asm::ASM;
@@ -21,15 +21,20 @@ pub const FUNCTION_ARGS_REGS: [Register; 6] = [
 
 impl ASM {
     pub fn function_call_add_arg(&mut self, arg_num: usize) {
+        trace!("regs: {:#?}", self.get_used_registers());
+
         let mut instructions = vec![];
 
         let stack_member = self.stack_pop().unwrap();
-        instructions.push(format!("mov {}, {}", FUNCTION_ARGS_REGS[arg_num], stack_member));
+        instructions.extend(vec![
+            format!(";; Moving argument number {}", arg_num + 1),
+            format!("mov {}, {}", FUNCTION_ARGS_REGS[arg_num], stack_member),
+        ]);
+
+        self.unlock_register_from_stack_value(&stack_member);
 
         self.lock_register(FUNCTION_ARGS_REGS[arg_num]);
         self.regs_locked_for_function_call.push(FUNCTION_ARGS_REGS[arg_num]);
-
-        self.unlock_register_from_stack_value(&stack_member);
 
         self.extend_current_label(instructions);
     }
@@ -72,18 +77,23 @@ impl ASM {
         }
 
         // this clone is fine as these are ints anyway and will be 10 at most
-        let regs: Vec<Register> = self.regs_locked_for_function_call.iter().cloned().collect();
+        let locked_regs: Vec<Register> = self.regs_locked_for_function_call.iter().cloned().collect();
+
+        trace!("locked_regs for func {function_name}: {locked_regs:#?}");
 
         self.regs_locked_for_function_call = vec![];
 
-        for reg in regs {
+        for reg in locked_regs {
             self.unlock_register(reg);
         }
 
         // if the function returns anything, push it onto the stack
         if !matches!(func_return_type, VarType::Unknown) {
+            // Not locking here as it's not required. If the return value is going to be
+            // overwritten then that's fine
+            
             self.lock_register(Register::RAX);
-            instructions.push(format!("push rax"));
+            self.stack_push(String::from(Register::RAX));
         }
 
         self.extend_current_label(instructions);
@@ -150,11 +160,7 @@ impl ASM {
         if return_value_exists {
             let stack_member = self.stack_pop().unwrap();
 
-            let rax = Register::RAX;
-
-            self.add_to_current_label(format!("mov {rax}, {stack_member}"));
-
-            self.stack_push(String::from(rax));
+            self.add_to_current_label(format!("mov {}, {stack_member}", Register::RAX));
 
             self.unlock_register_from_stack_value(&stack_member);
         }

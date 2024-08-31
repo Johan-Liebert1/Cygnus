@@ -148,8 +148,6 @@ impl ASM {
                         format!("div {rbx}"),
                     ]);
 
-                    trace!("divide: reg_to_lock: {reg_to_lock}");
-
                     self.unlock_register(rbx);
 
                     instructions
