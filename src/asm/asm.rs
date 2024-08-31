@@ -152,6 +152,14 @@ impl ASM {
         self.stack.push(to_push);
     }
 
+    pub fn replace_reg_on_stack(&mut self, reg_to_replace: Register, reg_to_replace_with: Register) {
+        for reg in &mut self.stack {
+            if *reg == String::from(reg_to_replace) {
+                *reg = String::from(reg_to_replace_with);
+            }
+        }
+    }
+
     pub fn stack_extend(&mut self, to_push: Vec<String>) {
         self.stack.extend(to_push);
     }
@@ -201,6 +209,8 @@ impl ASM {
     }
 
     /// Returns a free register and locks it
+    /// Always returns in this order
+    /// [RAX, RBX, RCX, RDX, RSI, RDI, RBP, R8, R9, R10, R11]
     pub fn get_free_register(&mut self) -> Register {
         for reg in ALL_REGISTERS {
             if !self.used_regsiters.contains(&reg) {
@@ -220,5 +230,9 @@ impl ASM {
         }
 
         return (false, Register::R11);
+    }
+
+    pub fn is_reg_locked(&self, name: Register) -> bool {
+        self.used_regsiters.contains(&name)
     }
 }

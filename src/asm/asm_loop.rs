@@ -63,25 +63,25 @@ impl ASM {
         ];
 
         if step.starts_with('[') {
-            loop_start.push(format!("mov r10, {}", step));
+            loop_start.push(format!("mov r10, {} ;; step", step));
             step = "r10".into();
         }
 
-        loop_start.push(format!("mov QWORD [rbp - {}], {}", step_offset, step));
+        loop_start.push(format!("mov QWORD [rbp - {}], {} ;; step", step_offset, step));
 
         if to.starts_with('[') {
-            loop_start.push(format!("mov r10, {}", to));
+            loop_start.push(format!("mov r10, {} ;; to", to));
             to = "r10".into();
         }
 
-        loop_start.push(format!("mov QWORD [rbp - {}], {}", to_offset, to));
+        loop_start.push(format!("mov QWORD [rbp - {}], {} ;; to", to_offset, to));
 
         if from.starts_with('[') {
-            loop_start.push(format!("mov r10, {}", from));
+            loop_start.push(format!("mov r10, {} ;; from", from));
             from = "r10".into();
         }
 
-        loop_start.push(format!("mov QWORD [rbp - {}], {}", from_offset, from));
+        loop_start.push(format!("mov QWORD [rbp - {}], {} ;; from", from_offset, from));
 
         let mut call_stack_var = None;
 
@@ -94,9 +94,10 @@ impl ASM {
 
             // here rax contains the from value
             loop_start.extend(vec![format!(
-                "mov QWORD [rbp - {}], {}",
+                "mov QWORD [rbp - {}], {} ;; loop variable {}",
                 call_stack_var.unwrap().borrow().offset,
-                from
+                from,
+                call_stack_var.unwrap().borrow().var_name
             )]);
         }
 

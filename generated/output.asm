@@ -29,11 +29,14 @@ _main:
 	
 	
 	;; loop_0 start
-	mov QWORD [rbp - 424], 1
-	mov QWORD [rbp - 416], 50
-	mov QWORD [rbp - 408], 0
-	mov QWORD [rbp - 432], 0
+	mov QWORD [rbp - 424], 1 ;; step
+	mov QWORD [rbp - 416], 50 ;; to
+	mov QWORD [rbp - 408], 0 ;; from
+	mov QWORD [rbp - 432], 0 ;; loop variable i
 	.loop_0:
+	
+	mov rax, QWORD [rbp - 432]
+	call _printRAX
 	
 	
 	;; Minus get the two operands from the stack
@@ -41,13 +44,14 @@ _main:
 	mov rax, 50
 	sub rax, rbx
 	
-	;; rbx stores the index, rcx has the actual value
+	mov rbx, rax
+	;; rcx stores the index, rdx has the actual value
 	mov rcx, [rbp - 432]
-	mov rdx, rax
-	mov rbx, 8
+	mov rdx, rbx
+	mov rax, 8
 	mul rcx
 	mov rcx, rbp
-	add rcx, rbx
+	add rcx, rax
 	mov [rcx - 400], rdx
 	
 	.loop_0_end_start:
@@ -72,10 +76,10 @@ _main:
 	
 	
 	;; loop_1 start
-	mov QWORD [rbp - 456], 1
-	mov QWORD [rbp - 448], 50
-	mov QWORD [rbp - 440], 0
-	mov QWORD [rbp - 464], 0
+	mov QWORD [rbp - 456], 1 ;; step
+	mov QWORD [rbp - 448], 50 ;; to
+	mov QWORD [rbp - 440], 0 ;; from
+	mov QWORD [rbp - 464], 0 ;; loop variable i
 	.loop_1:
 	
 	

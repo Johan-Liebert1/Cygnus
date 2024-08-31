@@ -70,30 +70,40 @@ impl ASM {
 
         match array_access_index {
             Some(index) => {
+                // We need 'rax' to be free here for the multiplication
+                let rax = if self.is_reg_locked(Register::RAX) {
+                    let rbx = self.get_free_register();
+
+                    instructions.extend(vec![
+                        format!("mov {rbx}, rax")
+                    ]);
+
+                    self.replace_reg_on_stack(Register::RAX, rbx);
+
+                    self.unlock_register(Register::RAX);
+
+                    self.get_free_register()
+                } else {
+                    self.get_free_register()
+                };
+
                 let index = self.stack_pop().unwrap();
                 let value = self.stack_pop().unwrap();
 
-                trace!("index: {index}");
-                trace!("value: {value}");
-
-                let rax = self.get_free_register();
-                trace!("rax: {rax}");
                 let rbx = self.get_free_register();
                 let rcx = self.get_free_register();
 
                 // we visit the right side first and then the left
-                // side. So the array index is at topand the
+                // side. So the array index is at top (index) and the
                 // actual value to set is at the top - 1 of the stack
                 instructions.extend([
                     // array[1] = 10
 
                     // rcx stores the index, rdx has the actual
                     // value
-                    format!(";; rbx stores the index, rcx has the actual value"),
-                    // format!("pop rbx"),                                       // rcx has 1
-                    // format!("pop rcx"),                                       // rdx has 10
-                    format!("mov {rbx}, {}", index), // rcx has 1
-                    format!("mov {rcx}, {}", value), // rdx has 10
+                    format!(";; {rbx} stores the index, {rcx} has the actual value"),
+                    format!("mov {rbx}, {}", index), // rbx has 1
+                    format!("mov {rcx}, {}", value), // rcx has 10
                     format!("mov {rax}, {}", type_.get_underlying_type_size()), // rax = 8
                     format!("mul {rbx}"),            // now rax has = rax * rbx
                     // = 1 * 8 = 8
