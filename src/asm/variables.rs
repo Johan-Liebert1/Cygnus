@@ -295,6 +295,7 @@ impl ASM {
                     format!("mov {rax}, [{rbx} - {}]", ar_var.offset),
                 ]);
 
+                self.unlock_register_from_stack_value(&index);
                 self.unlock_register(rbx);
 
                 self.stack_push(String::from(rax));
