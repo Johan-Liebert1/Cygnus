@@ -4,17 +4,23 @@ use super::asm::ASM;
 
 impl ASM {
     pub fn gen_logical_statement(&mut self, op: LogicalOps) {
+        let rax = self.get_free_register(None);
+        let rbx = self.get_free_register(None);
+
+        let first = self.stack_pop().unwrap();
+        let second = self.stack_pop().unwrap();
+
         let mut instructions = vec![
             format!(";; gen_logical_statement"),
-            format!("xor rax, rax"),
-            format!("pop rax"),
-            format!("xor rbx, rbx"),
-            format!("pop rbx"),
+            format!("xor {rax}, {rax}"),
+            format!("mov {rax}, {first}"),
+            format!("xor {rbx}, {rbx}"),
+            format!("mov {rbx}, {second}"),
         ];
 
         let thing = match op {
-            LogicalOps::Or => format!("or rax, rbx"),
-            LogicalOps::And => format!("and rax, rbx"),
+            LogicalOps::Or => format!("or {rax}, {rbx}"),
+            LogicalOps::And => format!("and {rax}, {rbx}"),
             LogicalOps::Not => {
                 instructions.pop();
                 instructions.pop();
@@ -23,7 +29,13 @@ impl ASM {
         };
 
         instructions.push(thing);
-        instructions.push(format!("push rax"));
+
+        self.unlock_register_from_stack_value(&first);
+        self.unlock_register_from_stack_value(&second);
+
+        self.stack_push(String::from(rax));
+
+        self.unlock_register(rbx);
 
         self.extend_current_label(instructions);
     }

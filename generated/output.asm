@@ -8,7 +8,14 @@ section .bss
 section .data
 	;; For floating point operations
 	float_imm dq 0
-	string_0 db 114,97,99,101,99,97,114
+	string_0 db 104,101,108,108,111,10
+	string_1 db 108,111,108,32,104,101,114,101,10
+	string_2 db 108,111,108,32,110,111,116,32,104,101,114,101,10
+	string_3 db 104,105,10
+	string_4 db 98,121,101,10
+	string_5 db 52,32,60,32,50,10
+	string_6 db 52,32,62,32,50,10
+	string_7 db 108,111,111,112,32,119,105,116,104,32,115,116,101,112,32,111,102,32,50,10
 
 section .text
 	global _start
@@ -19,97 +26,33 @@ _start:
 	
 	exit 0
 
-_is_palindrome:
+_main:
 	push rbp
 	mov rbp, rsp
 	;; Make sure that the stack pointer is 16 byte aligned always
-	sub rsp, 64
-	;; param name length
-	mov [rbp - 8], rdi
-	;; param name string
-	mov [rbp - 16], rsi
+	sub rsp, 112
 	
 	
 	;; assign_local_number of type Integer
-	mov QWORD [rbp - 24], 0
+	mov QWORD [rbp - 8], 1
 	
 	
-	
-	;; Divide clean up rdx as this might mess up the final output as 'div' stores quotient in 'rax' and remainder in 'rdx'
-	xor rdx, rdx
-	;; get the two operands from the stack
-	mov rbx, 2
-	mov rax, [rbp - 8]
-	div rbx
-	
-	
-	;; Plus get the two operands from the stack
-	mov rbx, 1
-	mov rcx, rax
-	add rbx, rcx
 	
 	
 	;; loop_0 start
-	mov QWORD [rbp - 48], 1 ;; step
-	mov QWORD [rbp - 40], rbx ;; to
-	mov QWORD [rbp - 32], 0 ;; from
+	mov QWORD [rbp - 32], 1 ;; step
+	mov QWORD [rbp - 24], 5 ;; to
+	mov QWORD [rbp - 16], 1 ;; from
 	.loop_0:
 	
-	;; Minus get the two operands from the stack
-	mov rbx, [rbp - 24]
-	mov rax, [rbp - 8]
-	sub rax, rbx
-	
-	
-	;; Minus get the two operands from the stack
-	mov rcx, 1
-	mov rbx, rax
-	sub rbx, rcx
-	
-	;; assign_local_number of type Integer
-	mov QWORD [rbp - 56], rbx
-	
-	mov rax, [rbp - 16]
-	
-	;; Plus get the two operands from the stack
-	mov rbx, [rbp - 24]
-	mov rcx, rax
-	add rbx, rcx
-	;; binary op ptr -> char
-	mov rbx, rax
-	xor rax, rax
-	mov al, [rbx]
-	push rax
-	
-	mov rax, [rbp - 16]
-	
-	;; Plus get the two operands from the stack
-	mov rcx, [rbp - 56]
-	mov rdx, rax
-	add rcx, rdx
-	;; binary op ptr -> char
-	mov rbx, rax
-	xor rax, rax
-	mov al, [rbx]
-	push rax
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	mov rbx, rcx
-	mov rax, rbx
-	cmp rax, rbx
-	xor rax, rax
-	sete al
-	
-	;; assign_local_number of type Integer
-	mov QWORD [rbp - 64], rax
 	
 	
 	;; We pop in the opposite order of comparison as we push onto the stack
-	mov rbx, 1
-	mov rax, [rbp - 64]
+	mov rbx, 8
+	mov rax, 5
 	cmp rax, rbx
 	xor rax, rax
-	setne al
+	setle al
 	
 	.if_0:
 	cmp rax, 0
@@ -117,75 +60,205 @@ _is_palindrome:
 	je .if_end_0
 	
 	
-	mov rax, 0
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_0
+	mov rdx, 6
+	syscall
 	
-	mov rsp, rbp
-	pop rbp
-	ret
 	
-	jmp .if_end_0
+	
+	
+	;; loop_1 start
+	mov QWORD [rbp - 56], 1 ;; step
+	mov QWORD [rbp - 48], 4 ;; to
+	mov QWORD [rbp - 40], 1 ;; from
+	.loop_1:
+	
+	
+	
+	;; We pop in the opposite order of comparison as we push onto the stack
+	mov rbx, 3
+	mov rax, 3
+	cmp rax, rbx
+	xor rax, rax
+	setne al
+	
+	.if_1:
+	cmp rax, 0
+	;; if the comparison value is false, jump to the next label altogether
+	je .else_1
+	
+	
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_1
+	mov rdx, 9
+	syscall
+	
+	jmp .else_end_1
+	.if_end_1:
+	
+	.else_1:
+	
+	
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_2
+	mov rdx, 13
+	syscall
+	
+	.else_end_1:
+	
+	.loop_1_end_start:
+	;; check exit condition
+	mov rcx, [rbp - 56] ;; step
+	mov rbx, [rbp - 48] ;; to
+	mov rax, [rbp - 40] ;; from
+	add rax, rcx
+	dec rbx
+	cmp rax, rbx
+	jg .loop_end_1
+	mov [rbp - 40], rax
+	jmp .loop_1
+	.loop_end_1:
+	
+	jmp .else_end_0
 	.if_end_0:
 	
 	
-	;; Plus get the two operands from the stack
-	mov rax, 1
-	mov rbx, [rbp - 24]
-	add rax, rbx
 	
-	;; assign_local_number of type Integer
-	mov QWORD [rbp - 24], rax
+	;; We pop in the opposite order of comparison as we push onto the stack
+	mov rbx, 2
+	mov rax, 6
+	cmp rax, rbx
+	xor rax, rax
+	sete al
+	
+	.elif_0_0:
+	cmp rax, 0
+	;; if the comparison value is false, jump to the next label altogether
+	je .else_0
+	
+	
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_3
+	mov rdx, 3
+	syscall
+	
+	jmp .else_end_0
+	.elif_0_0_end:
+	
+	.else_0:
+	
+	
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_4
+	mov rdx, 4
+	syscall
+	
+	.else_end_0:
 	
 	.loop_0_end_start:
 	;; check exit condition
-	mov rcx, [rbp - 48] ;; step
-	mov rbx, [rbp - 40] ;; to
-	mov rax, [rbp - 32] ;; from
+	mov rcx, [rbp - 32] ;; step
+	mov rbx, [rbp - 24] ;; to
+	mov rax, [rbp - 16] ;; from
 	add rax, rcx
 	dec rbx
 	cmp rax, rbx
 	jg .loop_end_0
-	mov [rbp - 32], rax
+	mov [rbp - 16], rax
 	jmp .loop_0
 	.loop_end_0:
 	
 	
+	
+	
+	;; loop_2 start
+	mov QWORD [rbp - 80], 1 ;; step
+	mov QWORD [rbp - 72], 3 ;; to
+	mov QWORD [rbp - 64], 1 ;; from
+	.loop_2:
+	
+	
+	
+	;; We pop in the opposite order of comparison as we push onto the stack
+	mov rbx, 2
+	mov rax, 4
+	cmp rax, rbx
+	xor rax, rax
+	setl al
+	
+	.if_2:
+	cmp rax, 0
+	;; if the comparison value is false, jump to the next label altogether
+	je .else_2
+	
+	
 	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_5
+	mov rdx, 6
+	syscall
 	
-	mov rsp, rbp
-	pop rbp
-	ret
+	jmp .else_end_2
+	.if_end_2:
 	
-	mov rsp, rbp
-	pop rbp
-	ret
-	
-
-_main:
-	push rbp
-	mov rbp, rsp
-	;; Make sure that the stack pointer is 16 byte aligned always
-	sub rsp, 32
+	.else_2:
 	
 	
-	mov QWORD [rbp - 8], 7
-	mov QWORD [rbp - 16], string_0
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_6
+	mov rdx, 6
+	syscall
+	
+	.else_end_2:
+	
+	.loop_2_end_start:
+	;; check exit condition
+	mov rcx, [rbp - 80] ;; step
+	mov rbx, [rbp - 72] ;; to
+	mov rax, [rbp - 64] ;; from
+	add rax, rcx
+	dec rbx
+	cmp rax, rbx
+	jg .loop_end_2
+	mov [rbp - 64], rax
+	jmp .loop_2
+	.loop_end_2:
 	
 	
-	;; Moving argument number 1
-	mov rdi, 2
 	
-	mov rax, [rbp - 16]
 	
-	;; Moving argument number 2
-	mov rsi, rax
+	;; loop_3 start
+	mov QWORD [rbp - 104], 2 ;; step
+	mov QWORD [rbp - 96], 11 ;; to
+	mov QWORD [rbp - 88], 1 ;; from
+	.loop_3:
 	
-	call _is_palindrome
 	
-	;; assign_local_number of type Integer
-	mov QWORD [rbp - 24], rax
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_7
+	mov rdx, 20
+	syscall
 	
-	mov rax, QWORD [rbp - 24]
-	call _printRAX
+	.loop_3_end_start:
+	;; check exit condition
+	mov rcx, [rbp - 104] ;; step
+	mov rbx, [rbp - 96] ;; to
+	mov rax, [rbp - 88] ;; from
+	add rax, rcx
+	dec rbx
+	cmp rax, rbx
+	jg .loop_end_3
+	mov [rbp - 88], rax
+	jmp .loop_3
+	.loop_end_3:
 	
 	mov rsp, rbp
 	pop rbp

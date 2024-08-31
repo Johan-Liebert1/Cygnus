@@ -1,26 +1,36 @@
-fun is_palindrome(length: int, string: *char) -> int {
-    def i: int = 0;
+fun main() {
+    def a: int = 1;
 
-    loop from 0 to ((length / 2) + 1) {
-        def sub: int = length - i - 1;
+    loop from 1 to 5 {
+        if 5 <= 8 {
+            write("hello\n")
 
-        def eq: int = *(string + i) == *(string + sub);
+            loop from 1 to 4 {
+                if 3 != 3 {
+                    write("lol here\n")
+                } else {
+                    write("lol not here\n")
+                }
+            }
 
-        if eq != 1 {
-            return 0
+        } elif 6 == 2 {
+            write("hi\n")
+        } else {
+            write("bye\n")
         }
-
-        i = i + 1
     }
 
-    return 1
-}
+    loop from 1 to 3 {
+        if 4 < 2 {
+            write("4 < 2\n")
+        } else {
+            write("4 > 2\n")
+        }
+    }
 
-fun main() {
-    def fn: str = "racecar";
-    def is: int = is_palindrome(2 fn as *char);
-
-    write(is)
+    loop from 1 to 11 step 2 {
+        write("loop with step of 2\n")
+    }
 }
 
 main()
