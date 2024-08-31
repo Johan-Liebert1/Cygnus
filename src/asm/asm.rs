@@ -191,6 +191,8 @@ impl ASM {
         }
     }
 
+    fn unlock_register_anyway(&mut self, reg_name: Register) {}
+
     pub fn unlock_register(&mut self, reg_name: Register) {
         let idx = self.used_regsiters.iter().enumerate().find(|x| *x.1 == reg_name);
 
@@ -201,13 +203,14 @@ impl ASM {
 
             None => {
                 panic!(
-                    "UnLock Register Failed: Register {reg_name} not found in list. List: {:#?}",
-                    self.used_regsiters
+                    "UnLock Register Failed: Register {reg_name} not found in list.\nList: {:#?}\nASM: {:#?}",
+                    self.used_regsiters, self.labels
                 )
             }
         }
     }
 
+    /// Never unlock before getting a register value
     pub fn unlock_register_from_stack_value(&mut self, stack_pop_result: &String) {
         let (is_reg, reg_name) = self.is_reg_name(stack_pop_result);
 

@@ -1,4 +1,4 @@
-use crate::lexer::{registers::get_register_name_for_bits, tokens::Comparators, types::VarType};
+use crate::{lexer::{registers::get_register_name_for_bits, tokens::Comparators, types::VarType}, trace};
 
 use super::asm::ASM;
 
@@ -28,11 +28,11 @@ impl ASM {
         let first = self.stack_pop().unwrap();
         let second = self.stack_pop().unwrap();
 
-        self.unlock_register_from_stack_value(&first);
-        self.unlock_register_from_stack_value(&second);
-
         let rax = self.get_free_register(None);
         let rbx = self.get_free_register(None);
+
+        self.unlock_register_from_stack_value(&first);
+        self.unlock_register_from_stack_value(&second);
 
         self.unlock_register(rax);
         self.unlock_register(rbx);

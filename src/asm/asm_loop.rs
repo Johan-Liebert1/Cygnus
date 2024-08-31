@@ -63,22 +63,25 @@ impl ASM {
         ];
 
         if step.starts_with('[') {
-            loop_start.push(format!("mov r10, {} ;; step", step));
-            step = "r10".into();
+            let reg = self.get_free_register(None);
+            loop_start.push(format!("mov {reg}, {} ;; step", step));
+            step = reg.into();
         }
 
         loop_start.push(format!("mov QWORD [rbp - {}], {} ;; step", step_offset, step));
 
         if to.starts_with('[') {
-            loop_start.push(format!("mov r10, {} ;; to", to));
-            to = "r10".into();
+            let reg = self.get_free_register(None);
+            loop_start.push(format!("mov {reg}, {} ;; to", to));
+            to = reg.into();
         }
 
         loop_start.push(format!("mov QWORD [rbp - {}], {} ;; to", to_offset, to));
 
         if from.starts_with('[') {
-            loop_start.push(format!("mov r10, {} ;; from", from));
-            from = "r10".into();
+            let reg = self.get_free_register(None);
+            loop_start.push(format!("mov {reg}, {} ;; from", from));
+            from = reg.into();
         }
 
         loop_start.push(format!("mov QWORD [rbp - {}], {} ;; from", from_offset, from));

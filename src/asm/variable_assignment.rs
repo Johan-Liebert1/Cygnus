@@ -416,10 +416,11 @@ impl ASM {
 
                     VarType::Int => {
                         let stack_member = self.stack_pop().unwrap();
-                        self.unlock_register_from_stack_value(&stack_member);
 
                         let rax = self.get_free_register(None);
                         let rbx = self.get_free_register(None);
+
+                        self.unlock_register_from_stack_value(&stack_member);
 
                         // Store whatever's on the top of the stack into
                         // this memory location

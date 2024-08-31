@@ -37,6 +37,10 @@ impl ASM {
                         format!("mov {rax}, {}", first),
                         format!("mov {rbx}, {}", second),
                         format!("add {rax}, {rbx}"),
+                        format!(
+                            ";; will lock {rax}. first = {first}. second = {second}. Locked: {:?}",
+                            self.get_used_registers()
+                        ),
                     ];
 
                     self.unlock_register_from_stack_value(&first);
@@ -215,40 +219,105 @@ impl ASM {
             }
 
             Operations::ShiftLeft => {
+                // We need rcx here
+                // the shl instruction in x86 assembly does not allow the use of a general-purpose register like bl
+                // for the count operand when the destination is a 64-bit register like rax.
+                // The count operand must be either an immediate value (a constant) or the cl register.
+
+                let mut instructions = vec![];
+
+                let first = self.stack_pop().unwrap();
+                let shift_by = self.stack_pop().unwrap();
+
+                let rcx = if self.is_reg_locked(Register::RCX) {
+                    let rbx = self.get_free_register(None);
+
+                    instructions.extend(vec![format!("mov {rbx}, rcx")]);
+
+                    self.replace_reg_on_stack(Register::RCX, rbx);
+
+                    self.unlock_register(Register::RCX);
+
+                    self.get_certain_free_register(Register::RCX)
+                } else {
+                    self.get_certain_free_register(Register::RCX)
+                };
+
+                let rax = self.get_free_register(None);
+
+                self.unlock_register_from_stack_value(&first);
+                self.unlock_register_from_stack_value(&shift_by);
+
                 // 1 << 10
                 // push 1
                 // push 10
                 // 1 should be popped into rax and 10 in rcx
-                vec![
+                instructions.extend(vec![
                     format!(";; ShiftLeft get the two operands from the stack"),
-                    // the shl instruction in x86 assembly does not allow the use of a general-purpose register like bl
-                    // for the count operand when the destination is a 64-bit register like rax.
-                    // The count operand must be either an immediate value (a constant) or the cl register.
-                    format!("xor rax, rax"),
-                    format!("xor rcx, rcx"),
-                    format!("pop rcx"),
-                    format!("pop rax"),
+                    format!("xor {rax}, {rax}"),
+                    format!("xor {rcx}, {rcx}"),
+                    format!("mov {rax}, {first}"),
+                    format!("mov {rcx}, {shift_by}"),
                     format!(";; We can only shift left or right by 8 bits"),
-                    format!("shl rax, cl"),
-                ]
+                    format!("shl {rax}, cl"),
+                ]);
+
+                self.unlock_register(Register::RCX);
+
+                reg_to_lock = rax;
+
+                instructions
             }
 
             Operations::ShiftRight => {
+                // We need rcx here
+                // the shr instruction in x86 assembly does not allow the use of a general-purpose register like bl
+                // for the count operand when the destination is a 64-bit register like rax.
+                // The count operand must be either an immediate value (a constant) or the cl register.
+
+                let mut instructions = vec![];
+
+                let first = self.stack_pop().unwrap();
+                let shift_by = self.stack_pop().unwrap();
+
+                let rcx = if self.is_reg_locked(Register::RCX) {
+                    let rbx = self.get_free_register(None);
+
+                    instructions.extend(vec![format!("mov {rbx}, rcx")]);
+
+                    self.replace_reg_on_stack(Register::RCX, rbx);
+
+                    self.unlock_register(Register::RCX);
+
+                    self.get_certain_free_register(Register::RCX)
+                } else {
+                    self.get_certain_free_register(Register::RCX)
+                };
+
+                let rax = self.get_free_register(None);
+
+                self.unlock_register_from_stack_value(&first);
+                self.unlock_register_from_stack_value(&shift_by);
+
+                // 1 << 10
                 // push 1
                 // push 10
                 // 1 should be popped into rax and 10 in rcx
-                vec![
-                    format!(";; ShiftRight get the two operands from the stack"),
-                    // the shl instruction in x86 assembly does not allow the use of a general-purpose register like bl
-                    // for the count operand when the destination is a 64-bit register like rax.
-                    // The count operand must be either an immediate value (a constant) or the cl register.
-                    format!("xor rax, rax"),
-                    format!("xor rcx, rcx"),
-                    format!("pop rcx"),
-                    format!("pop rax"),
+                instructions.extend(vec![
+                    format!(";; ShiftLeft get the two operands from the stack"),
+                    format!("xor {rax}, {rax}"),
+                    format!("xor {rcx}, {rcx}"),
+                    format!("mov {rax}, {first}"),
+                    format!("mov {rcx}, {shift_by}"),
                     format!(";; We can only shift left or right by 8 bits"),
-                    format!("shr rax, cl"),
-                ]
+                    format!("shr {rax}, cl"),
+                ]);
+
+                self.unlock_register(Register::RCX);
+
+                reg_to_lock = rax;
+
+                instructions
             }
 
             Operations::Modulo => {
@@ -289,9 +358,6 @@ impl ASM {
                 let first = self.stack_pop().unwrap();
                 let second = self.stack_pop().unwrap();
 
-                self.unlock_register_from_stack_value(&first);
-                self.unlock_register_from_stack_value(&second);
-
                 let rbx = self.get_free_register(Some(&regs_to_skip));
 
                 instructions.extend(vec![
@@ -303,6 +369,9 @@ impl ASM {
                 ]);
 
                 reg_to_lock = rdx;
+
+                self.unlock_register_from_stack_value(&first);
+                self.unlock_register_from_stack_value(&second);
 
                 self.unlock_register(rbx);
                 self.unlock_register(rax);

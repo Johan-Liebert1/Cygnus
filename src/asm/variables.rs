@@ -280,15 +280,37 @@ impl ASM {
             VarType::Int => {
                 let index = self.stack_pop().unwrap();
 
-                let rax = self.get_free_register(None);
+                let mut instructions = vec![];
+
+                let regs_to_skip = vec![Register::RDX];
+
+                let rax = if self.is_reg_locked(Register::RAX) && index != String::from(Register::RAX) {
+                    trace!("RAX was locked so rbx = . Used registers: {:#?}", self.get_used_registers());
+                    let rbx = self.get_free_register(Some(&regs_to_skip));
+
+                    instructions.extend(vec![format!("mov {rbx}, rax")]);
+
+                    self.replace_reg_on_stack(Register::RAX, rbx);
+
+                    self.unlock_register(Register::RAX);
+
+                    self.get_free_register(Some(&regs_to_skip))
+                } else {
+                    self.get_free_register(Some(&regs_to_skip))
+                };
+
+
                 let rbx = self.get_free_register(None);
 
-                self.extend_current_label(vec![
+                trace!("used regs: {:#?}", self.get_used_registers());
+                trace!("index: {:#?}", index);
+
+                instructions.extend(vec![
                     format!(";; Start array index access"),
                     // rax has the index into the array
-                    format!("mov {rax}, {}", index),
-                    format!("mov {rbx}, {}", variable.result_type.get_underlying_type_size()),
-                    format!("mul {rbx}"),
+                    format!("mov {rax}, {} ;; move index into {rax}", index),
+                    format!("mov {rbx}, {} ;; move var size into {rbx}", variable.result_type.get_underlying_type_size()),
+                    format!("mul {rbx} ;; now rax = rbx * rax = index * var_size"),
                     // now rax has index * 8
                     format!("mov {rbx}, rbp"),
                     format!("add {rbx}, {rax}"),
@@ -296,6 +318,9 @@ impl ASM {
                 ]);
 
                 self.unlock_register_from_stack_value(&index);
+
+                self.extend_current_label(instructions);
+
                 self.unlock_register(rbx);
 
                 self.stack_push(String::from(rax));
@@ -413,7 +438,7 @@ impl ASM {
                     format!(";; Finish dereferencing variable {}", var_name),
                 ]);
 
-                self.stack_push(format!("{rax}"));
+                self.stack_push(String::from(rax));
 
                 self.unlock_register(rbx);
 
