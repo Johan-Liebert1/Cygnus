@@ -6,16 +6,8 @@ use crate::{
 use super::asm::ASM;
 
 impl ASM {
-    fn reg_to_use(&self, reg_from_stack: &String) -> &str {
-        if reg_from_stack == "rax" {
-            "rcx"
-        } else {
-            "rax"
-        }
-    }
-
     pub fn binary_op_nums(&mut self, op: Operations, times_dereferenced: usize, result_type: &VarType) {
-        let mut reg_to_use = "rax";
+        let mut reg_to_lock = Register::RAX;
 
         let mut instructions = match op {
             Operations::Plus => {
@@ -34,31 +26,25 @@ impl ASM {
                         format!("mov rax, [float_imm]"),
                     ]
                 } else {
-                    // TODO: Remove
-                    // vec![
-                    //     format!(";; Plus get the two operands from the stack"),
-                    //     format!("pop rax"),
-                    //     format!("pop rbx"),
-                    //     format!("add rax, rbx"),
-                    // ]
-
                     let first = self.stack_pop().unwrap();
                     let second = self.stack_pop().unwrap();
 
+                    let rax = self.get_free_register(None);
+                    let rbx = self.get_free_register(None);
+
                     let mut inst = vec![
                         format!(";; Plus get the two operands from the stack"),
-                        // format!("mov {}, {}", reg_to_use, first),
-                        // format!("mov rbx, {}", second),
-                        // format!("add {}, rbx", reg_to_use),
+                        format!("mov {rax}, {}", first),
+                        format!("mov {rbx}, {}", second),
+                        format!("add {rax}, {rbx}"),
                     ];
 
-                    inst.push(format!("mov rbx, {second}"));
+                    self.unlock_register_from_stack_value(&first);
+                    self.unlock_register_from_stack_value(&second);
 
-                    if first != "rax" {
-                        inst.push(format!("mov rax, {first}"));
-                    }
+                    self.unlock_register(rbx);
 
-                    inst.push("add rax, rbx".into());
+                    reg_to_lock = rax;
 
                     inst
                 }
@@ -83,21 +69,22 @@ impl ASM {
                     let first = self.stack_pop().unwrap();
                     let second = self.stack_pop().unwrap();
 
-                    // TODO: Remove
-                    //
-                    // vec![
-                    //     format!(";; Minus get the two operands from the stack"),
-                    //     format!("pop rbx"),
-                    //     format!("pop rax"),
-                    //     format!("sub rax, rbx"),
-                    // ]
+                    let rax = self.get_free_register(None);
+                    let rbx = self.get_free_register(None);
 
                     let mut inst = vec![
                         format!(";; Minus get the two operands from the stack"),
-                        format!("mov rbx, {}", first),
-                        format!("mov rax, {}", second),
-                        format!("sub {}, rbx", reg_to_use),
+                        format!("mov {rbx}, {}", first),
+                        format!("mov {rax}, {}", second),
+                        format!("sub {rax}, {rbx}"),
                     ];
+
+                    self.unlock_register(rbx);
+
+                    self.unlock_register_from_stack_value(&first);
+                    self.unlock_register_from_stack_value(&second);
+
+                    reg_to_lock = rax;
 
                     inst
                 }
@@ -119,35 +106,53 @@ impl ASM {
                         format!("mov rax, [float_imm]"),
                     ]
                 } else {
-                    // TODO: Remove
+                    let mut instructions = vec![];
 
-                    // vec![
-                    //     // 40 / 5
-                    //     // push 40
-                    //     // push 5
-                    //     format!(";; Divide clean up rdx as this might mess up the final output"),
-                    //     format!("xor rdx, rdx"),
-                    //     format!(";; get the two operands from the stack"),
-                    //     format!("pop rbx"),
-                    //     format!("pop rax"),
-                    //     format!("div rbx"),
-                    // ]
-                    //
+                    // cannot use rdx here as it will get cleared on multiplication
+                    let regs_to_skip = vec![Register::RDX];
+
+                    // We need 'rax' to be free here for the multiplication
+                    let rax = if self.is_reg_locked(Register::RAX) {
+                        let rbx = self.get_free_register(Some(&regs_to_skip));
+
+                        instructions.extend(vec![format!("mov {rbx}, rax")]);
+
+                        self.replace_reg_on_stack(Register::RAX, rbx);
+
+                        self.unlock_register(Register::RAX);
+
+                        self.get_free_register(Some(&regs_to_skip))
+                    } else {
+                        self.get_free_register(Some(&regs_to_skip))
+                    };
 
                     let first = self.stack_pop().unwrap();
                     let second = self.stack_pop().unwrap();
 
-                    vec![
+                    let rbx = self.get_free_register(Some(&regs_to_skip));
+
+                    self.unlock_register_from_stack_value(&first);
+                    self.unlock_register_from_stack_value(&second);
+
+                    reg_to_lock = rax;
+
+                    instructions.extend(vec![
                         // 40 / 5
                         // push 40
                         // push 5
-                        format!(";; Divide clean up rdx as this might mess up the final output as 'div' divides rdx:rax with the register we pass to div inst"),
+                        format!(";; Divide clean up rdx as this might mess up the final output as 'div' stores quotient in 'rax' and remainder in 'rdx'"),
                         format!("xor rdx, rdx"),
                         format!(";; get the two operands from the stack"),
-                        format!("mov rbx, {}", first),
-                        format!("mov rax, {}", second),
-                        format!("div rbx"),
-                    ]
+                        format!("mov {rbx}, {}", first),
+                        format!("mov {rax}, {}", second),
+                        format!("div {rbx}"),
+                    ]);
+
+                    trace!("divide: reg_to_lock: {reg_to_lock}");
+
+                    self.unlock_register(rbx);
+
+                    instructions
                 }
             }
 
@@ -167,36 +172,47 @@ impl ASM {
                         format!("mov rax, [float_imm]"),
                     ]
                 } else {
-                    // TODO: Remove
-                    //
-                    // vec![
-                    //     format!(";; Multiply get the two operands from the stack"),
-                    //     format!("xor rdx, rdx"),
-                    //     format!("pop rax"),
-                    //     format!("pop rbx"),
-                    //     format!("mul rbx"),
-                    // ]
+                    let mut instructions = vec![];
+
+                    // cannot use rdx here as it will get cleared on multiplication
+                    let regs_to_skip = vec![Register::RDX];
+
+                    // We need 'rax' to be free here for the multiplication
+                    let rax = if self.is_reg_locked(Register::RAX) {
+                        let rbx = self.get_free_register(Some(&regs_to_skip));
+
+                        instructions.extend(vec![format!("mov {rbx}, rax")]);
+
+                        self.replace_reg_on_stack(Register::RAX, rbx);
+
+                        self.unlock_register(Register::RAX);
+
+                        self.get_free_register(Some(&regs_to_skip))
+                    } else {
+                        self.get_free_register(Some(&regs_to_skip))
+                    };
 
                     let first = self.stack_pop().unwrap();
                     let second = self.stack_pop().unwrap();
 
-                    let mut inst = vec![
+                    let rbx = self.get_free_register(Some(&regs_to_skip));
+
+                    instructions.extend(vec![
                         format!(";; Multiply get the two operands from the stack"),
                         format!("xor rdx, rdx"),
-                        // format!("mov rax, {}", first),
-                        // format!("mov rbx, {}", second),
-                        // format!("mul rbx"),
-                    ];
+                        format!("mov {rax}, {}", first),
+                        format!("mov {rbx}, {}", second),
+                        format!("mul {rbx}"),
+                    ]);
 
-                    inst.push(format!("mov rbx, {second}"));
+                    self.unlock_register_from_stack_value(&first);
+                    self.unlock_register_from_stack_value(&second);
 
-                    if first != "rax" {
-                        inst.push(format!("mov rax, {first}"));
-                    }
+                    self.unlock_register(rbx);
 
-                    inst.push("mul rbx".into());
+                    reg_to_lock = rax;
 
-                    inst
+                    instructions
                 }
             }
 
@@ -241,6 +257,9 @@ impl ASM {
                 let first = self.stack_pop().unwrap();
                 let second = self.stack_pop().unwrap();
 
+                self.unlock_register_from_stack_value(&first);
+                self.unlock_register_from_stack_value(&second);
+
                 vec![
                     format!(";; Modulo get the two operands from the stack"),
                     format!("xor rdx, rdx"),
@@ -252,18 +271,11 @@ impl ASM {
             }
         };
 
-        self.lock_register(Register::RAX);
-        self.stack_push(String::from(Register::RAX));
-        // self.stack_push(reg_to_use.into());
+        // Don't need to lock as get_free_register locks it
+        //
+        // self.lock_register(reg_to_lock);
 
-        // trace!(
-        //     "result_type: {}, times_dereferenced: {}",
-        //     result_type,
-        //     times_dereferenced
-        // );
-
-        // if *result_type == VarType::Ptr(Box::new(VarType::Str)) {
-        // }
+        self.stack_push(String::from(reg_to_lock));
 
         // result will always be in rax
         // We will also never dereference a string as we want the character address

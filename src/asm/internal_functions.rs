@@ -39,6 +39,7 @@ impl ASM {
         // we pop this anyway because in binary op we push "rax" to stack no matter what
         let stack_member = self.stack_pop().unwrap();
 
+        self.unlock_register_from_stack_value(&stack_member);
         vec![format!("mov rax, {}", stack_member), String::from("call _printRAX")]
     }
 
@@ -68,6 +69,9 @@ impl ASM {
 
         let str_len = self.stack_pop().unwrap();
         let str_addr = self.stack_pop().unwrap();
+
+        self.unlock_register_from_stack_value(&str_len);
+        self.unlock_register_from_stack_value(&str_addr);
 
         self.extend_current_label(vec![
             "mov rax, 1".into(),

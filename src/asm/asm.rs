@@ -112,6 +112,16 @@ impl ASM {
         }
     }
 
+    fn get_current_label_code(&self) -> Option<&Label> {
+        for label in &self.labels {
+            if label.name == self.current_label {
+                return Some(&label);
+            }
+        }
+
+        None
+    }
+
     pub fn current_label(&self) -> String {
         return self.current_label.clone();
     }
@@ -170,8 +180,9 @@ impl ASM {
         match idx {
             Some(..) => {
                 panic!(
-                    "Lock Register Failed: Register {reg_name} already in list. List: {:#?}",
-                    self.used_regsiters
+                    "Lock Register Failed: Register {reg_name} already in list.\nList: {:#?}\nASM:{:#?}",
+                    self.used_regsiters,
+                    self.get_current_label_code()
                 )
             }
 
