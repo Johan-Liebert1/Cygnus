@@ -1,5 +1,4 @@
 use crate::{
-    asm::structs,
     ast::{typedef::Typedef, variable::Variable},
     helpers::compiler_error,
     lexer::types::VarType,

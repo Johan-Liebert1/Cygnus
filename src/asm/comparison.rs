@@ -79,21 +79,27 @@ impl ASM {
         };
 
         let rax = self.get_free_register(None);
-        let rax_8_bits = get_register_name_for_bits(&rax, 8);
+        let rbx = self.get_free_register(None);
 
-        instructions.push(format!("xor {rax}, {rax}"));
+        instructions.extend(
+            vec![
+                format!(";; Not xor-ing here as it sets flags"),
+                format!("mov {rax}, 0"), 
+                format!("mov {rbx}, 1")
+            ]);
 
         instructions.push(match op {
-            Comparators::LessThan => format!("setl {rax_8_bits}"),
-            Comparators::GreaterThan => format!("setg {rax_8_bits}"),
-            Comparators::LessThanEq => format!("setle {rax_8_bits}"),
-            Comparators::GreaterThanEq => format!("setge {rax_8_bits}"),
-            Comparators::DoubleEquals => format!("sete {rax_8_bits}"),
-            Comparators::NotEquals => format!("setne {rax_8_bits}"),
+            Comparators::LessThan => format!("cmovl {rax}, {rbx}"),
+            Comparators::GreaterThan => format!("cmovg {rax}, {rbx}"),
+            Comparators::LessThanEq => format!("cmovle {rax}, {rbx}"),
+            Comparators::GreaterThanEq => format!("cmovge {rax}, {rbx}"),
+            Comparators::DoubleEquals => format!("cmove {rax}, {rbx}"),
+            Comparators::NotEquals => format!("cmovne {rax}, {rbx}"),
         });
 
-        self.extend_current_label(instructions);
+        self.unlock_register(rbx);
 
+        self.extend_current_label(instructions);
         self.stack_push(String::from(rax));
 
         self.comparison_num += 1;

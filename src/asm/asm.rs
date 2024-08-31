@@ -218,6 +218,17 @@ impl ASM {
         self.unlock_register(reg_name)
     }
 
+    pub fn get_certain_free_register(&mut self, reg_name: Register) -> Register {
+        for reg in ALL_REGISTERS {
+            if !self.used_regsiters.contains(&reg) && reg == reg_name {
+                self.lock_register(reg);
+                return reg;
+            }
+        }
+
+        panic!("Could not get register {reg_name}");
+    }
+
     /// Returns a free register and locks it
     /// Always returns in this order
     /// [RAX, RBX, RCX, RDX, RSI, RDI, RBP, R8, R9, R10, R11]

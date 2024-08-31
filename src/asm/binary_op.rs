@@ -252,20 +252,62 @@ impl ASM {
             }
 
             Operations::Modulo => {
+                let mut instructions = vec![];
+
+                let regs_to_skip = vec![Register::RDX];
+
+                // We need 'rax' to be free here for the multiplication
+                let rax = if self.is_reg_locked(Register::RAX) {
+                    let rbx = self.get_free_register(Some(&regs_to_skip));
+
+                    instructions.extend(vec![format!("mov {rbx}, rax")]);
+
+                    self.replace_reg_on_stack(Register::RAX, rbx);
+
+                    self.unlock_register(Register::RAX);
+
+                    self.get_free_register(Some(&regs_to_skip))
+                } else {
+                    self.get_free_register(Some(&regs_to_skip))
+                };
+
+                // We need 'rdx' to be free here for the modulo
+                let rdx = if self.is_reg_locked(Register::RDX) {
+                    let rbx = self.get_free_register(Some(&regs_to_skip));
+
+                    instructions.extend(vec![format!("mov {rbx}, rdx")]);
+
+                    self.replace_reg_on_stack(Register::RDX, rbx);
+
+                    self.unlock_register(Register::RDX);
+
+                    self.get_certain_free_register(Register::RDX)
+                } else {
+                    self.get_certain_free_register(Register::RDX)
+                };
+
                 let first = self.stack_pop().unwrap();
                 let second = self.stack_pop().unwrap();
 
                 self.unlock_register_from_stack_value(&first);
                 self.unlock_register_from_stack_value(&second);
 
-                vec![
+                let rbx = self.get_free_register(Some(&regs_to_skip));
+
+                instructions.extend(vec![
                     format!(";; Modulo get the two operands from the stack"),
-                    format!("xor rdx, rdx"),
-                    format!("mov rbx, {}", first),
-                    format!("mov rax, {}", second),
-                    format!("div rbx"),
-                    format!("mov rax, rdx"),
-                ]
+                    format!("xor {rdx}, {rdx}"),
+                    format!("mov {rbx}, {first}"),
+                    format!("mov {rax}, {second}"),
+                    format!("div {rbx}"),
+                ]);
+
+                reg_to_lock = rdx;
+
+                self.unlock_register(rbx);
+                self.unlock_register(rax);
+
+                instructions
             }
         };
 
