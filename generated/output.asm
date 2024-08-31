@@ -45,14 +45,14 @@ _main:
 	sub rax, rbx
 	
 	mov rbx, rax
-	;; rcx stores the index, rdx has the actual value
+	;; rcx stores the index, rsi has the actual value
 	mov rcx, [rbp - 432]
-	mov rdx, rbx
+	mov rsi, rbx
 	mov rax, 8
 	mul rcx
 	mov rcx, rbp
 	add rcx, rax
-	mov [rcx - 400], rdx
+	mov [rcx - 400], rsi
 	
 	.loop_0_end_start:
 	;; inc the loop variable

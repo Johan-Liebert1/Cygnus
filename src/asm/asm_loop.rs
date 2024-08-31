@@ -139,8 +139,8 @@ impl ASM {
                 panic!("`call_stack_var` is none but loop has a variable")
             }
 
-            let rdx = self.get_free_register();
-            let rcx = self.get_free_register();
+            let rdx = self.get_free_register(None);
+            let rcx = self.get_free_register(None);
 
             // add step to variable
             loop_end.extend([
@@ -155,9 +155,9 @@ impl ASM {
             self.unlock_register(rdx);
         }
 
-        let rax = self.get_free_register();
-        let rbx = self.get_free_register();
-        let rcx = self.get_free_register();
+        let rax = self.get_free_register(None);
+        let rbx = self.get_free_register(None);
+        let rcx = self.get_free_register(None);
 
         loop_end.extend(vec![
             format!(";; check exit condition"),

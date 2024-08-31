@@ -211,9 +211,15 @@ impl ASM {
     /// Returns a free register and locks it
     /// Always returns in this order
     /// [RAX, RBX, RCX, RDX, RSI, RDI, RBP, R8, R9, R10, R11]
-    pub fn get_free_register(&mut self) -> Register {
+    pub fn get_free_register(&mut self, skip_list: Option<&Vec<Register>>) -> Register {
         for reg in ALL_REGISTERS {
             if !self.used_regsiters.contains(&reg) {
+                if let Some(skip_list) = skip_list {
+                    if skip_list.contains(&reg) {
+                        continue;
+                    }
+                }
+
                 self.lock_register(reg);
                 return reg;
             }

@@ -40,7 +40,7 @@ impl ASM {
         let mut v = vec![format!(";; assign_local_number of type {}", var_type)];
 
         if stack_item.starts_with('[') {
-            let rax = self.get_free_register();
+            let rax = self.get_free_register(None);
 
             // trying to move a memory location into another one which is not allowed
             v.push(format!("mov {rax}, {}", stack_item));
@@ -72,7 +72,7 @@ impl ASM {
             Some(index) => {
                 // We need 'rax' to be free here for the multiplication
                 let rax = if self.is_reg_locked(Register::RAX) {
-                    let rbx = self.get_free_register();
+                    let rbx = self.get_free_register(None);
 
                     instructions.extend(vec![
                         format!("mov {rbx}, rax")
@@ -82,16 +82,20 @@ impl ASM {
 
                     self.unlock_register(Register::RAX);
 
-                    self.get_free_register()
+                    self.get_free_register(None)
                 } else {
-                    self.get_free_register()
+                    self.get_free_register(None)
                 };
 
                 let index = self.stack_pop().unwrap();
                 let value = self.stack_pop().unwrap();
 
-                let rbx = self.get_free_register();
-                let rcx = self.get_free_register();
+
+                // cannot use rdx here as it will get cleared on multiplication
+                let regs_to_skip = vec![Register::RDX];
+
+                let rbx = self.get_free_register(Some(&regs_to_skip));
+                let rcx = self.get_free_register(Some(&regs_to_skip));
 
                 // we visit the right side first and then the left
                 // side. So the array index is at top (index) and the
@@ -178,8 +182,8 @@ impl ASM {
 
                 instructions.push(format!(";; assign_local_pointer of type {}", t));
 
-                let rax = self.get_free_register();
-                let rbx = self.get_free_register();
+                let rax = self.get_free_register(None);
+                let rbx = self.get_free_register(None);
 
                 let stack_member = self.stack_pop().unwrap();
                 instructions.push(format!("mov {rax}, {stack_member}"));
@@ -206,7 +210,7 @@ impl ASM {
         // This is assignment to the pointer itself not to the value to which the pointer is
         // pointing to
         if !is_ptr_deref {
-            let rax = self.get_free_register();
+            let rax = self.get_free_register(None);
             instructions.push(format!("mov [rbp - {}], {rax}", var_offset));
             self.unlock_register(rax);
         }
@@ -312,7 +316,7 @@ impl ASM {
             VarType::Float => {
                 let stack_member = self.stack_pop().unwrap();
 
-                let rax = self.get_free_register();
+                let rax = self.get_free_register(None);
 
                 self.extend_current_label(vec![
                     format!(";; For assignemt of float var name '{}'", ar_var.borrow().var_name),
@@ -330,8 +334,8 @@ impl ASM {
             VarType::Char => {
                 let stack_member = self.stack_pop().unwrap();
 
-                let rax = self.get_free_register();
-                let rbx = self.get_free_register();
+                let rax = self.get_free_register(None);
+                let rbx = self.get_free_register(None);
 
                 // TODO: Update this
                 //
@@ -437,8 +441,8 @@ impl ASM {
     fn handle_local_plus_minus_eq_assignment_integer(&mut self, op: &str, offset: usize) {
         let stack_member = self.stack_pop().unwrap();
 
-        let rax = self.get_free_register();
-        let rbx = self.get_free_register();
+        let rax = self.get_free_register(None);
+        let rbx = self.get_free_register(None);
 
         self.extend_current_label(vec![
             format!("mov {rax}, [rbp - {}]", offset),

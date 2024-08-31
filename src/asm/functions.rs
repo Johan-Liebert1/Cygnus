@@ -57,7 +57,7 @@ impl ASM {
 
             let (ar_var, _) = call_stack.get_var_with_name(function_name);
 
-            let rax = self.get_free_register();
+            let rax = self.get_free_register(None);
 
             if let Some(ar_var) = ar_var {
                 instructions.extend(vec![
