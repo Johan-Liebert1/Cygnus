@@ -27,14 +27,18 @@ impl ASM {
     pub fn function_call_prep(&mut self) {
         // Not removing the regs from the stack as we restore them after the function call
 
+        let mut saved_regs = vec![];
+
         for reg in ALL_REGISTERS {
             if self.is_reg_locked(reg) {
                 self.add_to_current_label(format!("push {reg}"));
-                self.regs_saved_for_function_call.push(reg);
+                saved_regs.push(reg);
 
                 self.unlock_register(reg);
             }
         }
+
+        self.regs_saved_for_function_call.push(saved_regs);
 
         self.regs_locked_for_func_args.push(vec![]);
     }
@@ -123,13 +127,6 @@ impl ASM {
             }
         }
 
-        // this clone is fine as these are ints anyway and will be 10 at most
-        // let locked_regs: Vec<Register> = self.regs_locked_for_func_args.iter().cloned().collect();
-        // self.regs_locked_for_func_args = vec![];
-        // for reg in locked_regs {
-        //     self.unlock_register(reg);
-        // }
-
         // if the function returns anything, push it onto the stack
         if !matches!(func_return_type, VarType::Unknown) && is_assigned_to_var {
             let rax = if self.is_reg_locked(Register::RAX) {
@@ -147,12 +144,17 @@ impl ASM {
             self.stack_push(String::from(rax));
         }
 
-        let saved_regs: Vec<Register> = self.regs_saved_for_function_call.iter().cloned().collect();
-        self.regs_saved_for_function_call = vec![];
+        match self.regs_saved_for_function_call.pop() {
+            Some(saved_regs) => {
+                for reg in saved_regs.iter().rev() {
+                    self.lock_register(*reg);
+                    self.add_to_current_label(format!("pop {reg}"));
+                }
+            }
 
-        for reg in saved_regs.iter().rev() {
-            self.lock_register(*reg);
-            self.add_to_current_label(format!("pop {reg}"));
+            None => {
+                // Nothing. No register was saved
+            }
         }
 
         self.extend_current_label(instructions);

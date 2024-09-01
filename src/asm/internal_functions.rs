@@ -196,7 +196,6 @@ impl ASM {
     pub fn func_syscall_call(&mut self, is_result_assigned: bool) {
         self.add_to_current_label("syscall".into());
 
-
         match self.regs_locked_for_func_args.pop() {
             Some(locked_regs) => {
                 for reg in locked_regs {
@@ -206,6 +205,19 @@ impl ASM {
 
             None => {
                 // Nothing. No register was locked, i.e. func with no args
+            }
+        }
+
+        match self.regs_saved_for_function_call.pop() {
+            Some(saved_regs) => {
+                for reg in saved_regs.iter().rev() {
+                    self.lock_register(*reg);
+                    self.add_to_current_label(format!("pop {reg}"));
+                }
+            }
+
+            None => {
+                // Nothing. No register was saved
             }
         }
 

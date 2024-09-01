@@ -33,7 +33,9 @@ pub struct ASM {
     /// rdi might have been locked twice
     pub regs_locked_for_func_args: Vec<Vec<Register>>,
 
-    pub regs_saved_for_function_call: Vec<Register>,
+    /// Vec<Vec<Register>> to handle recursive function calls where 
+    /// rdi might have been locked twice
+    pub regs_saved_for_function_call: Vec<Vec<Register>>,
 }
 
 impl Default for ASM {
