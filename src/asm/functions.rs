@@ -79,8 +79,6 @@ impl ASM {
         // this clone is fine as these are ints anyway and will be 10 at most
         let locked_regs: Vec<Register> = self.regs_locked_for_function_call.iter().cloned().collect();
 
-        trace!("locked_regs for func {function_name}: {locked_regs:#?}");
-
         self.regs_locked_for_function_call = vec![];
 
         for reg in locked_regs {
