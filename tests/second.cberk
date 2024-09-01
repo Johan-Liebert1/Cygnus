@@ -1,31 +1,63 @@
-fun is_palindrome(length: int, string: *char) -> int {
-    def i: int = 0;
+-- Count the number of occurances of all alphabets in a file
 
-    loop from 0 to ((length / 2) + 1) {
-        def sub: int = length - i - 1;
+mem file 4096
 
-        def eq: int = *(string + i) == *(string + sub);
+-- int * num alphabets
+mem lower_char_occurances 8 * 26
 
-        if eq != 1 {
-            return 0
-        }
-
-        i = i + 1
-    }
-
-    return 1
-}
+-- int * num alphabets
+mem upper_char_occurances 8 * 26
 
 fun main() {
-    def rush: str = "rush";
-    def racecar: str = "racecar";
+    def lower_a: int = 97;
+    def lower_z: int = lower_a + 26 - 1;
 
-    def ret: int = is_palindrome(4, rush as *char);
+    def upper_a: int = 65;
+    def upper_z: int = lower_a + 26 - 1;
 
-    write("ret = ", ret)
+    def file_name: str = "../examples/test_files/read_a_file\0";
 
-    ret = is_palindrome(7, racecar as *char);
-    write("ret = ", ret)
+    -- (syscall number, file_name, readonly flag)
+    -- open syscall
+    def fd: int = syscall(2, file_name as *char, 0, 0);
+
+    write(fd)
+
+    -- read syscall
+    def read_bytes: int = syscall(0, fd, file, 4096);
+
+    -- write
+    read_bytes = syscall(1, 1, file, read_bytes);
+
+    def i: int = 0;
+
+    loop from 0 to read_bytes {
+        -- Kinda scuffed but eh it is what it is
+        def thing: *int = file + i;
+
+        if *(thing as *char) >= lower_a and *(thing as *char) <= lower_z {
+            def inc: int =  *(thing as *char) - lower_a;
+
+            def addr_to_update: *int = lower_char_occurances + (inc as int) * 8;
+
+            -- FIXME: Can't do *addr_to_update = *addr_to_update + 1;
+            *addr_to_update = *(addr_to_update as *int) + 1;
+        }
+
+        i += 1
+    }
+
+    i = lower_a;
+
+    def j: int = 0;
+
+    loop from 0 to 26 {
+        write(i, *(lower_char_occurances + j * 8));
+
+        j += 1;
+        i += 1;
+    }
+
 }
 
 main()

@@ -84,6 +84,11 @@ impl ASM {
                 let rax = if self.is_reg_locked(Register::RAX) {
                     let rbx = self.get_free_register(None);
 
+                    trace!(
+                        "RAX was locked so rbx = '{rbx}'. Used registers: {:#?}",
+                        self.get_used_registers()
+                    );
+
                     instructions.extend(vec![format!("mov {rbx}, rax")]);
 
                     self.replace_reg_on_stack(Register::RAX, rbx);

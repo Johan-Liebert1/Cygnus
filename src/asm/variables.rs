@@ -278,15 +278,14 @@ impl ASM {
 
         match *var_type.clone() {
             VarType::Int => {
-                let index = self.stack_pop().unwrap();
-
                 let mut instructions = vec![];
 
                 let regs_to_skip = vec![Register::RDX];
 
-                let rax = if self.is_reg_locked(Register::RAX) && index != String::from(Register::RAX) {
-                    trace!("RAX was locked so rbx = . Used registers: {:#?}", self.get_used_registers());
+                let rax = if self.is_reg_locked(Register::RAX) {
                     let rbx = self.get_free_register(Some(&regs_to_skip));
+
+                    trace!("RAX was locked so rbx = {rbx}. Used registers: {:#?}", self.get_used_registers());
 
                     instructions.extend(vec![format!("mov {rbx}, rax")]);
 
@@ -299,11 +298,15 @@ impl ASM {
                     self.get_free_register(Some(&regs_to_skip))
                 };
 
+                // we have to get this after we update the stack otherwise we're working with stale
+                // data
+                let index = self.stack_pop().unwrap();
 
                 let rbx = self.get_free_register(None);
 
                 trace!("used regs: {:#?}", self.get_used_registers());
                 trace!("index: {:#?}", index);
+                trace!("rax: {:#?}", rax);
 
                 instructions.extend(vec![
                     format!(";; Start array index access"),

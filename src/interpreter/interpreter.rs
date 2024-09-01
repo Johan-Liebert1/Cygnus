@@ -116,7 +116,7 @@ impl Interpreter {
 
         if self.asm.get_used_registers().len() > 0 {
             trace!("Used Registers: {:#?}", self.asm.get_used_registers());
-            trace!("Labels: {:#?}", self.asm.labels);
+            // trace!("Labels: {:#?}", self.asm.labels);
             panic!("Found unused registers");
         }
 

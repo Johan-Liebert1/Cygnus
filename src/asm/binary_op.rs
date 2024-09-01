@@ -123,7 +123,12 @@ impl ASM {
                     let rax = if self.is_reg_locked(Register::RAX) {
                         let rbx = self.get_free_register(Some(&regs_to_skip));
 
-                        instructions.extend(vec![format!("mov {rbx}, rax")]);
+                        trace!(
+                            "RAX was locked so rbx = '{rbx}'. Used registers: {:#?}",
+                            self.get_used_registers()
+                        );
+
+                        instructions.extend(vec![format!("mov {rbx}, rax ;; moving rax into {rbx} as rax is needed")]);
 
                         self.replace_reg_on_stack(Register::RAX, rbx);
 
@@ -136,6 +141,8 @@ impl ASM {
 
                     let first = self.stack_pop().unwrap();
                     let second = self.stack_pop().unwrap();
+
+                    trace!("first: {first}, second: {second}");
 
                     let rbx = self.get_free_register(Some(&regs_to_skip));
 
@@ -187,6 +194,11 @@ impl ASM {
                     let rax = if self.is_reg_locked(Register::RAX) {
                         let rbx = self.get_free_register(Some(&regs_to_skip));
 
+                        trace!(
+                            "RAX was locked so rbx = '{rbx}'. Used registers: {:#?}",
+                            self.get_used_registers()
+                        );
+
                         instructions.extend(vec![format!("mov {rbx}, rax")]);
 
                         self.replace_reg_on_stack(Register::RAX, rbx);
@@ -230,9 +242,6 @@ impl ASM {
 
                 let mut instructions = vec![];
 
-                let first = self.stack_pop().unwrap();
-                let shift_by = self.stack_pop().unwrap();
-
                 let rcx = if self.is_reg_locked(Register::RCX) {
                     let rbx = self.get_free_register(None);
 
@@ -248,6 +257,9 @@ impl ASM {
                 };
 
                 let rax = self.get_free_register(None);
+
+                let first = self.stack_pop().unwrap();
+                let shift_by = self.stack_pop().unwrap();
 
                 self.unlock_register_from_stack_value(&first);
                 self.unlock_register_from_stack_value(&shift_by);
@@ -281,9 +293,6 @@ impl ASM {
 
                 let mut instructions = vec![];
 
-                let first = self.stack_pop().unwrap();
-                let shift_by = self.stack_pop().unwrap();
-
                 let rcx = if self.is_reg_locked(Register::RCX) {
                     let rbx = self.get_free_register(None);
 
@@ -299,6 +308,9 @@ impl ASM {
                 };
 
                 let rax = self.get_free_register(None);
+
+                let first = self.stack_pop().unwrap();
+                let shift_by = self.stack_pop().unwrap();
 
                 self.unlock_register_from_stack_value(&first);
                 self.unlock_register_from_stack_value(&shift_by);
@@ -332,6 +344,11 @@ impl ASM {
                 // We need 'rax' to be free here for the multiplication
                 let rax = if self.is_reg_locked(Register::RAX) {
                     let rbx = self.get_free_register(Some(&regs_to_skip));
+
+                    trace!(
+                        "RAX was locked so rbx = {rbx}. Used registers: {:#?}",
+                        self.get_used_registers()
+                    );
 
                     instructions.extend(vec![format!("mov {rbx}, rax")]);
 
