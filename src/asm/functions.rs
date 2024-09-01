@@ -47,6 +47,7 @@ impl ASM {
         is_function_pointer_call: bool,
         call_stack: &CallStack,
         is_extern_func: bool,
+        is_assigned_to_var: bool,
     ) {
         let mut instructions = vec![];
 
@@ -86,7 +87,7 @@ impl ASM {
         }
 
         // if the function returns anything, push it onto the stack
-        if !matches!(func_return_type, VarType::Unknown) {
+        if !matches!(func_return_type, VarType::Unknown) && is_assigned_to_var {
             // Not locking here as it's not required. If the return value is going to be
             // overwritten then that's fine
             

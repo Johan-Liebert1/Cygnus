@@ -271,7 +271,7 @@ impl Parser {
                             Bracket::LParen => {
                                 // function invocation
                                 self.get_next_token();
-                                self.parse_function_call(var.to_string())
+                                self.parse_function_call(var.to_string(), false)
                             }
 
                             Bracket::LSquare => {

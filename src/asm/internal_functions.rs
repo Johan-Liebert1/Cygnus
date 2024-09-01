@@ -196,7 +196,7 @@ impl ASM {
         self.extend_current_label(instructions);
     }
 
-    pub fn func_syscall_call(&mut self) {
+    pub fn func_syscall_call(&mut self, is_result_assigned: bool) {
         self.add_to_current_label("syscall".into());
 
         // this clone is fine as these are ints anyway and will be 10 at most
@@ -208,8 +208,10 @@ impl ASM {
             self.unlock_register(reg);
         }
 
-        self.lock_register(Register::RAX);
-        self.stack_push(String::from(Register::RAX));
+        if is_result_assigned {
+            self.lock_register(Register::RAX);
+            self.stack_push(String::from(Register::RAX));
+        }
     }
 
     pub fn func_write_var(&mut self, var: &Variable, call_stack: &CallStack) {

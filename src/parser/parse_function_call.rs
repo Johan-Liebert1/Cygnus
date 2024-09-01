@@ -11,7 +11,7 @@ use super::parser::Parser;
 
 impl Parser {
     /// FUNCTION_CALL -> VAR_NAME LPAREN (COMPARISON_EXPRESSION)* RPAREN
-    pub fn parse_function_call(&mut self, name: String) -> ASTNode {
+    pub fn parse_function_call(&mut self, name: String, is_assigned: bool) -> ASTNode {
         // We parse from the LPAREN
         // consume the LPAREN
         let tok = self.get_next_token();
@@ -64,6 +64,11 @@ impl Parser {
             };
         }
 
-        return Rc::new(RefCell::new(Box::new(FunctionCall::new(name, tok, arguments))));
+        return Rc::new(RefCell::new(Box::new(FunctionCall::new(
+            name,
+            tok,
+            arguments,
+            is_assigned,
+        ))));
     }
 }

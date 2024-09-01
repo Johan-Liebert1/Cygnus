@@ -29,15 +29,17 @@ pub struct FunctionCall {
     arguments: Vec<ASTNode>,
     /// This is basically the return type for this function
     pub result_type: VarType,
+    pub is_result_assigned: bool,
 }
 
 impl FunctionCall {
-    pub fn new(name: String, token: Token, arguments: Vec<ASTNode>) -> Self {
+    pub fn new(name: String, token: Token, arguments: Vec<ASTNode>, is_result_assigned: bool) -> Self {
         Self {
             name,
             token,
             arguments,
             result_type: VarType::Unknown,
+            is_result_assigned
         }
     }
 }
@@ -125,7 +127,7 @@ impl AST for FunctionCall {
                     asm.func_syscall_add_arg(index);
                 }
 
-                asm.func_syscall_call();
+                asm.func_syscall_call(self.is_result_assigned);
 
             }
 
@@ -147,6 +149,7 @@ impl AST for FunctionCall {
                         false,
                         call_stack,
                         func.is_extern_func,
+                        self.is_result_assigned
                     );
                 }
 
@@ -191,6 +194,7 @@ impl AST for FunctionCall {
                         true,
                         call_stack,
                         false,
+                        self.is_result_assigned
                     );
                 }
             },
