@@ -39,7 +39,7 @@ impl FunctionCall {
             token,
             arguments,
             result_type: VarType::Unknown,
-            is_result_assigned
+            is_result_assigned,
         }
     }
 }
@@ -98,7 +98,7 @@ impl AST for FunctionCall {
 
                             match func_def.return_type {
                                 VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                    asm.func_write_number(todo!())
+                                    asm.func_write_number(false)
                                 }
 
                                 _ => unimplemented!(),
@@ -122,13 +122,14 @@ impl AST for FunctionCall {
             }
 
             FUNC_SYSCALL => {
+                asm.function_call_prep();
+
                 for (index, arg) in self.arguments.iter().enumerate() {
                     arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
                     asm.func_syscall_add_arg(index);
                 }
 
                 asm.func_syscall_call(self.is_result_assigned);
-
             }
 
             // This should be caught in the semantica analysis step
@@ -136,6 +137,8 @@ impl AST for FunctionCall {
             name => match f.borrow().get(name) {
                 // args -> rax, rdi, rsi, rdx, r10, r8, r9
                 Some(func) => {
+                    asm.function_call_prep();
+
                     // we reverse here as we want to push into the stack backwards
                     for (index, argument) in self.arguments.iter().enumerate() {
                         argument.borrow().visit_com(v, f.clone(), asm, call_stack);
@@ -149,7 +152,7 @@ impl AST for FunctionCall {
                         false,
                         call_stack,
                         func.is_extern_func,
-                        self.is_result_assigned
+                        self.is_result_assigned,
                     );
                 }
 
@@ -183,8 +186,11 @@ impl AST for FunctionCall {
                         compiler_error(format!("Function {} unimplemented", self.name), &self.token)
                     }
 
-                    for argument in self.arguments.iter().rev() {
+                    asm.function_call_prep();
+
+                    for (index, argument) in self.arguments.iter().enumerate() {
                         argument.borrow().visit_com(v, f.clone(), asm, call_stack);
+                        asm.function_call_add_arg(index);
                     }
 
                     asm.function_call(
@@ -194,7 +200,7 @@ impl AST for FunctionCall {
                         true,
                         call_stack,
                         false,
-                        self.is_result_assigned
+                        self.is_result_assigned,
                     );
                 }
             },

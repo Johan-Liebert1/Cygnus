@@ -29,7 +29,11 @@ pub struct ASM {
 
     used_regsiters: Vec<Register>,
 
-    pub regs_locked_for_function_call: Vec<Register>,
+    /// Vec<Vec<Register>> to handle recursive function calls where 
+    /// rdi might have been locked twice
+    pub regs_locked_for_func_args: Vec<Vec<Register>>,
+
+    pub regs_saved_for_function_call: Vec<Register>,
 }
 
 impl Default for ASM {
@@ -71,7 +75,8 @@ impl Default for ASM {
             stack: vec![],
 
             used_regsiters: vec![],
-            regs_locked_for_function_call: vec![],
+            regs_locked_for_func_args: vec![],
+            regs_saved_for_function_call: vec![],
         }
     }
 }
@@ -161,6 +166,14 @@ impl ASM {
     pub fn stack_push(&mut self, to_push: String) {
         self.stack.push(to_push);
     }
+
+    // pub fn replace_reg_on_function_call_stack(&mut self, reg_to_replace: Register, reg_to_replace_with: Register) {
+    //     for reg in &mut self.regs_locked_for_func_args {
+    //         if *reg == reg_to_replace {
+    //             *reg = reg_to_replace_with;
+    //         }
+    //     }
+    // }
 
     pub fn replace_reg_on_stack(&mut self, reg_to_replace: Register, reg_to_replace_with: Register) {
         for reg in &mut self.stack {

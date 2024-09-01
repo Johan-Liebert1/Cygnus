@@ -1,17 +1,38 @@
-SYS_EXIT equ 60
+%include "../generated/std.asm"
 
-%macro exit 1 ; 1 -> takes one argument
-    mov rax, SYS_EXIT
-    mov rdi, %1
-    syscall
-%endmacro
+section .bss
+	digitSpace resb 100
+	digitSpacePos resb 8
+	argc resb 8
 
 section .text
-    extern print_thingy
     global _start
 
+_add:
+	; push rbp
+	; mov rbp, rsp
+
+    mov rax, rdi
+    mov rbx, rsi
+    add rax, rbx
+
+    push rax
+    call _printRAX
+
+    pop rax
+
+	; mov rsp, rbp
+	; pop rbp
+	ret
+
 _start: 
-    call print_thingy
+    mov rax, 69
+
+    mov rdi, 1
+    mov rsi, 4
+    call _add
+
+    call _printRAX
 
     mov rax, 0
     exit rax

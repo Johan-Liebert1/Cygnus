@@ -2,8 +2,12 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::variable::Variable,
-    lexer::{registers::Register, types::VarType},
-    semantic_analyzer::semantic_analyzer::CallStack, trace,
+    lexer::{
+        registers::{Register, ALL_REGISTERS},
+        types::VarType,
+    },
+    semantic_analyzer::semantic_analyzer::CallStack,
+    trace,
 };
 
 use super::asm::ASM;
@@ -20,21 +24,47 @@ pub const FUNCTION_ARGS_REGS: [Register; 6] = [
 ];
 
 impl ASM {
+    pub fn function_call_prep(&mut self) {
+        // Not removing the regs from the stack as we restore them after the function call
+
+        for reg in ALL_REGISTERS {
+            if self.is_reg_locked(reg) {
+                self.add_to_current_label(format!("push {reg}"));
+                self.regs_saved_for_function_call.push(reg);
+
+                self.unlock_register(reg);
+            }
+        }
+
+        self.regs_locked_for_func_args.push(vec![]);
+    }
+
     pub fn function_call_add_arg(&mut self, arg_num: usize) {
         trace!("regs: {:#?}", self.get_used_registers());
 
         let mut instructions = vec![];
 
+        let mut arg_reg = FUNCTION_ARGS_REGS[arg_num];
+
         let stack_member = self.stack_pop().unwrap();
+
         instructions.extend(vec![
             format!(";; Moving argument number {}", arg_num + 1),
-            format!("mov {}, {}", FUNCTION_ARGS_REGS[arg_num], stack_member),
+            format!("mov {}, {}", arg_reg, stack_member),
         ]);
 
         self.unlock_register_from_stack_value(&stack_member);
 
-        self.lock_register(FUNCTION_ARGS_REGS[arg_num]);
-        self.regs_locked_for_function_call.push(FUNCTION_ARGS_REGS[arg_num]);
+        self.lock_register(arg_reg);
+
+        match self.regs_locked_for_func_args.last_mut() {
+            Some(last_mut) => last_mut.push(arg_reg),
+
+            None => {
+                let vec = vec![arg_reg];
+                self.regs_locked_for_func_args.push(vec);
+            }
+        }
 
         self.extend_current_label(instructions);
     }
@@ -50,6 +80,10 @@ impl ASM {
         is_assigned_to_var: bool,
     ) {
         let mut instructions = vec![];
+
+        // if the function returns something we need to save rax
+        // else it'll be overwritten by the return value of the function
+        if !matches!(func_return_type, VarType::Unknown) {}
 
         if !is_function_pointer_call {
             if is_extern_func {
@@ -77,22 +111,48 @@ impl ASM {
             }
         }
 
-        // this clone is fine as these are ints anyway and will be 10 at most
-        let locked_regs: Vec<Register> = self.regs_locked_for_function_call.iter().cloned().collect();
+        match self.regs_locked_for_func_args.pop() {
+            Some(locked_regs) => {
+                for reg in locked_regs {
+                    self.unlock_register(reg);
+                }
+            }
 
-        self.regs_locked_for_function_call = vec![];
-
-        for reg in locked_regs {
-            self.unlock_register(reg);
+            None => {
+                // Nothing. No register was locked, i.e. func with no args
+            }
         }
+
+        // this clone is fine as these are ints anyway and will be 10 at most
+        // let locked_regs: Vec<Register> = self.regs_locked_for_func_args.iter().cloned().collect();
+        // self.regs_locked_for_func_args = vec![];
+        // for reg in locked_regs {
+        //     self.unlock_register(reg);
+        // }
 
         // if the function returns anything, push it onto the stack
         if !matches!(func_return_type, VarType::Unknown) && is_assigned_to_var {
-            // Not locking here as it's not required. If the return value is going to be
-            // overwritten then that's fine
-            
-            self.lock_register(Register::RAX);
-            self.stack_push(String::from(Register::RAX));
+            let rax = if self.is_reg_locked(Register::RAX) {
+                let rbx = self.get_free_register(None);
+
+                instructions.push(format!("mov {rbx}, rax"));
+
+                self.unlock_register(Register::RAX);
+
+                self.get_free_register(None)
+            } else {
+                self.get_free_register(None)
+            };
+
+            self.stack_push(String::from(rax));
+        }
+
+        let saved_regs: Vec<Register> = self.regs_saved_for_function_call.iter().cloned().collect();
+        self.regs_saved_for_function_call = vec![];
+
+        for reg in saved_regs.iter().rev() {
+            self.lock_register(*reg);
+            self.add_to_current_label(format!("pop {reg}"));
         }
 
         self.extend_current_label(instructions);
@@ -159,6 +219,7 @@ impl ASM {
         if return_value_exists {
             let stack_member = self.stack_pop().unwrap();
 
+            // not locking here should be fine
             self.add_to_current_label(format!("mov {}, {stack_member}", Register::RAX));
 
             self.unlock_register_from_stack_value(&stack_member);

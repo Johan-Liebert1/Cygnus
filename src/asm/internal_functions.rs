@@ -46,16 +46,6 @@ impl ASM {
     pub fn func_write_number(&mut self, is_binary_op_result: bool) {
         let vec = self.get_vec_for_write_number();
         self.extend_current_label(vec);
-
-        // if !is_binary_op_result {
-        //     self.extend_current_label(vec![
-        //         format!("mov rax, {}", stack_member),
-        //         String::from("call _printRAX"),
-        //     ]);
-        // } else {
-        //     // the value is already in rax
-        //     self.extend_current_label(vec![String::from("call _printRAX")]);
-        // }
     }
 
     pub fn func_exit(&mut self) {
@@ -63,10 +53,6 @@ impl ASM {
     }
 
     pub fn func_write_string(&mut self) {
-        // TODO: Remove
-        //
-        // self.extend_current_label(WRITE_STRING_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec());
-
         let str_len = self.stack_pop().unwrap();
         let str_addr = self.stack_pop().unwrap();
 
@@ -186,12 +172,23 @@ impl ASM {
         let mut instructions = vec![];
 
         let stack_member = self.stack_pop().unwrap();
-        instructions.push(format!("mov {}, {}", SYSCALL_ARGS_REGS[arg_num], stack_member));
+
+        let arg_reg = SYSCALL_ARGS_REGS[arg_num];
+
+        instructions.push(format!("mov {}, {}", arg_reg, stack_member));
 
         self.unlock_register_from_stack_value(&stack_member);
 
-        self.lock_register(SYSCALL_ARGS_REGS[arg_num]);
-        self.regs_locked_for_function_call.push(SYSCALL_ARGS_REGS[arg_num]);
+        self.lock_register(arg_reg);
+
+        match self.regs_locked_for_func_args.last_mut() {
+            Some(last_mut) => last_mut.push(arg_reg),
+
+            None => {
+                let vec = vec![arg_reg];
+                self.regs_locked_for_func_args.push(vec);
+            }
+        }
 
         self.extend_current_label(instructions);
     }
@@ -199,13 +196,17 @@ impl ASM {
     pub fn func_syscall_call(&mut self, is_result_assigned: bool) {
         self.add_to_current_label("syscall".into());
 
-        // this clone is fine as these are ints anyway and will be 10 at most
-        let regs: Vec<Register> = self.regs_locked_for_function_call.iter().cloned().collect();
 
-        self.regs_locked_for_function_call = vec![];
+        match self.regs_locked_for_func_args.pop() {
+            Some(locked_regs) => {
+                for reg in locked_regs {
+                    self.unlock_register(reg);
+                }
+            }
 
-        for reg in regs {
-            self.unlock_register(reg);
+            None => {
+                // Nothing. No register was locked, i.e. func with no args
+            }
         }
 
         if is_result_assigned {
