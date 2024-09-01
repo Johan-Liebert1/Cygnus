@@ -158,7 +158,7 @@ fn basic_struct() {
 
 #[test]
 fn struct_assignment() {
-    let (stdout_str, _, file_result) = get_stdout_and_actual_result("struct_assignment.cberk");
+    let (stdout_str, _, file_result) = get_stdout_and_actual_result("struct_assign.cberk");
     assert_eq!(stdout_str, file_result);
 }
 
