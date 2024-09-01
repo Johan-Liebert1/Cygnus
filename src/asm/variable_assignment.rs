@@ -35,7 +35,9 @@ impl ASM {
     }
 
     fn assign_local_number(&mut self, var_offset: usize, var_type: &VarType) {
-        let mut stack_item = self.stack_pop().unwrap();
+        let original_stack_item = self.stack_pop().unwrap();
+
+        let mut stack_item = original_stack_item.clone();
 
         let mut v = vec![format!(";; assign_local_number of type {}", var_type)];
 
@@ -45,6 +47,14 @@ impl ASM {
             // trying to move a memory location into another one which is not allowed
             v.push(format!("mov {rax}, {}", stack_item));
             stack_item = String::from(rax);
+
+            self.unlock_register(rax);
+        }
+
+        // Convert to appropriate register
+        if stack_item.starts_with("r") {
+            let reg = Register::from_string(&stack_item);
+            stack_item = var_type.get_register_name(reg).into();
         }
 
         v.push(format!(
@@ -54,7 +64,7 @@ impl ASM {
             stack_item
         ));
 
-        self.unlock_register_from_stack_value(&stack_item);
+        self.unlock_register_from_stack_value(&original_stack_item);
 
         self.extend_current_label(v);
     }

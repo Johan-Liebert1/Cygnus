@@ -1,5 +1,9 @@
 use crate::{
-    lexer::{registers::Register, tokens::Operations, types::VarType},
+    lexer::{
+        registers::{get_register_name_for_bits, Register},
+        tokens::Operations,
+        types::VarType,
+    },
     trace,
 };
 
@@ -384,57 +388,69 @@ impl ASM {
         //
         // self.lock_register(reg_to_lock);
 
-        self.stack_push(String::from(reg_to_lock));
-
         // result will always be in rax
         // We will also never dereference a string as we want the character address
         match result_type {
             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                // instructions.push(format!("push rax"));
+                self.stack_push(String::from(reg_to_lock));
             }
 
             VarType::Str => todo!(),
 
-            VarType::Float => instructions.push("push rax".into()),
+            VarType::Float => {
+                self.stack_push(String::from(reg_to_lock));
+            }
 
             // this is basically an integer, a u8 to be precise
             VarType::Char => {
-                instructions.push(format!("push rax"));
+                self.stack_push(String::from(reg_to_lock));
             }
 
             VarType::Ptr(type_) => match **type_ {
                 VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                    instructions.extend(std::iter::repeat(format!("mov rax, [rax]")).take(times_dereferenced));
-                    instructions.push(format!("push rax"));
+                    instructions.extend(
+                        std::iter::repeat(format!("mov {reg_to_lock}, [{reg_to_lock}]")).take(times_dereferenced),
+                    );
+
+                    self.stack_push(String::from(reg_to_lock));
                 }
 
                 VarType::Char => {
                     instructions.push(format!(";; binary op ptr -> char"));
 
                     if times_dereferenced > 0 {
+                        let rbx = self.get_free_register(None);
+
                         instructions.extend(vec![
-                            format!("mov rbx, rax"),
-                            format!("xor rax, rax"),
-                            format!("mov al, [rbx]"),
-                            format!("push rax"),
+                            format!("mov {rbx}, {reg_to_lock}"),
+                            format!("xor {reg_to_lock}, {reg_to_lock}"),
+                            format!("xor {}, [{rbx}]", get_register_name_for_bits(&reg_to_lock, 8)),
                         ]);
+
+                        self.unlock_register(rbx);
+
+                        self.stack_push(String::from(reg_to_lock));
                     } else {
-                        instructions.push(format!("push rax"));
+                        self.stack_push(String::from(reg_to_lock));
                     }
                 }
 
                 VarType::Str => {
-                    instructions.push(format!(";; binary op ptr -> char"));
+                    instructions.push(format!(";; binary op ptr -> str"));
 
                     if times_dereferenced > 0 {
+                        let rbx = self.get_free_register(None);
+
                         instructions.extend(vec![
-                            format!("mov rbx, rax"),
-                            format!("xor rax, rax"),
-                            format!("mov rax, [rbx]"),
-                            format!("push rax"),
+                            format!("mov {rbx}, {reg_to_lock}"),
+                            format!("xor {reg_to_lock}, {reg_to_lock}"),
+                            format!("xor {reg_to_lock}, [{rbx}]"),
                         ]);
+                        self.unlock_register(rbx);
+
+                        self.stack_push(String::from(reg_to_lock));
                     } else {
-                        instructions.push(format!("push rax"));
+                        self.stack_push(String::from(reg_to_lock));
                     }
                 }
 

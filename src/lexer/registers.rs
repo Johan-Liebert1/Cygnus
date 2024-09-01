@@ -71,6 +71,26 @@ impl From<Register> for String {
     }
 }
 
+impl Register {
+    pub fn from_string(reg_str: &String) -> Self {
+        match reg_str.as_str() {
+            "rax" => Register::RAX,
+            "rbx" => Register::RBX,
+            "rcx" => Register::RCX,
+            "rdx" => Register::RDX,
+            "rsi" => Register::RSI,
+            "rdi" => Register::RDI,
+            "rbp" => Register::RBP,
+            "r8" => Register::R8,
+            "r9" => Register::R9,
+            "r10" => Register::R10,
+            "r11" => Register::R11,
+
+            r => panic!("{r} is not a register")
+        }
+    }
+}
+
 pub fn get_register_name_for_bits(register: &Register, bits: u8) -> &'static str {
     return match register {
         Register::RAX => match bits {

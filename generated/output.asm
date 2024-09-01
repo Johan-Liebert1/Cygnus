@@ -63,7 +63,6 @@ _main:
 	mov rcx, rbx
 	add rax, rcx
 	;; will lock rax. first = rdx. second = rbx. Locked: [rbx, rdx, rax, rcx]
-	push rax
 	
 	;; assign_local_pointer of type Integer
 	mov rbx, rax
@@ -99,7 +98,6 @@ _main:
 	mov rcx, rbx
 	add rax, rcx
 	;; will lock rax. first = rdx. second = rbx. Locked: [rbx, rdx, rax, rcx]
-	push rax
 	
 	;; assign_local_pointer of type Integer
 	mov rbx, rax
@@ -127,7 +125,6 @@ _main:
 	mov rdx, rbx
 	add rax, rdx
 	;; will lock rax. first = rcx. second = rbx. Locked: [rbx, rcx, rax, rdx]
-	push rax
 	
 	;; assign_local_pointer of type Integer
 	mov rbx, rax
@@ -220,7 +217,6 @@ _main:
 	mov rdx, rbx
 	add rcx, rdx
 	;; will lock rcx. first = rax. second = rbx. Locked: [rbx, rax, rcx, rdx]
-	push rax
 	
 	;; assign_local_pointer of type Integer
 	mov rax, rcx
@@ -242,7 +238,6 @@ _main:
 	mov rdx, rbx
 	add rcx, rdx
 	;; will lock rcx. first = rax. second = rbx. Locked: [rbx, rax, rcx, rdx]
-	push rax
 	
 	
 	;; Plus get the two operands from the stack
@@ -250,7 +245,6 @@ _main:
 	mov rbx, rcx
 	add rax, rbx
 	;; will lock rax. first = 8. second = rcx. Locked: [rcx, rax, rbx]
-	push rax
 	
 	;; assign_local_pointer of type Integer
 	mov rbx, rax
@@ -272,7 +266,6 @@ _main:
 	mov rdx, rbx
 	add rcx, rdx
 	;; will lock rcx. first = rax. second = rbx. Locked: [rbx, rax, rcx, rdx]
-	push rax
 	
 	
 	;; Plus get the two operands from the stack
@@ -280,7 +273,6 @@ _main:
 	mov rbx, rcx
 	add rax, rbx
 	;; will lock rax. first = 16. second = rcx. Locked: [rcx, rax, rbx]
-	push rax
 	
 	;; assign_local_pointer of type Integer
 	mov rbx, rax
@@ -302,7 +294,6 @@ _main:
 	mov rdx, rbx
 	add rcx, rdx
 	;; will lock rcx. first = rax. second = rbx. Locked: [rbx, rax, rcx, rdx]
-	push rax
 	
 	
 	;; Plus get the two operands from the stack
@@ -310,7 +301,6 @@ _main:
 	mov rbx, rcx
 	add rax, rbx
 	;; will lock rax. first = 8. second = rcx. Locked: [rcx, rax, rbx]
-	push rax
 	
 	;; assign_local_pointer of type Integer
 	mov rbx, rax
@@ -968,8 +958,7 @@ _main:
 	mov rcx, rax
 	add rbx, rcx
 	;; will lock rbx. first = [rbp - 128]. second = rax. Locked: [rax, rbx, rcx]
-	mov rax, [rax]
-	push rax
+	mov rbx, [rbx]
 	
 	
 	;; We pop in the opposite order of comparison as we push onto the stack
@@ -1058,7 +1047,6 @@ _main:
 	mov rcx, rax
 	add rbx, rcx
 	;; will lock rbx. first = [rbp - 128]. second = rax. Locked: [rax, rbx, rcx]
-	push rax
 	
 	;; assign_local_pointer of type Integer
 	mov rax, rbx
@@ -1072,7 +1060,6 @@ _main:
 	mov rcx, rax
 	add rbx, rcx
 	;; will lock rbx. first = [rbp - 128]. second = rax. Locked: [rax, rbx, rcx]
-	push rax
 	
 	;; assign_local_pointer of type Integer
 	mov rax, rbx
