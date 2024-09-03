@@ -31,7 +31,8 @@ impl ASM {
 
         for reg in ALL_REGISTERS {
             if self.is_reg_locked(reg) {
-                self.add_to_current_label(format!("push {reg}"));
+                self.extend_current_label(vec![format!(";; Saving register {reg}'s value"), format!("push {reg}")]);
+
                 saved_regs.push(reg);
 
                 self.unlock_register(reg);
@@ -148,7 +149,10 @@ impl ASM {
             Some(saved_regs) => {
                 for reg in saved_regs.iter().rev() {
                     self.lock_register(*reg);
-                    self.add_to_current_label(format!("pop {reg}"));
+                    instructions.extend(vec![
+                        format!(";; popping saved register value into {reg}"),
+                        format!("pop {reg}"),
+                    ]);
                 }
             }
 
