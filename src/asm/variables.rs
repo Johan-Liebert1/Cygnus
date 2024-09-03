@@ -31,29 +31,37 @@ impl ASM {
         ar_var_offset: usize,
     ) {
         if variable.dereference {
-            let rax = self.get_free_register(None);
-            let rax_actual_name = var_type.get_register_name(rax);
-
             let rbx = self.get_free_register(None);
 
             let mut v = vec![
-                format!(";; Dereferencing variable {}", variable.var_name),
+                format!(";; Dereferencing variable {}. handle_local_ptr_int_float", variable.var_name),
                 format!("mov {rbx}, [rbp - {}]", ar_var_offset),
             ];
 
             v.extend(std::iter::repeat(format!("mov {rbx}, [{rbx}]")).take(variable.times_dereferenced));
 
-            v.extend([
-                format!("xor {rax}, {rax}"),
-                format!("mov {rax_actual_name}, {}", var_type.get_register_name(rbx)),
-            ]);
+            if !matches!(**var_type, VarType::Float) {
+                let rax = self.get_free_register(None);
+                let rax_actual_name = var_type.get_register_name(rax);
 
-            self.extend_current_label(v);
+                v.extend([
+                    format!("xor {rax}, {rax}"),
+                    format!("mov {rax_actual_name}, {}", var_type.get_register_name(rbx)),
+                ]);
 
-            // already locked by self.get_free_register
-            self.stack_push(String::from(rax));
+                // already locked by self.get_free_register
+                self.stack_push(String::from(rax));
+            } else {
+                let xmm0 = self.get_free_float_register(None);
+                v.extend(vec![
+                    format!("mov [float_imm], {rbx}"),
+                    format!("movsd {xmm0}, [float_imm]"),
+                ]);
+                self.stack_push(String::from(xmm0));
+            }
 
             self.unlock_register(rbx);
+            self.extend_current_label(v);
 
             return;
         }
@@ -285,7 +293,10 @@ impl ASM {
                 let rax = if self.is_reg_locked(Register::RAX) {
                     let rbx = self.get_free_register(Some(&regs_to_skip));
 
-                    trace!("RAX was locked so rbx = {rbx}. Used registers: {:#?}", self.get_used_registers());
+                    trace!(
+                        "RAX was locked so rbx = {rbx}. Used registers: {:#?}",
+                        self.get_used_registers()
+                    );
 
                     instructions.extend(vec![format!("mov {rbx}, rax")]);
 
@@ -312,7 +323,10 @@ impl ASM {
                     format!(";; Start array index access"),
                     // rax has the index into the array
                     format!("mov {rax}, {} ;; move index into {rax}", index),
-                    format!("mov {rbx}, {} ;; move var size into {rbx}", variable.result_type.get_underlying_type_size()),
+                    format!(
+                        "mov {rbx}, {} ;; move var size into {rbx}",
+                        variable.result_type.get_underlying_type_size()
+                    ),
                     format!("mul {rbx} ;; now rax = rbx * rax = index * var_size"),
                     // now rax has index * 8
                     format!("mov {rbx}, rbp"),

@@ -164,7 +164,37 @@ impl ASM {
         let mut is_ptr_deref = false;
 
         match *var_ptr_type.clone() {
-            VarType::Ptr(ptr_tpye) => self.assign_local_pointer(&ptr_tpye, var_offset, times_dereferenced),
+            VarType::Ptr(ptr_type) => self.assign_local_pointer(&ptr_type, var_offset, times_dereferenced),
+
+            VarType::Float => {
+                is_ptr_deref = times_dereferenced > 0;
+
+                instructions.push(format!(";; assign_local_pointer of type {}", VarType::Float));
+
+                let stack_member = self.stack_pop().unwrap();
+
+                let xmm0 = self.get_free_float_register(None);
+                let rax = self.get_free_register(None);
+
+                instructions.push(format!("movsd {xmm0}, {stack_member}"));
+
+                if is_ptr_deref {
+                    instructions.push(format!("mov {rax}, [rbp - {}]", var_offset));
+                }
+
+                if times_dereferenced > 1 {
+                    instructions.extend(std::iter::repeat(format!("mov {rax}, [{rax}]")).take(times_dereferenced - 1));
+                }
+
+                if is_ptr_deref {
+                    instructions.push(format!("movsd [{rax}], {}", xmm0));
+                }
+
+                self.unlock_register_from_stack_value(&stack_member);
+
+                self.unlock_register(xmm0);
+                self.unlock_register(rax);
+            }
 
             VarType::Unknown => todo!(),
 
@@ -217,6 +247,7 @@ impl ASM {
                 self.unlock_register(rbx);
                 self.unlock_register(rax);
             }
+
         };
 
         // This is assignment to the pointer itself not to the value to which the pointer is
@@ -328,17 +359,24 @@ impl ASM {
             VarType::Float => {
                 let stack_member = self.stack_pop().unwrap();
 
-                let rax = self.get_free_register(None);
+                // let xmm0 = self.get_free_float_register(None);
 
-                self.extend_current_label(vec![
-                    format!(";; For assignemt of float var name '{}'", ar_var.borrow().var_name),
-                    // rax contains the memory address of the floating point number
-                    format!("mov {rax}, {}", stack_member),
-                    format!("mov [rbp - {}], {rax}", ar_var.borrow().offset),
-                ]);
+                // self.extend_current_label(vec![
+                //     format!(";; For assignemt of float var name '{}'", ar_var.borrow().var_name),
+                //     // rax contains the memory address of the floating point number
+                //     format!("mov {rax}, {}", stack_member),
+                //     format!("mov [rbp - {}], {rax}", ar_var.borrow().offset),
+                // ]);
+
+                self.extend_current_label(vec![format!(
+                    "movsd [rbp - {}], {stack_member}",
+                    ar_var.borrow().offset
+                )]);
+
+                trace!("stack_member: {stack_member}");
 
                 self.unlock_register_from_stack_value(&stack_member);
-                self.unlock_register(rax);
+                // self.unlock_register(xmm0);
             }
 
             VarType::Str => self.assign_local_string(ar_var.borrow().offset),

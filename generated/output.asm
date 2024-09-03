@@ -8,23 +8,17 @@ section .bss
 section .data
 	;; For floating point operations
 	float_imm dq 0
-	string_0 db 72,101,108,108,111,32,87,111,114,108,100,10
-	string_1 db 120,32,61,32
-	string_2 db 121,32,61,32
-	string_3 db 122,32,61,32
-	string_4 db 119,32,61,32
-	string_5 db 104,101,108,108,111,32,61,32
-	string_6 db 71,111,111,100,98,121,101,32,87,111,114,108,100,10
-	string_7 db 120,32,61,32
-	string_8 db 121,32,61,32
-	string_9 db 122,32,61,32
-	string_10 db 119,32,61,32
-	string_11 db 104,101,108,108,111,32,61,32
-	string_12 db 120,32,61,32
-	string_13 db 121,32,61,32
-	string_14 db 122,32,61,32
-	string_15 db 119,32,61,32
-	string_16 db 104,101,108,108,111,32,61,32
+	float_0 dq 3.14
+	float_1 dq 6.28
+	float_2 dq 3.14
+	float_3 dq 6.28
+	float_4 dq 3.14
+	float_5 dq 6.28
+	float_6 dq 3.14
+	float_7 dq 6.28
+	float_8 dq 3.14
+	float_9 dq 6.28
+	float_10 dq 3.14
 
 section .text
 	global _start
@@ -35,242 +29,135 @@ _start:
 	
 	exit 0
 
+_add:
+	push rbp
+	mov rbp, rsp
+	;; Make sure that the stack pointer is 16 byte aligned always
+	sub rsp, 16
+	;; param name a
+	mov [rbp - 8], rdi
+	;; param name b
+	mov [rbp - 16], rsi
+	
+	movsd xmm0, [float_0]
+	
+	;; assign_local_pointer of type Floating Point
+	movsd xmm1, xmm0
+	mov rax, [rbp - 8]
+	movsd [rax], xmm1
+	
+	;; Dereferencing variable a. handle_local_ptr_int_float
+	mov rax, [rbp - 8]
+	mov rax, [rax]
+	mov [float_imm], rax
+	movsd xmm0, [float_imm]
+	
+	;; Dereferencing variable b. handle_local_ptr_int_float
+	mov rax, [rbp - 16]
+	mov rax, [rax]
+	mov [float_imm], rax
+	movsd xmm1, [float_imm]
+	
+	;; Plus get the two operands from the stack
+	movsd xmm2, xmm1
+	movsd xmm3, xmm0
+	addsd xmm2, xmm3
+	
+	;; write float
+	movsd [float_imm], xmm2
+	mov rax, [float_imm]
+	call _printRAX
+	
+	mov rsp, rbp
+	pop rbp
+	ret
+	
+
 _main:
 	push rbp
 	mov rbp, rsp
 	;; Make sure that the stack pointer is 16 byte aligned always
-	sub rsp, 46
+	sub rsp, 16
 	
+	movsd xmm0, [float_1]
 	
+	movsd [rbp - 8], xmm0
 	
+	movsd xmm0, [float_2]
 	
+	movsd [rbp - 16], xmm0
 	
+	movsd xmm0, [float_3]
 	
-	;; assign_local_number of type Integer
-	mov QWORD [rbp - 31], 400000000
-	
-	;; assign_local_number of type Integer32
-	mov DWORD [rbp - 23], 2000000
-	
-	;; assign_local_number of type Integer16
-	mov WORD [rbp - 19], 42069
-	
-	;; assign_local_number of type Integer8
-	mov BYTE [rbp - 17], 200
-	
-	mov QWORD [rbp - 8], 12
-	mov QWORD [rbp - 16], string_0
-	
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_1
-	mov rdx, 4
-	syscall
-	
-	mov rax, [rbp - 31]
-	call _printRAX
-	
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_2
-	mov rdx, 4
-	syscall
-	
-	mov rax, [rbp - 23]
-	call _printRAX
-	
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_3
-	mov rdx, 4
-	syscall
-	
-	mov rax, [rbp - 19]
-	call _printRAX
-	
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_4
-	mov rdx, 4
-	syscall
-	
-	mov rax, [rbp - 17]
-	call _printRAX
-	
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_5
-	mov rdx, 8
-	syscall
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, [rbp - 16]
-	mov rdx, [rbp - 8]
-	syscall
-	
+	movsd xmm1, [float_4]
 	
 	;; Plus get the two operands from the stack
-	mov rax, 600
-	mov rbx, [rbp - 31]
-	add rax, rbx
-	;; will lock rax. first = 600. second = [rbp - 31]. Locked: [rax, rbx]
+	movsd xmm2, xmm1
+	movsd xmm3, xmm0
+	addsd xmm2, xmm3
 	
-	;; assign_local_number of type Integer
-	mov QWORD [rbp - 31], rax
+	;; write float
+	movsd [float_imm], xmm2
+	mov rax, [float_imm]
+	call _printRAX
 	
+	movsd xmm0, [float_5]
+	
+	movsd xmm1, [float_6]
 	
 	;; Plus get the two operands from the stack
-	mov rax, 400
-	mov rbx, [rbp - 23]
-	add rax, rbx
-	;; will lock rax. first = 400. second = [rbp - 23]. Locked: [rax, rbx]
+	movsd xmm2, xmm0
+	movsd xmm3, xmm1
+	subsd xmm2, xmm3
 	
-	;; assign_local_number of type Integer32
-	mov DWORD [rbp - 23], eax
+	;; write float
+	movsd [float_imm], xmm2
+	mov rax, [float_imm]
+	call _printRAX
 	
+	movsd xmm0, [float_7]
+	
+	movsd xmm1, [float_8]
 	
 	;; Plus get the two operands from the stack
-	mov rax, 20
-	mov rbx, [rbp - 17]
-	add rax, rbx
-	;; will lock rax. first = 20. second = [rbp - 17]. Locked: [rax, rbx]
+	movsd xmm2, xmm1
+	movsd xmm3, xmm0
+	mulsd xmm2, xmm3
 	
-	;; assign_local_number of type Integer8
-	mov BYTE [rbp - 17], al
-	
-	
-	mov QWORD [rbp - 8], 14
-	mov QWORD [rbp - 16], string_6
-	
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_7
-	mov rdx, 4
-	syscall
-	
-	mov rax, [rbp - 31]
+	;; write float
+	movsd [float_imm], xmm2
+	mov rax, [float_imm]
 	call _printRAX
 	
+	movsd xmm0, [float_9]
 	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_8
-	mov rdx, 4
-	syscall
+	movsd xmm1, [float_10]
 	
-	mov rax, [rbp - 23]
+	;; Plus get the two operands from the stack
+	movsd xmm2, xmm0
+	movsd xmm3, xmm1
+	divsd xmm2, xmm3
+	
+	;; write float
+	movsd [float_imm], xmm2
+	mov rax, [float_imm]
 	call _printRAX
 	
+	lea rax, [rbp - 8]
 	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_9
-	mov rdx, 4
-	syscall
+	;; Moving argument number 1
+	mov rdi, rax
 	
-	mov rax, [rbp - 19]
+	lea rax, [rbp - 16]
+	
+	;; Moving argument number 2
+	mov rsi, rax
+	
+	call _add
+	
+	;; Writing float variable
+	mov rax, [rbp - 8]
 	call _printRAX
-	
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_10
-	mov rdx, 4
-	syscall
-	
-	mov rax, [rbp - 17]
-	call _printRAX
-	
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_11
-	mov rdx, 8
-	syscall
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, [rbp - 16]
-	mov rdx, [rbp - 8]
-	syscall
-	
-	
-	mov rax, [rbp - 31]
-	mov rbx, 600
-	add rax, rbx
-	mov [rbp - 31], rax
-	
-	
-	mov rax, [rbp - 23]
-	mov rbx, 400
-	add rax, rbx
-	mov [rbp - 23], rax
-	
-	
-	mov rax, [rbp - 17]
-	mov rbx, 20
-	add rax, rbx
-	mov [rbp - 17], rax
-	
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_12
-	mov rdx, 4
-	syscall
-	
-	mov rax, [rbp - 31]
-	call _printRAX
-	
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_13
-	mov rdx, 4
-	syscall
-	
-	mov rax, [rbp - 23]
-	call _printRAX
-	
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_14
-	mov rdx, 4
-	syscall
-	
-	mov rax, [rbp - 19]
-	call _printRAX
-	
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_15
-	mov rdx, 4
-	syscall
-	
-	mov rax, [rbp - 17]
-	call _printRAX
-	
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, string_16
-	mov rdx, 8
-	syscall
-	
-	mov rax, 1
-	mov rdi, 1
-	mov rsi, [rbp - 16]
-	mov rdx, [rbp - 8]
-	syscall
 	
 	mov rsp, rbp
 	pop rbp

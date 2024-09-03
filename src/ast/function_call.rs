@@ -64,7 +64,7 @@ impl AST for FunctionCall {
 
                             VarType::Str => asm.func_write_string(),
 
-                            VarType::Float => asm.func_write_number(true),
+                            VarType::Float => asm.func_write_float(),
 
                             VarType::Ptr(ptr_type) => {
                                 asm.func_write_pointer(&ptr_type, bo.times_dereferenced, &call_stack, None)

@@ -40,12 +40,27 @@ impl ASM {
         let stack_member = self.stack_pop().unwrap();
 
         self.unlock_register_from_stack_value(&stack_member);
+
+        // TODO: Also check here that there's nothing in rax
         vec![format!("mov rax, {}", stack_member), String::from("call _printRAX")]
     }
 
     pub fn func_write_number(&mut self, is_binary_op_result: bool) {
         let vec = self.get_vec_for_write_number();
         self.extend_current_label(vec);
+    }
+
+    pub fn func_write_float(&mut self) {
+        let stack_member = self.stack_pop().unwrap();
+
+        self.extend_current_label(vec![
+            format!(";; write float"),
+            format!("movsd [float_imm], {stack_member}"),
+            format!("mov rax, [float_imm]"),
+            format!("call _printRAX"),
+        ]);
+
+        self.unlock_register_from_stack_value(&stack_member);
     }
 
     pub fn func_exit(&mut self) {
@@ -90,6 +105,21 @@ impl ASM {
             // a char is always represented as an 8 bit number
             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => {
                 self.get_vec_for_write_number()
+            }
+
+            VarType::Float => {
+                // we pop this anyway because in binary op we push "rax" to stack no matter what
+                let stack_member = self.stack_pop().unwrap();
+
+                self.unlock_register_from_stack_value(&stack_member);
+
+                // TODO: Also check here that there's nothing in rax
+                vec![
+                    format!(";; Writing ptr -> float"),
+                    format!("movsd [float_imm], {}", stack_member),
+                    format!("mov rax, [float_imm]"),
+                    String::from("call _printRAX"),
+                ]
             }
 
             // TODO: Check here whether the pointer is dereferenced or not
@@ -311,8 +341,27 @@ impl ASM {
                     ),
 
                     VarType::Float => {
-                        // TODO: This is just for testing
-                        self.get_vec_for_write_number()
+                        let value = self.stack_pop().unwrap();
+
+                        let mut inst = vec![format!(";; Writing float variable")];
+
+                        if value.starts_with("[") {
+                            // movsd [memory], [memory] is not allowed
+                            inst.extend(vec![
+                                format!("mov rax, {value}"),
+                                format!("call _printRAX"),
+                            ])
+                        } else {
+                            inst.extend(vec![
+                                format!("movsd [float_imm], {value}"),
+                                format!("mov rax, [float_imm]"),
+                                format!("call _printRAX"),
+                            ])
+                        }
+
+                        self.unlock_register_from_stack_value(&value);
+
+                        inst
                     }
 
                     VarType::Array(..) => self.get_vec_for_write_number(),

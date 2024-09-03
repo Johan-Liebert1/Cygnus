@@ -20,19 +20,23 @@ impl ASM {
                     //
                     // instructions.push(format!("push {i}"))
                     self.stack_push(format!("{i}"))
-                },
+                }
 
                 // We cannot have immediate float values in nasm
                 Number::Float(f) => {
+                    let xmm0 = self.get_free_float_register(None);
+
                     // add the floating point in the data segement
                     self.data.push(format!("float_{} dq {f}", self.num_floats));
 
                     instructions.extend(vec![
-                        format!("mov rax, float_{}", self.num_floats),
+                        format!("movsd {xmm0}, [float_{}]", self.num_floats),
                         // rax contains the address of the float
-                        format!("mov rax, [rax]"),
-                        format!("push rax"),
+                        // format!("mov rax, [rax]"),
+                        // format!("push rax"),
                     ]);
+
+                    self.stack_push(String::from(xmm0));
 
                     self.num_floats += 1;
                 }
@@ -83,12 +87,8 @@ impl ASM {
                 //     format!("push rax"),
                 //     format!("push {}", chars.len()),
                 // ]);
-                
-                self.stack_extend(vec![
-                    format!("string_{}", self.num_strings),
-                    format!("{}", chars.len()),
-                ]);
 
+                self.stack_extend(vec![format!("string_{}", self.num_strings), format!("{}", chars.len())]);
 
                 self.num_strings += 1;
             }

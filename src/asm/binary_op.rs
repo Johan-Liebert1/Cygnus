@@ -16,19 +16,27 @@ impl ASM {
         let mut instructions = match op {
             Operations::Plus => {
                 if matches!(result_type, VarType::Float) {
-                    vec![
-                        format!(";; Floating point addition"),
-                        format!(";; Get the first operand"),
-                        format!("pop QWORD [float_imm]"),
-                        format!("movsd xmm0, [float_imm]"),
-                        format!(";; Get the second operand"),
-                        format!("pop QWORD [float_imm]"),
-                        format!("movsd xmm1, [float_imm]"),
-                        format!(";; floating point addition"),
-                        format!("addsd xmm0, xmm1"),
-                        format!("movsd [float_imm], xmm0"),
-                        format!("mov rax, [float_imm]"),
-                    ]
+                    let first = self.stack_pop().unwrap();
+                    let second = self.stack_pop().unwrap();
+
+                    let xmm0 = self.get_free_float_register(None);
+                    let xmm1 = self.get_free_float_register(None);
+
+                    let mut inst = vec![
+                        format!(";; Plus get the two operands from the stack"),
+                        format!("movsd {xmm0}, {}", first),
+                        format!("movsd {xmm1}, {}", second),
+                        format!("addsd {xmm0}, {xmm1}"),
+                    ];
+
+                    self.unlock_register_from_stack_value(&first);
+                    self.unlock_register_from_stack_value(&second);
+
+                    self.unlock_register(xmm1);
+
+                    reg_to_lock = xmm0;
+
+                    inst
                 } else {
                     let first = self.stack_pop().unwrap();
                     let second = self.stack_pop().unwrap();
@@ -60,19 +68,27 @@ impl ASM {
 
             Operations::Minus => {
                 if matches!(result_type, VarType::Float) {
-                    vec![
-                        format!(";; Floating point subtraction"),
-                        format!(";; Get the first operand"),
-                        format!("pop QWORD [float_imm]"),
-                        format!("movsd xmm1, [float_imm]"),
-                        format!(";; Get the second operand"),
-                        format!("pop QWORD [float_imm]"),
-                        format!("movsd xmm0, [float_imm]"),
-                        format!(";; floating point subtraction"),
-                        format!("subsd xmm0, xmm1"),
-                        format!("movsd [float_imm], xmm0"),
-                        format!("mov rax, [float_imm]"),
-                    ]
+                    let first = self.stack_pop().unwrap();
+                    let second = self.stack_pop().unwrap();
+
+                    let xmm0 = self.get_free_float_register(None);
+                    let xmm1 = self.get_free_float_register(None);
+
+                    let mut inst = vec![
+                        format!(";; Plus get the two operands from the stack"),
+                        format!("movsd {xmm0}, {}", second),
+                        format!("movsd {xmm1}, {}", first),
+                        format!("subsd {xmm0}, {xmm1}"),
+                    ];
+
+                    self.unlock_register_from_stack_value(&first);
+                    self.unlock_register_from_stack_value(&second);
+
+                    self.unlock_register(xmm1);
+
+                    reg_to_lock = xmm0;
+
+                    inst
                 } else {
                     let first = self.stack_pop().unwrap();
                     let second = self.stack_pop().unwrap();
@@ -100,19 +116,27 @@ impl ASM {
 
             Operations::Divide => {
                 if matches!(result_type, VarType::Float) {
-                    vec![
-                        format!(";; Floating point division"),
-                        format!(";; Get the first operand"),
-                        format!("pop QWORD [float_imm]"),
-                        format!("movsd xmm1, [float_imm]"),
-                        format!(";; Get the second operand"),
-                        format!("pop QWORD [float_imm]"),
-                        format!("movsd xmm0, [float_imm]"),
-                        format!(";; floating point subtraction"),
-                        format!("divsd xmm0, xmm1"),
-                        format!("movsd [float_imm], xmm0"),
-                        format!("mov rax, [float_imm]"),
-                    ]
+                    let first = self.stack_pop().unwrap();
+                    let second = self.stack_pop().unwrap();
+
+                    let xmm0 = self.get_free_float_register(None);
+                    let xmm1 = self.get_free_float_register(None);
+
+                    let mut inst = vec![
+                        format!(";; Plus get the two operands from the stack"),
+                        format!("movsd {xmm0}, {}", second),
+                        format!("movsd {xmm1}, {}", first),
+                        format!("divsd {xmm0}, {xmm1}"),
+                    ];
+
+                    self.unlock_register_from_stack_value(&first);
+                    self.unlock_register_from_stack_value(&second);
+
+                    self.unlock_register(xmm1);
+
+                    reg_to_lock = xmm0;
+
+                    inst
                 } else {
                     let mut instructions = vec![];
 
@@ -171,19 +195,27 @@ impl ASM {
 
             Operations::Multiply => {
                 if matches!(result_type, VarType::Float) {
-                    vec![
-                        format!(";; Floating point multiplication"),
-                        format!(";; Get the first operand"),
-                        format!("pop QWORD [float_imm]"),
-                        format!("movsd xmm0, [float_imm]"),
-                        format!(";; Get the second operand"),
-                        format!("pop QWORD [float_imm]"),
-                        format!("movsd xmm1, [float_imm]"),
-                        format!(";; floating point addition"),
-                        format!("mulsd xmm0, xmm1"),
-                        format!("movsd [float_imm], xmm0"),
-                        format!("mov rax, [float_imm]"),
-                    ]
+                    let first = self.stack_pop().unwrap();
+                    let second = self.stack_pop().unwrap();
+
+                    let xmm0 = self.get_free_float_register(None);
+                    let xmm1 = self.get_free_float_register(None);
+
+                    let mut inst = vec![
+                        format!(";; Plus get the two operands from the stack"),
+                        format!("movsd {xmm0}, {}", first),
+                        format!("movsd {xmm1}, {}", second),
+                        format!("mulsd {xmm0}, {xmm1}"),
+                    ];
+
+                    self.unlock_register_from_stack_value(&first);
+                    self.unlock_register_from_stack_value(&second);
+
+                    self.unlock_register(xmm1);
+
+                    reg_to_lock = xmm0;
+
+                    inst
                 } else {
                     let mut instructions = vec![];
 

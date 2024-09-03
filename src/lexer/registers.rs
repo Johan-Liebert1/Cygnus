@@ -23,6 +23,16 @@ pub enum Register {
     R9,
     R10,
     R11,
+
+    // Float regs
+    XMM0,
+    XMM1,
+    XMM2,
+    XMM3,
+    XMM4,
+    XMM5,
+    XMM6,
+    XMM7,
 }
 
 pub const ALL_REGISTERS: [Register; 11] = [
@@ -39,6 +49,17 @@ pub const ALL_REGISTERS: [Register; 11] = [
     Register::R11,
 ];
 
+pub const ALL_FP_REGISTERS: [Register;8] = [
+    Register::XMM0,
+    Register::XMM1,
+    Register::XMM2,
+    Register::XMM3,
+    Register::XMM4,
+    Register::XMM5,
+    Register::XMM6,
+    Register::XMM7,
+];
+
 impl Display for Register {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
@@ -53,6 +74,15 @@ impl Display for Register {
             Register::R9 => "r9",
             Register::R10 => "r10",
             Register::R11 => "r11",
+
+            Register::XMM0 => "xmm0",
+            Register::XMM1 => "xmm1",
+            Register::XMM2 => "xmm2",
+            Register::XMM3 => "xmm3",
+            Register::XMM4 => "xmm4",
+            Register::XMM5 => "xmm5",
+            Register::XMM6 => "xmm6",
+            Register::XMM7 => "xmm7",
         };
 
         write!(f, "{}", s)
@@ -86,7 +116,16 @@ impl Register {
             "r10" => Register::R10,
             "r11" => Register::R11,
 
-            r => panic!("{r} is not a register")
+            "xmm0" => Register::XMM0,
+            "xmm1" => Register::XMM1,
+            "xmm2" => Register::XMM2,
+            "xmm3" => Register::XMM3,
+            "xmm4" => Register::XMM4,
+            "xmm5" => Register::XMM5,
+            "xmm6" => Register::XMM6,
+            "xmm7" => Register::XMM7,
+
+            r => panic!("{r} is not a register"),
         }
     }
 }

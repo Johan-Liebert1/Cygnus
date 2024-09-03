@@ -1,7 +1,7 @@
 use core::panic;
 
 use crate::{
-    lexer::registers::{Register, ALL_REGISTERS},
+    lexer::registers::{Register, ALL_FP_REGISTERS, ALL_REGISTERS},
     trace,
 };
 
@@ -29,11 +29,11 @@ pub struct ASM {
 
     used_regsiters: Vec<Register>,
 
-    /// Vec<Vec<Register>> to handle recursive function calls where 
+    /// Vec<Vec<Register>> to handle recursive function calls where
     /// rdi might have been locked twice
     pub regs_locked_for_func_args: Vec<Vec<Register>>,
 
-    /// Vec<Vec<Register>> to handle recursive function calls where 
+    /// Vec<Vec<Register>> to handle recursive function calls where
     /// rdi might have been locked twice
     pub regs_saved_for_function_call: Vec<Vec<Register>>,
 }
@@ -161,6 +161,10 @@ impl ASM {
         }
     }
 
+    pub fn get_stack(&self) -> &Vec<String> {
+        &self.stack
+    }
+
     pub fn stack_pop(&mut self) -> Option<String> {
         self.stack.pop()
     }
@@ -205,8 +209,6 @@ impl ASM {
             }
         }
     }
-
-    fn unlock_register_anyway(&mut self, reg_name: Register) {}
 
     pub fn unlock_register(&mut self, reg_name: Register) {
         let idx = self.used_regsiters.iter().enumerate().find(|x| *x.1 == reg_name);
@@ -267,8 +269,31 @@ impl ASM {
         panic!("Ran out of registers");
     }
 
+    /// Returns a free floating point register and locks it
+    /// Always returns in this order
+    /// [XMM0, XMM1, XMM2, XMM3...]
+    pub fn get_free_float_register(&mut self, skip_list: Option<&Vec<Register>>) -> Register {
+        for reg in ALL_FP_REGISTERS {
+            if !self.used_regsiters.contains(&reg) {
+                if let Some(skip_list) = skip_list {
+                    if skip_list.contains(&reg) {
+                        continue;
+                    }
+                }
+
+                self.lock_register(reg);
+                return reg;
+            }
+        }
+
+        panic!("Ran out of registers");
+    }
+
     pub fn is_reg_name(&mut self, name: &String) -> (bool, Register) {
-        for reg_name in ALL_REGISTERS {
+        let mut all_regs = Vec::from(ALL_REGISTERS);
+        all_regs.extend(ALL_FP_REGISTERS);
+
+        for reg_name in all_regs {
             if *name == String::from(reg_name) {
                 return (true, reg_name);
             }
