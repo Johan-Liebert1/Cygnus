@@ -30,6 +30,7 @@ pub enum VarType {
     Float,
     Char,
     Ptr(Box<VarType>),
+    /// (InnerType, num elements)
     Array(Box<VarType>, usize),
     Struct(String, Rc<RefCell<Vec<StructMemberType>>>), // string = name of struct
     /// (Name, Parameters, ReturnType)
@@ -349,10 +350,28 @@ impl VarType {
             VarType::Function(_, _, _) => 8,
         };
     }
+    
+    pub fn get_mem_alignment(&self) -> usize {
+        match self {
+            VarType::Int => 8,
+            VarType::Int8 => 1,
+            VarType::Int16 => 2,
+            VarType::Int32 => 4,
+            VarType::Str => 16,
+            VarType::Float => 8,
+            VarType::Char => 1,
+            VarType::Ptr(_) => 8,
+            VarType::Array(inner_type, _) => inner_type.get_mem_alignment(),
+            VarType::Struct(_, _) => 8,
+            VarType::Function(_, _, _) => 8,
+            VarType::Unknown => todo!(),
+        }
+    }
 
-    pub fn get_size_handle_array_and_struct(&self, variable: &Variable) -> usize {
+    pub fn get_mem_aligned_size(&self, variable: &Variable) -> usize {
         return match self {
             VarType::Array(type_, _) => {
+                // If no index access, return the size of the entire array
                 if variable.array_aceess_index.is_none() {
                     return self.get_size();
                 }
@@ -361,6 +380,7 @@ impl VarType {
             }
 
             VarType::Struct(_, members) => {
+                // If no member access, return the size of the entire struct
                 if variable.member_access.len() == 0 {
                     return self.get_size();
                 }

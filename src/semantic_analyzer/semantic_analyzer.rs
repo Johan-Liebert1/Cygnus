@@ -170,14 +170,16 @@ impl<'a> CallStack<'a> {
         }
     }
 
+    // Have to make sure memory alignment is correct
+    // start from 8 byte aligned values
+    // then to 4 bytes
+    // then to 2 bytes
+    // then to 1 byte
     fn update_function_variable_size_and_get_offset(&mut self, var: &ARVariable) -> usize {
         let borrowed_var = var.borrow();
 
-        // println!("var_name {}", borrowed_var.var_name);
-
-        let actual_var_size = borrowed_var.var_type.get_size_handle_array_and_struct(&borrowed_var);
-
-        // println!("actual_var_size {actual_var_size:?}");
+        let actual_var_size = borrowed_var.var_type.get_mem_aligned_size(&borrowed_var);
+        let var_mem_alignment = borrowed_var.var_type.get_mem_alignment();
 
         let mut offset = 0;
 
@@ -186,20 +188,21 @@ impl<'a> CallStack<'a> {
                 match &self.current_function_name {
                     Some(fname) => {
                         if fname == &record.name {
-                            // println!("record.current_offset {:?}", record.current_offset);
-                            // println!("record.var_size_sum {:?}", record.var_size_sum);
-                            // println!("stack_var_size {stack_var_size:?}");
+                            // trace!("record.current_offset {:?}", record.current_offset);
+                            // trace!("record.var_size_sum {:?}", record.var_size_sum);
+                            // trace!("stack_var_size {stack_var_size:?}");
 
                             // This means semantic analysis has been finished and we're on the
                             // visiting stage
                             if stack_var_size > 0 {
                                 offset = stack_var_size - record.current_offset;
 
-                                if let Some(..) = self
+                                let user_defined_type = self
                                     .user_defined_types
                                     .iter()
-                                    .find(|x| x.type_ == var.borrow().var_type)
-                                {
+                                    .find(|x| x.type_ == var.borrow().var_type);
+
+                                if let Some(..) = user_defined_type {
                                     if borrowed_var.member_access.len() != 0 {
                                         record.current_offset += actual_var_size;
                                     }
@@ -222,7 +225,12 @@ impl<'a> CallStack<'a> {
             }
         }
 
-        // println!("offset {offset:?}\n\n");
+        trace!("offset {offset:?}\n\n");
+
+        // make sure every offset is properly aligned
+        if offset % var_mem_alignment != 0 {
+            offset += (var_mem_alignment - offset % var_mem_alignment);
+        }
 
         return offset;
     }
@@ -257,7 +265,6 @@ impl<'a> CallStack<'a> {
                             }
 
                             // the struct has members
-
                             let mut prev_member_offset = 0;
                             let mut prev_member_size = 0;
 
