@@ -188,10 +188,6 @@ impl<'a> CallStack<'a> {
                 match &self.current_function_name {
                     Some(fname) => {
                         if fname == &record.name {
-                            // trace!("record.current_offset {:?}", record.current_offset);
-                            // trace!("record.var_size_sum {:?}", record.var_size_sum);
-                            // trace!("stack_var_size {stack_var_size:?}");
-
                             // This means semantic analysis has been finished and we're on the
                             // visiting stage
                             if stack_var_size > 0 {
@@ -214,7 +210,12 @@ impl<'a> CallStack<'a> {
                                 offset += actual_var_size;
                             }
 
-                            record.var_size_sum += actual_var_size;
+                            // make sure every offset is properly aligned
+                            if offset % var_mem_alignment != 0 {
+                                offset += (var_mem_alignment - offset % var_mem_alignment);
+                            }
+
+                            record.var_size_sum = offset;
                         }
                     }
 
@@ -227,11 +228,6 @@ impl<'a> CallStack<'a> {
 
         // trace!("offset {offset:?}\n\n");
 
-        // make sure every offset is properly aligned
-        if offset % var_mem_alignment != 0 {
-            offset += (var_mem_alignment - offset % var_mem_alignment);
-        }
-
         return offset;
     }
 
@@ -239,6 +235,8 @@ impl<'a> CallStack<'a> {
         variable.borrow_mut().offset = self.update_function_variable_size_and_get_offset(&variable);
 
         let var_name = &variable.borrow().var_name;
+
+        trace!("offset for {var_name} = {}", variable.borrow().offset);
 
         match self.call_stack.last_mut() {
             Some(last_record) => {
@@ -278,6 +276,8 @@ impl<'a> CallStack<'a> {
                                 if member.offset % var_mem_alignment != 0 {
                                     member.offset += (var_mem_alignment - member.offset % var_mem_alignment);
                                 }
+
+                                // trace!("member: {member:#?}");
 
                                 prev_member_size = member.member_type.get_mem_aligned_size(&variable.borrow());
                                 prev_member_offset = member.offset;

@@ -363,7 +363,7 @@ impl VarType {
             VarType::Ptr(_) => 8,
             VarType::Array(inner_type, _) => inner_type.get_mem_alignment(),
 
-            VarType::Struct(_, members) => {
+            VarType::Struct(name, members) => {
                 let mut max = 8;
 
                 for member in members.borrow().iter() {
@@ -374,6 +374,8 @@ impl VarType {
                         max = member_mem_alignment;
                     }
                 }
+
+                trace!("memory alignment for struct {name} = {max}");
 
                 max
             }

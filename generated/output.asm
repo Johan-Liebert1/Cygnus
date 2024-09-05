@@ -39,7 +39,7 @@ _main:
 	push rbp
 	mov rbp, rsp
 	;; Make sure that the stack pointer is 16 byte aligned always
-	sub rsp, 46
+	sub rsp, 32
 	
 	
 	
