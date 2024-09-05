@@ -1,43 +1,27 @@
-struct MyStruct {
-    x: int,
-    y: int32,
-    z: int16,
-    w: int8,
-    hello: str,
+type mah_function = def (int) -> int;
+
+fun foo(a: int) -> int {
+    write("from function foo a = ", a)
+    return a + 5
+}
+
+fun bar2(g: mah_function, b: float) {
+    write("from function bar2 b = ", b)
+}
+
+fun bar(f: mah_function, a: int) {
+    def first_ret: int = f(200)
+    write("first_ret = ", first_ret)
+
+    def second_ret: int = f(a)
+    write("second_ret = ", second_ret)
+
+    bar2(f, 3.14)
 }
 
 fun main() {
-    def a: MyStruct = MyStruct { x: 400000000, y: 2000000, z: 42069, w: 200, hello: "Hello World\n" }
-
-    write(a.x)
-    write(a.y)
-
-    -- write("x = ", a.x);
-    -- write("y = ", a.y);
-    -- write("z = ", a.z);
-    -- write("w = ", a.w); 
-    -- write("hello = ", a.hello); 
-
-    -- a.x = a.x + 600
-    -- a.y = a.y + 400
-    -- a.w = a.w + 20
-    -- a.hello = "Goodbye World\n"
-
-    -- write("x = ", a.x);
-    -- write("y = ", a.y);
-    -- write("z = ", a.z);
-    -- write("w = ", a.w); 
-    -- write("hello = ", a.hello); 
-
-    -- a.x += 600
-    -- a.y += 400
-    -- a.w += 20
-
-    -- write("x = ", a.x);
-    -- write("y = ", a.y);
-    -- write("z = ", a.z);
-    -- write("w = ", a.w); 
-    -- write("hello = ", a.hello); 
+    bar(&foo, 1);
+    bar(&foo, 5);
 }
 
 main()

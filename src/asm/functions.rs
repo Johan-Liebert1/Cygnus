@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     ast::variable::Variable,
     lexer::{
-        registers::{Register, ALL_REGISTERS},
+        registers::{Register, ALL_FP_REGISTERS, ALL_REGISTERS},
         types::VarType,
     },
     semantic_analyzer::semantic_analyzer::CallStack,
@@ -23,10 +23,20 @@ pub const FUNCTION_ARGS_REGS: [Register; 6] = [
     Register::R9,
 ];
 
+pub const FUNCTION_FLOAT_ARGS_REGS: [Register; 8] = [
+    Register::XMM0,
+    Register::XMM1,
+    Register::XMM2,
+    Register::XMM3,
+    Register::XMM4,
+    Register::XMM5,
+    Register::XMM6,
+    Register::XMM7,
+];
+
 impl ASM {
     pub fn function_call_prep(&mut self) {
         // Not removing the regs from the stack as we restore them after the function call
-
         let mut saved_regs = vec![];
 
         for reg in ALL_REGISTERS {
@@ -39,14 +49,29 @@ impl ASM {
             }
         }
 
-        self.regs_saved_for_function_call.push(saved_regs);
+        let rax = self.get_free_register(None);
 
+        for reg in ALL_FP_REGISTERS {
+            if self.is_reg_locked(reg) {
+                self.extend_current_label(vec![
+                    format!(";; Saving register {reg}'s value"),
+                    format!("movsd {rax}, {reg}"),
+                    format!("push {rax}"),
+                ]);
+
+                saved_regs.push(reg);
+
+                self.unlock_register(reg);
+            }
+        }
+
+        self.unlock_register(rax);
+
+        self.regs_saved_for_function_call.push(saved_regs);
         self.regs_locked_for_func_args.push(vec![]);
     }
 
-    pub fn function_call_add_arg(&mut self, arg_num: usize) {
-        // trace!("regs: {:#?}", self.get_used_registers());
-
+    fn handle_non_float_function_call_arg(&mut self, arg_num: usize) {
         let mut instructions = vec![];
 
         let mut arg_reg = FUNCTION_ARGS_REGS[arg_num];
@@ -72,6 +97,42 @@ impl ASM {
         }
 
         self.extend_current_label(instructions);
+    }
+
+    fn handle_float_function_call_arg(&mut self, arg_num: usize) {
+        let stack_member = self.stack_pop().unwrap();
+
+        let mut arg_reg = FUNCTION_FLOAT_ARGS_REGS[arg_num];
+
+        self.extend_current_label(vec![
+            format!(";; Moving float argument number {}", arg_num + 1),
+            format!("movsd {arg_reg}, {stack_member}"),
+        ]);
+
+        self.unlock_register_from_stack_value(&stack_member);
+
+        self.lock_register(arg_reg);
+
+        match self.regs_locked_for_func_args.last_mut() {
+            Some(last_mut) => last_mut.push(arg_reg),
+
+            None => {
+                let vec = vec![arg_reg];
+                self.regs_locked_for_func_args.push(vec);
+            }
+        }
+    }
+
+    /// arg_reg = non_float or the float arg num
+    /// func(1, 2, 3, 4.5)
+    ///
+    /// arg num for 1 = 0, 2 = 1, 3 = 2, 4.5 = 1
+    pub fn function_call_add_arg(&mut self, arg_num: usize, arg_type: VarType) {
+        if matches!(arg_type, VarType::Float) {
+            return self.handle_float_function_call_arg(arg_num);
+        }
+
+        self.handle_non_float_function_call_arg(arg_num);
     }
 
     pub fn function_call(
@@ -184,7 +245,10 @@ impl ASM {
             format!("sub rsp, {}", local_var_size + local_var_size % 16),
         ];
 
-        for (var, register) in func_params.iter().zip(FUNCTION_ARGS_REGS) {
+        let mut float_arg_num: i32 = -1;
+        let mut non_float_arg_num: i32 = -1;
+
+        for var in func_params.iter() {
             // we have to get the variable from the call stack as call stack's where we set the
             // variable offset and stuff. The func_params themselves all have an offset of 0
 
@@ -192,9 +256,17 @@ impl ASM {
 
             match call_stack_var {
                 Some(var) => {
+                    let (operation, register) = if matches!(var.borrow().var_type, VarType::Float) {
+                        float_arg_num += 1;
+                        ("movsd", FUNCTION_FLOAT_ARGS_REGS[float_arg_num as usize])
+                    } else {
+                        non_float_arg_num += 1;
+                        ("mov", FUNCTION_ARGS_REGS[non_float_arg_num as usize])
+                    };
+
                     instructions.extend([
-                        format!(";; param name {}", var.borrow().var_name),
-                        format!("mov [rbp - {}], {}", var.borrow().offset, register),
+                        format!(";; param name {}. Param type {}", var.borrow().var_name, var.borrow().var_type),
+                        format!("{operation} [rbp - {}], {}", var.borrow().offset, register),
                     ]);
                 }
 

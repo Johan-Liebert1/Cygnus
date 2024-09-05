@@ -140,10 +140,24 @@ impl AST for FunctionCall {
                 Some(func) => {
                     asm.function_call_prep();
 
+                    let mut float_arg_num: i32 = -1;
+                    let mut non_float_arg_num: i32 = -1;
+
                     // we reverse here as we want to push into the stack backwards
-                    for (index, argument) in self.arguments.iter().enumerate() {
+                    for (_, argument) in self.arguments.iter().enumerate() {
                         argument.borrow().visit_com(v, f.clone(), asm, call_stack);
-                        asm.function_call_add_arg(index);
+
+                        let arg_type = argument.borrow().get_type().1;
+
+                        let arg_num = if matches!(arg_type, VarType::Float) {
+                            float_arg_num += 1;
+                            float_arg_num
+                        } else {
+                            non_float_arg_num += 1;
+                            non_float_arg_num
+                        };
+
+                        asm.function_call_add_arg(arg_num as usize, arg_type);
                     }
 
                     asm.function_call(
@@ -189,9 +203,23 @@ impl AST for FunctionCall {
 
                     asm.function_call_prep();
 
+                    let mut float_arg_num: i32 = -1;
+                    let mut non_float_arg_num: i32 = -1;
+
                     for (index, argument) in self.arguments.iter().enumerate() {
                         argument.borrow().visit_com(v, f.clone(), asm, call_stack);
-                        asm.function_call_add_arg(index);
+
+                        let arg_type = argument.borrow().get_type().1;
+
+                        let arg_num = if matches!(arg_type, VarType::Float) {
+                            float_arg_num += 1;
+                            float_arg_num
+                        } else {
+                            non_float_arg_num += 1;
+                            non_float_arg_num
+                        };
+
+                        asm.function_call_add_arg(arg_num as usize, arg_type);
                     }
 
                     asm.function_call(
