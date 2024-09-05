@@ -35,18 +35,33 @@ const WRITE_CHAR_ASM_INSTRUCTIONS: [&str; 8] = [
 ];
 
 impl ASM {
-    fn get_vec_for_write_number(&mut self) -> Vec<String> {
+    fn get_vec_for_write_number(&mut self, type_: VarType) -> Vec<String> {
         // we pop this anyway because in binary op we push "rax" to stack no matter what
         let stack_member = self.stack_pop().unwrap();
 
         self.unlock_register_from_stack_value(&stack_member);
 
+        let mut instructions = vec![];
+
+        if stack_member != String::from(Register::RAX) {
+            instructions.extend(vec![
+                if matches!(type_, VarType::Int) {
+                    format!("xor rax, rax")
+                } else {
+                    format!(";; no xor here")
+                },
+                format!("mov {}, {}", type_.get_register_name(Register::RAX), stack_member),
+            ]);
+        }
+
         // TODO: Also check here that there's nothing in rax
-        vec![format!("mov rax, {}", stack_member), String::from("call _printRAX")]
+        instructions.push(String::from("call _printRAX"));
+
+        instructions
     }
 
-    pub fn func_write_number(&mut self, is_binary_op_result: bool) {
-        let vec = self.get_vec_for_write_number();
+    pub fn func_write_number(&mut self, type_: VarType) {
+        let vec = self.get_vec_for_write_number(type_);
         self.extend_current_label(vec);
     }
 
@@ -104,7 +119,8 @@ impl ASM {
         match **pointer_var_type {
             // a char is always represented as an 8 bit number
             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => {
-                self.get_vec_for_write_number()
+                // This is fine as a pointer is always 8 bytes
+                self.get_vec_for_write_number(VarType::Int)
             }
 
             VarType::Float => {
@@ -139,7 +155,7 @@ impl ASM {
                         "syscall".into(),
                     ]
                 } else {
-                    self.get_vec_for_write_number()
+                    self.get_vec_for_write_number(VarType::Int)
                 }
             }
 
@@ -160,7 +176,7 @@ impl ASM {
                             match found {
                                 Some(struct_member) => match struct_member.member_type {
                                     VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                        self.func_write_number(false);
+                                        self.func_write_number(struct_member.member_type.clone());
                                         vec![]
                                     }
                                     VarType::Str => {
@@ -347,10 +363,7 @@ impl ASM {
 
                         if value.starts_with("[") {
                             // movsd [memory], [memory] is not allowed
-                            inst.extend(vec![
-                                format!("mov rax, {value}"),
-                                format!("call _printRAX"),
-                            ])
+                            inst.extend(vec![format!("mov rax, {value}"), format!("call _printRAX")])
                         } else {
                             inst.extend(vec![
                                 format!("movsd [float_imm], {value}"),
@@ -364,7 +377,8 @@ impl ASM {
                         inst
                     }
 
-                    VarType::Array(..) => self.get_vec_for_write_number(),
+                    // This will print the address to the array which is 8 bytes
+                    VarType::Array(..) => self.get_vec_for_write_number(VarType::Int),
 
                     VarType::Struct(_, member_access) => {
                         let borrow = member_access.borrow();
@@ -373,7 +387,7 @@ impl ASM {
                         match found {
                             Some(struct_member_type) => match &struct_member_type.member_type {
                                 VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                    self.get_vec_for_write_number()
+                                    self.get_vec_for_write_number(struct_member_type.member_type.clone())
                                 }
 
                                 VarType::Str => {

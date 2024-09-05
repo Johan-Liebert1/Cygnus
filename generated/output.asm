@@ -25,7 +25,6 @@ section .data
 	string_14 db 122,32,61,32
 	string_15 db 119,32,61,32
 	string_16 db 104,101,108,108,111,32,61,32
-	string_17 db 101,104,108,111
 
 section .text
 	global _start
@@ -36,7 +35,7 @@ _start:
 	
 	exit 0
 
-_main2:
+_main:
 	push rbp
 	mov rbp, rsp
 	;; Make sure that the stack pointer is 16 byte aligned always
@@ -59,8 +58,8 @@ _main2:
 	;; assign_local_number of type Integer8
 	mov BYTE [rbp - 18], 200
 	
-	mov QWORD [rbp - 9], 12
-	mov QWORD [rbp - 17], string_0
+	mov QWORD [rbp - 8], 12
+	mov QWORD [rbp - 16], string_0
 	
 	
 	mov rax, 1
@@ -69,6 +68,7 @@ _main2:
 	mov rdx, 4
 	syscall
 	
+	xor rax, rax
 	mov rax, [rbp - 32]
 	call _printRAX
 	
@@ -79,7 +79,8 @@ _main2:
 	mov rdx, 4
 	syscall
 	
-	mov rax, [rbp - 24]
+	;; no xor here
+	mov eax, [rbp - 24]
 	call _printRAX
 	
 	
@@ -89,7 +90,8 @@ _main2:
 	mov rdx, 4
 	syscall
 	
-	mov rax, [rbp - 20]
+	;; no xor here
+	mov ax, [rbp - 20]
 	call _printRAX
 	
 	
@@ -99,7 +101,8 @@ _main2:
 	mov rdx, 4
 	syscall
 	
-	mov rax, [rbp - 18]
+	;; no xor here
+	mov al, [rbp - 18]
 	call _printRAX
 	
 	
@@ -111,8 +114,8 @@ _main2:
 	
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, [rbp - 17]
-	mov rdx, [rbp - 9]
+	mov rsi, [rbp - 16]
+	mov rdx, [rbp - 8]
 	syscall
 	
 	
@@ -146,8 +149,8 @@ _main2:
 	mov BYTE [rbp - 18], al
 	
 	
-	mov QWORD [rbp - 9], 14
-	mov QWORD [rbp - 17], string_6
+	mov QWORD [rbp - 8], 14
+	mov QWORD [rbp - 16], string_6
 	
 	
 	mov rax, 1
@@ -156,6 +159,7 @@ _main2:
 	mov rdx, 4
 	syscall
 	
+	xor rax, rax
 	mov rax, [rbp - 32]
 	call _printRAX
 	
@@ -166,7 +170,8 @@ _main2:
 	mov rdx, 4
 	syscall
 	
-	mov rax, [rbp - 24]
+	;; no xor here
+	mov eax, [rbp - 24]
 	call _printRAX
 	
 	
@@ -176,7 +181,8 @@ _main2:
 	mov rdx, 4
 	syscall
 	
-	mov rax, [rbp - 20]
+	;; no xor here
+	mov ax, [rbp - 20]
 	call _printRAX
 	
 	
@@ -186,7 +192,8 @@ _main2:
 	mov rdx, 4
 	syscall
 	
-	mov rax, [rbp - 18]
+	;; no xor here
+	mov al, [rbp - 18]
 	call _printRAX
 	
 	
@@ -198,8 +205,8 @@ _main2:
 	
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, [rbp - 17]
-	mov rdx, [rbp - 9]
+	mov rsi, [rbp - 16]
+	mov rdx, [rbp - 8]
 	syscall
 	
 	
@@ -227,6 +234,7 @@ _main2:
 	mov rdx, 4
 	syscall
 	
+	xor rax, rax
 	mov rax, [rbp - 32]
 	call _printRAX
 	
@@ -237,7 +245,8 @@ _main2:
 	mov rdx, 4
 	syscall
 	
-	mov rax, [rbp - 24]
+	;; no xor here
+	mov eax, [rbp - 24]
 	call _printRAX
 	
 	
@@ -247,7 +256,8 @@ _main2:
 	mov rdx, 4
 	syscall
 	
-	mov rax, [rbp - 20]
+	;; no xor here
+	mov ax, [rbp - 20]
 	call _printRAX
 	
 	
@@ -257,7 +267,8 @@ _main2:
 	mov rdx, 4
 	syscall
 	
-	mov rax, [rbp - 18]
+	;; no xor here
+	mov al, [rbp - 18]
 	call _printRAX
 	
 	
@@ -269,28 +280,9 @@ _main2:
 	
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, [rbp - 17]
-	mov rdx, [rbp - 9]
+	mov rsi, [rbp - 16]
+	mov rdx, [rbp - 8]
 	syscall
-	
-	mov rsp, rbp
-	pop rbp
-	ret
-	
-
-_main:
-	push rbp
-	mov rbp, rsp
-	;; Make sure that the stack pointer is 16 byte aligned always
-	sub rsp, 18
-	
-	
-	;; assign_local_number of type Integer8
-	mov BYTE [rbp - 1], 9
-	
-	
-	mov QWORD [rbp - 24], 4
-	mov QWORD [rbp - 32], string_17
 	
 	mov rsp, rbp
 	pop rbp

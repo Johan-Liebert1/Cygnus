@@ -225,7 +225,7 @@ impl<'a> CallStack<'a> {
             }
         }
 
-        trace!("offset {offset:?}\n\n");
+        // trace!("offset {offset:?}\n\n");
 
         // make sure every offset is properly aligned
         if offset % var_mem_alignment != 0 {
@@ -270,9 +270,16 @@ impl<'a> CallStack<'a> {
 
                             // variable.offset will be equal to the first struct member
                             for member in struct_members.borrow_mut().iter_mut() {
+                                let var_mem_alignment = member.member_type.get_mem_alignment();
+
                                 member.offset = prev_member_offset + prev_member_size;
 
-                                prev_member_size = member.member_type.get_size();
+                                // make sure every offset is properly aligned
+                                if member.offset % var_mem_alignment != 0 {
+                                    member.offset += (var_mem_alignment - member.offset % var_mem_alignment);
+                                }
+
+                                prev_member_size = member.member_type.get_mem_aligned_size(&variable.borrow());
                                 prev_member_offset = member.offset;
                             }
                         }

@@ -350,7 +350,7 @@ impl VarType {
             VarType::Function(_, _, _) => 8,
         };
     }
-    
+
     pub fn get_mem_alignment(&self) -> usize {
         match self {
             VarType::Int => 8,
@@ -362,12 +362,33 @@ impl VarType {
             VarType::Char => 1,
             VarType::Ptr(_) => 8,
             VarType::Array(inner_type, _) => inner_type.get_mem_alignment(),
-            VarType::Struct(_, _) => 8,
+
+            VarType::Struct(_, members) => {
+                let mut max = 8;
+
+                for member in members.borrow().iter() {
+                    let member_mem_alignment = member.member_type.get_mem_alignment();
+                    // max += member_mem_alignment;
+
+                    if member_mem_alignment > max {
+                        max = member_mem_alignment;
+                    }
+                }
+
+                max
+            }
+
             VarType::Function(_, _, _) => 8,
             VarType::Unknown => todo!(),
         }
     }
 
+    /// variable param is required to check for member access or array index access
+    ///
+    /// TODO: This doesn't make much sense. Instead of passing in the variable this should accept
+    /// Option<array_aceess_index> and Option<member_access>
+    ///
+    /// Also the caller needs to align memory. This only returns the variable size
     pub fn get_mem_aligned_size(&self, variable: &Variable) -> usize {
         return match self {
             VarType::Array(type_, _) => {

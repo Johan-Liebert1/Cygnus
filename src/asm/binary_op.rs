@@ -166,7 +166,7 @@ impl ASM {
                     let first = self.stack_pop().unwrap();
                     let second = self.stack_pop().unwrap();
 
-                    trace!("first: {first}, second: {second}");
+                    // trace!("first: {first}, second: {second}");
 
                     let rbx = self.get_free_register(Some(&regs_to_skip));
 
@@ -226,10 +226,10 @@ impl ASM {
                     let rax = if self.is_reg_locked(Register::RAX) {
                         let rbx = self.get_free_register(Some(&regs_to_skip));
 
-                        trace!(
-                            "RAX was locked so rbx = '{rbx}'. Used registers: {:#?}",
-                            self.get_used_registers()
-                        );
+                        // trace!(
+                        //     "RAX was locked so rbx = '{rbx}'. Used registers: {:#?}",
+                        //     self.get_used_registers()
+                        // );
 
                         instructions.extend(vec![format!("mov {rbx}, rax")]);
 
@@ -377,10 +377,10 @@ impl ASM {
                 let rax = if self.is_reg_locked(Register::RAX) {
                     let rbx = self.get_free_register(Some(&regs_to_skip));
 
-                    trace!(
-                        "RAX was locked so rbx = {rbx}. Used registers: {:#?}",
-                        self.get_used_registers()
-                    );
+                    // trace!(
+                    //     "RAX was locked so rbx = {rbx}. Used registers: {:#?}",
+                    //     self.get_used_registers()
+                    // );
 
                     instructions.extend(vec![format!("mov {rbx}, rax")]);
 

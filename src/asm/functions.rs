@@ -45,7 +45,7 @@ impl ASM {
     }
 
     pub fn function_call_add_arg(&mut self, arg_num: usize) {
-        trace!("regs: {:#?}", self.get_used_registers());
+        // trace!("regs: {:#?}", self.get_used_registers());
 
         let mut instructions = vec![];
 

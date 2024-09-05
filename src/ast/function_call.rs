@@ -59,7 +59,7 @@ impl AST for FunctionCall {
 
                         ASTNodeEnum::BinaryOp(bo) => match &bo.result_type {
                             VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Int | VarType::Char => {
-                                asm.func_write_number(true)
+                                asm.func_write_number(bo.result_type.clone())
                             }
 
                             VarType::Str => asm.func_write_string(),
@@ -77,7 +77,8 @@ impl AST for FunctionCall {
                         },
 
                         ASTNodeEnum::Factor(f) => match &f.get_token().token {
-                            TokenEnum::Number(_) => asm.func_write_number(false),
+                            // Int64 is the default for a number literal
+                            TokenEnum::Number(_) => asm.func_write_number(VarType::Int),
                             TokenEnum::StringLiteral(_) => asm.func_write_string(),
 
                             tok => unreachable!("This should be unreachable"),
@@ -98,7 +99,7 @@ impl AST for FunctionCall {
 
                             match func_def.return_type {
                                 VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                    asm.func_write_number(false)
+                                    asm.func_write_number(func_def.return_type.clone())
                                 }
 
                                 _ => unimplemented!(),
