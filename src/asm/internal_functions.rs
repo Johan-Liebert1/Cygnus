@@ -3,7 +3,7 @@ use crate::{
     helpers::compiler_error,
     interpreter::interpreter::Variables,
     lexer::{
-        registers::Register,
+        registers::{Register, ALL_REGISTERS},
         tokens::VariableEnum,
         types::{VarType, TYPE_INT, TYPE_STRING},
     },
@@ -214,6 +214,24 @@ impl ASM {
         }
     }
 
+    // pub fn syscall_call_prep(&mut self) {
+    //     // Not removing the regs from the stack as we restore them after the function call
+    //     let mut saved_regs = vec![];
+
+    //     for reg in ALL_REGISTERS {
+    //         if self.is_reg_locked(reg) {
+    //             self.extend_current_label(vec![format!(";; Saving register {reg}'s value"), format!("push {reg}")]);
+
+    //             saved_regs.push(reg);
+
+    //             self.unlock_register(reg);
+    //         }
+    //     }
+
+    //     self.regs_saved_for_function_call.push(saved_regs);
+    //     self.regs_locked_for_func_args.push(vec![]);
+    // }
+
     pub fn func_syscall_add_arg(&mut self, arg_num: usize) {
         let mut instructions = vec![];
 
@@ -242,6 +260,8 @@ impl ASM {
     pub fn func_syscall_call(&mut self, is_result_assigned: bool) {
         self.add_to_current_label("syscall".into());
 
+        let mut instructions = vec![];
+
         match self.regs_locked_for_func_args.pop() {
             Some(locked_regs) => {
                 for reg in locked_regs {
@@ -258,7 +278,10 @@ impl ASM {
             Some(saved_regs) => {
                 for reg in saved_regs.iter().rev() {
                     self.lock_register(*reg);
-                    self.add_to_current_label(format!("pop {reg}"));
+                    instructions.extend(vec![
+                        format!(";; popping saved register value into {reg}"),
+                        format!("pop {reg}"),
+                    ]);
                 }
             }
 
@@ -268,9 +291,22 @@ impl ASM {
         }
 
         if is_result_assigned {
-            self.lock_register(Register::RAX);
-            self.stack_push(String::from(Register::RAX));
+            let rax = if self.is_reg_locked(Register::RAX) {
+                let rbx = self.get_free_register(None);
+
+                instructions.push(format!("mov {rbx}, rax"));
+
+                self.unlock_register(Register::RAX);
+
+                self.get_free_register(None)
+            } else {
+                self.get_free_register(None)
+            };
+
+            self.stack_push(String::from(rax));
         }
+
+        self.extend_current_label(instructions);
     }
 
     pub fn func_write_var(&mut self, var: &Variable, call_stack: &CallStack) {

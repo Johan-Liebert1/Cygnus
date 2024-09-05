@@ -247,7 +247,6 @@ impl ASM {
                 self.unlock_register(rbx);
                 self.unlock_register(rax);
             }
-
         };
 
         // This is assignment to the pointer itself not to the value to which the pointer is
@@ -278,28 +277,35 @@ impl ASM {
             unreachable!("Did not find type with name {struct_name} in ASM generator.")
         }
 
-        if let VarType::Struct(_, member_types) = &var_type.unwrap().type_ {
+        self.add_to_current_label(format!(";; Assigning local struct {struct_name}"));
+
+        if let VarType::Struct(_, members) = &var_type.unwrap().type_ {
             for order in struct_assign_order.unwrap() {
                 // this has to exist
-                let borrow = member_types.borrow();
-                let member_type = borrow.iter().find(|x| x.name == *order).unwrap();
+                let borrow = members.borrow();
+                let struct_member = borrow.iter().find(|x| x.name == *order).unwrap();
 
-                match &member_type.member_type {
+                match &struct_member.member_type {
                     VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                        self.assign_local_number(struct_offset - member_type.offset, &member_type.member_type)
+                        self.add_to_current_label(format!(
+                            ";; Member name: {} Struct offset = {struct_offset}. Member offset: {}",
+                            struct_member.name, struct_member.offset
+                        ));
+
+                        self.assign_local_number(struct_offset - struct_member.offset, &struct_member.member_type)
                     }
 
                     VarType::Float => todo!(),
 
-                    VarType::Str => self.assign_local_string(struct_offset - member_type.offset),
+                    VarType::Str => self.assign_local_string(struct_offset - struct_member.offset),
 
                     // times_dereferenced = 0 as you cannot dereference a struct member while
                     // initializing
                     VarType::Ptr(inner_type) => {
-                        self.assign_local_pointer(&inner_type, struct_offset - member_type.offset, 0)
+                        self.assign_local_pointer(&inner_type, struct_offset - struct_member.offset, 0)
                     }
                     VarType::Array(type_, size) => {
-                        self.assign_local_array(struct_offset - member_type.offset, &None, &type_, &size)
+                        self.assign_local_array(struct_offset - struct_member.offset, &None, &type_, &size)
                     }
 
                     VarType::Char => todo!(),

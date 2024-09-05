@@ -236,8 +236,6 @@ impl<'a> CallStack<'a> {
 
         let var_name = &variable.borrow().var_name;
 
-        trace!("offset for {var_name} = {}", variable.borrow().offset);
-
         match self.call_stack.last_mut() {
             Some(last_record) => {
                 match last_record.variable_members.get(var_name) {
@@ -276,8 +274,6 @@ impl<'a> CallStack<'a> {
                                 if member.offset % var_mem_alignment != 0 {
                                     member.offset += (var_mem_alignment - member.offset % var_mem_alignment);
                                 }
-
-                                // trace!("member: {member:#?}");
 
                                 prev_member_size = member.member_type.get_mem_aligned_size(&variable.borrow());
                                 prev_member_offset = member.offset;

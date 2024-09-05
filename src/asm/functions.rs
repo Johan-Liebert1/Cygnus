@@ -40,7 +40,10 @@ impl ASM {
         let mut saved_regs = vec![];
 
         for reg in ALL_REGISTERS {
+            trace!("is {reg} locked or not");
+
             if self.is_reg_locked(reg) {
+                trace!("{reg} is LOCKED\n");
                 self.extend_current_label(vec![format!(";; Saving register {reg}'s value"), format!("push {reg}")]);
 
                 saved_regs.push(reg);
@@ -265,7 +268,11 @@ impl ASM {
                     };
 
                     instructions.extend([
-                        format!(";; param name {}. Param type {}", var.borrow().var_name, var.borrow().var_type),
+                        format!(
+                            ";; param name {}. Param type {}",
+                            var.borrow().var_name,
+                            var.borrow().var_type
+                        ),
                         format!("{operation} [rbp - {}], {}", var.borrow().offset, register),
                     ]);
                 }
