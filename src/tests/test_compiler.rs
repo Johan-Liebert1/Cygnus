@@ -1,15 +1,21 @@
 use std::{
     fs::{self},
-    io::Read,
+    io::Read, process::exit,
 };
 
 use crate::parse_input_file;
 
 pub fn get_file_result(file_name: &str) -> String {
     let file_name_wo_ext = file_name.split('.').collect::<Vec<&str>>();
-    let file_result = fs::read_to_string(format!("./examples/output/{}", file_name_wo_ext[0])).unwrap();
+    let file_result = fs::read_to_string(format!("./examples/output/{}", file_name_wo_ext[0]));
 
-    file_result
+    match file_result {
+        Ok(res) => res,
+        Err(err) => {
+            eprint!("No such file {file_name}");
+            exit(1);
+        },
+    }
 }
 
 pub fn get_stdout_and_actual_result(file_name: &str) -> (String, String, String) {
@@ -51,6 +57,12 @@ fn fibonacci() {
 #[test]
 fn loop_break() {
     let (stdout_str, _, file_result) = get_stdout_and_actual_result("loop_break.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
+fn loop_continue() {
+    let (stdout_str, _, file_result) = get_stdout_and_actual_result("loop_continue.cberk");
     assert_eq!(stdout_str, file_result);
 }
 
@@ -145,6 +157,12 @@ fn basic_struct() {
 }
 
 #[test]
+fn struct_assignment() {
+    let (stdout_str, _, file_result) = get_stdout_and_actual_result("struct_assign.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
 fn assignment() {
     let (stdout_str, _, file_result) = get_stdout_and_actual_result("assignment.cberk");
     assert_eq!(stdout_str, file_result);
@@ -195,5 +213,11 @@ fn function_pointers() {
 #[test]
 fn function_pointers_as_args() {
     let (stdout_str, _, file_result) = get_stdout_and_actual_result("func_ptrs_as_args.cberk");
+    assert_eq!(stdout_str, file_result);
+}
+
+#[test]
+fn decleration_only() {
+    let (stdout_str, _, file_result) = get_stdout_and_actual_result("decleration_only.cberk");
     assert_eq!(stdout_str, file_result);
 }

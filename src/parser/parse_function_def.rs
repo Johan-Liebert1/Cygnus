@@ -72,19 +72,9 @@ impl Parser {
         if let TokenEnum::FunctionReturnIndicator = self.peek_next_token().token {
             self.get_next_token();
 
-            let peeked_token = self.peek_next_token();
+            let (_, var_type) = self.parse_var_type();
 
-            match peeked_token.token {
-                TokenEnum::Type(var_type) => {
-                    self.get_next_token();
-                    return_type = var_type;
-                }
-
-                _ => {
-                    unexpected_token(&peeked_token, None);
-                    exit(1);
-                }
-            }
+            return_type = var_type;
         };
 
         let ff = function_name.clone();

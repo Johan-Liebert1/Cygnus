@@ -1,5 +1,10 @@
 use core::panic;
 
+use crate::{
+    lexer::registers::{Register, ALL_FP_REGISTERS, ALL_REGISTERS},
+    trace,
+};
+
 #[derive(Debug)]
 pub struct Label {
     pub name: String,
@@ -18,9 +23,19 @@ pub struct ASM {
     pub num_floats: usize,
     pub num_ifs: usize,
 
+    stack: Vec<String>,
     function_argument_number: Option<usize>,
-
     current_label: String,
+
+    used_regsiters: Vec<Register>,
+
+    /// Vec<Vec<Register>> to handle recursive function calls where
+    /// rdi might have been locked twice
+    pub regs_locked_for_func_args: Vec<Vec<Register>>,
+
+    /// Vec<Vec<Register>> to handle recursive function calls where
+    /// rdi might have been locked twice
+    pub regs_saved_for_function_call: Vec<Vec<Register>>,
 }
 
 impl Default for ASM {
@@ -59,6 +74,11 @@ impl Default for ASM {
             }],
 
             function_argument_number: None,
+            stack: vec![],
+
+            used_regsiters: vec![],
+            regs_locked_for_func_args: vec![],
+            regs_saved_for_function_call: vec![],
         }
     }
 }
@@ -99,6 +119,16 @@ impl ASM {
         }
     }
 
+    fn get_current_label_code(&self) -> Option<&Label> {
+        for label in &self.labels {
+            if label.name == self.current_label {
+                return Some(&label);
+            }
+        }
+
+        None
+    }
+
     pub fn current_label(&self) -> String {
         return self.current_label.clone();
     }
@@ -129,5 +159,154 @@ impl ASM {
 
             None => panic!("Cannot call `parsing_next_function_arg` when not parsing function args"),
         }
+    }
+
+    pub fn get_stack(&self) -> &Vec<String> {
+        &self.stack
+    }
+
+    pub fn stack_pop(&mut self) -> Option<String> {
+        self.stack.pop()
+    }
+
+    pub fn stack_push(&mut self, to_push: String) {
+        self.stack.push(to_push);
+    }
+
+    // pub fn replace_reg_on_function_call_stack(&mut self, reg_to_replace: Register, reg_to_replace_with: Register) {
+    //     for reg in &mut self.regs_locked_for_func_args {
+    //         if *reg == reg_to_replace {
+    //             *reg = reg_to_replace_with;
+    //         }
+    //     }
+    // }
+
+    pub fn replace_reg_on_stack(&mut self, reg_to_replace: Register, reg_to_replace_with: Register) {
+        for reg in &mut self.stack {
+            if *reg == String::from(reg_to_replace) {
+                *reg = String::from(reg_to_replace_with);
+            }
+        }
+    }
+
+    pub fn stack_extend(&mut self, to_push: Vec<String>) {
+        self.stack.extend(to_push);
+    }
+
+    pub fn lock_register(&mut self, reg_name: Register) {
+        let idx = self.used_regsiters.iter().find(|x| **x == reg_name);
+
+        match idx {
+            Some(..) => {
+                panic!(
+                    "Lock Register Failed: Register {reg_name} already in list.\nList: {:#?}\nASM:{:#?}",
+                    self.used_regsiters, self.labels
+                )
+            }
+
+            None => {
+                self.used_regsiters.push(reg_name);
+            }
+        }
+    }
+
+    pub fn unlock_register(&mut self, reg_name: Register) {
+        let idx = self.used_regsiters.iter().enumerate().find(|x| *x.1 == reg_name);
+
+        match idx {
+            Some((idx, _)) => {
+                self.used_regsiters.remove(idx);
+            }
+
+            None => {
+                panic!(
+                    "UnLock Register Failed: Register {reg_name} not found in list.\nList: {:#?}\nASM: {:#?}",
+                    self.used_regsiters, self.labels
+                )
+            }
+        }
+    }
+
+    /// Never unlock before getting a register value
+    pub fn unlock_register_from_stack_value(&mut self, stack_pop_result: &String) {
+        let (is_reg, reg_name) = self.is_reg_name(stack_pop_result);
+
+        if !is_reg {
+            return;
+        }
+
+        self.unlock_register(reg_name)
+    }
+
+    pub fn get_certain_free_register(&mut self, reg_name: Register) -> Register {
+        for reg in ALL_REGISTERS {
+            if !self.used_regsiters.contains(&reg) && reg == reg_name {
+                self.lock_register(reg);
+                return reg;
+            }
+        }
+
+        panic!("Could not get register {reg_name}");
+    }
+
+    /// Returns a free register and locks it
+    /// Always returns in this order
+    /// [RAX, RBX, RCX, RDX, RSI, RDI, RBP, R8, R9, R10, R11]
+    pub fn get_free_register(&mut self, skip_list: Option<&Vec<Register>>) -> Register {
+        for reg in ALL_REGISTERS {
+            if !self.used_regsiters.contains(&reg) {
+                if let Some(skip_list) = skip_list {
+                    if skip_list.contains(&reg) {
+                        continue;
+                    }
+                }
+
+                self.lock_register(reg);
+                return reg;
+            }
+        }
+
+        panic!("Ran out of registers");
+    }
+
+    /// Returns a free floating point register and locks it
+    /// Always returns in this order
+    /// [XMM0, XMM1, XMM2, XMM3...]
+    pub fn get_free_float_register(&mut self, skip_list: Option<&Vec<Register>>) -> Register {
+        for reg in ALL_FP_REGISTERS {
+            if !self.used_regsiters.contains(&reg) {
+                if let Some(skip_list) = skip_list {
+                    if skip_list.contains(&reg) {
+                        continue;
+                    }
+                }
+
+                self.lock_register(reg);
+                return reg;
+            }
+        }
+
+        panic!("Ran out of registers");
+    }
+
+    pub fn is_reg_name(&mut self, name: &String) -> (bool, Register) {
+        let mut all_regs = Vec::from(ALL_REGISTERS);
+        all_regs.extend(ALL_FP_REGISTERS);
+
+        for reg_name in all_regs {
+            if *name == String::from(reg_name) {
+                return (true, reg_name);
+            }
+        }
+
+        return (false, Register::R11);
+    }
+
+    pub fn is_reg_locked(&self, name: Register) -> bool {
+        self.used_regsiters.contains(&name)
+    }
+
+    pub fn get_used_registers(&self) -> &Vec<Register> {
+        &self.used_regsiters
     }
 }

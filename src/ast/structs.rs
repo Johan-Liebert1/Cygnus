@@ -104,7 +104,7 @@ impl AST for StructDecleration {
 
                     let found = found.unwrap();
 
-                    if found.member_type != member_type.member_type {
+                    if !member_type.member_type.can_assign(&found.member_type) {
                         compiler_error(
                             format!(
                                 "Field '{}' for struct {} is defined as type {}, but got {}",

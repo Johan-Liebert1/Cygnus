@@ -3,7 +3,6 @@ use crate::{
     ast::{
         abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, AST},
         array::Array,
-        function_call::FunctionCall,
         variable::Variable,
     },
     helpers::unexpected_token,
@@ -108,7 +107,11 @@ impl Parser {
                         // WE cannot check for other type of parenthesis here as
                         // write(variable) will result in error as there's a ')' following the
                         // variable, but it should be perfectly fine
-                        self.parse_function_call(var_name.into())
+                        //
+                        // This will only be called from a declaration statement or an
+                        // assignment_statement which means this is assigned to a value.
+                        // simple function call without assignment is handled in parse statements
+                        self.parse_function_call(var_name.into(), true)
                     }
 
                     _ => self.parse_variable_factor(&var_token, var_name),

@@ -4,13 +4,27 @@ section .bss
 	digitSpace resb 100
 	digitSpacePos resb 8
 	argc resb 8
-	current resb 800
-	next resb 800
 
 section .data
-	string_0 db 32
-	string_1 db 42
-	string_2 db 10
+	;; For floating point operations
+	float_imm dq 0
+	string_0 db 72,101,108,108,111,32,87,111,114,108,100,10
+	string_1 db 120,32,61,32
+	string_2 db 121,32,61,32
+	string_3 db 122,32,61,32
+	string_4 db 119,32,61,32
+	string_5 db 104,101,108,108,111,32,61,32
+	string_6 db 71,111,111,100,98,121,101,32,87,111,114,108,100,10
+	string_7 db 120,32,61,32
+	string_8 db 121,32,61,32
+	string_9 db 122,32,61,32
+	string_10 db 119,32,61,32
+	string_11 db 104,101,108,108,111,32,61,32
+	string_12 db 120,32,61,32
+	string_13 db 121,32,61,32
+	string_14 db 122,32,61,32
+	string_15 db 119,32,61,32
+	string_16 db 104,101,108,108,111,32,61,32
 
 section .text
 	global _start
@@ -24,1299 +38,264 @@ _start:
 _main:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 192
+	;; Make sure that the stack pointer is 16 byte aligned always
+	sub rsp, 32
 	
-	push 100
 	
-	pop rax
-	mov [rbp - 8], rax
 	
-	mov rax, current
-	push rax
 	
-	mov rax, [rbp - 8]
-	push rax
 	
-	push 8
 	
-	;; Multiply get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	push rax
+	;; Assigning local struct MyStruct
 	
-	push 8
+	;; Member name: x Struct offset = 32. Member offset: 0
 	
-	push 3
+	;; assign_local_number of type Integer
+	mov QWORD [rbp - 32], 400000000
 	
-	;; Multiply get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	push rax
+	;; Member name: y Struct offset = 32. Member offset: 8
 	
-	;; Minus get the two operands from the stack
-	pop rbx
-	pop rax
-	sub rax, rbx
-	push rax
+	;; assign_local_number of type Integer32
+	mov DWORD [rbp - 24], 2000000
 	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	push rax
+	;; Member name: z Struct offset = 32. Member offset: 12
 	
-	pop rax
-	mov [rbp - 16], rax
+	;; assign_local_number of type Integer16
+	mov WORD [rbp - 20], 42069
 	
-	mov rax, current
-	push rax
+	;; Member name: w Struct offset = 32. Member offset: 14
 	
-	mov rax, [rbp - 8]
-	push rax
+	;; assign_local_number of type Integer8
+	mov BYTE [rbp - 18], 200
 	
-	push 8
+	mov QWORD [rbp - 8], 12
+	mov QWORD [rbp - 16], string_0
 	
-	;; Multiply get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	push rax
 	
-	push 8
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_1
+	mov rdx, 4
+	syscall
 	
-	push 2
+	xor rax, rax
+	mov rax, [rbp - 32]
+	call _printRAX
 	
-	;; Multiply get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	push rax
 	
-	;; Minus get the two operands from the stack
-	pop rbx
-	pop rax
-	sub rax, rbx
-	push rax
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_2
+	mov rdx, 4
+	syscall
 	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	push rax
+	;; no xor here
+	mov eax, [rbp - 24]
+	call _printRAX
 	
-	pop rax
-	mov [rbp - 24], rax
 	
-	mov rax, current
-	push rax
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_3
+	mov rdx, 4
+	syscall
 	
-	mov rax, [rbp - 8]
-	push rax
+	;; no xor here
+	mov ax, [rbp - 20]
+	call _printRAX
 	
-	push 8
 	
-	;; Multiply get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	push rax
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_4
+	mov rdx, 4
+	syscall
 	
-	push 8
+	;; no xor here
+	mov al, [rbp - 18]
+	call _printRAX
 	
-	;; Minus get the two operands from the stack
-	pop rbx
-	pop rax
-	sub rax, rbx
-	push rax
+	
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_5
+	mov rdx, 8
+	syscall
+	
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, [rbp - 16]
+	mov rdx, [rbp - 8]
+	syscall
+	
+	
 	
 	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
+	mov rax, 600
+	mov rbx, [rbp - 32]
 	add rax, rbx
-	push rax
+	;; will lock rax. first = 600. second = [rbp - 32]. Locked: [rax, rbx]
 	
-	pop rax
+	;; assign_local_number of type Integer
+	mov QWORD [rbp - 32], rax
+	
+	
+	;; Plus get the two operands from the stack
+	mov rax, 400
+	mov rbx, [rbp - 24]
+	add rax, rbx
+	;; will lock rax. first = 400. second = [rbp - 24]. Locked: [rax, rbx]
+	
+	;; assign_local_number of type Integer32
+	mov DWORD [rbp - 24], eax
+	
+	
+	;; Plus get the two operands from the stack
+	mov rax, 20
+	mov rbx, [rbp - 18]
+	add rax, rbx
+	;; will lock rax. first = 20. second = [rbp - 18]. Locked: [rax, rbx]
+	
+	;; assign_local_number of type Integer8
+	mov BYTE [rbp - 18], al
+	
+	
+	mov QWORD [rbp - 8], 14
+	mov QWORD [rbp - 16], string_6
+	
+	
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_7
+	mov rdx, 4
+	syscall
+	
+	xor rax, rax
+	mov rax, [rbp - 32]
+	call _printRAX
+	
+	
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_8
+	mov rdx, 4
+	syscall
+	
+	;; no xor here
+	mov eax, [rbp - 24]
+	call _printRAX
+	
+	
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_9
+	mov rdx, 4
+	syscall
+	
+	;; no xor here
+	mov ax, [rbp - 20]
+	call _printRAX
+	
+	
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_10
+	mov rdx, 4
+	syscall
+	
+	;; no xor here
+	mov al, [rbp - 18]
+	call _printRAX
+	
+	
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_11
+	mov rdx, 8
+	syscall
+	
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, [rbp - 16]
+	mov rdx, [rbp - 8]
+	syscall
+	
+	
+	
+	mov rax, [rbp - 32]
+	mov rbx, 600
+	add rax, rbx
 	mov [rbp - 32], rax
 	
-	push 1
 	
-	pop rax
-	mov rbx, [rbp - 16]
-	mov [rbx], rax
-	
-	push 1
-	
-	pop rax
-	mov rbx, [rbp - 24]
-	mov [rbx], rax
-	
-	push 0
-	
-	pop rax
-	mov rbx, [rbp - 32]
-	mov [rbx], rax
-	
-	mov rax, current
-	push rax
-	
-	pop rax
-	mov [rbp - 40], rax
-	
-	mov rax, current
-	push rax
-	
-	pop rax
-	mov [rbp - 48], rax
-	
-	mov rax, current
-	push rax
-	
-	pop rax
-	mov [rbp - 56], rax
-	
-	push 0
-	
-	pop rax
-	mov [rbp - 64], rax
-	
-	push 0
-	
-	mov rax, [rbp - 8]
-	push rax
-	
-	push 1
-	
-	pop rcx
-	pop rbx
-	pop rax
-	mov [rbp - 88], rcx
-	mov [rbp - 80], rbx
-	mov [rbp - 72], rax
-	.loop_0:
-	mov rcx, [rbp - 88]
-	mov rbx, [rbp - 80]
-	mov rax, [rbp - 72]
-	add rax, rcx
-	dec rax
-	dec rbx
-	cmp rax, rbx
-	jg .loop_end_0
-	inc rax
-	inc rbx
-	mov [rbp - 80], rbx
-	mov [rbp - 72], rax
-	
-	push 0
-	
-	pop rax
-	mov [rbp - 64], rax
-	
-	push 0
-	
-	mov rax, [rbp - 8]
-	push rax
-	
-	push 1
-	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
+	mov rax, [rbp - 24]
+	mov rbx, 400
 	add rax, rbx
-	push rax
+	mov [rbp - 24], rax
 	
-	push 1
 	
-	pop rcx
-	pop rbx
-	pop rax
-	mov [rbp - 112], rcx
-	mov [rbp - 104], rbx
-	mov [rbp - 96], rax
-	.loop_1:
-	mov rcx, [rbp - 112]
-	mov rbx, [rbp - 104]
-	mov rax, [rbp - 96]
-	add rax, rcx
-	dec rax
-	dec rbx
-	cmp rax, rbx
-	jg .loop_end_1
-	inc rax
-	inc rbx
-	mov [rbp - 104], rbx
-	mov [rbp - 96], rax
-	
-	mov rax, current
-	push rax
-	
-	mov rax, [rbp - 64]
-	push rax
-	
-	push 8
-	
-	;; Multiply get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	push rax
-	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
+	mov rax, [rbp - 18]
+	mov rbx, 20
 	add rax, rbx
-	push rax
+	mov [rbp - 18], rax
 	
-	pop rax
-	mov [rbp - 40], rax
 	
-	mov rax, current
-	push rax
-	
-	mov rax, [rbp - 64]
-	push rax
-	
-	push 8
-	
-	;; Multiply get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	push rax
-	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	push rax
-	
-	push 8
-	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	push rax
-	
-	pop rax
-	mov [rbp - 48], rax
-	
-	mov rax, current
-	push rax
-	
-	mov rax, [rbp - 64]
-	push rax
-	
-	push 8
-	
-	;; Multiply get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	push rax
-	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	push rax
-	
-	push 16
-	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	push rax
-	
-	pop rax
-	mov [rbp - 56], rax
-	
-	mov rax, next
-	push rax
-	
-	mov rax, [rbp - 64]
-	push rax
-	
-	push 8
-	
-	;; Multiply get the two operands from the stack
-	xor rdx, rdx
-	pop rax
-	pop rbx
-	mul rbx
-	push rax
-	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	push rax
-	
-	push 8
-	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	push rax
-	
-	pop rax
-	mov [rbp - 120], rax
-	
-	;; Dereferencing variable first
-	mov rax, [rbp - 40]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable first
-	
-	push 0
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_0
-	mov rax, 0
-	jmp .skip_next0
-	.skip_0:
-	mov rax, 1
-	.skip_next0:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable second
-	mov rax, [rbp - 48]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable second
-	
-	push 0
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_1
-	mov rax, 0
-	jmp .skip_next1
-	.skip_1:
-	mov rax, 1
-	.skip_next1:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable third
-	mov rax, [rbp - 56]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable third
-	
-	push 0
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_2
-	mov rax, 0
-	jmp .skip_next2
-	.skip_2:
-	mov rax, 1
-	.skip_next2:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	.if_0:
-	pop rcx
-	cmp rcx, 0
-	;; if the comparison value is false, jump to the next label altogether
-	je .if_end_0
-	
-	push 0
-	
-	pop rax
-	mov rbx, [rbp - 120]
-	mov [rbx], rax
-	
-	jmp .elif_0_6_end
-	.if_end_0:
-	
-	;; Dereferencing variable first
-	mov rax, [rbp - 40]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable first
-	
-	push 0
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_3
-	mov rax, 0
-	jmp .skip_next3
-	.skip_3:
-	mov rax, 1
-	.skip_next3:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable second
-	mov rax, [rbp - 48]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable second
-	
-	push 0
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_4
-	mov rax, 0
-	jmp .skip_next4
-	.skip_4:
-	mov rax, 1
-	.skip_next4:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable third
-	mov rax, [rbp - 56]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable third
-	
-	push 1
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_5
-	mov rax, 0
-	jmp .skip_next5
-	.skip_5:
-	mov rax, 1
-	.skip_next5:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	.elif_0_0:
-	pop rcx
-	cmp rcx, 0
-	;; if the comparison value is false, jump to the next label altogether
-	je .elif_0_0_end
-	
-	push 1
-	
-	pop rax
-	mov rbx, [rbp - 120]
-	mov [rbx], rax
-	
-	jmp .elif_0_0_end
-	.elif_0_0_end:
-	
-	;; Dereferencing variable first
-	mov rax, [rbp - 40]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable first
-	
-	push 0
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_6
-	mov rax, 0
-	jmp .skip_next6
-	.skip_6:
-	mov rax, 1
-	.skip_next6:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable second
-	mov rax, [rbp - 48]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable second
-	
-	push 1
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_7
-	mov rax, 0
-	jmp .skip_next7
-	.skip_7:
-	mov rax, 1
-	.skip_next7:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable third
-	mov rax, [rbp - 56]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable third
-	
-	push 0
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_8
-	mov rax, 0
-	jmp .skip_next8
-	.skip_8:
-	mov rax, 1
-	.skip_next8:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	.elif_0_1:
-	pop rcx
-	cmp rcx, 0
-	;; if the comparison value is false, jump to the next label altogether
-	je .elif_0_1_end
-	
-	push 1
-	
-	pop rax
-	mov rbx, [rbp - 120]
-	mov [rbx], rax
-	
-	jmp .elif_0_1_end
-	.elif_0_1_end:
-	
-	;; Dereferencing variable first
-	mov rax, [rbp - 40]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable first
-	
-	push 0
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_9
-	mov rax, 0
-	jmp .skip_next9
-	.skip_9:
-	mov rax, 1
-	.skip_next9:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable second
-	mov rax, [rbp - 48]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable second
-	
-	push 1
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_10
-	mov rax, 0
-	jmp .skip_next10
-	.skip_10:
-	mov rax, 1
-	.skip_next10:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable third
-	mov rax, [rbp - 56]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable third
-	
-	push 1
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_11
-	mov rax, 0
-	jmp .skip_next11
-	.skip_11:
-	mov rax, 1
-	.skip_next11:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	.elif_0_2:
-	pop rcx
-	cmp rcx, 0
-	;; if the comparison value is false, jump to the next label altogether
-	je .elif_0_2_end
-	
-	push 1
-	
-	pop rax
-	mov rbx, [rbp - 120]
-	mov [rbx], rax
-	
-	jmp .elif_0_2_end
-	.elif_0_2_end:
-	
-	;; Dereferencing variable first
-	mov rax, [rbp - 40]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable first
-	
-	push 1
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_12
-	mov rax, 0
-	jmp .skip_next12
-	.skip_12:
-	mov rax, 1
-	.skip_next12:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable second
-	mov rax, [rbp - 48]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable second
-	
-	push 0
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_13
-	mov rax, 0
-	jmp .skip_next13
-	.skip_13:
-	mov rax, 1
-	.skip_next13:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable third
-	mov rax, [rbp - 56]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable third
-	
-	push 0
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_14
-	mov rax, 0
-	jmp .skip_next14
-	.skip_14:
-	mov rax, 1
-	.skip_next14:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	.elif_0_3:
-	pop rcx
-	cmp rcx, 0
-	;; if the comparison value is false, jump to the next label altogether
-	je .elif_0_3_end
-	
-	push 0
-	
-	pop rax
-	mov rbx, [rbp - 120]
-	mov [rbx], rax
-	
-	jmp .elif_0_3_end
-	.elif_0_3_end:
-	
-	;; Dereferencing variable first
-	mov rax, [rbp - 40]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable first
-	
-	push 1
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_15
-	mov rax, 0
-	jmp .skip_next15
-	.skip_15:
-	mov rax, 1
-	.skip_next15:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable second
-	mov rax, [rbp - 48]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable second
-	
-	push 0
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_16
-	mov rax, 0
-	jmp .skip_next16
-	.skip_16:
-	mov rax, 1
-	.skip_next16:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable third
-	mov rax, [rbp - 56]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable third
-	
-	push 1
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_17
-	mov rax, 0
-	jmp .skip_next17
-	.skip_17:
-	mov rax, 1
-	.skip_next17:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	.elif_0_4:
-	pop rcx
-	cmp rcx, 0
-	;; if the comparison value is false, jump to the next label altogether
-	je .elif_0_4_end
-	
-	push 1
-	
-	pop rax
-	mov rbx, [rbp - 120]
-	mov [rbx], rax
-	
-	jmp .elif_0_4_end
-	.elif_0_4_end:
-	
-	;; Dereferencing variable first
-	mov rax, [rbp - 40]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable first
-	
-	push 1
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_18
-	mov rax, 0
-	jmp .skip_next18
-	.skip_18:
-	mov rax, 1
-	.skip_next18:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable second
-	mov rax, [rbp - 48]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable second
-	
-	push 1
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_19
-	mov rax, 0
-	jmp .skip_next19
-	.skip_19:
-	mov rax, 1
-	.skip_next19:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable third
-	mov rax, [rbp - 56]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable third
-	
-	push 0
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_20
-	mov rax, 0
-	jmp .skip_next20
-	.skip_20:
-	mov rax, 1
-	.skip_next20:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	.elif_0_5:
-	pop rcx
-	cmp rcx, 0
-	;; if the comparison value is false, jump to the next label altogether
-	je .elif_0_5_end
-	
-	push 1
-	
-	pop rax
-	mov rbx, [rbp - 120]
-	mov [rbx], rax
-	
-	jmp .elif_0_5_end
-	.elif_0_5_end:
-	
-	;; Dereferencing variable first
-	mov rax, [rbp - 40]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable first
-	
-	push 1
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_21
-	mov rax, 0
-	jmp .skip_next21
-	.skip_21:
-	mov rax, 1
-	.skip_next21:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable second
-	mov rax, [rbp - 48]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable second
-	
-	push 1
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_22
-	mov rax, 0
-	jmp .skip_next22
-	.skip_22:
-	mov rax, 1
-	.skip_next22:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	;; Dereferencing variable third
-	mov rax, [rbp - 56]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable third
-	
-	push 1
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_23
-	mov rax, 0
-	jmp .skip_next23
-	.skip_23:
-	mov rax, 1
-	.skip_next23:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	pop rax
-	pop rbx
-	and rax, rbx
-	push rax
-	
-	.elif_0_6:
-	pop rcx
-	cmp rcx, 0
-	;; if the comparison value is false, jump to the next label altogether
-	je .elif_0_6_end
-	
-	push 0
-	
-	pop rax
-	mov rbx, [rbp - 120]
-	mov [rbx], rax
-	
-	jmp .elif_0_6_end
-	.elif_0_6_end:
-	
-	mov rax, [rbp - 64]
-	push rax
-	
-	push 1
-	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	push rax
-	
-	pop rax
-	mov [rbp - 64], rax
-	
-	jmp .loop_1
-	.loop_end_1:
-	
-	push 0
-	
-	pop rax
-	mov [rbp - 128], rax
-	
-	push 0
-	
-	mov rax, [rbp - 8]
-	push rax
-	
-	push 1
-	
-	pop rcx
-	pop rbx
-	pop rax
-	mov [rbp - 152], rcx
-	mov [rbp - 144], rbx
-	mov [rbp - 136], rax
-	.loop_2:
-	mov rcx, [rbp - 152]
-	mov rbx, [rbp - 144]
-	mov rax, [rbp - 136]
-	add rax, rcx
-	dec rax
-	dec rbx
-	cmp rax, rbx
-	jg .loop_end_2
-	inc rax
-	inc rbx
-	mov [rbp - 144], rbx
-	mov [rbp - 136], rax
-	
-	mov rax, next
-	push rax
-	
-	mov rax, [rbp - 128]
-	push rax
-	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	mov rax, [rax]
-	push rax
-	
-	push 0
-	
-	;; We pop in the opposite order of comparison as we push onto the stack
-	pop rbx
-	pop rax
-	cmp rax, rbx
-	je .skip_24
-	mov rax, 0
-	jmp .skip_next24
-	.skip_24:
-	mov rax, 1
-	.skip_next24:
-	;; push onto the stack whatever's in rax so rest of the program can use it
-	push rax
-	
-	.if_1:
-	pop rcx
-	cmp rcx, 0
-	;; if the comparison value is false, jump to the next label altogether
-	je .else_1
-	
-	mov rax, string_0
-	push rax
-	push 1
-	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_12
+	mov rdx, 4
 	syscall
 	
-	jmp .else_end_1
-	.if_end_1:
+	xor rax, rax
+	mov rax, [rbp - 32]
+	call _printRAX
 	
-	.else_1:
 	
-	mov rax, string_1
-	push rax
-	push 1
-	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_13
+	mov rdx, 4
 	syscall
 	
-	.else_end_1:
+	;; no xor here
+	mov eax, [rbp - 24]
+	call _printRAX
 	
-	mov rax, [rbp - 128]
-	push rax
 	
-	push 8
-	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	push rax
-	
-	pop rax
-	mov [rbp - 128], rax
-	
-	jmp .loop_2
-	.loop_end_2:
-	
-	mov rax, string_2
-	push rax
-	push 1
-	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_14
+	mov rdx, 4
 	syscall
 	
-	push 0
+	;; no xor here
+	mov ax, [rbp - 20]
+	call _printRAX
 	
-	pop rax
-	mov [rbp - 128], rax
 	
-	push 0
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_15
+	mov rdx, 4
+	syscall
 	
-	mov rax, [rbp - 8]
-	push rax
+	;; no xor here
+	mov al, [rbp - 18]
+	call _printRAX
 	
-	push 1
 	
-	pop rcx
-	pop rbx
-	pop rax
-	mov [rbp - 176], rcx
-	mov [rbp - 168], rbx
-	mov [rbp - 160], rax
-	.loop_3:
-	mov rcx, [rbp - 176]
-	mov rbx, [rbp - 168]
-	mov rax, [rbp - 160]
-	add rax, rcx
-	dec rax
-	dec rbx
-	cmp rax, rbx
-	jg .loop_end_3
-	inc rax
-	inc rbx
-	mov [rbp - 168], rbx
-	mov [rbp - 160], rax
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, string_16
+	mov rdx, 8
+	syscall
 	
-	mov rax, current
-	push rax
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, [rbp - 16]
+	mov rdx, [rbp - 8]
+	syscall
 	
-	mov rax, [rbp - 128]
-	push rax
-	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	push rax
-	
-	pop rax
-	mov [rbp - 184], rax
-	
-	mov rax, next
-	push rax
-	
-	mov rax, [rbp - 128]
-	push rax
-	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	push rax
-	
-	pop rax
-	mov [rbp - 192], rax
-	
-	;; Dereferencing variable idx_into_next
-	mov rax, [rbp - 192]
-	mov rax, [rax]
-	push rax
-	;; Finish dereferencing variable idx_into_next
-	
-	pop rax
-	mov rbx, [rbp - 184]
-	mov [rbx], rax
-	
-	mov rax, [rbp - 128]
-	push rax
-	
-	push 8
-	
-	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
-	add rax, rbx
-	push rax
-	
-	pop rax
-	mov [rbp - 128], rax
-	
-	jmp .loop_3
-	.loop_end_3:
-	
-	jmp .loop_0
-	.loop_end_0:
 	
 	mov rsp, rbp
 	pop rbp

@@ -1,7 +1,9 @@
 use crate::lexer::types::VarType;
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
+use crate::trace;
 use crate::types::ASTNode;
 
+use core::panic;
 use std::io::prelude::*;
 use std::{cell::RefCell, collections::HashMap, fs::File, rc::Rc};
 
@@ -111,6 +113,12 @@ impl Interpreter {
             &mut self.asm,
             call_stack,
         );
+
+        if self.asm.get_used_registers().len() > 0 {
+            trace!("Used Registers: {:#?}", self.asm.get_used_registers());
+            // trace!("Labels: {:#?}", self.asm.labels);
+            panic!("Found unused registers");
+        }
 
         self.write_nasm();
     }

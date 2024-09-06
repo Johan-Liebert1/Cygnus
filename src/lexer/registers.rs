@@ -6,19 +6,11 @@
 // 8-bit: r8b to r15b (lower 8 bits)
 
 use core::panic;
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
 use super::types::VarType;
 
-const RAX: &str = "rax";
-const RBX: &str = "rbx";
-const RCX: &str = "rcx";
-const RDX: &str = "rdx";
-const RSI: &str = "rsi";
-const RDI: &str = "rdi";
-const RBP: &str = "rbp";
-
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum Register {
     RAX,
     RBX,
@@ -27,7 +19,46 @@ pub enum Register {
     RSI,
     RDI,
     RBP,
+    R8,
+    R9,
+    R10,
+    R11,
+
+    // Float regs
+    XMM0,
+    XMM1,
+    XMM2,
+    XMM3,
+    XMM4,
+    XMM5,
+    XMM6,
+    XMM7,
 }
+
+pub const ALL_REGISTERS: [Register; 11] = [
+    Register::RAX,
+    Register::RBX,
+    Register::RCX,
+    Register::RDX,
+    Register::RSI,
+    Register::RDI,
+    Register::RBP,
+    Register::R8,
+    Register::R9,
+    Register::R10,
+    Register::R11,
+];
+
+pub const ALL_FP_REGISTERS: [Register;8] = [
+    Register::XMM0,
+    Register::XMM1,
+    Register::XMM2,
+    Register::XMM3,
+    Register::XMM4,
+    Register::XMM5,
+    Register::XMM6,
+    Register::XMM7,
+];
 
 impl Display for Register {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -39,9 +70,63 @@ impl Display for Register {
             Register::RSI => "rsi",
             Register::RDI => "rdi",
             Register::RBP => "rbp",
+            Register::R8 => "r8",
+            Register::R9 => "r9",
+            Register::R10 => "r10",
+            Register::R11 => "r11",
+
+            Register::XMM0 => "xmm0",
+            Register::XMM1 => "xmm1",
+            Register::XMM2 => "xmm2",
+            Register::XMM3 => "xmm3",
+            Register::XMM4 => "xmm4",
+            Register::XMM5 => "xmm5",
+            Register::XMM6 => "xmm6",
+            Register::XMM7 => "xmm7",
         };
 
         write!(f, "{}", s)
+    }
+}
+
+impl Debug for Register {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self)
+    }
+}
+
+impl From<Register> for String {
+    fn from(value: Register) -> Self {
+        format!("{value}")
+    }
+}
+
+impl Register {
+    pub fn from_string(reg_str: &String) -> Self {
+        match reg_str.as_str() {
+            "rax" => Register::RAX,
+            "rbx" => Register::RBX,
+            "rcx" => Register::RCX,
+            "rdx" => Register::RDX,
+            "rsi" => Register::RSI,
+            "rdi" => Register::RDI,
+            "rbp" => Register::RBP,
+            "r8" => Register::R8,
+            "r9" => Register::R9,
+            "r10" => Register::R10,
+            "r11" => Register::R11,
+
+            "xmm0" => Register::XMM0,
+            "xmm1" => Register::XMM1,
+            "xmm2" => Register::XMM2,
+            "xmm3" => Register::XMM3,
+            "xmm4" => Register::XMM4,
+            "xmm5" => Register::XMM5,
+            "xmm6" => Register::XMM6,
+            "xmm7" => Register::XMM7,
+
+            r => panic!("{r} is not a register"),
+        }
     }
 }
 
@@ -90,7 +175,7 @@ pub fn get_register_name_for_bits(register: &Register, bits: u8) -> &'static str
             _ => "rbp",
         },
 
-        _ => panic!(),
+        _ => todo!(),
     };
 }
 
