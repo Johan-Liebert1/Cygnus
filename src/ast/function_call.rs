@@ -14,7 +14,7 @@ use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
     lexer::{
-        keywords::{FUNC_EXIT, FUNC_STRLEN, FUNC_WRITE},
+        keywords::{FUNC_EXIT, FUNC_WRITE},
         lexer::Token,
         tokens::{Number, TokenEnum},
     },
@@ -48,8 +48,7 @@ impl AST for FunctionCall {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         match self.name.as_str() {
             FUNC_WRITE => {
-                for arg in &self.arguments {
-                    // this will generate everything and put in rax
+                for (index, arg) in self.arguments.iter().enumerate() {
                     arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
                     match arg.borrow().get_node() {

@@ -375,8 +375,6 @@ impl VarType {
                     }
                 }
 
-                trace!("memory alignment for struct {name} = {max}");
-
                 max
             }
 

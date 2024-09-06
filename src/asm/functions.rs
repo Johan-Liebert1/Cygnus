@@ -40,8 +40,6 @@ impl ASM {
         let mut saved_regs = vec![];
 
         for reg in ALL_REGISTERS {
-            trace!("is {reg} locked or not");
-
             if self.is_reg_locked(reg) {
                 trace!("{reg} is LOCKED\n");
                 self.extend_current_label(vec![format!(";; Saving register {reg}'s value"), format!("push {reg}")]);
@@ -138,6 +136,36 @@ impl ASM {
         self.handle_non_float_function_call_arg(arg_num);
     }
 
+    pub fn function_call_register_restore(&mut self, instructions: &mut Vec<String>) {
+        match self.regs_locked_for_func_args.pop() {
+            Some(locked_regs) => {
+                for reg in locked_regs {
+                    self.unlock_register(reg);
+                }
+            }
+
+            None => {
+                // Nothing. No register was locked, i.e. func with no args
+            }
+        }
+
+        match self.regs_saved_for_function_call.pop() {
+            Some(saved_regs) => {
+                for reg in saved_regs.iter().rev() {
+                    self.lock_register(*reg);
+                    instructions.extend(vec![
+                        format!(";; popping saved register value into {reg}"),
+                        format!("pop {reg}"),
+                    ]);
+                }
+            }
+
+            None => {
+                // Nothing. No register was saved
+            }
+        }
+    }
+
     pub fn function_call(
         &mut self,
         function_name: &String,
@@ -180,17 +208,7 @@ impl ASM {
             }
         }
 
-        match self.regs_locked_for_func_args.pop() {
-            Some(locked_regs) => {
-                for reg in locked_regs {
-                    self.unlock_register(reg);
-                }
-            }
-
-            None => {
-                // Nothing. No register was locked, i.e. func with no args
-            }
-        }
+        self.function_call_register_restore(&mut instructions);
 
         // if the function returns anything, push it onto the stack
         if !matches!(func_return_type, VarType::Unknown) && is_assigned_to_var {
@@ -207,22 +225,6 @@ impl ASM {
             };
 
             self.stack_push(String::from(rax));
-        }
-
-        match self.regs_saved_for_function_call.pop() {
-            Some(saved_regs) => {
-                for reg in saved_regs.iter().rev() {
-                    self.lock_register(*reg);
-                    instructions.extend(vec![
-                        format!(";; popping saved register value into {reg}"),
-                        format!("pop {reg}"),
-                    ]);
-                }
-            }
-
-            None => {
-                // Nothing. No register was saved
-            }
         }
 
         self.extend_current_label(instructions);

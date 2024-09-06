@@ -83,19 +83,44 @@ impl ASM {
     }
 
     pub fn func_write_string(&mut self) {
-        let str_len = self.stack_pop().unwrap();
-        let str_addr = self.stack_pop().unwrap();
+        let mut str_len = self.stack_pop().unwrap();
+        let mut str_addr = self.stack_pop().unwrap();
+
+        let mut instructions = vec![];
+
+        let used_regs = [Register::RAX, Register::RDI].to_vec();
+        let used_regs_string: Vec<String> = used_regs.clone().into_iter().map(|x| String::from(x)).collect();
+
+        if used_regs_string.contains(&str_len) {
+            let rax = self.get_free_register(Some(&used_regs));
+            self.unlock_register_from_stack_value(&str_len);
+
+            instructions.push(format!("mov {rax}, {str_len}"));
+
+            str_len = String::from(rax);
+        }
+
+        if used_regs_string.contains(&str_addr) {
+            let rax = self.get_free_register(Some(&used_regs));
+            self.unlock_register_from_stack_value(&str_addr);
+
+            instructions.push(format!("mov {rax}, {str_addr}"));
+
+            str_addr = String::from(rax);
+        }
 
         self.unlock_register_from_stack_value(&str_len);
         self.unlock_register_from_stack_value(&str_addr);
 
-        self.extend_current_label(vec![
+        instructions.extend(vec![
             "mov rax, 1".into(),
             "mov rdi, 1".into(),
             format!("mov rsi, {}", str_addr),
             format!("mov rdx, {}", str_len),
             "syscall".into(),
         ]);
+
+        self.extend_current_label(instructions);
     }
 
     pub fn func_write_pointer(
@@ -141,19 +166,8 @@ impl ASM {
             // TODO: Check here whether the pointer is dereferenced or not
             VarType::Str => {
                 if times_dereferenced > 0 {
-                    let str_len = self.stack_pop().unwrap();
-                    let str_addr = self.stack_pop().unwrap();
-
-                    self.unlock_register_from_stack_value(&str_len);
-                    self.unlock_register_from_stack_value(&str_addr);
-
-                    vec![
-                        "mov rax, 1".into(),
-                        "mov rdi, 1".into(),
-                        format!("mov rsi, {}", str_addr),
-                        format!("mov rdx, {}", str_len),
-                        "syscall".into(),
-                    ]
+                    self.func_write_string();
+                    vec![]
                 } else {
                     self.get_vec_for_write_number(VarType::Int)
                 }
@@ -214,24 +228,6 @@ impl ASM {
         }
     }
 
-    // pub fn syscall_call_prep(&mut self) {
-    //     // Not removing the regs from the stack as we restore them after the function call
-    //     let mut saved_regs = vec![];
-
-    //     for reg in ALL_REGISTERS {
-    //         if self.is_reg_locked(reg) {
-    //             self.extend_current_label(vec![format!(";; Saving register {reg}'s value"), format!("push {reg}")]);
-
-    //             saved_regs.push(reg);
-
-    //             self.unlock_register(reg);
-    //         }
-    //     }
-
-    //     self.regs_saved_for_function_call.push(saved_regs);
-    //     self.regs_locked_for_func_args.push(vec![]);
-    // }
-
     pub fn func_syscall_add_arg(&mut self, arg_num: usize) {
         let mut instructions = vec![];
 
@@ -262,33 +258,7 @@ impl ASM {
 
         let mut instructions = vec![];
 
-        match self.regs_locked_for_func_args.pop() {
-            Some(locked_regs) => {
-                for reg in locked_regs {
-                    self.unlock_register(reg);
-                }
-            }
-
-            None => {
-                // Nothing. No register was locked, i.e. func with no args
-            }
-        }
-
-        match self.regs_saved_for_function_call.pop() {
-            Some(saved_regs) => {
-                for reg in saved_regs.iter().rev() {
-                    self.lock_register(*reg);
-                    instructions.extend(vec![
-                        format!(";; popping saved register value into {reg}"),
-                        format!("pop {reg}"),
-                    ]);
-                }
-            }
-
-            None => {
-                // Nothing. No register was saved
-            }
-        }
+        self.function_call_register_restore(&mut instructions);
 
         if is_result_assigned {
             let rax = if self.is_reg_locked(Register::RAX) {
@@ -368,19 +338,8 @@ impl ASM {
                     }
 
                     VarType::Str => {
-                        let str_len = self.stack_pop().unwrap();
-                        let str_addr = self.stack_pop().unwrap();
-
-                        self.unlock_register_from_stack_value(&str_len);
-                        self.unlock_register_from_stack_value(&str_addr);
-
-                        vec![
-                            "mov rax, 1".into(),
-                            "mov rdi, 1".into(),
-                            format!("mov rsi, {}", str_addr),
-                            format!("mov rdx, {}", str_len),
-                            "syscall".into(),
-                        ]
+                        self.func_write_string();
+                        vec![]
                     }
 
                     VarType::Char => WRITE_CHAR_ASM_INSTRUCTIONS.map(|x| x.into()).to_vec(),
@@ -427,19 +386,8 @@ impl ASM {
                                 }
 
                                 VarType::Str => {
-                                    let str_len = self.stack_pop().unwrap();
-                                    let str_addr = self.stack_pop().unwrap();
-
-                                    self.unlock_register_from_stack_value(&str_len);
-                                    self.unlock_register_from_stack_value(&str_addr);
-
-                                    vec![
-                                        "mov rax, 1".into(),
-                                        "mov rdi, 1".into(),
-                                        format!("mov rsi, {}", str_addr),
-                                        format!("mov rdx, {}", str_len),
-                                        "syscall".into(),
-                                    ]
+                                    self.func_write_string();
+                                    vec![]
                                 }
 
                                 VarType::Ptr(var_type) => self.func_write_pointer_internal(
