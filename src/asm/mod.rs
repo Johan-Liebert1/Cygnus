@@ -8,7 +8,6 @@ pub mod functions;
 pub mod internal_functions;
 pub mod logical;
 pub mod memory_alloc;
-pub mod structs;
 pub mod variable_assignment;
 pub mod variable_declaration;
 pub mod variables;

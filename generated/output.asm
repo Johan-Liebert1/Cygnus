@@ -39,464 +39,263 @@ _main:
 	push rbp
 	mov rbp, rsp
 	;; Make sure that the stack pointer is 16 byte aligned always
-	sub rsp, 46
+	sub rsp, 32
 	
-	mov rax, string_0
-	push rax
-	push 12
 	
-	push 200
 	
-	push 42069
 	
-	push 2000000
 	
-	push 400000000
+	
+	;; Assigning local struct MyStruct
+	
+	;; Member name: x Struct offset = 32. Member offset: 0
 	
 	;; assign_local_number of type Integer
-	xor rax, rax
-	pop rax
-	mov [rbp - 31], rax
+	mov QWORD [rbp - 32], 400000000
+	
+	;; Member name: y Struct offset = 32. Member offset: 8
 	
 	;; assign_local_number of type Integer32
-	xor rax, rax
-	pop rax
-	mov [rbp - 23], eax
+	mov DWORD [rbp - 24], 2000000
+	
+	;; Member name: z Struct offset = 32. Member offset: 12
 	
 	;; assign_local_number of type Integer16
-	xor rax, rax
-	pop rax
-	mov [rbp - 19], ax
+	mov WORD [rbp - 20], 42069
+	
+	;; Member name: w Struct offset = 32. Member offset: 14
 	
 	;; assign_local_number of type Integer8
-	xor rax, rax
-	pop rax
-	mov [rbp - 17], al
+	mov BYTE [rbp - 18], 200
 	
-	pop rbx
-	pop rax
-	mov [rbp - 8], rbx
-	mov [rbp - 16], rax
+	mov QWORD [rbp - 8], 12
+	mov QWORD [rbp - 16], string_0
 	
-	mov rax, string_1
-	push rax
-	push 4
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_1
+	mov rdx, 4
 	syscall
 	
 	xor rax, rax
-	mov rax, [rbp - 31]
-	push rax
-	
-	pop rax
+	mov rax, [rbp - 32]
 	call _printRAX
 	
-	mov rax, string_2
-	push rax
-	push 4
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_2
+	mov rdx, 4
 	syscall
 	
-	xor rax, rax
-	mov eax, [rbp - 23]
-	push rax
-	
-	pop rax
+	;; no xor here
+	mov eax, [rbp - 24]
 	call _printRAX
 	
-	mov rax, string_3
-	push rax
-	push 4
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_3
+	mov rdx, 4
 	syscall
 	
-	xor rax, rax
-	mov ax, [rbp - 19]
-	push rax
-	
-	pop rax
+	;; no xor here
+	mov ax, [rbp - 20]
 	call _printRAX
 	
-	mov rax, string_4
-	push rax
-	push 4
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_4
+	mov rdx, 4
 	syscall
 	
-	xor rax, rax
-	mov al, [rbp - 17]
-	push rax
-	
-	pop rax
+	;; no xor here
+	mov al, [rbp - 18]
 	call _printRAX
 	
-	mov rax, string_5
-	push rax
-	push 8
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_5
+	mov rdx, 8
 	syscall
 	
-	mov rax, [rbp - 16]
-	push rax
-	mov rax, [rbp - 8]
-	push rax
-	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, [rbp - 16]
+	mov rdx, [rbp - 8]
 	syscall
 	
-	xor rax, rax
-	mov rax, [rbp - 31]
-	push rax
 	
-	push 600
 	
 	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
+	mov rax, 600
+	mov rbx, [rbp - 32]
 	add rax, rbx
-	push rax
+	;; will lock rax. first = 600. second = [rbp - 32]. Locked: [rax, rbx]
 	
 	;; assign_local_number of type Integer
-	xor rax, rax
-	pop rax
-	mov [rbp - 31], rax
+	mov QWORD [rbp - 32], rax
 	
-	xor rax, rax
-	mov eax, [rbp - 23]
-	push rax
-	
-	push 400
 	
 	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
+	mov rax, 400
+	mov rbx, [rbp - 24]
 	add rax, rbx
-	push rax
+	;; will lock rax. first = 400. second = [rbp - 24]. Locked: [rax, rbx]
 	
 	;; assign_local_number of type Integer32
-	xor rax, rax
-	pop rax
-	mov [rbp - 23], eax
+	mov DWORD [rbp - 24], eax
 	
-	xor rax, rax
-	mov al, [rbp - 17]
-	push rax
-	
-	push 20
 	
 	;; Plus get the two operands from the stack
-	pop rax
-	pop rbx
+	mov rax, 20
+	mov rbx, [rbp - 18]
 	add rax, rbx
-	push rax
+	;; will lock rax. first = 20. second = [rbp - 18]. Locked: [rax, rbx]
 	
 	;; assign_local_number of type Integer8
-	xor rax, rax
-	pop rax
-	mov [rbp - 17], al
+	mov BYTE [rbp - 18], al
 	
-	mov rax, string_6
-	push rax
-	push 14
 	
-	pop rbx
-	pop rax
-	mov [rbp - 8], rbx
-	mov [rbp - 16], rax
+	mov QWORD [rbp - 8], 14
+	mov QWORD [rbp - 16], string_6
 	
-	mov rax, string_7
-	push rax
-	push 4
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_7
+	mov rdx, 4
 	syscall
 	
 	xor rax, rax
-	mov rax, [rbp - 31]
-	push rax
-	
-	pop rax
+	mov rax, [rbp - 32]
 	call _printRAX
 	
-	mov rax, string_8
-	push rax
-	push 4
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_8
+	mov rdx, 4
 	syscall
 	
-	xor rax, rax
-	mov eax, [rbp - 23]
-	push rax
-	
-	pop rax
+	;; no xor here
+	mov eax, [rbp - 24]
 	call _printRAX
 	
-	mov rax, string_9
-	push rax
-	push 4
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_9
+	mov rdx, 4
 	syscall
 	
-	xor rax, rax
-	mov ax, [rbp - 19]
-	push rax
-	
-	pop rax
+	;; no xor here
+	mov ax, [rbp - 20]
 	call _printRAX
 	
-	mov rax, string_10
-	push rax
-	push 4
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_10
+	mov rdx, 4
 	syscall
 	
-	xor rax, rax
-	mov al, [rbp - 17]
-	push rax
-	
-	pop rax
+	;; no xor here
+	mov al, [rbp - 18]
 	call _printRAX
 	
-	mov rax, string_11
-	push rax
-	push 8
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_11
+	mov rdx, 8
 	syscall
 	
-	mov rax, [rbp - 16]
-	push rax
-	mov rax, [rbp - 8]
-	push rax
-	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, [rbp - 16]
+	mov rdx, [rbp - 8]
 	syscall
 	
-	push 600
 	
-	mov rax, [rbp - 31]
-	pop rbx
+	
+	mov rax, [rbp - 32]
+	mov rbx, 600
 	add rax, rbx
-	mov [rbp - 31], rax
+	mov [rbp - 32], rax
 	
-	push 400
 	
-	mov rax, [rbp - 23]
-	pop rbx
+	mov rax, [rbp - 24]
+	mov rbx, 400
 	add rax, rbx
-	mov [rbp - 23], rax
+	mov [rbp - 24], rax
 	
-	push 20
 	
-	mov rax, [rbp - 17]
-	pop rbx
+	mov rax, [rbp - 18]
+	mov rbx, 20
 	add rax, rbx
-	mov [rbp - 17], rax
+	mov [rbp - 18], rax
 	
-	mov rax, string_12
-	push rax
-	push 4
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_12
+	mov rdx, 4
 	syscall
 	
 	xor rax, rax
-	mov rax, [rbp - 31]
-	push rax
-	
-	pop rax
+	mov rax, [rbp - 32]
 	call _printRAX
 	
-	mov rax, string_13
-	push rax
-	push 4
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_13
+	mov rdx, 4
 	syscall
 	
-	xor rax, rax
-	mov eax, [rbp - 23]
-	push rax
-	
-	pop rax
+	;; no xor here
+	mov eax, [rbp - 24]
 	call _printRAX
 	
-	mov rax, string_14
-	push rax
-	push 4
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_14
+	mov rdx, 4
 	syscall
 	
-	xor rax, rax
-	mov ax, [rbp - 19]
-	push rax
-	
-	pop rax
+	;; no xor here
+	mov ax, [rbp - 20]
 	call _printRAX
 	
-	mov rax, string_15
-	push rax
-	push 4
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_15
+	mov rdx, 4
 	syscall
 	
-	xor rax, rax
-	mov al, [rbp - 17]
-	push rax
-	
-	pop rax
+	;; no xor here
+	mov al, [rbp - 18]
 	call _printRAX
 	
-	mov rax, string_16
-	push rax
-	push 8
 	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, string_16
+	mov rdx, 8
 	syscall
 	
-	mov rax, [rbp - 16]
-	push rax
-	mov rax, [rbp - 8]
-	push rax
-	
-	;; Assuming length is pushed last
-	pop r8
-	;; Assuming string address is pushed first
-	pop r9
 	mov rax, 1
 	mov rdi, 1
-	mov rsi, r9
-	mov rdx, r8
+	mov rsi, [rbp - 16]
+	mov rdx, [rbp - 8]
 	syscall
+	
 	
 	mov rsp, rbp
 	pop rbp

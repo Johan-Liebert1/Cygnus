@@ -30,6 +30,7 @@ pub enum VarType {
     Float,
     Char,
     Ptr(Box<VarType>),
+    /// (InnerType, num elements)
     Array(Box<VarType>, usize),
     Struct(String, Rc<RefCell<Vec<StructMemberType>>>), // string = name of struct
     /// (Name, Parameters, ReturnType)
@@ -350,9 +351,48 @@ impl VarType {
         };
     }
 
-    pub fn get_size_handle_array_and_struct(&self, variable: &Variable) -> usize {
+    pub fn get_mem_alignment(&self) -> usize {
+        match self {
+            VarType::Int => 8,
+            VarType::Int8 => 1,
+            VarType::Int16 => 2,
+            VarType::Int32 => 4,
+            VarType::Str => 16,
+            VarType::Float => 8,
+            VarType::Char => 1,
+            VarType::Ptr(_) => 8,
+            VarType::Array(inner_type, _) => inner_type.get_mem_alignment(),
+
+            VarType::Struct(name, members) => {
+                let mut max = 8;
+
+                for member in members.borrow().iter() {
+                    let member_mem_alignment = member.member_type.get_mem_alignment();
+                    // max += member_mem_alignment;
+
+                    if member_mem_alignment > max {
+                        max = member_mem_alignment;
+                    }
+                }
+
+                max
+            }
+
+            VarType::Function(_, _, _) => 8,
+            VarType::Unknown => todo!(),
+        }
+    }
+
+    /// variable param is required to check for member access or array index access
+    ///
+    /// TODO: This doesn't make much sense. Instead of passing in the variable this should accept
+    /// Option<array_aceess_index> and Option<member_access>
+    ///
+    /// Also the caller needs to align memory. This only returns the variable size
+    pub fn get_mem_aligned_size(&self, variable: &Variable) -> usize {
         return match self {
             VarType::Array(type_, _) => {
+                // If no index access, return the size of the entire array
                 if variable.array_aceess_index.is_none() {
                     return self.get_size();
                 }
@@ -361,6 +401,7 @@ impl VarType {
             }
 
             VarType::Struct(_, members) => {
+                // If no member access, return the size of the entire struct
                 if variable.member_access.len() == 0 {
                     return self.get_size();
                 }
@@ -386,6 +427,24 @@ impl VarType {
 
             _ => self.get_size(),
         };
+    }
+
+    pub fn get_operation_size(&self) -> &str {
+        match self {
+            VarType::Int => "QWORD",
+            VarType::Int8 => "BYTE",
+            VarType::Int16 => "WORD",
+            VarType::Int32 => "DWORD",
+
+            VarType::Str => todo!(),
+            VarType::Float => todo!(),
+            VarType::Char => todo!(),
+            VarType::Ptr(_) => todo!(),
+            VarType::Array(_, _) => todo!(),
+            VarType::Struct(_, _) => todo!(),
+            VarType::Function(_, _, _) => todo!(),
+            VarType::Unknown => todo!(),
+        }
     }
 }
 

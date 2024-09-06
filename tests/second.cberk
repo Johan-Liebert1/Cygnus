@@ -1,17 +1,18 @@
-struct Rect {
-    x: int,
-    y: int,
+struct A {
+    val: int,
+    val2: str,
 }
 
 fun main() {
-    def r: Rect = Rect { x: 20, y: 30 };
+    def a: A = A {
+        val: 69,
+        val2: "wow\n",
+    };
 
-    write(r.x, r.y)
+    def b: *A = &a;
 
-    r.x = r.x + 15;
-    r.y = r.y + 15;
-
-    write(r.x, r.y)
+    write(b.val)
+    write(b.val2)
 }
 
 main()

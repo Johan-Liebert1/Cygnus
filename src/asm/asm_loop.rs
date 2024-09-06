@@ -54,14 +54,37 @@ impl ASM {
             }
         };
 
+        let mut step = self.stack_pop().unwrap();
+        let mut to = self.stack_pop().unwrap();
+        let mut from = self.stack_pop().unwrap();
+
         let mut loop_start: Vec<String> = vec![
-            format!("pop rcx"), // step
-            format!("pop rbx"), // to
-            format!("pop rax"), // from
-            format!("mov [rbp - {}], rcx", step_offset),
-            format!("mov [rbp - {}], rbx", to_offset),
-            format!("mov [rbp - {}], rax", from_offset),
+            format!(";; loop_{loop_number} start")
         ];
+
+        if step.starts_with('[') {
+            let reg = self.get_free_register(None);
+            loop_start.push(format!("mov {reg}, {} ;; step", step));
+            step = reg.into();
+        }
+
+        loop_start.push(format!("mov QWORD [rbp - {}], {} ;; step", step_offset, step));
+
+        if to.starts_with('[') {
+            let reg = self.get_free_register(None);
+            loop_start.push(format!("mov {reg}, {} ;; to", to));
+            to = reg.into();
+        }
+
+        loop_start.push(format!("mov QWORD [rbp - {}], {} ;; to", to_offset, to));
+
+        if from.starts_with('[') {
+            let reg = self.get_free_register(None);
+            loop_start.push(format!("mov {reg}, {} ;; from", from));
+            from = reg.into();
+        }
+
+        loop_start.push(format!("mov QWORD [rbp - {}], {} ;; from", from_offset, from));
 
         let mut call_stack_var = None;
 
@@ -74,12 +97,18 @@ impl ASM {
 
             // here rax contains the from value
             loop_start.extend(vec![format!(
-                "mov [rbp - {}], rax",
-                call_stack_var.unwrap().borrow().offset
+                "mov QWORD [rbp - {}], {} ;; loop variable {}",
+                call_stack_var.unwrap().borrow().offset,
+                from,
+                call_stack_var.unwrap().borrow().var_name
             )]);
         }
 
         loop_start.push(format!(".loop_{}:", loop_number));
+
+        self.unlock_register_from_stack_value(&from);
+        self.unlock_register_from_stack_value(&to);
+        self.unlock_register_from_stack_value(&step);
 
         self.extend_current_label(loop_start);
     }
@@ -117,32 +146,46 @@ impl ASM {
                 panic!("`call_stack_var` is none but loop has a variable")
             }
 
+            let rdx = self.get_free_register(None);
+            let rcx = self.get_free_register(None);
+
             // add step to variable
             loop_end.extend([
                 format!(";; inc the loop variable"),
-                format!("mov rdx, [rbp - {}]", call_stack_var.unwrap().borrow().offset),
-                format!("mov rcx, [rbp - {}]", step_offset),
-                format!("add rdx, rcx"),
-                format!("mov [rbp - {}], rdx", call_stack_var.unwrap().borrow().offset),
+                format!("mov {rdx}, [rbp - {}]", call_stack_var.unwrap().borrow().offset),
+                format!("mov {rcx}, [rbp - {}]", step_offset),
+                format!("add {rdx}, {rcx}"),
+                format!("mov [rbp - {}], {rdx}", call_stack_var.unwrap().borrow().offset),
             ]);
+
+            self.unlock_register(rcx);
+            self.unlock_register(rdx);
         }
+
+        let rax = self.get_free_register(None);
+        let rbx = self.get_free_register(None);
+        let rcx = self.get_free_register(None);
 
         loop_end.extend(vec![
             format!(";; check exit condition"),
-            format!("mov rcx, [rbp - {}] ;; step", step_offset), // step
-            format!("mov rbx, [rbp - {}] ;; to", to_offset),     // to
-            format!("mov rax, [rbp - {}] ;; from", from_offset), // from
-            format!("add rax, rcx"),
-            // now compare rax to rbx - 1 and if they're equal jump to the end
-            format!("dec rbx"),
-            format!("cmp rax, rbx"),
+            format!("mov {rcx}, [rbp - {}] ;; step", step_offset), // step
+            format!("mov {rbx}, [rbp - {}] ;; to", to_offset),     // to
+            format!("mov {rax}, [rbp - {}] ;; from", from_offset), // from
+            format!("add {rax}, {rcx}"),
+            // now compare {rax} to {rbx} - 1 and if they're equal jump to the end
+            format!("dec {rbx}"),
+            format!("cmp {rax}, {rbx}"),
             format!("jg .loop_end_{}", loop_number),
-            format!("mov [rbp - {}], rax", from_offset),
+            format!("mov [rbp - {}], {rax}", from_offset),
             // unconditional jump to loop start
             format!("jmp .loop_{}", loop_number),
             // we jump here when the loop ends
             format!(".loop_end_{}:", loop_number),
         ]);
+
+        self.unlock_register(rcx);
+        self.unlock_register(rbx);
+        self.unlock_register(rax);
 
         self.extend_current_label(loop_end);
     }

@@ -1,7 +1,7 @@
 use crate::asm::functions::FUNCTION_ARGS_REGS;
 use crate::ast::function_def::FunctionDefinition;
 use crate::helpers::{self, compiler_error};
-use crate::lexer::keywords::FUNC_SYSCALL;
+use crate::lexer::keywords::{self, FUNC_SYSCALL};
 use crate::lexer::types::VarType;
 use crate::{trace, types::ASTNode};
 
@@ -14,7 +14,7 @@ use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
     lexer::{
-        keywords::{FUNC_EXIT, FUNC_STRLEN, FUNC_WRITE},
+        keywords::{FUNC_EXIT, FUNC_WRITE},
         lexer::Token,
         tokens::{Number, TokenEnum},
     },
@@ -29,15 +29,17 @@ pub struct FunctionCall {
     arguments: Vec<ASTNode>,
     /// This is basically the return type for this function
     pub result_type: VarType,
+    pub is_result_assigned: bool,
 }
 
 impl FunctionCall {
-    pub fn new(name: String, token: Token, arguments: Vec<ASTNode>) -> Self {
+    pub fn new(name: String, token: Token, arguments: Vec<ASTNode>, is_result_assigned: bool) -> Self {
         Self {
             name,
             token,
             arguments,
             result_type: VarType::Unknown,
+            is_result_assigned,
         }
     }
 }
@@ -46,8 +48,7 @@ impl AST for FunctionCall {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         match self.name.as_str() {
             FUNC_WRITE => {
-                for arg in &self.arguments {
-                    // this will generate everything and put in rax
+                for (index, arg) in self.arguments.iter().enumerate() {
                     arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
                     match arg.borrow().get_node() {
@@ -57,12 +58,12 @@ impl AST for FunctionCall {
 
                         ASTNodeEnum::BinaryOp(bo) => match &bo.result_type {
                             VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Int | VarType::Char => {
-                                asm.func_write_number()
+                                asm.func_write_number(bo.result_type.clone())
                             }
 
                             VarType::Str => asm.func_write_string(),
 
-                            VarType::Float => asm.func_write_number(),
+                            VarType::Float => asm.func_write_float(),
 
                             VarType::Ptr(ptr_type) => {
                                 asm.func_write_pointer(&ptr_type, bo.times_dereferenced, &call_stack, None)
@@ -75,17 +76,18 @@ impl AST for FunctionCall {
                         },
 
                         ASTNodeEnum::Factor(f) => match &f.get_token().token {
-                            TokenEnum::Number(_) => asm.func_write_number(),
+                            // Int64 is the default for a number literal
+                            TokenEnum::Number(_) => asm.func_write_number(VarType::Int),
                             TokenEnum::StringLiteral(_) => asm.func_write_string(),
 
                             tok => unreachable!("This should be unreachable"),
                         },
 
                         // This will always be an integer
-                        ASTNodeEnum::LogicalExp(lo) => asm.func_write_number(),
+                        ASTNodeEnum::LogicalExp(lo) => asm.func_write_number(todo!()),
 
                         // This will always be an integer
-                        ASTNodeEnum::ComparisonExp(..) => asm.func_write_number(),
+                        ASTNodeEnum::ComparisonExp(..) => asm.func_write_number(todo!()),
 
                         ASTNodeEnum::FunctionCall(fc) => {
                             // if the function returns anything, then that will be in rax
@@ -96,7 +98,7 @@ impl AST for FunctionCall {
 
                             match func_def.return_type {
                                 VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                    asm.func_write_number()
+                                    asm.func_write_number(func_def.return_type.clone())
                                 }
 
                                 _ => unimplemented!(),
@@ -120,11 +122,14 @@ impl AST for FunctionCall {
             }
 
             FUNC_SYSCALL => {
-                for arg in self.arguments.iter().rev() {
+                asm.function_call_prep();
+
+                for (index, arg) in self.arguments.iter().enumerate() {
                     arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+                    asm.func_syscall_add_arg(index);
                 }
 
-                asm.func_syscall(self.arguments.len());
+                asm.func_syscall_call(self.is_result_assigned);
             }
 
             // This should be caught in the semantica analysis step
@@ -132,9 +137,26 @@ impl AST for FunctionCall {
             name => match f.borrow().get(name) {
                 // args -> rax, rdi, rsi, rdx, r10, r8, r9
                 Some(func) => {
+                    asm.function_call_prep();
+
+                    let mut float_arg_num: i32 = -1;
+                    let mut non_float_arg_num: i32 = -1;
+
                     // we reverse here as we want to push into the stack backwards
-                    for argument in self.arguments.iter().rev() {
+                    for (_, argument) in self.arguments.iter().enumerate() {
                         argument.borrow().visit_com(v, f.clone(), asm, call_stack);
+
+                        let arg_type = argument.borrow().get_type().1;
+
+                        let arg_num = if matches!(arg_type, VarType::Float) {
+                            float_arg_num += 1;
+                            float_arg_num
+                        } else {
+                            non_float_arg_num += 1;
+                            non_float_arg_num
+                        };
+
+                        asm.function_call_add_arg(arg_num as usize, arg_type);
                     }
 
                     asm.function_call(
@@ -144,6 +166,7 @@ impl AST for FunctionCall {
                         false,
                         call_stack,
                         func.is_extern_func,
+                        self.is_result_assigned,
                     );
                 }
 
@@ -177,8 +200,25 @@ impl AST for FunctionCall {
                         compiler_error(format!("Function {} unimplemented", self.name), &self.token)
                     }
 
-                    for argument in self.arguments.iter().rev() {
+                    asm.function_call_prep();
+
+                    let mut float_arg_num: i32 = -1;
+                    let mut non_float_arg_num: i32 = -1;
+
+                    for (index, argument) in self.arguments.iter().enumerate() {
                         argument.borrow().visit_com(v, f.clone(), asm, call_stack);
+
+                        let arg_type = argument.borrow().get_type().1;
+
+                        let arg_num = if matches!(arg_type, VarType::Float) {
+                            float_arg_num += 1;
+                            float_arg_num
+                        } else {
+                            non_float_arg_num += 1;
+                            non_float_arg_num
+                        };
+
+                        asm.function_call_add_arg(arg_num as usize, arg_type);
                     }
 
                     asm.function_call(
@@ -188,6 +228,7 @@ impl AST for FunctionCall {
                         true,
                         call_stack,
                         false,
+                        self.is_result_assigned,
                     );
                 }
             },
