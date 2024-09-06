@@ -1,4 +1,4 @@
-include "../include/std.cberk"
+include "../include/std.cy"
 
 struct sockaddr_in {
     sa_prefix: int16,

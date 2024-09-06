@@ -1,4 +1,4 @@
-include "./include/std.cberk"
+include "./include/std.cy"
 
 fun main() {
     def hel: str = "hello_world";

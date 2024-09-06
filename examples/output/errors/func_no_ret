@@ -1,1 +1,1 @@
-./examples/errors/func_no_ret.cberk:1:8 Function 'foo' needs to return 'Floating Point' but nothing was returned
+./examples/errors/func_no_ret.cy:1:8 Function 'foo' needs to return 'Floating Point' but nothing was returned

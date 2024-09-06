@@ -39,7 +39,7 @@ fn try_to_compile_example(file_name: &str) -> (String, String) {
 #[test]
 fn const_reassign() {
     compile_binary();
-    let (stderr, file_result) = try_to_compile_example("errors/const_reassign.cberk");
+    let (stderr, file_result) = try_to_compile_example("errors/const_reassign.cy");
 
     assert_eq!(stderr, file_result);
 }
@@ -47,7 +47,7 @@ fn const_reassign() {
 #[test]
 fn function_pointer_incorrect_arg() {
     compile_binary();
-    let (stderr, file_result) = try_to_compile_example("errors/func_ptr_incorrect_arg.cberk");
+    let (stderr, file_result) = try_to_compile_example("errors/func_ptr_incorrect_arg.cy");
 
     assert_eq!(stderr, file_result);
 }
@@ -55,7 +55,7 @@ fn function_pointer_incorrect_arg() {
 #[test]
 fn function_pointer_non_function() {
     compile_binary();
-    let (stderr, file_result) = try_to_compile_example("errors/func_ptr_non_func.cberk");
+    let (stderr, file_result) = try_to_compile_example("errors/func_ptr_non_func.cy");
 
     assert_eq!(stderr, file_result);
 }
@@ -63,7 +63,7 @@ fn function_pointer_non_function() {
 #[test]
 fn function_no_return() {
     compile_binary();
-    let (stderr, file_result) = try_to_compile_example("errors/func_no_ret.cberk");
+    let (stderr, file_result) = try_to_compile_example("errors/func_no_ret.cy");
 
     assert_eq!(stderr, file_result);
 }
@@ -71,7 +71,7 @@ fn function_no_return() {
 #[test]
 fn function_no_statements() {
     compile_binary();
-    let (stderr, file_result) = try_to_compile_example("errors/func_no_statements.cberk");
+    let (stderr, file_result) = try_to_compile_example("errors/func_no_statements.cy");
 
     assert_eq!(stderr, file_result);
 }

@@ -1,47 +1,6 @@
-## Programming Language called CBerk
+## Programming Language called Cygnus
 
 ### Implemented features
-
-- [x] Write tests
-
-- [x] Command line args for the compiler, to turn on/off various features
-- [x] Implement all binary ops
-- [x] Add ==, != and other comparison ops
-- [x] Add bitwise operations
-    - [x] shl, shr
-    - [x] or, and, xor
-- [x] `return` and `break` statements
-- [x] Functions in Compilation mode
-- [x] Variables in Compilation mode
-- [x] Local Variables
-    - [x] Stack variables for functions
-    - [x] Variable Shadowing
-    - [x] Upper stack variable access
-- [x] Variable scoping
-- [x] Implement `+=` and `-=`
-- [x] Pointer deref
-- [x] Pointer to pointer to pointer ...
-- [x] Random access to memory
-- [x] Function returns
-- [x] Function arguments and their type checking
-- [x] Proper type checking
-- [x] Type Casting
-- [x] Array
-- [x] Structures
-- [x] File Includes
-- [x] Negative Numbers
-- [x] HTTP Server
-- [x] Floating point numbers
-- [x] Make sure nothing is left on the stack when we break out of a loop
-
-- [ ] Fix structs (C strucs are different in memory)
-- [ ] Fix type casting for pointers
-
-- [ ] Have a single function for both variable and binary op asm generation
-- [ ] Enums - Use `offset` and `reset` kinda like Go's `iota`
-- [ ] Command line arguments
-- [ ] Ability to allocate and deallocate memory
-- [ ] Macros
 
 # Grammar
 
@@ -79,25 +38,7 @@
 # (Extremely) Simple HTTP server
 
 ```lua
-include "../include/std.cberk"
-
-def AF_INET: int16 = 2;
-def S_ADDR: int32 = 16777343; -- htonl(127.0.0.1)
-def PORT: int16 = 34835; -- htons(5000)
-def PAD: int = 0;
-
-def SOCK_STREAM: int = 1;
-
-def SOCKET_SYSCALL: int = 41;
-def READ_SYSCALL: int = 0;
-def WRITE_SYSCALL: int = 1;
-def OPEN_SYSCALL: int = 2;
-def CLOSE_SYSCALL: int = 3;
-def ACCEPT_SYSCALL: int = 43;
-def BIND_SYSCALL: int = 49;
-def LISTEN_SYSCALL: int = 50;
-
-def STDOUT: int = 1;
+include "../include/std.cy"
 
 struct sockaddr_in {
     sa_prefix: int16,
@@ -111,6 +52,131 @@ mem read_data 4096
 
 mem serveraddr_mem 16
 mem clientaddr_mem 16
+
+mem file_len 32
+
+mem req_method 32
+mem req_path 256
+mem file_to_read 256
+
+const PRINT_REQ: int = 1;
+const SPACE_ASCII: int8 = 32;
+const NEW_LINE_ASCII: int8 = 10;
+const NULL_BYTE: int8 = 0;
+
+-- GET / HTTP/1.1
+-- Host: localhost:5000
+-- User-Agent: curl/8.5.0
+-- Accept: */*
+fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
+    if PRINT_REQ {
+        syscall(WRITE_SYSCALL, STDOUT, req, read_bytes);
+    }
+
+    def dot_html: str = ".html";
+
+    def http_ok: str = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK";
+    def http_404: str = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
+    def http_500: str = "HTTP/1.1 500 Internal Server Error\r\n\r\n";
+
+    def http_index_html: str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ";
+    def http_index_html_len: int = strlen(&http_index_html);
+
+    def header_body_seperator: str = "\r\n\r\n";
+    def header_body_seperator_len: int = strlen(&header_body_seperator);
+
+    def index_html_file_dir_path: str = "/home/pragyan/Rust/lang/examples/http_server";
+
+    -- we'll only parse the method and path for now
+    def idx: int = 0;
+
+    -- parse the method
+    def method_ends_at_idx: int = 0;
+    loop {
+        def character: *char = req + idx;
+
+        if *character == SPACE_ASCII or *character == NULL_BYTE {
+            method_ends_at_idx = idx - 1;
+            break;
+        }
+
+        idx += 1;
+    }
+
+    -- consume the space character
+    idx += 1;
+
+    def path_starts_at_idx: int = idx;
+    def path_ends_at_idx: int = -1;
+
+    -- parse path
+    loop {
+        def character1: *char = req + idx;
+
+        if *character1 == SPACE_ASCII or *character1 == NULL_BYTE {
+            path_ends_at_idx = idx - 1;
+            break;
+        }
+
+        idx += 1;
+    }
+
+    def path_as_char: *char = req + path_starts_at_idx;
+    def path_len: int = path_ends_at_idx - path_starts_at_idx + 1;
+
+    if string_ends_with(path_as_char, path_len, dot_html as *char, strlen(&dot_html)) == 0 {
+        def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_404 as *char, strlen(&http_404));
+
+        write("Writing http_404 to connfd returned: ");
+        print_int(write_ret)
+        write("Client asked for path: ")
+        syscall(WRITE_SYSCALL, STDOUT, path_as_char, path_len)
+        write("\n");
+
+        syscall(CLOSE_SYSCALL, connfd);
+        return;
+    }
+
+    def final_file_abs_path: int = str_concat(
+        index_html_file_dir_path as *char, 
+        strlen(&index_html_file_dir_path), 
+        path_as_char, 
+        path_ends_at_idx - path_starts_at_idx + 1,
+        file_to_read
+    );
+    
+    syscall(WRITE_SYSCALL, STDOUT, path_as_char, path_ends_at_idx - path_starts_at_idx + 1)
+    write("\n")
+    syscall(WRITE_SYSCALL, STDOUT, file_to_read, final_file_abs_path)
+
+    def file_read_bytes: int = read_file_into_memory(read_data, 4096, file_to_read as *char);
+
+    if file_read_bytes < 0 {
+        syscall(WRITE_SYSCALL, connfd, http_500 as *char, strlen(&http_500));
+        write("read_file_into_memory returned: ")
+        print_int(file_read_bytes)
+    } else {
+        write("Read ", file_read_bytes, " bytes from file ", file_to_read, "\n")
+
+        def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_index_html as *char, http_index_html_len);
+        write("Writing to connfd returned: ");
+        print_int(write_ret)
+
+        def num_written: int = write_int_into_mem(file_len, file_read_bytes);
+        write_ret = syscall(WRITE_SYSCALL, connfd, file_len, num_written);
+
+        write_ret = syscall(WRITE_SYSCALL, connfd, header_body_seperator as *char, header_body_seperator_len);
+        write("Writing header_body_seperator to connfd returned: ");
+        print_int(write_ret)
+
+        write_ret = syscall(WRITE_SYSCALL, connfd, read_data, file_read_bytes);
+        write("Writing to connfd returned: ");
+        print_int(write_ret)
+
+    }
+
+    syscall(CLOSE_SYSCALL, connfd);
+}
 
 fun main() {
     def sockfd: int = syscall(SOCKET_SYSCALL, AF_INET, SOCK_STREAM, 0);
@@ -129,15 +195,9 @@ fun main() {
     *sin_port = PORT;
     *s_addr = S_ADDR;
 
-    def len: int32 = 0;
-
-    def http_ok: str = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK";
-
     def bind_ret: int = syscall(BIND_SYSCALL, sockfd, serveraddr_mem, 16);
     write("BIND_SYSCALL return: ");
     print_int(bind_ret);
-    write(bind_ret);
-
     if bind_ret < 0 {
         exit(1);
     }
@@ -159,12 +219,8 @@ fun main() {
         }
 
         def read_bytes: int = syscall(READ_SYSCALL, connfd, read_data, 4096);
-        syscall(WRITE_SYSCALL, STDOUT, read_data, 4096);
 
-        def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_ok as *char, 74);
-        write("Writing to connfd returned: ", write_ret);
-
-        syscall(CLOSE_SYSCALL, connfd);
+        parse_http_request(connfd, read_data, read_bytes);
     }
 }
 
