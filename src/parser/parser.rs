@@ -187,7 +187,6 @@ impl Parser {
                         ))))
                     }
 
-
                     RETURN => self.parse_return_statement(&current_token),
 
                     MEM => self.parse_memory_alloc(),
@@ -226,11 +225,17 @@ impl Parser {
                             .unwrap_or_else(|| Path::new(""))
                             .join(Path::new(&file_path.strip_prefix("./").unwrap_or_else(|| &file_path)));
 
+                        // Dropping the borrow here so that we can have a new reference to the
+                        // Lexer down below
+                        // We cannot have another mutable or immutable borrow while this exists
                         drop(borrow);
 
+                        // Create a new lexer for the new file
                         let file_contents = fs::read(file_path.clone()).unwrap();
                         let new_file_lexer = Lexer::new(file_contents, file_path.to_str().unwrap().into());
                         let new_lexer = Rc::new(RefCell::new(Box::new(new_file_lexer)));
+
+                        // New reference to the lexer
                         self.lexer = new_lexer.clone();
 
                         let ast = self.parse_program();
@@ -261,7 +266,7 @@ impl Parser {
             TokenEnum::Number(..) | TokenEnum::Bracket(..) => self.parse_logical_expression(),
 
             TokenEnum::Variable(var) => {
-                // 2 here as we haven't consumed the `var` token
+                // 2nd token here as we haven't consumed the `var` token
                 let nth_token = self.peek_nth_token(2);
 
                 // println!("parse_statements variable nth_token {:#?}", current_token);
@@ -289,10 +294,7 @@ impl Parser {
                                 self.parse_assignment_statement(var_token, var.to_string(), 0, Some(array_access_index))
                             }
 
-                            Bracket::RParen => todo!(),
-                            Bracket::LCurly => todo!(),
-                            Bracket::RCurly => todo!(),
-                            Bracket::RSquare => todo!(),
+                            _ => unexpected_token(&current_token, None),
                         }
                     }
 
