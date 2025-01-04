@@ -93,7 +93,7 @@ impl Parser {
             line_number: 0,
             index: 0,
             col_number: 0,
-            file: "".into(),
+            file: Rc::new(String::new()),
         })))));
 
         let step = match self.peek_next_token().token {

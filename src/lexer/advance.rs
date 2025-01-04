@@ -27,7 +27,7 @@ impl Lexer {
             line_number: 0,
             index: 0,
             col_number: 0,
-            file: self.file_name.to_string(),
+            file: self.file_name.clone(),
         };
 
         let mut i = 0;
@@ -250,7 +250,7 @@ impl Lexer {
                 line_number: self.line_number,
                 col_number: self.col_number,
                 index: self.index,
-                file: self.file_name.clone().into(),
+                file: self.file_name.clone(),
             };
 
             return token;
@@ -261,7 +261,7 @@ impl Lexer {
             line_number: self.line_number,
             col_number: self.col_number,
             index: self.index,
-            file: self.file_name.clone().into(),
+            file: self.file_name.clone(),
         };
     }
 }

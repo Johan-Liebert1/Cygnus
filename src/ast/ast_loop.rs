@@ -62,7 +62,7 @@ impl Loop {
             col_number: 0,
             index: 0,
             line_number: 0,
-            file: "".into(),
+            file: Rc::new(String::new()),
         };
 
         // TODO: Fix this, this doesn't need to be done this way

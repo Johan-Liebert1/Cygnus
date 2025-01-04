@@ -218,7 +218,8 @@ impl Parser {
 
                         let borrow = self.lexer.borrow();
 
-                        let path = Path::new(&borrow.file_name);
+                        // Dereferencing the Rc, which gives us the String, and then borrowing the String
+                        let path = Path::new(&*borrow.file_name);
 
                         let file_path = path
                             .parent()

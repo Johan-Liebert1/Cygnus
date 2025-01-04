@@ -1,5 +1,6 @@
 use std::{
     fmt::{Debug, Display},
+    rc::Rc,
     thread::sleep,
     time::Duration,
 };
@@ -21,7 +22,7 @@ pub struct Token {
     pub line_number: usize,
     pub col_number: usize,
     pub index: usize,
-    pub file: String,
+    pub file: Rc<String>,
 }
 
 impl Display for Token {
@@ -46,7 +47,7 @@ pub struct Lexer {
     pub col_number: usize,
     pub file: Vec<u8>,
     pub index: usize,
-    pub file_name: String,
+    pub file_name: Rc<String>,
 }
 
 impl Lexer {
@@ -56,7 +57,7 @@ impl Lexer {
             col_number: 1,
             index: 0,
             file,
-            file_name,
+            file_name: Rc::new(file_name),
         }
     }
 
