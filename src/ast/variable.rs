@@ -224,10 +224,12 @@ impl AST for Variable {
                 if let ASTNodeEnum::FunctionDef(fd) = function.func.borrow().get_node() {
                     self.var_type = VarType::Function(
                         self.var_name.clone(),
+
                         fd.parameters
                             .iter()
                             .map(|param| param.borrow().var_type.clone())
                             .collect(),
+
                         Box::new(function.return_type.clone()),
                     );
                 } else {

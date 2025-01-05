@@ -16,9 +16,6 @@ impl ASM {
         match token {
             TokenEnum::Number(n) => match n {
                 Number::Integer(i) => {
-                    // TODO: Remove
-                    //
-                    // instructions.push(format!("push {i}"))
                     self.stack_push(format!("{i}"))
                 }
 
@@ -31,9 +28,6 @@ impl ASM {
 
                     instructions.extend(vec![
                         format!("movsd {xmm0}, [float_{}]", self.num_floats),
-                        // rax contains the address of the float
-                        // format!("mov rax, [rax]"),
-                        // format!("push rax"),
                     ]);
 
                     self.stack_push(String::from(xmm0));
@@ -80,39 +74,12 @@ impl ASM {
                 self.data
                     .push(format!("string_{} db {}", self.num_strings, chars.join(",")));
 
-                // TODO: Remove this
-                //
-                // instructions.extend(vec![
-                //     format!("mov rax, string_{}", self.num_strings),
-                //     format!("push rax"),
-                //     format!("push {}", chars.len()),
-                // ]);
-
                 self.stack_extend(vec![format!("string_{}", self.num_strings), format!("{}", chars.len())]);
 
                 self.num_strings += 1;
             }
 
-            TokenEnum::Variable(..) => todo!(),
-            TokenEnum::LogicalOp(..) => todo!(),
-            TokenEnum::Equals => todo!(),
-            TokenEnum::PlusEquals => todo!(),
-            TokenEnum::MinusEquals => todo!(),
-            TokenEnum::Ampersand => todo!(),
-            TokenEnum::Comma => todo!(),
-            TokenEnum::SemiColon => todo!(),
-            TokenEnum::Colon => todo!(),
-            TokenEnum::Bracket(_) => todo!(),
-            TokenEnum::Op(_) => todo!(),
-            TokenEnum::Comparator(_) => todo!(),
-            TokenEnum::Bool(_) => todo!(),
-            TokenEnum::Keyword(_) => todo!(),
-            TokenEnum::Type(_) => todo!(),
-            TokenEnum::Unknown(_) => todo!(),
-            TokenEnum::FunctionReturnIndicator => todo!(),
-            TokenEnum::Comment => todo!(),
-            TokenEnum::EOF => todo!(),
-            TokenEnum::Dot => todo!(),
+            _ => unreachable!(),
         }
 
         self.extend_current_label(instructions);

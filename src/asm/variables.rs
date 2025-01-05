@@ -651,7 +651,7 @@ impl ASM {
         match variable_from_stack {
             Some(ar_var) => {
                 match variable_scope {
-                    ActivationRecordType::Global => self.gen_asm_for_var_global_scope(&variable, ar_var), // global scope end
+                    ActivationRecordType::Global => self.gen_asm_for_var_global_scope(&variable, ar_var),
                     _ => self.gen_asm_for_var_local_scope(&variable, ar_var),
                 }
             }

@@ -40,8 +40,11 @@ pub struct Parser {
     pub bracket_stack: Vec<Token>,
     pub functions: ParserFunctions,
 
+    // how deeply nested are we inside loops
     pub inside_loop_depth: usize,
+    // how deeply nested are we inside function bodies
     pub inside_function_depth: usize,
+    // how deeply nested are we inside conditionals
     pub inside_if_else_depth: usize,
 
     pub num_loops: usize,
