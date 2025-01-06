@@ -11,7 +11,7 @@ use crate::{
 };
 
 use core::panic;
-use std::{cell::RefCell, collections::HashMap, fs, path::Path, process::exit, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, fs, mem, path::Path, process::exit, rc::Rc};
 
 use crate::{
     ast::{
@@ -36,7 +36,7 @@ pub struct UserDefinedType {
 
 #[derive(Debug)]
 pub struct Parser {
-    pub lexer: Rc<RefCell<Box<Lexer>>>,
+    pub lexer: Lexer,
     pub bracket_stack: Vec<Token>,
     pub functions: ParserFunctions,
 
@@ -66,7 +66,7 @@ impl Parser {
         let lexer = Lexer::new(file, file_name);
 
         Self {
-            lexer: Rc::new(RefCell::new(Box::new(lexer))),
+            lexer,
             bracket_stack: vec![],
             functions: Rc::new(RefCell::new(HashMap::new())),
 
@@ -216,30 +216,23 @@ impl Parser {
                             unexpected_token(&included_file_tok, Some(&TokenEnum::StringLiteral("".into())));
                         }
 
-                        let current_lexer = self.lexer.clone();
-
-                        let borrow = self.lexer.borrow();
-
                         // Dereferencing the Rc, which gives us the String, and then borrowing the String
-                        let path = Path::new(&*borrow.file_name);
+                        let path = Path::new(&*self.lexer.file_name);
 
                         let file_path = path
                             .parent()
                             .unwrap_or_else(|| Path::new(""))
                             .join(Path::new(&file_path.strip_prefix("./").unwrap_or_else(|| &file_path)));
 
-                        // Dropping the borrow here so that we can have a new reference to the
-                        // Lexer down below
-                        // We cannot have another mutable or immutable borrow while this exists
-                        drop(borrow);
+                        let file_contents = fs::read(file_path.clone()).unwrap();
 
                         // Create a new lexer for the new file
-                        let file_contents = fs::read(file_path.clone()).unwrap();
-                        let new_file_lexer = Lexer::new(file_contents, file_path.to_str().unwrap().into());
-                        let new_lexer = Rc::new(RefCell::new(Box::new(new_file_lexer)));
-
-                        // New reference to the lexer
-                        self.lexer = new_lexer.clone();
+                        // Replace the current lexer with new one, and return the current lexer
+                        // neither the older nor the newer value is dropped
+                        let current_lexer = mem::replace(
+                            &mut self.lexer,
+                            Lexer::new(file_contents, file_path.to_str().unwrap().into()),
+                        );
 
                         let ast = self.parse_program();
 
