@@ -49,7 +49,7 @@ pub const ALL_REGISTERS: [Register; 11] = [
     Register::R11,
 ];
 
-pub const ALL_FP_REGISTERS: [Register;8] = [
+pub const ALL_FP_REGISTERS: [Register; 8] = [
     Register::XMM0,
     Register::XMM1,
     Register::XMM2,

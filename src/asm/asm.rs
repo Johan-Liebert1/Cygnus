@@ -33,8 +33,8 @@ pub struct ASM {
     /// rdi might have been locked twice
     pub regs_locked_for_func_args: Vec<Vec<Register>>,
 
-    /// Vec<Vec<Register>> to handle recursive function calls where
-    /// rdi might have been locked twice
+    /// Used to save a register's current value to the x86 stack if 
+    /// that register is to be used for a function call
     pub regs_saved_for_function_call: Vec<Vec<Register>>,
 }
 
@@ -212,6 +212,8 @@ impl ASM {
 
     pub fn unlock_register(&mut self, reg_name: Register) {
         let idx = self.used_regsiters.iter().enumerate().find(|x| *x.1 == reg_name);
+
+        println!("reg_name: {reg_name}, unlocking reg: {idx:?}");
 
         match idx {
             Some((idx, _)) => {

@@ -35,17 +35,20 @@ pub const FUNCTION_FLOAT_ARGS_REGS: [Register; 8] = [
 ];
 
 impl ASM {
+    /// Checks if registers required for x86 function call already have some value in them
+    /// If they have, then saves it onto the x86 stack
     pub fn function_call_prep(&mut self) {
         // Not removing the regs from the stack as we restore them after the function call
         let mut saved_regs = vec![];
 
         for reg in ALL_REGISTERS {
             if self.is_reg_locked(reg) {
-                trace!("{reg} is LOCKED\n");
+                trace!("{reg} is LOCKED");
                 self.extend_current_label(vec![format!(";; Saving register {reg}'s value"), format!("push {reg}")]);
 
                 saved_regs.push(reg);
 
+                // unlock this register as we've saved its value and it can be used
                 self.unlock_register(reg);
             }
         }
@@ -62,6 +65,7 @@ impl ASM {
 
                 saved_regs.push(reg);
 
+                // unlock this register as we've saved its value and it can be used
                 self.unlock_register(reg);
             }
         }
@@ -136,6 +140,8 @@ impl ASM {
         self.handle_non_float_function_call_arg(arg_num);
     }
 
+    /// Restores registers that were saved for the function call.
+    /// Unlocks all registers in 'regs_locked_for_func_args' and 'regs_saved_for_function_call'
     pub fn function_call_register_restore(&mut self, instructions: &mut Vec<String>) {
         match self.regs_locked_for_func_args.pop() {
             Some(locked_regs) => {
@@ -151,6 +157,7 @@ impl ASM {
 
         match self.regs_saved_for_function_call.pop() {
             Some(saved_regs) => {
+                // Iterating in reverse as we had pushed these into the vec treating it as a stack
                 for reg in saved_regs.iter().rev() {
                     self.lock_register(*reg);
                     instructions.extend(vec![
@@ -215,7 +222,10 @@ impl ASM {
             let rax = if self.is_reg_locked(Register::RAX) {
                 let rbx = self.get_free_register(None);
 
-                instructions.push(format!("mov {rbx}, rax"));
+                instructions.extend(vec![
+                    format!(";; Moving function '{function_name}' return value"),
+                    format!("mov {rbx}, rax"),
+                ]);
 
                 self.unlock_register(Register::RAX);
 

@@ -228,6 +228,9 @@ impl ASM {
         }
     }
 
+    /// Simply takes the arg_num (argument number) and stores in the 
+    /// registers which corresponds to that argument number in accordance with x86 calling
+    /// conventions
     pub fn func_syscall_add_arg(&mut self, arg_num: usize) {
         let mut instructions = vec![];
 
@@ -239,6 +242,7 @@ impl ASM {
 
         self.unlock_register_from_stack_value(&stack_member);
 
+        println!("Locking register '{arg_reg}' for syscall");
         self.lock_register(arg_reg);
 
         match self.regs_locked_for_func_args.last_mut() {
@@ -257,6 +261,9 @@ impl ASM {
         self.add_to_current_label("syscall".into());
 
         let mut instructions = vec![];
+
+        trace!("self.regs_locked_for_func_args: {:?}", self.regs_locked_for_func_args);
+        trace!("self.regs_saved_for_function_call: {:?}", self.regs_saved_for_function_call);
 
         self.function_call_register_restore(&mut instructions);
 

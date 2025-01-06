@@ -1,0 +1,3 @@
+syscall(1, 1, "hello", get_len("hello"))
+
+passing strings into functions
