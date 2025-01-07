@@ -40,7 +40,6 @@ impl ASM {
 
         for reg in ALL_REGISTERS {
             if self.is_reg_locked(reg) {
-                trace!("{reg} is LOCKED. Saving {reg} value to stack.");
                 self.extend_current_label(vec![
                     format!(";; Saving non float register {reg}'s value"),
                     format!("push {reg}"),
@@ -74,8 +73,6 @@ impl ASM {
 
         self.regs_saved_for_function_call.push(saved_regs);
         self.regs_locked_for_func_args.push(vec![]);
-
-        trace!("function_call_prep done");
     }
 
     fn handle_non_float_function_call_arg(&mut self, arg_num: usize) {
@@ -145,11 +142,6 @@ impl ASM {
     /// Restores registers that were saved for the function call.
     /// Unlocks all registers in 'regs_locked_for_func_args' and 'regs_saved_for_function_call'
     pub fn function_call_register_restore(&mut self, instructions: &mut Vec<String>) {
-        trace!(
-            "\n\nBefore function_call_register_restore for function. regs_locked_for_func_args: {:?}\nregs_saved_for_function_call: {:?}\nis rax locked: {}\n\n",
-            self.regs_locked_for_func_args, self.regs_saved_for_function_call, self.is_reg_locked(Register::RAX)
-        );
-
         match self.regs_locked_for_func_args.pop() {
             Some(locked_regs) => {
                 for reg in locked_regs {
@@ -201,8 +193,6 @@ impl ASM {
                 .last()
                 .unwrap_or(&vec![])
                 .contains(&Register::RAX);
-
-            trace!("is_rax_locked: {is_rax_locked}. is_rax_saved: {is_rax_saved}");
 
             if !is_rax_locked && !is_rax_saved {
                 // Return value is in RAX
@@ -269,7 +259,6 @@ impl ASM {
         }
 
         if is_assigned_to_var {
-            trace!("handle_function_return_value for function '{function_name}'");
             self.handle_function_return_value(&mut instructions, function_name, func_return_type);
         }
 

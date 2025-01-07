@@ -4,7 +4,7 @@ fun get_len() -> int {
 
 fun main() {
     def thingy: str = "hello";
-    syscall(1, 1, &thingy, get_len())
+    syscall(1, 1, thingy as *char, get_len())
 }
 
 main()

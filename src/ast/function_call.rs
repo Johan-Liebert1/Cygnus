@@ -129,7 +129,6 @@ impl AST for FunctionCall {
                     asm.func_syscall_add_arg(index);
                 }
 
-                trace!("Calling syscall: {:?}", self.token);
                 asm.func_syscall_call(self.is_result_assigned);
             }
 
@@ -159,8 +158,6 @@ impl AST for FunctionCall {
 
                         asm.function_call_add_arg(arg_num as usize, arg_type);
                     }
-
-                    trace!("Calling function: {:?}", func.func.borrow().get_token());
 
                     asm.function_call(
                         &String::from(name),
