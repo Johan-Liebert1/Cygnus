@@ -473,8 +473,6 @@ impl ASM {
                 return;
             }
 
-            trace!("Global ptr outside {var_name}: {:#?}", self.get_used_registers());
-
             let rax = self.get_free_register(None);
             let rax_actual_name = variable.var_type.get_pointer_type().get_register_name(rax);
 

@@ -228,7 +228,7 @@ impl ASM {
         }
     }
 
-    /// Simply takes the arg_num (argument number) and stores in the 
+    /// Simply takes the arg_num (argument number) and stores in the
     /// registers which corresponds to that argument number in accordance with x86 calling
     /// conventions
     pub fn func_syscall_add_arg(&mut self, arg_num: usize) {
@@ -242,7 +242,6 @@ impl ASM {
 
         self.unlock_register_from_stack_value(&stack_member);
 
-        println!("Locking register '{arg_reg}' for syscall");
         self.lock_register(arg_reg);
 
         match self.regs_locked_for_func_args.last_mut() {
@@ -262,26 +261,11 @@ impl ASM {
 
         let mut instructions = vec![];
 
-        trace!("self.regs_locked_for_func_args: {:?}", self.regs_locked_for_func_args);
-        trace!("self.regs_saved_for_function_call: {:?}", self.regs_saved_for_function_call);
+        if is_result_assigned {
+            self.handle_function_return_value(&mut instructions, &String::from("sycall"), &VarType::Int);
+        }
 
         self.function_call_register_restore(&mut instructions);
-
-        if is_result_assigned {
-            let rax = if self.is_reg_locked(Register::RAX) {
-                let rbx = self.get_free_register(None);
-
-                instructions.push(format!("mov {rbx}, rax"));
-
-                self.unlock_register(Register::RAX);
-
-                self.get_free_register(None)
-            } else {
-                self.get_free_register(None)
-            };
-
-            self.stack_push(String::from(rax));
-        }
 
         self.extend_current_label(instructions);
     }

@@ -1,13 +1,10 @@
 use std::{cell::RefCell, fmt::format, rc::Rc};
 
 use crate::{
-    ast::variable::Variable,
-    lexer::{
+    ast::variable::Variable, helpers::compiler_error, lexer::{
         registers::{Register, ALL_FP_REGISTERS, ALL_REGISTERS},
         types::VarType,
-    },
-    semantic_analyzer::semantic_analyzer::CallStack,
-    trace,
+    }, semantic_analyzer::semantic_analyzer::CallStack, trace
 };
 
 use super::asm::ASM;
@@ -43,8 +40,11 @@ impl ASM {
 
         for reg in ALL_REGISTERS {
             if self.is_reg_locked(reg) {
-                trace!("{reg} is LOCKED");
-                self.extend_current_label(vec![format!(";; Saving register {reg}'s value"), format!("push {reg}")]);
+                trace!("{reg} is LOCKED. Saving {reg} value to stack.");
+                self.extend_current_label(vec![
+                    format!(";; Saving non float register {reg}'s value"),
+                    format!("push {reg}"),
+                ]);
 
                 saved_regs.push(reg);
 
@@ -58,7 +58,7 @@ impl ASM {
         for reg in ALL_FP_REGISTERS {
             if self.is_reg_locked(reg) {
                 self.extend_current_label(vec![
-                    format!(";; Saving register {reg}'s value"),
+                    format!(";; Saving float register {reg}'s value"),
                     format!("movsd {rax}, {reg}"),
                     format!("push {rax}"),
                 ]);
@@ -74,6 +74,8 @@ impl ASM {
 
         self.regs_saved_for_function_call.push(saved_regs);
         self.regs_locked_for_func_args.push(vec![]);
+
+        trace!("function_call_prep done");
     }
 
     fn handle_non_float_function_call_arg(&mut self, arg_num: usize) {
@@ -143,6 +145,11 @@ impl ASM {
     /// Restores registers that were saved for the function call.
     /// Unlocks all registers in 'regs_locked_for_func_args' and 'regs_saved_for_function_call'
     pub fn function_call_register_restore(&mut self, instructions: &mut Vec<String>) {
+        trace!(
+            "\n\nBefore function_call_register_restore for function. regs_locked_for_func_args: {:?}\nregs_saved_for_function_call: {:?}\nis rax locked: {}\n\n",
+            self.regs_locked_for_func_args, self.regs_saved_for_function_call, self.is_reg_locked(Register::RAX)
+        );
+
         match self.regs_locked_for_func_args.pop() {
             Some(locked_regs) => {
                 for reg in locked_regs {
@@ -171,6 +178,55 @@ impl ASM {
             None => {
                 // Nothing. No register was saved
             }
+        }
+    }
+
+    pub fn handle_function_return_value(
+        &mut self,
+        instructions: &mut Vec<String>,
+        function_name: &String,
+        func_return_type: &VarType,
+    ) {
+        // if the function returns something we need to save rax
+        // else it'll be overwritten by the return value of the function
+        // if the function returns anything, push it onto the stack
+        if !matches!(func_return_type, VarType::Unknown) {
+            // Also, here we check if rax was saved onto the stack before this call
+            // if it was we will save the return value to another register as we will
+            // need to restore the pushed value into rax
+            let is_rax_locked = self.is_reg_locked(Register::RAX);
+
+            let is_rax_saved = self
+                .regs_saved_for_function_call
+                .last()
+                .unwrap_or(&vec![])
+                .contains(&Register::RAX);
+
+            trace!("is_rax_locked: {is_rax_locked}. is_rax_saved: {is_rax_saved}");
+
+            if !is_rax_locked && !is_rax_saved {
+                // Return value is in RAX
+                // Simply push it onto the stack
+
+                self.lock_register(Register::RAX);
+                self.stack_push(String::from(Register::RAX));
+                return;
+            }
+
+            // could be the fact that RAX is not locked, but saved
+            // in which case `get_free_register` will return RAX but we need to prevent that
+            let rbx = self.get_free_register(Some(&vec![Register::RAX]));
+
+            instructions.extend(vec![
+                format!(";; Moving function '{function_name}' return value"),
+                format!("mov {rbx}, rax"),
+            ]);
+
+            // if is_rax_locked {
+            //     self.unlock_register(Register::RAX);
+            // }
+
+            self.stack_push(String::from(rbx));
         }
     }
 
@@ -212,37 +268,12 @@ impl ASM {
             }
         }
 
-        trace!(
-            "Before function_call_register_restore for function '{function_name}'. Is RAX Locked {:?}",
-            self.is_reg_locked(Register::RAX)
-        );
-        self.function_call_register_restore(&mut instructions);
-        trace!(
-            "After function_call_register_restore for function '{function_name}'. Is RAX Locked {:?}",
-            self.is_reg_locked(Register::RAX)
-        );
-
-        // if the function returns something we need to save rax
-        // else it'll be overwritten by the return value of the function
-        // if the function returns anything, push it onto the stack
-        if !matches!(func_return_type, VarType::Unknown) && is_assigned_to_var {
-            let rax = if self.is_reg_locked(Register::RAX) {
-                let rbx = self.get_free_register(None);
-
-                instructions.extend(vec![
-                    format!(";; Moving function '{function_name}' return value"),
-                    format!("mov {rbx}, rax"),
-                ]);
-
-                self.unlock_register(Register::RAX);
-
-                self.get_free_register(None)
-            } else {
-                self.get_free_register(None)
-            };
-
-            self.stack_push(String::from(rax));
+        if is_assigned_to_var {
+            trace!("handle_function_return_value for function '{function_name}'");
+            self.handle_function_return_value(&mut instructions, function_name, func_return_type);
         }
+
+        self.function_call_register_restore(&mut instructions);
 
         self.extend_current_label(instructions);
     }
@@ -322,14 +353,21 @@ impl ASM {
         if return_value_exists {
             let stack_member = self.stack_pop().unwrap();
 
-            // We're not locking RAX here as there could be multiple return statements
-            // and locking RAX in the first return will have this function panic when
-            // it tries to lock RAX for the second return
+            // We won't check if RAX is locked or not before inserting the return value in it
             self.extend_current_label(vec![
                 format!(";; Returning from function"),
                 format!("mov {}, {stack_member}", Register::RAX),
             ]);
 
+            // We're only locking RAX once here as there could be multiple return statements
+            // and locking RAX in the first return will have this function panic when
+            // it tries to lock RAX for the second return
+
+            // if !self.is_reg_locked(Register::RAX) {
+            //     self.lock_register(Register::RAX)
+            // }
+
+            // Only unlock if the register was not rax
             self.unlock_register_from_stack_value(&stack_member);
         }
 
