@@ -2,7 +2,7 @@ use core::panic;
 use std::{cell::RefCell, fmt::format, rc::Rc, string};
 
 use crate::{
-    ast::variable::{self, Variable},
+    ast::{abstract_syntax_tree::AST, variable::{self, Variable}},
     interpreter::interpreter::Functions,
     lexer::{
         registers::{get_register_name_for_bits, Register},
@@ -474,7 +474,8 @@ impl ASM {
             }
 
             let rax = self.get_free_register(None);
-            let rax_actual_name = variable.var_type.get_pointer_type().get_register_name(rax);
+            // We want to store an actual pointer here, not the underlying pointer type
+            let rax_actual_name = variable.var_type.get_register_name(rax);
 
             self.extend_current_label(vec![
                 format!("xor {rax}, {rax}"),

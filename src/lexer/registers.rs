@@ -189,6 +189,8 @@ impl VarType {
             Self::Char => get_register_name_for_bits(&register, 8),
             Self::Float => get_register_name_for_bits(&register, 64),
 
+            Self::Ptr(..) => get_register_name_for_bits(&register, 64),
+
             v => panic!("get_register_name not implemented for '{}'", v),
         };
 
