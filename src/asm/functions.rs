@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, fmt::format, rc::Rc};
 
 use crate::{
     ast::variable::Variable,
@@ -160,6 +160,7 @@ impl ASM {
                 // Iterating in reverse as we had pushed these into the vec treating it as a stack
                 for reg in saved_regs.iter().rev() {
                     self.lock_register(*reg);
+
                     instructions.extend(vec![
                         format!(";; popping saved register value into {reg}"),
                         format!("pop {reg}"),
@@ -184,10 +185,6 @@ impl ASM {
         is_assigned_to_var: bool,
     ) {
         let mut instructions = vec![];
-
-        // if the function returns something we need to save rax
-        // else it'll be overwritten by the return value of the function
-        if !matches!(func_return_type, VarType::Unknown) {}
 
         if !is_function_pointer_call {
             if is_extern_func {
@@ -215,8 +212,18 @@ impl ASM {
             }
         }
 
+        trace!(
+            "Before function_call_register_restore for function '{function_name}'. Is RAX Locked {:?}",
+            self.is_reg_locked(Register::RAX)
+        );
         self.function_call_register_restore(&mut instructions);
+        trace!(
+            "After function_call_register_restore for function '{function_name}'. Is RAX Locked {:?}",
+            self.is_reg_locked(Register::RAX)
+        );
 
+        // if the function returns something we need to save rax
+        // else it'll be overwritten by the return value of the function
         // if the function returns anything, push it onto the stack
         if !matches!(func_return_type, VarType::Unknown) && is_assigned_to_var {
             let rax = if self.is_reg_locked(Register::RAX) {
@@ -303,10 +310,9 @@ impl ASM {
         self.data.push(format!("extern {function_name}"))
     }
 
-    pub fn function_def_end(&mut self, _function_name: &String) {
+    pub fn function_def_end(&mut self) {
         // mov rsp, rbp        ; Reset stack pointer
         // pop rbp             ; Restore old base pointer
-
         self.extend_current_label(FUNCTION_RETURN_INSTRUCTIONS.map(|x| x.into()).to_vec());
         self.change_current_label("_start".into());
     }
@@ -316,8 +322,13 @@ impl ASM {
         if return_value_exists {
             let stack_member = self.stack_pop().unwrap();
 
-            // not locking here should be fine
-            self.add_to_current_label(format!("mov {}, {stack_member}", Register::RAX));
+            // We're not locking RAX here as there could be multiple return statements
+            // and locking RAX in the first return will have this function panic when
+            // it tries to lock RAX for the second return
+            self.extend_current_label(vec![
+                format!(";; Returning from function"),
+                format!("mov {}, {stack_member}", Register::RAX),
+            ]);
 
             self.unlock_register_from_stack_value(&stack_member);
         }

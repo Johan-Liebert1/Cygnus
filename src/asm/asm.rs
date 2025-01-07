@@ -213,7 +213,7 @@ impl ASM {
     pub fn unlock_register(&mut self, reg_name: Register) {
         let idx = self.used_regsiters.iter().enumerate().find(|x| *x.1 == reg_name);
 
-        println!("reg_name: {reg_name}, unlocking reg: {idx:?}");
+        // println!("reg_name: {reg_name}, unlocking reg: {idx:?}");
 
         match idx {
             Some((idx, _)) => {

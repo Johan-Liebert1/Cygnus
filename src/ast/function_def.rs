@@ -96,7 +96,31 @@ impl AST for FunctionDefinition {
         // pop the record here
         call_stack.pop();
 
-        asm.function_def_end(&self.name);
+        match self.block.borrow().get_node() {
+            ASTNodeEnum::Program(program) => {
+                match program.get_statements().last() {
+                    Some(last_statement) => match last_statement.borrow().get_node() {
+                        ASTNodeEnum::Jump(_) => {
+                            // nothing
+                            // asm generation for return statement AST will handle this
+                        },
+
+                        _ => {
+                            // last statement of a function is not 'return'
+                            // add return statement ourselves
+                            asm.function_def_end();
+                        }
+                    },
+
+                    None => {
+                        // empty function, add return statement
+                        asm.function_def_end();
+                    }
+                }
+            }
+
+            _ => unreachable!("Body of a function is not of type 'Program'"),
+        }
     }
 
     // TODO: This function will be visited twice, once when the interpreter calls visit, and
@@ -143,7 +167,7 @@ impl AST for FunctionDefinition {
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         if self.is_extern_func {
-            return
+            return;
         }
 
         call_stack.push(self.name.to_string(), ActivationRecordType::Function(0));
@@ -170,7 +194,7 @@ impl AST for FunctionDefinition {
                             ASTNodeEnum::Jump(jump) => match jump.typ {
                                 JumpType::Return => {}
 
-                                JumpType::Break | JumpType::Continue  => self.return_type_error(),
+                                JumpType::Break | JumpType::Continue => self.return_type_error(),
                             },
 
                             _ => self.return_type_error(),
