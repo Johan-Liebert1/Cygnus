@@ -19,7 +19,7 @@ mem req_method 32
 mem req_path 256
 mem file_to_read 256
 
-const PRINT_REQ: int = 1;
+const PRINT_REQ: int = 0;
 const SPACE_ASCII: int8 = 32;
 const NEW_LINE_ASCII: int8 = 10;
 const NULL_BYTE: int8 = 0;
@@ -29,9 +29,10 @@ const NULL_BYTE: int8 = 0;
 -- User-Agent: curl/8.5.0
 -- Accept: */*
 fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
-    if PRINT_REQ {
-        syscall(WRITE_SYSCALL, STDOUT, req, read_bytes);
-    }
+    -- if PRINT_REQ {
+    --     write("Writing req to stdout...")
+    --     syscall(WRITE_SYSCALL, STDOUT, req, read_bytes);
+    -- }
 
     def dot_html: str = ".html";
 
@@ -52,8 +53,13 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
 
     -- parse the method
     def method_ends_at_idx: int = 0;
+
+    write("after definitions")
+
     loop {
         def character: *char = req + idx;
+
+        write("at char ", *character)
 
         if *character == SPACE_ASCII or *character == NULL_BYTE {
             method_ends_at_idx = idx - 1;
@@ -72,6 +78,8 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
     -- parse path
     loop {
         def character1: *char = req + idx;
+
+        write("character1 ", *character1, "SPACE_ASCII = ", SPACE_ASCII, " NULL_BYTE = ", NULL_BYTE)
 
         if *character1 == SPACE_ASCII or *character1 == NULL_BYTE {
             path_ends_at_idx = idx - 1;
@@ -158,6 +166,7 @@ fun main() {
     def bind_ret: int = syscall(BIND_SYSCALL, sockfd, serveraddr_mem, 16);
     write("BIND_SYSCALL return: ");
     print_int(bind_ret);
+
     if bind_ret < 0 {
         exit(1);
     }
@@ -179,6 +188,9 @@ fun main() {
         }
 
         def read_bytes: int = syscall(READ_SYSCALL, connfd, read_data, 4096);
+
+        write("Read ", read_bytes, " bytes \n")
+        -- syscall(WRITE_SYSCALL, STDOUT, read_data as *char, read_bytes)
 
         parse_http_request(connfd, read_data, read_bytes);
     }

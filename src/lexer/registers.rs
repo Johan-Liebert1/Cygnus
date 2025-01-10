@@ -128,6 +128,11 @@ impl Register {
             r => panic!("{r} is not a register"),
         }
     }
+
+    pub fn is_reg(string: &String) -> bool {
+        return ALL_REGISTERS.iter().any(|r| format!("{}", r) == *string)
+            || ALL_FP_REGISTERS.iter().any(|fr| format!("{}", fr) == *string);
+    }
 }
 
 pub fn get_register_name_for_bits(register: &Register, bits: u8) -> &'static str {

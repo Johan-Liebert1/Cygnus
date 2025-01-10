@@ -2,7 +2,10 @@ use core::panic;
 use std::{cell::RefCell, fmt::format, rc::Rc, string};
 
 use crate::{
-    ast::{abstract_syntax_tree::AST, variable::{self, Variable}},
+    ast::{
+        abstract_syntax_tree::AST,
+        variable::{self, Variable},
+    },
     interpreter::interpreter::Functions,
     lexer::{
         registers::{get_register_name_for_bits, Register},
@@ -34,7 +37,10 @@ impl ASM {
             let rbx = self.get_free_register(None);
 
             let mut v = vec![
-                format!(";; Dereferencing variable {}. handle_local_ptr_int_float", variable.var_name),
+                format!(
+                    ";; Dereferencing variable {}. handle_local_ptr_int_float",
+                    variable.var_name
+                ),
                 format!("mov {rbx}, [rbp - {}]", ar_var_offset),
             ];
 
@@ -362,8 +368,7 @@ impl ASM {
     // need the var_type for struct member access as struct_name.member as the type 'struct_name'
     fn handle_local_int_float(&mut self, variable: &Variable, ar_var_offset: usize, actual_var_type: &VarType) {
         if variable.dereference {
-            panic!("Cannot dereference a number");
-            return;
+            unreachable!("Found dereferenced float/int/char in ASM generation. This has to be caught in the semantic analysis step.");
         }
 
         if variable.store_address {
@@ -393,7 +398,7 @@ impl ASM {
                 // format!("mov rbx, 1"), // now rbx = length of
                 // the string
                 //
-                // NOTE: Not doing the above as a string derefed should only be the first character
+                // NOTE: Not doing the above as a string dereferenced should only be the first character
             ];
 
             v.extend(std::iter::repeat(format!("mov {rax}, [{rax}]")).take(variable.times_dereferenced - 1));
@@ -452,7 +457,7 @@ impl ASM {
                         variable.var_type.get_pointer_type().get_register_name(rbx)
                     ),
                     // format!("push rax"),
-                    format!(";; Finish dereferencing variable {}", var_name),
+                    format!(";; Finish dereferencing global variable {}", var_name),
                 ]);
 
                 self.stack_push(String::from(rax));
@@ -478,6 +483,7 @@ impl ASM {
             let rax_actual_name = variable.var_type.get_register_name(rax);
 
             self.extend_current_label(vec![
+                format!(";; Global new thingy"),
                 format!("xor {rax}, {rax}"),
                 format!("mov {rax_actual_name}, {}", var_name),
             ]);
@@ -494,7 +500,7 @@ impl ASM {
         let var_name = &variable.var_name;
 
         match variable.var_type {
-            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => {
                 let rax = self.get_free_register(None);
                 let rax_actual_name = variable.var_type.get_register_name(rax);
 
@@ -502,10 +508,10 @@ impl ASM {
                     panic!("Cannot dereference a number")
                 } else if variable.store_address {
                     self.add_to_current_label(format!("lea {rax}, {var_name}"));
-                    self.stack_push(format!("{rax}"));
+                    self.stack_push(String::from(rax));
                 } else {
                     self.add_to_current_label(format!("mov {rax_actual_name}, [{var_name}]"));
-                    self.stack_push(format!("{rax}"));
+                    self.stack_push(String::from(rax));
                 }
             }
 
@@ -515,7 +521,8 @@ impl ASM {
                 if variable.dereference {
                     panic!("Cannot dereference a string")
                 } else if variable.store_address {
-                    todo!()
+                    self.add_to_current_label(format!("lea {rax}, {var_name}"));
+                    self.stack_push(String::from(rax));
                 } else {
                     todo!("need to get the string length as well");
                     self.add_to_current_label(format!("mov {rax}, [{var_name}]"));
@@ -524,11 +531,6 @@ impl ASM {
             }
 
             VarType::Float => todo!(),
-            VarType::Char => todo!(),
-
-            VarType::Int8 => todo!(),
-            VarType::Int16 => todo!(),
-            VarType::Int32 => todo!(),
 
             VarType::Ptr(_) => self.handle_global_ptr(variable, &ar_var.borrow()),
 
@@ -542,7 +544,7 @@ impl ASM {
     fn handle_local_function_pointer(&mut self, variable: &Variable, ar_var: &Rc<RefCell<Variable>>) {
         let rax = self.get_free_register(None);
 
-        self.extend_current_label(vec![format!("mov {rax}, [rbp - {}]", ar_var.borrow().offset)]);
+        self.add_to_current_label(format!("mov {rax}, [rbp - {}]", ar_var.borrow().offset));
 
         self.stack_push(String::from(rax));
     }
@@ -648,12 +650,10 @@ impl ASM {
         let (variable_from_stack, variable_scope) = call_stack.get_var_with_name(var_name);
 
         match variable_from_stack {
-            Some(ar_var) => {
-                match variable_scope {
-                    ActivationRecordType::Global => self.gen_asm_for_var_global_scope(&variable, ar_var),
-                    _ => self.gen_asm_for_var_local_scope(&variable, ar_var),
-                }
-            }
+            Some(ar_var) => match variable_scope {
+                ActivationRecordType::Global => self.gen_asm_for_var_global_scope(&variable, ar_var),
+                _ => self.gen_asm_for_var_local_scope(&variable, ar_var),
+            },
 
             // Might be a function pointer
             None => match functions.borrow().get(var_name) {

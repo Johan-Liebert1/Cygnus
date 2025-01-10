@@ -436,17 +436,19 @@ impl ASM {
             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                 let stack_member = self.stack_pop().unwrap();
 
-                let rax = self.get_free_register(None);
+                let reg_with_value = if !Register::is_reg(&stack_member) {
+                    let rax = self.get_free_register(None);
+                    instructions.push(format!("mov {rax}, {stack_member}"));
+                    self.unlock_register(rax);
 
-                instructions.push(format!("mov {rax}, {stack_member}"));
+                    &rax.into()
+                } else {
+                    &stack_member
+                };
 
                 self.unlock_register_from_stack_value(&stack_member);
 
-                instructions.push(format!("mov [{}], {rax}", ar_var.borrow().var_name));
-
-                self.unlock_register(rax);
-
-                // instructions.extend([format!("pop rax")])
+                instructions.push(format!("mov [{}], {reg_with_value}", ar_var.borrow().var_name));
             }
 
             VarType::Struct(_, _) => todo!(),
@@ -473,35 +475,49 @@ impl ASM {
                 match **ptr_var_type {
                     VarType::Struct(_, _) => todo!(),
 
-                    VarType::Int => {
+                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                         let stack_member = self.stack_pop().unwrap();
 
-                        let rax = self.get_free_register(None);
+                        let top_stack_member = if !Register::is_reg(&stack_member) {
+                            let rax = self.get_free_register(None);
+                            instructions.push(format!("mov {rax}, {}", stack_member));
+
+                            self.unlock_register(rax);
+
+                            &String::from(rax)
+                        } else {
+                            &stack_member
+                        };
+
                         let rbx = self.get_free_register(None);
 
                         self.unlock_register_from_stack_value(&stack_member);
 
-                        // Store whatever's on the top of the stack into
-                        // this memory location
-                        instructions.extend([
-                            format!("mov {rax}, {}", stack_member),
-                            format!("mov {rbx}, {}", ar_var.borrow().var_name),
-                        ]);
+                        // Move the variable into rbx, so we can dereference it
+                        instructions.push(format!("mov {rbx}, {}", ar_var.borrow().var_name));
 
+                        // dereference the variable/ptr to variable stored in rbx
                         instructions.extend(std::iter::repeat(format!("mov {rbx}, [{rbx}]")).take(times_dereferenced));
 
-                        instructions.push(format!("mov {rbx}, {rax}"));
-                        instructions.push(format!("mov [{}], {rbx}", ar_var.borrow().var_name));
+                        if String::from(rbx) != *top_stack_member {
+                            // This is to prevent cases where top_stack_member was a register
+                            // We don't want instructions like "mov rax, rax"
+                            instructions.push(format!("mov {rbx}, {top_stack_member}"))
+                        }
 
-                        self.unlock_register(rax);
+                        instructions.extend(vec![
+                            // Move 'top_stack_member' to whatever rbx now points to.
+                            // We have dereferenced rbx so we should either point to the pointer
+                            // memory location or the memory location of the variable that the
+                            // pointer pointed to
+                            format!("mov [{}], {rbx}", ar_var.borrow().var_name),
+                        ]);
+
                         self.unlock_register(rbx);
                     }
 
                     VarType::Str => todo!(),
 
-                    VarType::Int8 => todo!(),
-                    VarType::Int16 => todo!(),
-                    VarType::Int32 => todo!(),
                     VarType::Array(..) => todo!(),
                     VarType::Float => todo!(),
                     VarType::Char => todo!(),
