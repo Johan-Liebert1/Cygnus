@@ -1,8 +1,6 @@
 use crate::{
     lexer::{
-        registers::{get_register_name_for_bits, Register},
-        tokens::Operations,
-        types::VarType,
+        lexer::Token, registers::{get_register_name_for_bits, Register}, tokens::Operations, types::VarType
     },
     trace,
 };
@@ -10,7 +8,7 @@ use crate::{
 use super::asm::ASM;
 
 impl ASM {
-    pub fn binary_op_nums(&mut self, op: Operations, times_dereferenced: usize, result_type: &VarType) {
+    pub fn binary_op_nums(&mut self, op: Operations, times_dereferenced: usize, result_type: &VarType, token: &Token) {
         let mut reg_to_lock = Register::RAX;
 
         let mut instructions = match op {
@@ -44,11 +42,14 @@ impl ASM {
                     let rax = self.get_free_register(None);
                     let rbx = self.get_free_register(None);
 
+                    let rax_actual = result_type.get_register_name(rax);
+                    let rbx_actual = result_type.get_register_name(rbx);
+
                     let mut inst = vec![
                         format!(";; Plus get the two operands from the stack"),
-                        format!("mov {rax}, {}", first),
-                        format!("mov {rbx}, {}", second),
-                        format!("add {rax}, {rbx}"),
+                        format!("mov {rax_actual}, {}", first),
+                        format!("mov {rbx_actual}, {}", second),
+                        format!("add {rax_actual}, {rbx_actual}"),
                         format!(
                             ";; will lock {rax}. first = {first}. second = {second}. Locked: {:?}",
                             self.get_used_registers()
@@ -75,7 +76,7 @@ impl ASM {
                     let xmm1 = self.get_free_float_register(None);
 
                     let mut inst = vec![
-                        format!(";; Plus get the two operands from the stack"),
+                        format!(";; Minus get the two operands from the stack"),
                         format!("movsd {xmm0}, {}", second),
                         format!("movsd {xmm1}, {}", first),
                         format!("subsd {xmm0}, {xmm1}"),
@@ -96,11 +97,14 @@ impl ASM {
                     let rax = self.get_free_register(None);
                     let rbx = self.get_free_register(None);
 
+                    let rax_actual = result_type.get_register_name(rax);
+                    let rbx_actual = result_type.get_register_name(rbx);
+
                     let mut inst = vec![
-                        format!(";; Minus get the two operands from the stack"),
-                        format!("mov {rbx}, {}", first),
-                        format!("mov {rax}, {}", second),
-                        format!("sub {rax}, {rbx}"),
+                        format!(";; Minus get the two operands from the stack. Result type: {result_type}. Token: {token:?}"),
+                        format!("mov {rbx_actual}, {}", first),
+                        format!("mov {rax_actual}, {}", second),
+                        format!("sub {rax_actual}, {rbx_actual}"),
                     ];
 
                     self.unlock_register(rbx);
@@ -108,7 +112,7 @@ impl ASM {
                     self.unlock_register_from_stack_value(&first);
                     self.unlock_register_from_stack_value(&second);
 
-                    reg_to_lock = rax;
+                    reg_to_lock = Register::from(rax_actual); // rax;
 
                     inst
                 }
@@ -152,7 +156,9 @@ impl ASM {
                             self.get_used_registers()
                         );
 
-                        instructions.extend(vec![format!("mov {rbx}, rax ;; moving rax into {rbx} as rax is needed")]);
+                        instructions.extend(vec![format!(
+                            "mov {rbx}, rax ;; moving rax into {rbx} as rax is needed"
+                        )]);
 
                         self.replace_reg_on_stack(Register::RAX, rbx);
 
@@ -470,15 +476,17 @@ impl ASM {
                     if times_dereferenced > 0 {
                         let rbx = self.get_free_register(None);
 
+                        let reg_to_lock_actual = get_register_name_for_bits(&reg_to_lock, 8);
+
                         instructions.extend(vec![
                             format!("mov {rbx}, {reg_to_lock}"),
                             format!("xor {reg_to_lock}, {reg_to_lock}"),
-                            format!("xor {}, [{rbx}]", get_register_name_for_bits(&reg_to_lock, 8)),
+                            format!("xor {reg_to_lock_actual}, [{rbx}]",),
                         ]);
 
                         self.unlock_register(rbx);
 
-                        self.stack_push(String::from(reg_to_lock));
+                        self.stack_push(String::from(reg_to_lock_actual));
                     } else {
                         self.stack_push(String::from(reg_to_lock));
                     }

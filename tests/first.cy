@@ -1,24 +1,14 @@
-const NULL_BYTE: int8 = 0;
-
-mem thingy 128
-
 fun main() {
-    -- def NULL_BYTE: int8 = 0;
+    def a: int8 = 97; 
+    def inc: *char = &a;
 
-    *thingy = 1;
+    def b: int = 40;
+    def c: *int32 = &b;
 
-    loop from 0 to 10 with i {
-        def current_char: *char = thingy + i;
-
-        write("current_char = ", *current_char)
-
-        if *current_char == NULL_BYTE {
-            write("ch == NULL_BYTE\n\n")
-            break;
-        } else {
-            write("ch IS NOT NULL_BYTE\n\n")
-        }
-    }
+    write("a = ", a)
+    write("inc = ", inc)
+    write("b = ", b)
+    write("c = ", c)
 }
 
 main()

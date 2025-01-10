@@ -176,7 +176,7 @@ impl AST for BinaryOP {
                 //     trace!("line: {}, times_dereferenced: {}, op: {c}", self.get_token().line_number, self.times_dereferenced);
                 // }
 
-                asm.binary_op_nums(c.clone(), self.times_dereferenced, &self.get_type().1);
+                asm.binary_op_nums(c.clone(), self.times_dereferenced, &self.get_type().1, self.get_token());
             }
 
             _ => unreachable!("Found non operator for a Binary Expression"),
@@ -233,8 +233,8 @@ impl AST for BinaryOP {
                 .get_node()
                 .figure_out_type(&self.right.borrow().get_node(), AllOperations::Op(op.clone()));
 
-            // trace!("left: {:#?}", self.left.borrow());
-            // trace!("right: {:#?}", self.right.borrow());
+            // trace!("result_type: {}, left: {}",  self.result_type, self.left.borrow().get_type().1);
+            // trace!("result_type: {}, right: {}\n", self.result_type, self.right.borrow().get_type().1);
 
             // if self.operator.line_number == 12 {
             //     trace!("self.result_type: {:#?}", self.result_type);

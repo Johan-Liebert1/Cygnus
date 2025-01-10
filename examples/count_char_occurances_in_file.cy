@@ -9,19 +9,19 @@ mem lower_char_occurances 8 * 26
 mem upper_char_occurances 8 * 26
 
 fun main() {
-    def lower_a: int = 97;
-    def lower_z: int = lower_a + 26 - 1;
+    def lower_a: int8 = 97;
+    def lower_z: int8 = lower_a + 26 - 1;
 
-    def upper_a: int = 65;
-    def upper_z: int = lower_a + 26 - 1;
+    def upper_a: int8 = 65;
+    def upper_z: int8 = lower_a + 26 - 1;
 
-    def file_name: str = "../examples/test_files/read_a_file\0";
+    def file_name: str = "./examples/test_files/read_a_file\0";
 
     -- (syscall number, file_name, readonly flag)
     -- open syscall
     def fd: int = syscall(2, file_name as *char, 0, 0);
 
-    write(fd)
+    write("read fd = ", fd)
 
     -- read syscall
     def read_bytes: int = syscall(0, fd, file, 4096);
@@ -36,7 +36,7 @@ fun main() {
         def thing: *int = file + i;
 
         if *(thing as *char) >= lower_a and *(thing as *char) <= lower_z {
-            def inc: int =  *(thing as *char) - lower_a;
+            def inc: int8 =  *(thing as *char) - lower_a;
 
             def addr_to_update: *int = lower_char_occurances + (inc as int) * 8;
 

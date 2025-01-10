@@ -1,4 +1,7 @@
-use crate::{lexer::{registers::get_register_name_for_bits, tokens::Comparators, types::VarType}, trace};
+use crate::{
+    lexer::{registers::get_register_name_for_bits, tokens::Comparators, types::VarType},
+    trace,
+};
 
 use super::asm::ASM;
 
@@ -24,7 +27,7 @@ impl ASM {
         }
     }
 
-    pub fn compare_ints(&mut self) -> Vec<String> {
+    pub fn compare_ints(&mut self, var_type: &VarType) -> Vec<String> {
         let first = self.stack_pop().unwrap();
         let second = self.stack_pop().unwrap();
 
@@ -39,9 +42,13 @@ impl ASM {
 
         vec![
             format!(";; We pop in the opposite order of comparison as we push onto the stack"),
-            format!("mov {rbx}, {first}"),
-            format!("mov {rax}, {second}"),
-            format!("cmp {rax}, {rbx}"),
+            format!("mov {}, {first}", var_type.get_register_name(rbx)),
+            format!("mov {}, {second}", var_type.get_register_name(rax)),
+            format!(
+                "cmp {}, {}",
+                var_type.get_register_name(rax),
+                var_type.get_register_name(rbx)
+            ),
         ]
     }
 
@@ -61,11 +68,16 @@ impl ASM {
 
     pub fn compare_two_numbers(&mut self, op: Comparators, result_type: &VarType) {
         let mut instructions = match result_type {
-            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => self.compare_ints(),
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => {
+                self.compare_ints(result_type)
+            }
             VarType::Float => self.compare_floats(),
 
             VarType::Ptr(inner_type) => match **inner_type {
-                VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => self.compare_ints(),
+                VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => {
+                    self.compare_ints(&inner_type)
+                }
+
                 VarType::Float => self.compare_floats(),
 
                 _ => {
@@ -81,12 +93,13 @@ impl ASM {
         let rax = self.get_free_register(None);
         let rbx = self.get_free_register(None);
 
-        instructions.extend(
-            vec![
-                format!(";; Not xor-ing here as it sets flags"),
-                format!("mov {rax}, 0"), 
-                format!("mov {rbx}, 1")
-            ]);
+        instructions.extend(vec![
+            format!(
+                ";; Not xor-ing here as it sets flags. Also cmove instruction set only takes reg, reg/mem as arguments"
+            ),
+            format!("mov {rax}, 0"),
+            format!("mov {rbx}, 1"),
+        ]);
 
         instructions.push(match op {
             Comparators::LessThan => format!("cmovl {rax}, {rbx}"),

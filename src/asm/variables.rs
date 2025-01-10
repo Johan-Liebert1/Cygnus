@@ -29,7 +29,7 @@ struct RequiredVarFields<'a> {
 impl ASM {
     fn handle_local_ptr_int_float(
         &mut self,
-        var_type: &Box<VarType>,
+        inner_ptr_type: &Box<VarType>,
         variable: &RequiredVarFields,
         ar_var_offset: usize,
     ) {
@@ -46,17 +46,17 @@ impl ASM {
 
             v.extend(std::iter::repeat(format!("mov {rbx}, [{rbx}]")).take(variable.times_dereferenced));
 
-            if !matches!(**var_type, VarType::Float) {
+            if !matches!(**inner_ptr_type, VarType::Float) {
                 let rax = self.get_free_register(None);
-                let rax_actual_name = var_type.get_register_name(rax);
+                let rax_actual_name = inner_ptr_type.get_register_name(rax);
 
                 v.extend([
                     format!("xor {rax}, {rax}"),
-                    format!("mov {rax_actual_name}, {}", var_type.get_register_name(rbx)),
+                    format!("mov {rax_actual_name}, {}", inner_ptr_type.get_register_name(rbx)),
                 ]);
 
                 // already locked by self.get_free_register
-                self.stack_push(String::from(rax));
+                self.stack_push(String::from(rax_actual_name));
             } else {
                 let xmm0 = self.get_free_float_register(None);
                 v.extend(vec![
@@ -81,12 +81,12 @@ impl ASM {
         }
 
         let rax = self.get_free_register(None);
-        let rax_actual_name = var_type.get_register_name(rax);
+        let rax_actual_name = inner_ptr_type.get_register_name(rax);
 
-        self.extend_current_label(vec![format!("mov {}, [rbp - {}]", rax_actual_name, ar_var_offset)]);
+        self.extend_current_label(vec![format!("mov {rax_actual_name}, [rbp - {ar_var_offset}]")]);
 
         // already locked by self.get_free_register
-        self.stack_push(String::from(rax));
+        self.stack_push(String::from(rax_actual_name));
     }
 
     fn handle_local_ptr_str(&mut self, var_type: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
@@ -181,7 +181,7 @@ impl ASM {
 
                     self.unlock_register(rbx);
 
-                    self.stack_push(String::from(rax));
+                    self.stack_push(String::from(rax_actual_name));
                 }
 
                 VarType::Str => {
@@ -234,14 +234,16 @@ impl ASM {
             let rax = self.get_free_register(None);
             let rbx = self.get_free_register(None);
 
+            let rax_actual_name = get_register_name_for_bits(&rax, 8);
+
             // mov al as we only want 8 bytes
             self.extend_current_label(vec![
                 format!("mov {rbx}, [rbp - {}]", ar_var_offset),
                 format!("xor {rax}, {rax}"),
-                format!("mov {}, [{rbx}]", get_register_name_for_bits(&rax, 8)),
+                format!("mov {rax_actual_name}, [{rbx}]"),
             ]);
 
-            self.stack_push(String::from(rax));
+            self.stack_push(String::from(rax_actual_name));
 
             self.unlock_register(rbx);
 
@@ -259,18 +261,18 @@ impl ASM {
         self.stack_push(String::from(rax));
     }
 
-    fn handle_local_ptr(&mut self, var_type: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
-        match *var_type.clone() {
+    fn handle_local_ptr(&mut self, inner_ptr_type: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
+        match *inner_ptr_type.clone() {
             VarType::Int | VarType::Int16 | VarType::Int32 | VarType::Int8 | VarType::Float => {
-                self.handle_local_ptr_int_float(var_type, variable, ar_var_offset)
+                self.handle_local_ptr_int_float(inner_ptr_type, variable, ar_var_offset)
             }
 
-            VarType::Str => self.handle_local_ptr_str(var_type, variable, ar_var_offset),
+            VarType::Str => self.handle_local_ptr_str(inner_ptr_type, variable, ar_var_offset),
 
-            VarType::Char => self.handle_local_ptr_char(var_type, variable, ar_var_offset),
+            VarType::Char => self.handle_local_ptr_char(inner_ptr_type, variable, ar_var_offset),
 
             VarType::Struct(struct_name, members) => {
-                self.handle_local_ptr_struct(var_type, variable, ar_var_offset, &struct_name, members)
+                self.handle_local_ptr_struct(inner_ptr_type, variable, ar_var_offset, &struct_name, members)
             }
 
             type_ => {
@@ -375,7 +377,7 @@ impl ASM {
             let rax = self.get_free_register(None);
 
             self.extend_current_label(vec![
-                format!("lea {rax}, [rbp - {}]", ar_var_offset), // format!("push rax")
+                format!("lea {rax}, [rbp - {}]", ar_var_offset),
             ]);
 
             self.stack_push(String::from(rax));
@@ -460,7 +462,7 @@ impl ASM {
                     format!(";; Finish dereferencing global variable {}", var_name),
                 ]);
 
-                self.stack_push(String::from(rax));
+                self.stack_push(String::from(rax_actual_name));
 
                 self.unlock_register(rbx);
 
@@ -488,7 +490,7 @@ impl ASM {
                 format!("mov {rax_actual_name}, {}", var_name),
             ]);
 
-            self.stack_push(String::from(rax));
+            self.stack_push(String::from(rax_actual_name));
 
             return;
         }
@@ -511,7 +513,7 @@ impl ASM {
                     self.stack_push(String::from(rax));
                 } else {
                     self.add_to_current_label(format!("mov {rax_actual_name}, [{var_name}]"));
-                    self.stack_push(String::from(rax));
+                    self.stack_push(String::from(rax_actual_name));
                 }
             }
 
@@ -560,7 +562,7 @@ impl ASM {
 
         // cannot use ar_var here as it does not have the computed types
         match &variable.var_type {
-            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Float => {
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char | VarType::Float => {
                 self.handle_local_int_float(variable, ar_var.borrow().offset, &variable.var_type)
             }
 
@@ -568,8 +570,6 @@ impl ASM {
 
             // TODO: Handle pointer to pointer to something
             VarType::Ptr(var_type) => self.handle_local_ptr(var_type, &required_var, ar_var.borrow().offset),
-
-            VarType::Char => todo!(),
 
             VarType::Array(var_type, _) => self.handle_asm_for_array(var_type, variable, &ar_var.borrow()),
 

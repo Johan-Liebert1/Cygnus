@@ -1,7 +1,6 @@
 use crate::{
     helpers::compiler_error,
-    interpreter::interpreter::Variables,
-    lexer::tokens::{Number, TokenEnum, VariableEnum},
+    lexer::tokens::{Number, TokenEnum},
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
     trace,
 };
@@ -15,9 +14,7 @@ impl ASM {
 
         match token {
             TokenEnum::Number(n) => match n {
-                Number::Integer(i) => {
-                    self.stack_push(format!("{i}"))
-                }
+                Number::Integer(i) => self.stack_push(format!("{i}")),
 
                 // We cannot have immediate float values in nasm
                 Number::Float(f) => {
@@ -26,9 +23,7 @@ impl ASM {
                     // add the floating point in the data segement
                     self.data.push(format!("float_{} dq {f}", self.num_floats));
 
-                    instructions.extend(vec![
-                        format!("movsd {xmm0}, [float_{}]", self.num_floats),
-                    ]);
+                    instructions.extend(vec![format!("movsd {xmm0}, [float_{}]", self.num_floats)]);
 
                     self.stack_push(String::from(xmm0));
 

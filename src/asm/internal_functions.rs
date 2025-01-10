@@ -3,7 +3,7 @@ use crate::{
     helpers::compiler_error,
     interpreter::interpreter::Variables,
     lexer::{
-        registers::{Register, ALL_REGISTERS},
+        registers::{Register, ALL_64BIT_REGISTERS},
         tokens::VariableEnum,
         types::{VarType, TYPE_INT, TYPE_STRING},
     },
@@ -43,8 +43,9 @@ impl ASM {
 
         let mut instructions = vec![];
 
-        if stack_member != String::from(Register::RAX) {
+        if !Register::is_reg(&stack_member) || !Register::is(&Register::RAX, Register::from_string(&stack_member)) {
             instructions.extend(vec![
+                format!(";; get_vec_for_write_number. stack_member: {stack_member}"),
                 if matches!(type_, VarType::Int) {
                     format!("xor rax, rax")
                 } else {
@@ -323,7 +324,12 @@ impl ASM {
                         self.unlock_register_from_stack_value(&stack_member);
 
                         vec![
-                            format!("mov rax, {} {}", var.var_type.get_operation_size(), stack_member),
+                            format!(";; {}:{}", file!(), line!()),
+                            format!(
+                                "mov {}, {}",
+                                var.var_type.get_register_name(Register::RAX),
+                                stack_member
+                            ),
                             format!("call _printRAX"),
                         ]
                     }

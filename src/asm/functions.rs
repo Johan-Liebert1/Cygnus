@@ -2,7 +2,7 @@ use std::{cell::RefCell, fmt::format, rc::Rc};
 
 use crate::{
     ast::variable::Variable, helpers::compiler_error, lexer::{
-        registers::{Register, ALL_FP_REGISTERS, ALL_REGISTERS},
+        registers::{Register, ALL_FP_REGISTERS, ALL_64BIT_REGISTERS},
         types::VarType,
     }, semantic_analyzer::semantic_analyzer::CallStack, trace
 };
@@ -38,7 +38,7 @@ impl ASM {
         // Not removing the regs from the stack as we restore them after the function call
         let mut saved_regs = vec![];
 
-        for reg in ALL_REGISTERS {
+        for reg in ALL_64BIT_REGISTERS {
             if self.is_reg_locked(reg) {
                 self.extend_current_label(vec![
                     format!(";; Saving non float register {reg}'s value"),

@@ -107,6 +107,7 @@ impl AST for DeclarationStatement {
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         if let Some(right_node) = &self.right {
             right_node.borrow_mut().semantic_visit(call_stack, f.clone());
+            trace!("Right type: {:?}", right_node.borrow().get_type());
         }
 
         // Before inserting in the call stack we need the type of the variable to calculate its
