@@ -183,7 +183,7 @@ impl AST for Variable {
                 match call_stack
                     .user_defined_types
                     .iter()
-                    .find(|x| x.name == format!("{}", self.var_type.get_pointer_type()))
+                    .find(|x| x.name == format!("{}", self.var_type.get_underlying_pointer_type()))
                 {
                     Some(user_defined_type) => match &user_defined_type.type_ {
                         // TODO: Handle struct -> struct -> member_access here

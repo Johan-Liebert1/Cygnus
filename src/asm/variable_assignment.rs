@@ -478,7 +478,9 @@ impl ASM {
                     VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                         let stack_member = self.stack_pop().unwrap();
 
-                        let top_stack_member = if !Register::is_reg(&stack_member) {
+                        let value_to_assign = if stack_member.starts_with("[") {
+                            // Move from memory to memory is not allowed
+                            // so we store the value in a register first
                             let rax = self.get_free_register(None);
                             instructions.push(format!("mov {rax}, {}", stack_member));
 
@@ -497,21 +499,24 @@ impl ASM {
                         instructions.push(format!("mov {rbx}, {}", ar_var.borrow().var_name));
 
                         // dereference the variable/ptr to variable stored in rbx
-                        instructions.extend(std::iter::repeat(format!("mov {rbx}, [{rbx}]")).take(times_dereferenced));
+                        instructions
+                            .extend(std::iter::repeat(format!("mov {rbx}, [{rbx}]")).take(times_dereferenced - 1));
 
-                        if String::from(rbx) != *top_stack_member {
-                            // This is to prevent cases where top_stack_member was a register
-                            // We don't want instructions like "mov rax, rax"
-                            instructions.push(format!("mov {rbx}, {top_stack_member}"))
-                        }
+                        // This is to prevent cases where top_stack_member was a register
+                        // We don't want instructions like "mov rax, rax"
+                        //
+                        // Move 'top_stack_member' to whatever rbx now points to.
+                        // We have dereferenced rbx so we should either point to the pointer
+                        // memory location or the memory location of the variable that the
+                        // pointer pointed to
+                        instructions.push(format!(
+                            "mov {} [{rbx}], {value_to_assign}",
+                            ar_var.borrow().var_type.get_underlying_pointer_type().get_operation_size()
+                        ));
 
-                        instructions.extend(vec![
-                            // Move 'top_stack_member' to whatever rbx now points to.
-                            // We have dereferenced rbx so we should either point to the pointer
-                            // memory location or the memory location of the variable that the
-                            // pointer pointed to
-                            format!("mov [{}], {rbx}", ar_var.borrow().var_name),
-                        ]);
+                        // instructions.extend(vec![
+                        //     format!("mov [{}], {rbx}", ar_var.borrow().var_name),
+                        // ]);
 
                         self.unlock_register(rbx);
                     }

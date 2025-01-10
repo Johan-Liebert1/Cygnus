@@ -13,10 +13,10 @@ fun main() {
         write("current_char = ", *current_char)
 
         if *current_char == NULL_BYTE {
-            write("ch == NULL_BYTE\n")
+            write("ch == NULL_BYTE\n\n")
             break;
         } else {
-            write("ch IS NOT NULL_BYTE\n")
+            write("ch IS NOT NULL_BYTE\n\n")
         }
     }
 }

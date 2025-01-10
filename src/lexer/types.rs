@@ -111,9 +111,9 @@ impl PartialEq for VarType {
 }
 
 impl VarType {
-    pub fn get_pointer_type(&self) -> VarType {
+    pub fn get_underlying_pointer_type(&self) -> VarType {
         match self {
-            VarType::Ptr(inner) => inner.get_pointer_type(),
+            VarType::Ptr(inner) => inner.get_underlying_pointer_type(),
             r => r.clone(),
         }
     }

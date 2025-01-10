@@ -439,7 +439,7 @@ impl ASM {
             // this will be in the bss section
             if variable.dereference {
                 let rax = self.get_free_register(None);
-                let rax_actual_name = variable.var_type.get_pointer_type().get_register_name(rax);
+                let rax_actual_name = variable.var_type.get_underlying_pointer_type().get_register_name(rax);
 
                 let rbx = self.get_free_register(None);
 
@@ -454,7 +454,7 @@ impl ASM {
                     format!("xor {rax}, {rax}"),
                     format!(
                         "mov {rax_actual_name}, {}",
-                        variable.var_type.get_pointer_type().get_register_name(rbx)
+                        variable.var_type.get_underlying_pointer_type().get_register_name(rbx)
                     ),
                     // format!("push rax"),
                     format!(";; Finish dereferencing global variable {}", var_name),
