@@ -1,6 +1,7 @@
 use std::{
     fs::{self},
-    io::Read, process::exit,
+    io::Read,
+    process::exit,
 };
 
 use crate::parse_input_file;
@@ -14,7 +15,7 @@ pub fn get_file_result(file_name: &str) -> String {
         Err(err) => {
             eprint!("No such file {file_name}");
             exit(1);
-        },
+        }
     }
 }
 

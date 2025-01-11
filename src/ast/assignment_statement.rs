@@ -120,7 +120,7 @@ impl AST for AssignmentStatement {
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         self.right.borrow_mut().semantic_visit(call_stack, f.clone());
 
-        trace!("Right type: {:?}", self.right.borrow().get_type());
+        // trace!("Right type: {:?}", self.right.borrow().get_type());
 
         self.left.semantic_visit(call_stack, f);
 

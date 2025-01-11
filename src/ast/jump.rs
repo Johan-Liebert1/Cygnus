@@ -83,7 +83,7 @@ impl AST for Jump {
                 asm.loop_break(self.loop_number)
             }
 
-            JumpType::Continue => asm.loop_continue(self.loop_number)
+            JumpType::Continue => asm.loop_continue(self.loop_number),
         }
     }
 

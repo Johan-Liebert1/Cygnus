@@ -376,9 +376,7 @@ impl ASM {
         if variable.store_address {
             let rax = self.get_free_register(None);
 
-            self.extend_current_label(vec![
-                format!("lea {rax}, [rbp - {}]", ar_var_offset),
-            ]);
+            self.extend_current_label(vec![format!("lea {rax}, [rbp - {}]", ar_var_offset)]);
 
             self.stack_push(String::from(rax));
             return;

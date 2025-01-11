@@ -1,10 +1,14 @@
 use std::{cell::RefCell, fmt::format, rc::Rc};
 
 use crate::{
-    ast::variable::Variable, helpers::compiler_error, lexer::{
-        registers::{Register, ALL_FP_REGISTERS, ALL_64BIT_REGISTERS},
+    ast::variable::Variable,
+    helpers::compiler_error,
+    lexer::{
+        registers::{Register, ALL_64BIT_REGISTERS, ALL_FP_REGISTERS},
         types::VarType,
-    }, semantic_analyzer::semantic_analyzer::CallStack, trace
+    },
+    semantic_analyzer::semantic_analyzer::{ActivationRecord, CallStack},
+    trace,
 };
 
 use super::asm::ASM;
@@ -361,5 +365,18 @@ impl ASM {
         }
 
         self.extend_current_label(FUNCTION_RETURN_INSTRUCTIONS.map(|x| x.into()).to_vec());
+    }
+
+    pub fn debug_all_variable_offsets_for_function(&mut self, call_stack: &CallStack) {
+        if let Some(ar) = call_stack.peek() {
+            for (_, variable) in &ar.variable_members {
+                let var_borrow = variable.borrow();
+
+                self.add_to_current_label(format!(
+                    ";; '{}' at '[rbp - {}]'",
+                    var_borrow.var_name, var_borrow.offset
+                ));
+            }
+        }
     }
 }

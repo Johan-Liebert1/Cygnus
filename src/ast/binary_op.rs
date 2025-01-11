@@ -166,9 +166,11 @@ impl BinaryOP {
 
 impl AST for BinaryOP {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        self.left.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+        let left_borrow = self.left.borrow();
+        let right_borrow = self.right.borrow();
 
-        self.right.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+        left_borrow.visit_com(v, Rc::clone(&f), asm, call_stack);
+        right_borrow.visit_com(v, Rc::clone(&f), asm, call_stack);
 
         match &self.operator.token {
             TokenEnum::Op(c) => {
@@ -176,7 +178,14 @@ impl AST for BinaryOP {
                 //     trace!("line: {}, times_dereferenced: {}, op: {c}", self.get_token().line_number, self.times_dereferenced);
                 // }
 
-                asm.binary_op_nums(c.clone(), self.times_dereferenced, &self.get_type().1, self.get_token());
+                asm.binary_op_nums(
+                    c.clone(),
+                    self.times_dereferenced,
+                    &self.get_type().1,
+                    self.get_token(),
+                    &left_borrow.get_type().1,
+                    &right_borrow.get_type().1,
+                );
             }
 
             _ => unreachable!("Found non operator for a Binary Expression"),

@@ -159,7 +159,6 @@ impl VarType {
 
             // Int32 => *other == Int32,
             // Int16 => *other == Int16,
-
             Str => *other == Str,
 
             Float => matches!(other, Float),
@@ -227,7 +226,7 @@ impl VarType {
             Unknown => todo!(),
         };
 
-        trace!("self: {self:?}, other: {other:?}. Can assign: {is_ok}");
+        // trace!("self: {self:?}, other: {other:?}. Can assign: {is_ok}");
 
         return is_ok;
     }

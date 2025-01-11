@@ -127,7 +127,7 @@ impl ASM {
         for label in &mut self.labels {
             if label.name == self.current_label {
                 label.code.push(line);
-                label.code.push(format!(""));
+                // label.code.push(format!(""));
                 break;
             }
         }

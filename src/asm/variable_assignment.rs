@@ -167,14 +167,13 @@ impl ASM {
     ) {
         let mut instructions = vec![];
 
-        let mut is_ptr_deref = false;
+        let is_ptr_deref = times_dereferenced > 0;
 
         match *var_ptr_type.clone() {
+            // Pointer to a pointer
             VarType::Ptr(ptr_type) => self.assign_local_pointer(&ptr_type, var_offset, times_dereferenced, var_name),
 
             VarType::Float => {
-                is_ptr_deref = times_dereferenced > 0;
-
                 instructions.push(format!(
                     ";; {}:{} assign_local_pointer var '{var_name}' of type {}",
                     file!(),
@@ -216,8 +215,6 @@ impl ASM {
             // def ch: char = 'a';
             // def ch_ptr: *char = &ch;
             t => {
-                is_ptr_deref = times_dereferenced > 0;
-
                 // Let's say the following code
                 //
                 // mem array 1024 --> array starts at addr 500
@@ -263,7 +260,7 @@ impl ASM {
                 }
 
                 if is_ptr_deref {
-                    instructions.push(format!("mov [{rbx}], {}", t.get_register_name(rax)));
+                    instructions.push(format!("mov [{rbx}], {}", actual_rax_name));
                 }
 
                 self.unlock_register_from_stack_value(&stack_member);
@@ -352,6 +349,12 @@ impl ASM {
         times_dereferenced: usize,
         array_access_index: &Option<ASTNode>,
     ) {
+        trace!(
+            "handle_local_eq_assignment var_name: {}, var_type: {}",
+            ar_var.borrow().var_name,
+            ar_var.borrow().var_type
+        );
+
         // var = variable from call stack
         match &ar_var.borrow().var_type {
             VarType::Struct(name, members) => {

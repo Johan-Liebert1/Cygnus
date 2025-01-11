@@ -93,7 +93,9 @@ impl AST for FunctionDefinition {
 
         self.block.borrow().visit_com(v, f, asm, call_stack);
 
-        // pop the record here
+        asm.debug_all_variable_offsets_for_function(call_stack);
+
+        // pop the record here as we have now exited the function defintion
         call_stack.pop();
 
         match self.block.borrow().get_node() {
@@ -103,7 +105,7 @@ impl AST for FunctionDefinition {
                         ASTNodeEnum::Jump(_) => {
                             // nothing
                             // asm generation for return statement AST will handle this
-                        },
+                        }
 
                         _ => {
                             // last statement of a function is not 'return'

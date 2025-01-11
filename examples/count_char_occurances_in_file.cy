@@ -15,13 +15,13 @@ fun main() {
     def upper_a: int8 = 65;
     def upper_z: int8 = lower_a + 26 - 1;
 
-    def file_name: str = "./examples/test_files/read_a_file\0";
+    def file_name: str = "../examples/test_files/read_a_file\0";
 
     -- (syscall number, file_name, readonly flag)
     -- open syscall
     def fd: int = syscall(2, file_name as *char, 0, 0);
 
-    write("read fd = ", fd)
+    write(fd)
 
     -- read syscall
     def read_bytes: int = syscall(0, fd, file, 4096);
@@ -36,9 +36,10 @@ fun main() {
         def thing: *int = file + i;
 
         if *(thing as *char) >= lower_a and *(thing as *char) <= lower_z {
+            -- write("after the first if\n")
             def inc: int8 =  *(thing as *char) - lower_a;
 
-            def addr_to_update: *int = lower_char_occurances + (inc as int) * 8;
+            def addr_to_update: *int = lower_char_occurances + (inc) * 8;
 
             -- FIXME: Can't do *addr_to_update = *addr_to_update + 1;
             *addr_to_update = *(addr_to_update as *int) + 1;

@@ -114,7 +114,7 @@ impl<'a> CallStack<'a> {
         };
     }
 
-    pub fn peek(&mut self) -> Option<&ActivationRecord> {
+    pub fn peek(&self) -> Option<&ActivationRecord> {
         self.call_stack.last()
     }
 

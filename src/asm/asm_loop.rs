@@ -58,9 +58,7 @@ impl ASM {
         let mut to = self.stack_pop().unwrap();
         let mut from = self.stack_pop().unwrap();
 
-        let mut loop_start: Vec<String> = vec![
-            format!(";; loop_{loop_number} start")
-        ];
+        let mut loop_start: Vec<String> = vec![format!(";; loop_{loop_number} start")];
 
         if step.starts_with('[') {
             let reg = self.get_free_register(None);

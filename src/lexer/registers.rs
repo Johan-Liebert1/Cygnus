@@ -276,7 +276,7 @@ impl Register {
                 matches!(other, Register::R11 | Register::R11D | Register::R11W | Register::R11B)
             }
 
-            r => *r == other
+            r => *r == other,
         }
     }
 

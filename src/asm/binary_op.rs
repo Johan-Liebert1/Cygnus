@@ -1,6 +1,9 @@
 use crate::{
     lexer::{
-        lexer::Token, registers::{get_register_name_for_bits, Register}, tokens::Operations, types::VarType
+        lexer::Token,
+        registers::{get_register_name_for_bits, Register},
+        tokens::Operations,
+        types::VarType,
     },
     trace,
 };
@@ -8,27 +11,35 @@ use crate::{
 use super::asm::ASM;
 
 impl ASM {
-    pub fn binary_op_nums(&mut self, op: Operations, times_dereferenced: usize, result_type: &VarType, token: &Token) {
+    pub fn binary_op_nums(
+        &mut self,
+        op: Operations,
+        times_dereferenced: usize,
+        result_type: &VarType,
+        token: &Token,
+        left_type: &VarType,
+        right_type: &VarType,
+    ) {
         let mut reg_to_lock = Register::RAX;
 
         let mut instructions = match op {
             Operations::Plus => {
                 if matches!(result_type, VarType::Float) {
-                    let first = self.stack_pop().unwrap();
-                    let second = self.stack_pop().unwrap();
+                    let right = self.stack_pop().unwrap();
+                    let left = self.stack_pop().unwrap();
 
                     let xmm0 = self.get_free_float_register(None);
                     let xmm1 = self.get_free_float_register(None);
 
                     let mut inst = vec![
                         format!(";; Plus get the two operands from the stack"),
-                        format!("movsd {xmm0}, {}", first),
-                        format!("movsd {xmm1}, {}", second),
+                        format!("movsd {xmm0}, {}", right),
+                        format!("movsd {xmm1}, {}", left),
                         format!("addsd {xmm0}, {xmm1}"),
                     ];
 
-                    self.unlock_register_from_stack_value(&first);
-                    self.unlock_register_from_stack_value(&second);
+                    self.unlock_register_from_stack_value(&right);
+                    self.unlock_register_from_stack_value(&left);
 
                     self.unlock_register(xmm1);
 
@@ -36,8 +47,8 @@ impl ASM {
 
                     inst
                 } else {
-                    let first = self.stack_pop().unwrap();
-                    let second = self.stack_pop().unwrap();
+                    let right = self.stack_pop().unwrap();
+                    let left = self.stack_pop().unwrap();
 
                     let rax = self.get_free_register(None);
                     let rbx = self.get_free_register(None);
@@ -47,17 +58,17 @@ impl ASM {
 
                     let mut inst = vec![
                         format!(";; Plus get the two operands from the stack"),
-                        format!("mov {rax_actual}, {}", first),
-                        format!("mov {rbx_actual}, {}", second),
+                        format!("mov {rax_actual}, {}", right),
+                        format!("mov {rbx_actual}, {}", left),
                         format!("add {rax_actual}, {rbx_actual}"),
                         format!(
-                            ";; will lock {rax}. first = {first}. second = {second}. Locked: {:?}",
+                            ";; will lock {rax}. first = {right}. second = {left}. Locked: {:?}",
                             self.get_used_registers()
                         ),
                     ];
 
-                    self.unlock_register_from_stack_value(&first);
-                    self.unlock_register_from_stack_value(&second);
+                    self.unlock_register_from_stack_value(&right);
+                    self.unlock_register_from_stack_value(&left);
 
                     self.unlock_register(rbx);
 
@@ -69,21 +80,21 @@ impl ASM {
 
             Operations::Minus => {
                 if matches!(result_type, VarType::Float) {
-                    let first = self.stack_pop().unwrap();
-                    let second = self.stack_pop().unwrap();
+                    let right = self.stack_pop().unwrap();
+                    let left = self.stack_pop().unwrap();
 
                     let xmm0 = self.get_free_float_register(None);
                     let xmm1 = self.get_free_float_register(None);
 
                     let mut inst = vec![
                         format!(";; Minus get the two operands from the stack"),
-                        format!("movsd {xmm0}, {}", second),
-                        format!("movsd {xmm1}, {}", first),
+                        format!("movsd {xmm0}, {}", left),
+                        format!("movsd {xmm1}, {}", right),
                         format!("subsd {xmm0}, {xmm1}"),
                     ];
 
-                    self.unlock_register_from_stack_value(&first);
-                    self.unlock_register_from_stack_value(&second);
+                    self.unlock_register_from_stack_value(&right);
+                    self.unlock_register_from_stack_value(&left);
 
                     self.unlock_register(xmm1);
 
@@ -91,8 +102,8 @@ impl ASM {
 
                     inst
                 } else {
-                    let first = self.stack_pop().unwrap();
-                    let second = self.stack_pop().unwrap();
+                    let right = self.stack_pop().unwrap();
+                    let left = self.stack_pop().unwrap();
 
                     let rax = self.get_free_register(None);
                     let rbx = self.get_free_register(None);
@@ -102,15 +113,15 @@ impl ASM {
 
                     let mut inst = vec![
                         format!(";; Minus get the two operands from the stack. Result type: {result_type}. Token: {token:?}"),
-                        format!("mov {rbx_actual}, {}", first),
-                        format!("mov {rax_actual}, {}", second),
+                        format!("mov {rbx_actual}, {}", right),
+                        format!("mov {rax_actual}, {}", left),
                         format!("sub {rax_actual}, {rbx_actual}"),
                     ];
 
                     self.unlock_register(rbx);
 
-                    self.unlock_register_from_stack_value(&first);
-                    self.unlock_register_from_stack_value(&second);
+                    self.unlock_register_from_stack_value(&right);
+                    self.unlock_register_from_stack_value(&left);
 
                     reg_to_lock = Register::from(rax_actual); // rax;
 
@@ -120,21 +131,21 @@ impl ASM {
 
             Operations::Divide => {
                 if matches!(result_type, VarType::Float) {
-                    let first = self.stack_pop().unwrap();
-                    let second = self.stack_pop().unwrap();
+                    let right = self.stack_pop().unwrap();
+                    let left = self.stack_pop().unwrap();
 
                     let xmm0 = self.get_free_float_register(None);
                     let xmm1 = self.get_free_float_register(None);
 
                     let mut inst = vec![
                         format!(";; Plus get the two operands from the stack"),
-                        format!("movsd {xmm0}, {}", second),
-                        format!("movsd {xmm1}, {}", first),
+                        format!("movsd {xmm0}, {}", left),
+                        format!("movsd {xmm1}, {}", right),
                         format!("divsd {xmm0}, {xmm1}"),
                     ];
 
-                    self.unlock_register_from_stack_value(&first);
-                    self.unlock_register_from_stack_value(&second);
+                    self.unlock_register_from_stack_value(&right);
+                    self.unlock_register_from_stack_value(&left);
 
                     self.unlock_register(xmm1);
 
@@ -169,15 +180,15 @@ impl ASM {
                         self.get_free_register(Some(&regs_to_skip))
                     };
 
-                    let first = self.stack_pop().unwrap();
-                    let second = self.stack_pop().unwrap();
+                    let right = self.stack_pop().unwrap();
+                    let left = self.stack_pop().unwrap();
 
                     // trace!("first: {first}, second: {second}");
 
                     let rbx = self.get_free_register(Some(&regs_to_skip));
 
-                    self.unlock_register_from_stack_value(&first);
-                    self.unlock_register_from_stack_value(&second);
+                    self.unlock_register_from_stack_value(&right);
+                    self.unlock_register_from_stack_value(&left);
 
                     reg_to_lock = rax;
 
@@ -188,8 +199,8 @@ impl ASM {
                         format!(";; Divide clean up rdx as this might mess up the final output as 'div' stores quotient in 'rax' and remainder in 'rdx'"),
                         format!("xor rdx, rdx"),
                         format!(";; get the two operands from the stack"),
-                        format!("mov {rbx}, {}", first),
-                        format!("mov {rax}, {}", second),
+                        format!("mov {rbx}, {}", right),
+                        format!("mov {rax}, {}", left),
                         format!("div {rbx}"),
                     ]);
 
@@ -201,21 +212,21 @@ impl ASM {
 
             Operations::Multiply => {
                 if matches!(result_type, VarType::Float) {
-                    let first = self.stack_pop().unwrap();
-                    let second = self.stack_pop().unwrap();
+                    let right = self.stack_pop().unwrap();
+                    let left = self.stack_pop().unwrap();
 
                     let xmm0 = self.get_free_float_register(None);
                     let xmm1 = self.get_free_float_register(None);
 
                     let mut inst = vec![
                         format!(";; Plus get the two operands from the stack"),
-                        format!("movsd {xmm0}, {}", first),
-                        format!("movsd {xmm1}, {}", second),
+                        format!("movsd {xmm0}, {}", right),
+                        format!("movsd {xmm1}, {}", left),
                         format!("mulsd {xmm0}, {xmm1}"),
                     ];
 
-                    self.unlock_register_from_stack_value(&first);
-                    self.unlock_register_from_stack_value(&second);
+                    self.unlock_register_from_stack_value(&right);
+                    self.unlock_register_from_stack_value(&left);
 
                     self.unlock_register(xmm1);
 
@@ -232,11 +243,6 @@ impl ASM {
                     let rax = if self.is_reg_locked(Register::RAX) {
                         let rbx = self.get_free_register(Some(&regs_to_skip));
 
-                        // trace!(
-                        //     "RAX was locked so rbx = '{rbx}'. Used registers: {:#?}",
-                        //     self.get_used_registers()
-                        // );
-
                         instructions.extend(vec![format!("mov {rbx}, rax")]);
 
                         self.replace_reg_on_stack(Register::RAX, rbx);
@@ -248,21 +254,24 @@ impl ASM {
                         self.get_free_register(Some(&regs_to_skip))
                     };
 
-                    let first = self.stack_pop().unwrap();
-                    let second = self.stack_pop().unwrap();
+                    let right = self.stack_pop().unwrap();
+                    let left = self.stack_pop().unwrap();
 
                     let rbx = self.get_free_register(Some(&regs_to_skip));
 
+                    let rax_actual = right_type.get_register_name(rax);
+                    let rbx_actual = left_type.get_register_name(rbx);
+
                     instructions.extend(vec![
-                        format!(";; Multiply get the two operands from the stack"),
+                        format!(";; Multiply get the two operands from the stack. Type: {result_type}"),
                         format!("xor rdx, rdx"),
-                        format!("mov {rax}, {}", first),
-                        format!("mov {rbx}, {}", second),
+                        format!("mov {rax_actual}, {}", right),
+                        format!("mov {rbx_actual}, {}", left),
                         format!("mul {rbx}"),
                     ]);
 
-                    self.unlock_register_from_stack_value(&first);
-                    self.unlock_register_from_stack_value(&second);
+                    self.unlock_register_from_stack_value(&right);
+                    self.unlock_register_from_stack_value(&left);
 
                     self.unlock_register(rbx);
 

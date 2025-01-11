@@ -1,14 +1,16 @@
+mem memory 128
+
 fun main() {
-    def a: int8 = 97; 
-    def inc: *char = &a;
+    *memory = 97;
 
-    def b: int = 40;
-    def c: *int32 = &b;
+    def lower_a: int8 = 97;
 
-    write("a = ", a)
-    write("inc = ", inc)
-    write("b = ", b)
-    write("c = ", c)
+    def thing: *int = memory;
+    def inc: int8 =  *(memory as *int) - 97;
+
+    def addr_to_update: *int = memory + inc * 8;
+
+    *addr_to_update = 14;
 }
 
 main()
