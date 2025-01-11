@@ -201,7 +201,7 @@ impl ASM {
                                 },
 
                                 None => {
-                                    panic!(
+                                    unreachable!(
                                         "Member '{}' not present in struct '{}'",
                                         var.member_access[0], user_defined_type.type_
                                     );
@@ -210,12 +210,12 @@ impl ASM {
                         }
 
                         type_ => {
-                            panic!("Cannot have user defined primitive type: '{}'", type_);
+                            unreachable!("Cannot have user defined primitive type: '{}'", type_);
                         }
                     },
 
                     None => {
-                        panic!("Unknown type '{pointer_var_type}'")
+                        unreachable!("Unknown type '{pointer_var_type}'")
                     }
                 }
             }

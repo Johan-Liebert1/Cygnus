@@ -1,6 +1,6 @@
 use crate::{
     ast::{typedef::Typedef, void::Void},
-    helpers::{self, compiler_error, unexpected_token},
+    helpers::{self, compiler_error, unexpected_token, unexpected_token_string},
     lexer::{
         keywords::{CONST_VAR_DEFINE, CONTINUE, EXTERN, INCLUDE, MEM, STRUCT, TYPE_DEF},
         tokens::Operations,
@@ -124,8 +124,6 @@ impl Parser {
     /// STATEMENT -> VARIABLE_DECLARATION | CONDITIONAL_STATEMENT | COMPARISON_EXPRESSION | LPAREN COMPARISON_EXPRESSION RPAREN
     pub fn parse_statements(&mut self) -> ASTNode {
         let current_token = self.peek_next_token();
-
-        // println!("parse_statements current_token {:#?}", current_token);
 
         match &current_token.token {
             TokenEnum::Keyword(keyword) => {
@@ -251,16 +249,14 @@ impl Parser {
                         compiler_error(format!("Keyword '{}' not recognised", keyword), &current_token);
                     }
                 }
-            }
+            } // match KEYWORD end
 
-            // FIXME: This cannot be any bracket, example { is not correct
-            TokenEnum::Number(..) | TokenEnum::Bracket(..) => self.parse_logical_expression(),
+            // FIXME: This cannot be any bracket, example \{ is not correct
+            TokenEnum::Number(..) | TokenEnum::Bracket(Bracket::LParen) => self.parse_logical_expression(),
 
             TokenEnum::Variable(var) => {
                 // 2nd token here as we haven't consumed the `var` token
                 let nth_token = self.peek_nth_token(2);
-
-                // println!("parse_statements variable nth_token {:#?}", current_token);
 
                 match nth_token.token {
                     TokenEnum::Bracket(b) => {
@@ -295,8 +291,8 @@ impl Parser {
                         self.parse_assignment_statement(var_token, var.to_string(), 0, None)
                     }
 
-                    e => {
-                        panic!("Expected `)` or `=` after {}, got {:?}", var, e)
+                    _ => {
+                        unexpected_token_string(&nth_token, format!("{} or {}", Bracket::RParen, TokenEnum::Equals));
                     }
                 }
             }
@@ -320,40 +316,17 @@ impl Parser {
                     }
                 }
 
-                Operations::Plus => todo!(),
-                Operations::Minus => todo!(),
-                Operations::Divide => todo!(),
-                Operations::ShiftLeft => todo!(),
-                Operations::ShiftRight => todo!(),
-                Operations::Modulo => todo!(),
+                _ => {
+                    unexpected_token(&current_token, None);
+                }
             },
-
-            TokenEnum::LogicalOp(..) => {
-                helpers::unexpected_token(&current_token, None);
-            }
-
-            TokenEnum::StringLiteral(_) => todo!(),
-
-            TokenEnum::Equals => todo!(),
-            TokenEnum::PlusEquals => todo!(),
-            TokenEnum::MinusEquals => todo!(),
-            TokenEnum::Ampersand => todo!(),
-            TokenEnum::Comparator(_) => todo!(),
-            TokenEnum::Bool(_) => todo!(),
-            TokenEnum::Type(_) => todo!(),
-            TokenEnum::Colon => todo!(),
-            TokenEnum::Comma => todo!(),
-            TokenEnum::SemiColon => todo!(),
-            TokenEnum::FunctionReturnIndicator => todo!(),
-            TokenEnum::Comment => todo!(),
-            TokenEnum::Dot => todo!(),
-
-            TokenEnum::Unknown(..) => {
-                panic!("Unknown token: {:?}", &current_token);
-            }
 
             TokenEnum::EOF => {
                 unreachable!("Reached EOF");
+            }
+
+            _ => {
+                unexpected_token(&current_token, None);
             }
         }
     }

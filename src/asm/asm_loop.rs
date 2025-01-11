@@ -1,4 +1,3 @@
-use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{ast::variable::Variable, semantic_analyzer::semantic_analyzer::CallStack};
@@ -50,7 +49,7 @@ impl ASM {
             }
 
             _ => {
-                panic!("'from', 'to' or 'step' not defined");
+                unreachable!("'from', 'to' or 'step' not defined");
             }
         };
 
@@ -88,7 +87,7 @@ impl ASM {
             let (call_stack_var, _) = call_stack.get_var_with_name(&v.borrow().var_name);
 
             if call_stack_var.is_none() {
-                panic!("`call_stack_var` is none but loop has a variable")
+                unreachable!("`call_stack_var` is none but loop has a variable")
             }
 
             // here rax contains the from value
@@ -131,7 +130,7 @@ impl ASM {
             }
 
             _ => {
-                panic!("'from', 'to' or 'step' not defined");
+                unreachable!("'from', 'to' or 'step' not defined");
             }
         };
 
@@ -139,7 +138,7 @@ impl ASM {
             let (call_stack_var, _) = call_stack.get_var_with_name(&v.borrow().var_name);
 
             if call_stack_var.is_none() {
-                panic!("`call_stack_var` is none but loop has a variable")
+                unreachable!("`call_stack_var` is none but loop has a variable")
             }
 
             let rdx = self.get_free_register(None);

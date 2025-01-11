@@ -28,7 +28,7 @@ const NULL_BYTE: int8 = 0;
 -- Host: localhost:5000
 -- User-Agent: curl/8.5.0
 -- Accept: */*
-fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
+fun parse_http_request(connfd: int, req: *int8, read_bytes: int) {
     -- if PRINT_REQ == 1 {
         write("Writing req to stdout...\n")
         syscall(WRITE_SYSCALL, STDOUT, req, read_bytes);
@@ -49,7 +49,7 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
     def index_html_file_dir_path: str = "/home/pragyan/Rust/lang/examples/http_server";
 
     -- we'll only parse the method and path for now
-    def idx: int = 0;
+    def idx: int8 = 0;
 
     -- parse the method
     def method_ends_at_idx: int = 0;
@@ -64,6 +64,8 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
 
         idx += 1;
     }
+
+    write("method_ends_at_idx = ", method_ends_at_idx)
 
     -- consume the space character
     idx += 1;
@@ -154,9 +156,9 @@ fun main() {
         exit(1);
     }
 
-    def sa_prefix: *int16 = serveraddr_mem;
+    def sa_prefix: *int = serveraddr_mem;
     def sin_port: *int16 = serveraddr_mem + 2;
-    def s_addr: *int = serveraddr_mem + 4;
+    def s_addr: *int32 = serveraddr_mem + 4;
 
     *sa_prefix = AF_INET;
     *sin_port = PORT;

@@ -1,5 +1,9 @@
 use crate::{
-    lexer::tokens::{Number, TokenEnum},
+    helpers::compiler_error,
+    lexer::{
+        lexer::Token,
+        tokens::{Number, TokenEnum},
+    },
     semantic_analyzer::semantic_analyzer::CallStack,
 };
 
@@ -7,10 +11,10 @@ use super::asm::ASM;
 
 impl ASM {
     /// Pushes whatever token's in here onto the stack
-    pub fn generate_asm_factor(&mut self, token: &TokenEnum, _: &CallStack) {
+    pub fn generate_asm_factor(&mut self, token: &Token, _: &CallStack) {
         let mut instructions: Vec<String> = vec![];
 
-        match token {
+        match &token.token {
             TokenEnum::Number(n) => match n {
                 Number::Integer(i) => self.stack_push(format!("{i}")),
 
@@ -48,9 +52,7 @@ impl ASM {
                                     },
 
                                     // string literal ends with a backslash
-                                    None => {
-                                        panic!("String cannot end with a \\")
-                                    }
+                                    None => compiler_error("String cannot end with a \\", token),
                                 }
                             }
 

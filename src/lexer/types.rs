@@ -1,4 +1,3 @@
-use core::panic;
 use std::{cell::RefCell, fmt::Display, rc::Rc};
 
 use crate::{ast::variable::Variable, helpers::compiler_error};
@@ -225,7 +224,7 @@ impl VarType {
         return is_ok;
     }
 
-    pub fn figure_out_type(&self, other: &VarType, op: AllOperations) -> VarType {
+    pub fn figure_out_type(&self, other: &VarType, op: AllOperations, token: &Token) -> VarType {
         use Operations::*;
         use VarType::*;
 
@@ -268,14 +267,14 @@ impl VarType {
                 );
 
                 if !is_allowed {
-                    panic!("'{op}' not defined for '{self}' and '{other}'")
+                    compiler_error(format!("'{op}' not defined for '{self}' and '{other}'"), token);
                 }
 
                 // any pointer incremented is the same pointer to the same type unless casted
                 Ptr(ptr.clone())
             }
 
-            (Ptr(ptr1), Ptr(ptr2)) => ptr1.figure_out_type(ptr2, op),
+            (Ptr(ptr1), Ptr(ptr2)) => ptr1.figure_out_type(ptr2, op, token),
 
             (Char, Char) | (Int8, Char) | (Char, Int8) => {
                 let is_allowed = matches!(
@@ -286,7 +285,7 @@ impl VarType {
                 );
 
                 if !is_allowed {
-                    panic!("'{op}' not defined for '{self}' and '{other}'")
+                    compiler_error(format!("'{op}' not defined for '{self}' and '{other}'"), token);
                 }
 
                 // result of comparison is always an int
@@ -300,7 +299,7 @@ impl VarType {
                 );
 
                 if !is_allowed {
-                    panic!("'{op}' not defined for '{self}' and '{other}'")
+                    compiler_error(format!("'{op}' not defined for '{self}' and '{other}'"), token);
                 }
 
                 // result of comparison is always an int
@@ -308,7 +307,7 @@ impl VarType {
             }
 
             (..) => {
-                panic!("'{op}' not defined for '{self}' and '{other}'")
+                compiler_error(format!("'{op}' not defined for '{self}' and '{other}'"), token);
             }
         };
     }

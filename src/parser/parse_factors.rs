@@ -1,6 +1,6 @@
 use crate::{
     ast::{abstract_syntax_tree::ASTNodeEnumMut, array::Array, variable::Variable},
-    helpers::unexpected_token,
+    helpers::{compiler_error, unexpected_token},
     lexer::{keywords::AS, lexer::Token, tokens::Operations, types::VarType},
     types::ASTNode,
 };
@@ -9,7 +9,6 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::factor::Factor,
-    helpers,
     lexer::tokens::{Bracket, TokenEnum},
 };
 
@@ -119,16 +118,16 @@ impl Parser {
 
                     let return_value = self.parse_logical_expression();
 
-                    match self.peek_next_token().token {
+                    let peeked_token = self.peek_next_token();
+
+                    match peeked_token.token {
                         TokenEnum::Bracket(Bracket::RParen) => {
                             self.get_next_token();
                             self.bracket_stack.pop();
                             return return_value;
                         }
 
-                        _ => {
-                            panic!("Unclosed (");
-                        }
+                        _ => compiler_error("Unclosed (", &peeked_token),
                     };
                 }
 
@@ -142,19 +141,13 @@ impl Parser {
                                 return Rc::new(RefCell::new(Box::new(Factor::new(Box::new(next_token)))));
                             }
 
-                            TokenEnum::Bracket(Bracket::RParen) => {
-                                panic!(") never opened");
-                            }
+                            TokenEnum::Bracket(Bracket::RParen) => compiler_error("Unclosed (", &bracket),
 
-                            _ => {
-                                panic!("Invalid token {:?}", next_token);
-                            }
+                            _ => unexpected_token(&next_token, None),
                         }
                     }
 
-                    None => {
-                        panic!(") never opened");
-                    }
+                    None => unexpected_token(&next_token, None),
                 },
 
                 // Array definition, the RHS bit
@@ -187,9 +180,7 @@ impl Parser {
                     return Rc::new(RefCell::new(Box::new(Array::new(members, bracket_token))));
                 }
 
-                _ => {
-                    panic!("Invalid token {:?}", next_token);
-                }
+                _ => unexpected_token(&next_token, None),
             },
 
             TokenEnum::Op(Operations::Multiply) => {
@@ -265,13 +256,13 @@ impl Parser {
                     }
 
                     _ => {
-                        helpers::unexpected_token(&next_next_token, Some(&TokenEnum::Variable("".into())));
+                        unexpected_token(&next_next_token, Some(&TokenEnum::Variable("".into())));
                     }
                 }
             }
 
             _ => {
-                helpers::unexpected_token(&next_token, None);
+                unexpected_token(&next_token, None);
             }
         }
     }

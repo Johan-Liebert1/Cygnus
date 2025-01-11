@@ -10,10 +10,7 @@ use crate::{
 use core::panic;
 use std::{cell::RefCell, collections::HashMap, rc::Rc, usize};
 
-use crate::{
-    ast::abstract_syntax_tree::AST,
-    interpreter::interpreter::Functions,
-};
+use crate::{ast::abstract_syntax_tree::AST, interpreter::interpreter::Functions};
 
 // #[derive(Debug)]
 // pub struct ARVariable {
@@ -155,7 +152,14 @@ impl<'a> CallStack<'a> {
                 inserted = true;
 
                 if record.variable_members.get(var_name).is_some() {
-                    panic!("Variable '{}' is already defined", var_name);
+                    compiler_error(
+                        format!(
+                            "Variable '{}' is already defined on line {}",
+                            var_name,
+                            variable.borrow().get_token().line_number
+                        ),
+                        variable.borrow().get_token(),
+                    );
                 }
 
                 record.variable_members.insert(var_name.into(), Rc::clone(&variable));

@@ -167,49 +167,49 @@ impl<'a> Debug for ASTNodeEnum<'a> {
 }
 
 impl<'a> ASTNodeEnum<'a> {
-    pub fn figure_out_type(&self, other: &ASTNodeEnum, op: AllOperations) -> VarType {
+    pub fn figure_out_type(&self, other: &ASTNodeEnum, op: AllOperations, token: &Token) -> VarType {
         use ASTNodeEnum::*;
 
         match (self, other) {
-            (BinaryOp(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
-            (Factor(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (BinaryOp(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
+            (Factor(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
 
-            (FunctionCall(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
-            (LogicalExp(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
-            (Variable(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (FunctionCall(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
+            (LogicalExp(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
+            (Variable(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
 
-            (BinaryOp(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
-            (FunctionCall(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (BinaryOp(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
+            (FunctionCall(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
 
-            (BinaryOp(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
-            (LogicalExp(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (BinaryOp(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
+            (LogicalExp(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
 
-            (BinaryOp(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
-            (Variable(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (BinaryOp(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
+            (Variable(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
 
-            (BinaryOp(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
-            (Factor(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (BinaryOp(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
+            (Factor(a), BinaryOp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
 
-            (Factor(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
-            (FunctionCall(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (Factor(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
+            (FunctionCall(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
 
-            (Factor(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
-            (LogicalExp(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (Factor(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
+            (LogicalExp(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
 
-            (Factor(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
-            (Variable(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (Factor(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
+            (Variable(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
 
-            (FunctionCall(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
-            (Variable(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (FunctionCall(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
+            (Variable(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
 
-            (FunctionCall(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
-            (LogicalExp(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (FunctionCall(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
+            (LogicalExp(a), FunctionCall(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
 
-            (LogicalExp(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
-            (Variable(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (LogicalExp(a), Variable(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
+            (Variable(a), LogicalExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
 
-            (ComparisonExp(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
-            (Factor(a), ComparisonExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op),
+            (ComparisonExp(a), Factor(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
+            (Factor(a), ComparisonExp(b)) => a.get_type().0.figure_out_type(&b.get_type().0, op, token),
 
             (a, b) => unreachable!("This must be a bug in the parsing step. {a} and {b} not handled"),
         }

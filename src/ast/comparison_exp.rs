@@ -183,11 +183,11 @@ impl AST for ComparisonExp {
 
         if let TokenEnum::Comparator(op) = &self.comp_op.token {
             // need to do this even though it's always going to be an int
-            self.result_type = self
-                .left
-                .borrow()
-                .get_node()
-                .figure_out_type(&self.right.borrow().get_node(), AllOperations::Comparator(op.clone()));
+            self.result_type = self.left.borrow().get_node().figure_out_type(
+                &self.right.borrow().get_node(),
+                AllOperations::Comparator(op.clone()),
+                self.get_token(),
+            );
         } else {
             unreachable!(
                 "Found Operation '{:?}' which is not defined for a comparison operation.\

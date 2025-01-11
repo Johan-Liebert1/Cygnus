@@ -1,4 +1,3 @@
-use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
@@ -500,7 +499,7 @@ impl ASM {
                 // let rax_actual_name = variable.var_type.get_register_name(rax);
 
                 if variable.dereference {
-                    panic!("Cannot dereference a number")
+                    unreachable!("Cannot dereference a string. This should've been caught in the semantic analysis phase.")
                 } else if variable.store_address {
                     // self.add_to_current_label(format!("lea {rax}, {var_name}"));
                     // self.stack_push(String::from(rax));
@@ -518,7 +517,7 @@ impl ASM {
                 let rax = self.get_free_register(None);
 
                 if variable.dereference {
-                    panic!("Cannot dereference a string")
+                    unreachable!("Cannot dereference a string. This should've been caught in the semantic analysis phase.")
                 } else if variable.store_address {
                     self.add_to_current_label(format!("lea {rax}, {var_name}"));
                     self.stack_push(String::from(rax));
