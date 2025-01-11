@@ -104,7 +104,7 @@ fun write_int_into_mem(memory: *int, number: int) -> int {
     loop {
         def c: int = n % 10;
 
-        def idx_into_mem: *int8 = memory + idx;
+        def idx_into_mem: *int = memory + idx;
         *idx_into_mem = c + zero_ascii;
 
         n = n / 10

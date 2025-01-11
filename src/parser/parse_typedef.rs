@@ -1,16 +1,10 @@
-use std::{cell::RefCell, clone, process::exit, rc::Rc};
-
 use crate::{
-    ast::typedef::{Typedef, TypedefType},
     helpers::unexpected_token,
     lexer::{
-        keywords::{FUNCTION_DEFINE, TYPE_DEF},
-        lexer::Token,
+        keywords::FUNCTION_DEFINE,
         tokens::{Bracket, TokenEnum},
         types::VarType,
     },
-    trace,
-    types::ASTNode,
 };
 
 use super::parser::{Parser, UserDefinedType};
@@ -43,8 +37,6 @@ impl Parser {
                 }
             };
         }
-
-        return parameters;
     }
 
     // Returns parameters and return type
@@ -67,7 +59,7 @@ impl Parser {
 
     // We get here after parsing 'type'
     pub fn parse_typedef(&mut self) {
-        let mut type_name: String = String::new();
+        let type_name: String;
 
         let next_token = self.get_next_token();
 
@@ -100,7 +92,6 @@ impl Parser {
 
             _ => {
                 unexpected_token(&next_token, None);
-                exit(1);
             }
         };
 

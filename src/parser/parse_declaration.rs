@@ -5,11 +5,10 @@ use crate::{
         tokens::{Bracket, Number, Operations},
         types::VarType,
     },
-    trace,
     types::ASTNode,
 };
 
-use std::{cell::RefCell, process::exit, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::{declaration_statement::DeclarationStatement, variable::Variable},
@@ -27,13 +26,12 @@ impl Parser {
             let peeked_token = self.peek_next_token();
 
             if let TokenEnum::Number(Number::Integer(int)) = peeked_token.token {
-                let size = self.validate_token(TokenEnum::Number(Number::Integer(0)));
+                self.validate_token(TokenEnum::Number(Number::Integer(0)));
                 self.validate_token(TokenEnum::Bracket(Bracket::RSquare));
 
                 *actual_var_type = VarType::Array(Box::new(var_type.clone()), int as usize);
             } else {
                 unexpected_token(&peeked_token, Some(&TokenEnum::Number(Number::Integer(0))));
-                exit(1);
             }
         }
     }
@@ -63,7 +61,6 @@ impl Parser {
                 } else {
                     // FIXME: This shouldn't be here but in semantic analysis phase
                     compiler_error(format!("No such type '{}'", var_type_name), &token);
-                    exit(1);
                 };
 
                 let type_token = self.get_next_token();
@@ -91,7 +88,6 @@ impl Parser {
 
                     if found.is_none() {
                         compiler_error(format!("No such type '{}'", var_type_name), &token);
-                        exit(1);
                     }
 
                     let var_type = found.unwrap().type_.clone();
@@ -103,13 +99,11 @@ impl Parser {
                     return (next_token, VarType::Ptr(Box::new(actual_var_type)));
                 } else {
                     unexpected_token(&next_token, None);
-                    exit(1);
                 }
             }
 
-            tok => {
+            _ => {
                 unexpected_token(&token, None);
-                exit(1);
             }
         }
     }
@@ -131,14 +125,12 @@ impl Parser {
 
                     _ => {
                         unexpected_token(&token, Some(&TokenEnum::Colon));
-                        exit(1);
                     }
                 }
             }
 
             _ => {
                 unexpected_token(&token, Some(&TokenEnum::Colon));
-                exit(1);
             }
         }
     }
@@ -167,7 +159,7 @@ impl Parser {
 
         let mut parse_struct = false;
 
-        if let TokenEnum::Variable(var_peeked) = &peeked.token {
+        if let TokenEnum::Variable(..) = &peeked.token {
             let next_token = self.peek_nth_token(2).token;
 
             // as we could also enter this if condition with the following assignment

@@ -1,4 +1,3 @@
-use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
@@ -10,14 +9,10 @@ use crate::{
         types::{StructMemberType, VarType},
     },
     semantic_analyzer::semantic_analyzer::CallStack,
-    trace,
     types::ASTNode,
 };
 
-use super::{
-    abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST},
-    variable::Variable,
-};
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 
 #[derive(Debug)]
 pub struct StructMember {
@@ -56,14 +51,17 @@ impl StructDecleration {
 }
 
 impl AST for StructDecleration {
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, _: &mut CallStack) -> VisitResult {
         todo!()
     }
 
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        // iterate in reverse order so that
-        for member_type in self.members.iter().rev() {
-            member_type.rhs.borrow().visit_com(v, f.clone(), asm, call_stack)
+        // iterate in reverse order because we push operations onto a stack
+        // then, at the end when popping we want to get the very first member as the first argument
+        // when we start popping from the stack
+        for member in self.members.iter().rev() {
+            println!("member: {:#?}", member);
+            member.rhs.borrow().visit_com(v, f.clone(), asm, call_stack)
         }
     }
 

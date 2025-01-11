@@ -47,24 +47,19 @@ _main:
 	
 	
 	;; Assigning local struct MyStruct
-	
 	;; Member name: x Struct offset = 32. Member offset: 0
-	
 	;; assign_local_number of type Integer
 	mov QWORD [rbp - 32], 400000000
 	
 	;; Member name: y Struct offset = 32. Member offset: 8
-	
 	;; assign_local_number of type Integer32
 	mov DWORD [rbp - 24], 2000000
 	
 	;; Member name: z Struct offset = 32. Member offset: 12
-	
 	;; assign_local_number of type Integer16
 	mov WORD [rbp - 20], 42069
 	
 	;; Member name: w Struct offset = 32. Member offset: 14
-	
 	;; assign_local_number of type Integer8
 	mov BYTE [rbp - 18], 200
 	
@@ -78,6 +73,7 @@ _main:
 	mov rdx, 4
 	syscall
 	
+	;; get_vec_for_write_number. stack_member: [rbp - 32]
 	xor rax, rax
 	mov rax, [rbp - 32]
 	call _printRAX
@@ -89,6 +85,7 @@ _main:
 	mov rdx, 4
 	syscall
 	
+	;; get_vec_for_write_number. stack_member: [rbp - 24]
 	;; no xor here
 	mov eax, [rbp - 24]
 	call _printRAX
@@ -100,6 +97,7 @@ _main:
 	mov rdx, 4
 	syscall
 	
+	;; get_vec_for_write_number. stack_member: [rbp - 20]
 	;; no xor here
 	mov ax, [rbp - 20]
 	call _printRAX
@@ -111,6 +109,7 @@ _main:
 	mov rdx, 4
 	syscall
 	
+	;; get_vec_for_write_number. stack_member: [rbp - 18]
 	;; no xor here
 	mov al, [rbp - 18]
 	call _printRAX
@@ -170,6 +169,7 @@ _main:
 	mov rdx, 4
 	syscall
 	
+	;; get_vec_for_write_number. stack_member: [rbp - 32]
 	xor rax, rax
 	mov rax, [rbp - 32]
 	call _printRAX
@@ -181,6 +181,7 @@ _main:
 	mov rdx, 4
 	syscall
 	
+	;; get_vec_for_write_number. stack_member: [rbp - 24]
 	;; no xor here
 	mov eax, [rbp - 24]
 	call _printRAX
@@ -192,6 +193,7 @@ _main:
 	mov rdx, 4
 	syscall
 	
+	;; get_vec_for_write_number. stack_member: [rbp - 20]
 	;; no xor here
 	mov ax, [rbp - 20]
 	call _printRAX
@@ -203,6 +205,7 @@ _main:
 	mov rdx, 4
 	syscall
 	
+	;; get_vec_for_write_number. stack_member: [rbp - 18]
 	;; no xor here
 	mov al, [rbp - 18]
 	call _printRAX
@@ -246,6 +249,7 @@ _main:
 	mov rdx, 4
 	syscall
 	
+	;; get_vec_for_write_number. stack_member: [rbp - 32]
 	xor rax, rax
 	mov rax, [rbp - 32]
 	call _printRAX
@@ -257,6 +261,7 @@ _main:
 	mov rdx, 4
 	syscall
 	
+	;; get_vec_for_write_number. stack_member: [rbp - 24]
 	;; no xor here
 	mov eax, [rbp - 24]
 	call _printRAX
@@ -268,6 +273,7 @@ _main:
 	mov rdx, 4
 	syscall
 	
+	;; get_vec_for_write_number. stack_member: [rbp - 20]
 	;; no xor here
 	mov ax, [rbp - 20]
 	call _printRAX
@@ -279,6 +285,7 @@ _main:
 	mov rdx, 4
 	syscall
 	
+	;; get_vec_for_write_number. stack_member: [rbp - 18]
 	;; no xor here
 	mov al, [rbp - 18]
 	call _printRAX
@@ -297,6 +304,7 @@ _main:
 	syscall
 	
 	
+	;; 'a' at '[rbp - 32]'
 	mov rsp, rbp
 	pop rbp
 	ret

@@ -1,14 +1,11 @@
-#![allow(dead_code, unused)]
+#![allow(dead_code)]
 
 use std::{
-    char,
-    io::{self, BufReader, Read},
+    io::{self, Read},
     process::{exit, ChildStderr, ChildStdout, Stdio},
     rc::Rc,
-    time::Duration,
 };
 
-use lexer::types::VarType;
 use parser::parser::Parser;
 
 use crate::{interpreter::interpreter::Interpreter, semantic_analyzer::semantic_analyzer::SemanticAnalyzer};
@@ -201,7 +198,7 @@ fn main() {
 
     if let Some(ref mut stdout) = parse_input_file(file_name.into(), COMPILE_MODE, RUN_PROGRAM, false, &linker_flags) {
         let mut str = String::new();
-        stdout.0.read_to_string(&mut str);
+        let _ = stdout.0.read_to_string(&mut str);
         println!("{:?}", str);
     }
 }

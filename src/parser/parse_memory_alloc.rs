@@ -3,10 +3,9 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     ast::{memory_alloc::MemoryAlloc, variable::Variable},
     lexer::{
-        tokens::{Number, TokenEnum},
+        tokens::{TokenEnum},
         types::VarType,
     },
-    trace,
     types::ASTNode,
 };
 

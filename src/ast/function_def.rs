@@ -1,17 +1,13 @@
 use crate::helpers::compiler_error;
 use crate::lexer::types::VarType;
-use crate::trace;
 use crate::types::ASTNode;
 
-use crate::semantic_analyzer::semantic_analyzer::{ActivationRecord, ActivationRecordType, CallStack};
+use crate::semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack};
 
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::{
-        lexer::Token,
-        tokens::{Number, TokenEnum, VariableEnum},
-    },
+    lexer::lexer::Token,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -93,44 +89,42 @@ impl AST for FunctionDefinition {
 
         self.block.borrow().visit_com(v, f, asm, call_stack);
 
-        // pop the record here
+        asm.debug_all_variable_offsets_for_function(call_stack);
+
+        // pop the record here as we have now exited the function defintion
         call_stack.pop();
 
-        asm.function_def_end(&self.name);
+        match self.block.borrow().get_node() {
+            ASTNodeEnum::Program(program) => {
+                match program.get_statements().last() {
+                    Some(last_statement) => match last_statement.borrow().get_node() {
+                        ASTNodeEnum::Jump(_) => {
+                            // nothing
+                            // asm generation for return statement AST will handle this
+                        }
+
+                        _ => {
+                            // last statement of a function is not 'return'
+                            // add return statement ourselves
+                            asm.function_def_end();
+                        }
+                    },
+
+                    None => {
+                        // empty function, add return statement
+                        asm.function_def_end();
+                    }
+                }
+            }
+
+            _ => unreachable!("Body of a function is not of type 'Program'"),
+        }
     }
 
     // TODO: This function will be visited twice, once when the interpreter calls visit, and
     // another when the function is actually called
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
-        // TODO: handle global variables and function parameters with the same name
-        for param in &self.parameters {
-            let value = match param.borrow().var_type {
-                VarType::Int => todo!(),
-                VarType::Int8 => todo!(),
-                VarType::Int16 => todo!(),
-                VarType::Int32 => todo!(),
-                VarType::Array(..) => todo!(),
-                VarType::Str => todo!(),
-                VarType::Float => todo!(),
-                VarType::Ptr(_) => todo!(),
-                VarType::Unknown => todo!(),
-                VarType::Char => todo!(),
-                VarType::Struct(_, _) => todo!(),
-                VarType::Function(_, _, _) => todo!(),
-            };
-
-            v.insert(param.borrow().var_name.clone(), VariableEnum::Number(value));
-        }
-
-        self.block.borrow().visit(v, f, call_stack);
-
-        for param in &self.parameters {
-            v.remove(&param.borrow().var_name.clone());
-        }
-
-        return VisitResult {
-            token: Box::new(TokenEnum::Unknown("".to_string())),
-        };
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, _: &mut CallStack) -> VisitResult {
+        unimplemented!();
     }
 
     fn get_token(&self) -> &Token {
@@ -143,7 +137,7 @@ impl AST for FunctionDefinition {
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         if self.is_extern_func {
-            return
+            return;
         }
 
         call_stack.push(self.name.to_string(), ActivationRecordType::Function(0));
@@ -170,7 +164,7 @@ impl AST for FunctionDefinition {
                             ASTNodeEnum::Jump(jump) => match jump.typ {
                                 JumpType::Return => {}
 
-                                JumpType::Break | JumpType::Continue  => self.return_type_error(),
+                                JumpType::Break | JumpType::Continue => self.return_type_error(),
                             },
 
                             _ => self.return_type_error(),

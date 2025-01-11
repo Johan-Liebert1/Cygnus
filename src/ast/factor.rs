@@ -3,7 +3,6 @@ use crate::lexer::tokens::Number;
 use crate::lexer::types::VarType;
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
-use crate::trace;
 use crate::{
     asm::asm::ASM,
     constants,
@@ -13,7 +12,6 @@ use crate::{
         tokens::{TokenEnum, VariableEnum},
     },
 };
-use std::process::exit;
 use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
@@ -39,11 +37,11 @@ impl Factor {
 }
 
 impl AST for Factor {
-    fn visit_com(&self, x: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+    fn visit_com(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         asm.generate_asm_factor(&self.token.token, call_stack);
     }
 
-    fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>, _: &mut CallStack) -> VisitResult {
         if constants::DEBUG_AST {
             println!("{:?}", &self);
         }
@@ -61,7 +59,6 @@ impl AST for Factor {
                         format!("Variable with name '{var_name}' not found in current scope"),
                         &self.token,
                     );
-                    exit(1);
                 }
             }
 
@@ -96,7 +93,6 @@ impl AST for Factor {
                         format!("Variable with name '{v}' not found in current scope"),
                         &self.token,
                     );
-                    exit(1);
                 }
             }
 

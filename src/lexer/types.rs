@@ -1,15 +1,11 @@
 use core::panic;
-use std::{cell::RefCell, fmt::Display, process::exit, rc::Rc};
+use std::{cell::RefCell, fmt::Display, rc::Rc};
 
-use crate::{
-    ast::{abstract_syntax_tree::AST, typedef::FunctionType, variable::Variable},
-    helpers::compiler_error,
-    trace,
-};
+use crate::{ast::variable::Variable, helpers::compiler_error};
 
 use super::{
     lexer::Token,
-    tokens::{AllOperations, Comparators, Operations},
+    tokens::{AllOperations, Operations},
 };
 
 #[derive(Debug, Clone)]
@@ -103,17 +99,16 @@ impl PartialEq for VarType {
                 return true;
             }
 
-            (VarType::Ptr(boxed), other2) | (other2, VarType::Ptr(boxed)) => **boxed == *other2,
-
+            // (VarType::Ptr(boxed), other2) | (other2, VarType::Ptr(boxed)) => **boxed == *other2,
             _ => false,
         }
     }
 }
 
 impl VarType {
-    pub fn get_pointer_type(&self) -> VarType {
+    pub fn get_underlying_pointer_type(&self) -> VarType {
         match self {
-            VarType::Ptr(inner) => inner.get_pointer_type(),
+            VarType::Ptr(inner) => inner.get_underlying_pointer_type(),
             r => r.clone(),
         }
     }
@@ -134,14 +129,12 @@ impl VarType {
                 1 => VarType::Char,
                 _ => {
                     compiler_error(format!("Cannot dereference Character"), token);
-                    exit(1);
                 }
             },
 
             t => {
                 if times_dereferenced > 0 {
                     compiler_error(format!("Cannot dereference {self}"), token);
-                    exit(1);
                 } else {
                     t.clone()
                 }
@@ -152,9 +145,14 @@ impl VarType {
     pub fn can_assign(&self, other: &VarType) -> bool {
         use VarType::*;
 
-        return match self {
+        let is_ok = match self {
             Int | Int8 | Int32 | Int16 => matches!(other, Int | Int8 | Int32 | Int16 | Char),
 
+            // Int => *other == Int,
+            // Int8 => *other == Int8 || *other == Char,
+
+            // Int32 => *other == Int32,
+            // Int16 => *other == Int16,
             Str => *other == Str,
 
             Float => matches!(other, Float),
@@ -221,10 +219,13 @@ impl VarType {
 
             Unknown => todo!(),
         };
+
+        // trace!("self: {self:?}, other: {other:?}. Can assign: {is_ok}");
+
+        return is_ok;
     }
 
     pub fn figure_out_type(&self, other: &VarType, op: AllOperations) -> VarType {
-        use Comparators::*;
         use Operations::*;
         use VarType::*;
 
@@ -295,9 +296,7 @@ impl VarType {
             (Int, Char) | (Char, Int) => {
                 let is_allowed = matches!(
                     op,
-                    AllOperations::Op(Plus) // only addition is allowed
-                    | AllOperations::Op(Minus) // only addition is allowed
-                    | AllOperations::Comparator(..) // only comparisons allowed
+                    AllOperations::Comparator(..) // only comparisons allowed
                 );
 
                 if !is_allowed {
@@ -363,7 +362,7 @@ impl VarType {
             VarType::Ptr(_) => 8,
             VarType::Array(inner_type, _) => inner_type.get_mem_alignment(),
 
-            VarType::Struct(name, members) => {
+            VarType::Struct(_, members) => {
                 let mut max = 8;
 
                 for member in members.borrow().iter() {
@@ -435,10 +434,10 @@ impl VarType {
             VarType::Int8 => "BYTE",
             VarType::Int16 => "WORD",
             VarType::Int32 => "DWORD",
+            VarType::Char => "BYTE",
 
             VarType::Str => todo!(),
             VarType::Float => todo!(),
-            VarType::Char => todo!(),
             VarType::Ptr(_) => todo!(),
             VarType::Array(_, _) => todo!(),
             VarType::Struct(_, _) => todo!(),

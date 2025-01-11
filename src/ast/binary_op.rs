@@ -1,6 +1,5 @@
 use crate::lexer::tokens::AllOperations;
 use crate::lexer::types::VarType;
-use crate::trace;
 use crate::types::ASTNode;
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
@@ -166,9 +165,11 @@ impl BinaryOP {
 
 impl AST for BinaryOP {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        self.left.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+        let left_borrow = self.left.borrow();
+        let right_borrow = self.right.borrow();
 
-        self.right.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+        left_borrow.visit_com(v, Rc::clone(&f), asm, call_stack);
+        right_borrow.visit_com(v, Rc::clone(&f), asm, call_stack);
 
         match &self.operator.token {
             TokenEnum::Op(c) => {
@@ -176,7 +177,14 @@ impl AST for BinaryOP {
                 //     trace!("line: {}, times_dereferenced: {}, op: {c}", self.get_token().line_number, self.times_dereferenced);
                 // }
 
-                asm.binary_op_nums(c.clone(), self.times_dereferenced, &self.get_type().1);
+                asm.binary_op_nums(
+                    c.clone(),
+                    self.times_dereferenced,
+                    &self.get_type().1,
+                    self.get_token(),
+                    &left_borrow.get_type().1,
+                    &right_borrow.get_type().1,
+                );
             }
 
             _ => unreachable!("Found non operator for a Binary Expression"),
@@ -233,8 +241,8 @@ impl AST for BinaryOP {
                 .get_node()
                 .figure_out_type(&self.right.borrow().get_node(), AllOperations::Op(op.clone()));
 
-            // trace!("left: {:#?}", self.left.borrow());
-            // trace!("right: {:#?}", self.right.borrow());
+            // trace!("result_type: {}, left: {}",  self.result_type, self.left.borrow().get_type().1);
+            // trace!("result_type: {}, right: {}\n", self.result_type, self.right.borrow().get_type().1);
 
             // if self.operator.line_number == 12 {
             //     trace!("self.result_type: {:#?}", self.result_type);

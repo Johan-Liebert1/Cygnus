@@ -5,26 +5,26 @@ pub struct Void;
 impl AST for Void {
     fn visit(
         &self,
-        v: &mut crate::interpreter::interpreter::Variables,
-        f: std::rc::Rc<std::cell::RefCell<crate::interpreter::interpreter::Functions>>,
-        call_stack: &mut crate::semantic_analyzer::semantic_analyzer::CallStack,
+        _: &mut crate::interpreter::interpreter::Variables,
+        _: std::rc::Rc<std::cell::RefCell<crate::interpreter::interpreter::Functions>>,
+        _: &mut crate::semantic_analyzer::semantic_analyzer::CallStack,
     ) -> super::abstract_syntax_tree::VisitResult {
         todo!()
     }
 
     fn visit_com(
         &self,
-        v: &mut crate::interpreter::interpreter::Variables,
-        f: std::rc::Rc<std::cell::RefCell<crate::interpreter::interpreter::Functions>>,
-        asm: &mut crate::asm::asm::ASM,
-        call_stack: &mut crate::semantic_analyzer::semantic_analyzer::CallStack,
+        _: &mut crate::interpreter::interpreter::Variables,
+        _: std::rc::Rc<std::cell::RefCell<crate::interpreter::interpreter::Functions>>,
+        _: &mut crate::asm::asm::ASM,
+        _: &mut crate::semantic_analyzer::semantic_analyzer::CallStack,
     ) {
     }
 
     fn semantic_visit(
         &mut self,
-        call_stack: &mut crate::semantic_analyzer::semantic_analyzer::CallStack,
-        f: std::rc::Rc<std::cell::RefCell<crate::interpreter::interpreter::Functions>>,
+        _: &mut crate::semantic_analyzer::semantic_analyzer::CallStack,
+        _: std::rc::Rc<std::cell::RefCell<crate::interpreter::interpreter::Functions>>,
     ) {
     }
 

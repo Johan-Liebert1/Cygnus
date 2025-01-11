@@ -1,13 +1,11 @@
 use crate::asm::functions::FUNCTION_ARGS_REGS;
-use crate::ast::function_def::FunctionDefinition;
 use crate::helpers::{self, compiler_error};
-use crate::lexer::keywords::{self, FUNC_SYSCALL};
+use crate::lexer::keywords::FUNC_SYSCALL;
 use crate::lexer::types::VarType;
 use crate::{trace, types::ASTNode};
 
-use crate::semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack};
+use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
-use std::fs::read;
 use std::{cell::RefCell, process::exit, rc::Rc};
 
 use crate::{
@@ -48,7 +46,7 @@ impl AST for FunctionCall {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         match self.name.as_str() {
             FUNC_WRITE => {
-                for (index, arg) in self.arguments.iter().enumerate() {
+                for arg in self.arguments.iter() {
                     arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
 
                     match arg.borrow().get_node() {
@@ -80,14 +78,16 @@ impl AST for FunctionCall {
                             TokenEnum::Number(_) => asm.func_write_number(VarType::Int),
                             TokenEnum::StringLiteral(_) => asm.func_write_string(),
 
-                            tok => unreachable!("This should be unreachable"),
+                            _ => unreachable!("This should be unreachable"),
                         },
 
                         // This will always be an integer
-                        ASTNodeEnum::LogicalExp(lo) => asm.func_write_number(todo!()),
+                        ASTNodeEnum::LogicalExp(..) => {
+                            todo!()
+                        }
 
                         // This will always be an integer
-                        ASTNodeEnum::ComparisonExp(..) => asm.func_write_number(todo!()),
+                        ASTNodeEnum::ComparisonExp(..) => todo!(),
 
                         ASTNodeEnum::FunctionCall(fc) => {
                             // if the function returns anything, then that will be in rax
@@ -190,7 +190,6 @@ impl AST for FunctionCall {
 
                                 _ => {
                                     compiler_error(format!("'{}' is not a function", &self.name), &self.token);
-                                    exit(1);
                                 }
                             }
                         }
@@ -205,7 +204,7 @@ impl AST for FunctionCall {
                     let mut float_arg_num: i32 = -1;
                     let mut non_float_arg_num: i32 = -1;
 
-                    for (index, argument) in self.arguments.iter().enumerate() {
+                    for argument in self.arguments.iter() {
                         argument.borrow().visit_com(v, f.clone(), asm, call_stack);
 
                         let arg_type = argument.borrow().get_type().1;
@@ -415,7 +414,6 @@ impl AST for FunctionCall {
 
                                 _ => {
                                     compiler_error(format!("'{}' is not a function", &self.name), &self.token);
-                                    exit(1);
                                 }
                             }
 
@@ -425,7 +423,6 @@ impl AST for FunctionCall {
 
                     if !function_found {
                         compiler_error(format!("Function '{}' is not defined", &self.name), &self.token);
-                        exit(1);
                     }
                 }
             }

@@ -1,0 +1,11 @@
+syscall(1, 1, "hello", get_len("hello"))
+
+passing strings into functions
+
+fun main() {
+    def a: char = 97; 
+    -- should not be allowed but is allowed
+    def inc: *char = a;
+}
+
+main()

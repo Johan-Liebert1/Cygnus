@@ -1,17 +1,15 @@
 use std::{
     fmt::{Debug, Display},
-    thread::sleep,
-    time::Duration,
+    rc::Rc,
 };
 
 use crate::{
     lexer::types::{TYPE_FLOAT, TYPE_STRING},
-    trace,
 };
 
 use super::{
     keywords::{self, LOGICAL_AND, LOGICAL_NOT, LOGICAL_OR},
-    tokens::{Bracket, LogicalOps, Number, Operations, TokenEnum},
+    tokens::{LogicalOps, Number, TokenEnum},
     types::{VarType, PREDEFINED_TYPES, TYPE_CHAR, TYPE_INT, TYPE_INT16, TYPE_INT32, TYPE_INT8},
 };
 
@@ -21,7 +19,7 @@ pub struct Token {
     pub line_number: usize,
     pub col_number: usize,
     pub index: usize,
-    pub file: String,
+    pub file: Rc<String>,
 }
 
 impl Display for Token {
@@ -46,7 +44,7 @@ pub struct Lexer {
     pub col_number: usize,
     pub file: Vec<u8>,
     pub index: usize,
-    pub file_name: String,
+    pub file_name: Rc<String>,
 }
 
 impl Lexer {
@@ -56,7 +54,7 @@ impl Lexer {
             col_number: 1,
             index: 0,
             file,
-            file_name,
+            file_name: Rc::new(file_name),
         }
     }
 

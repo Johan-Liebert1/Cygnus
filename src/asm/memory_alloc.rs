@@ -1,4 +1,3 @@
-use crate::trace;
 
 use super::asm::ASM;
 

@@ -1,7 +1,7 @@
 use crate::lexer::types::VarType;
 use crate::types::ASTNode;
 
-use crate::semantic_analyzer::semantic_analyzer::{ActivationRecord, ActivationRecordType, CallStack};
+use crate::semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack};
 
 use crate::{
     asm::{asm::ASM, conditionals::ConditionalJumpTo},

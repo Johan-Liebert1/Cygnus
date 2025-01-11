@@ -1,8 +1,7 @@
 use crate::{
     ast::variable::Variable,
-    helpers::{compiler_error, unexpected_token},
-    lexer::{lexer::Token, tokens::Bracket, types::VarType},
-    trace,
+    helpers::{unexpected_token},
+    lexer::{lexer::Token, types::VarType},
     types::ASTNode,
 };
 

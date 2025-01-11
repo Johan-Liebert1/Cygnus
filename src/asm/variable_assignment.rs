@@ -1,12 +1,12 @@
 use core::panic;
-use std::{cell::RefCell, fmt::format, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::{abstract_syntax_tree::ASTNodeEnum, variable::Variable},
+    ast::variable::Variable,
     lexer::{
         registers::Register,
-        tokens::{AssignmentTypes, VariableEnum},
-        types::{StructMemberType, VarType},
+        tokens::AssignmentTypes,
+        types::VarType,
     },
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
     trace,
@@ -79,7 +79,7 @@ impl ASM {
         let mut instructions = vec![];
 
         match array_access_index {
-            Some(index) => {
+            Some(..) => {
                 // We need 'rax' to be free here for the multiplication
                 let rax = if self.is_reg_locked(Register::RAX) {
                     let rbx = self.get_free_register(None);
@@ -158,18 +158,28 @@ impl ASM {
         self.extend_current_label(instructions);
     }
 
-    fn assign_local_pointer(&mut self, var_ptr_type: &Box<VarType>, var_offset: usize, times_dereferenced: usize) {
+    fn assign_local_pointer(
+        &mut self,
+        var_ptr_type: &Box<VarType>,
+        var_offset: usize,
+        times_dereferenced: usize,
+        var_name: &String,
+    ) {
         let mut instructions = vec![];
 
-        let mut is_ptr_deref = false;
+        let is_ptr_deref = times_dereferenced > 0;
 
         match *var_ptr_type.clone() {
-            VarType::Ptr(ptr_type) => self.assign_local_pointer(&ptr_type, var_offset, times_dereferenced),
+            // Pointer to a pointer
+            VarType::Ptr(ptr_type) => self.assign_local_pointer(&ptr_type, var_offset, times_dereferenced, var_name),
 
             VarType::Float => {
-                is_ptr_deref = times_dereferenced > 0;
-
-                instructions.push(format!(";; assign_local_pointer of type {}", VarType::Float));
+                instructions.push(format!(
+                    ";; {}:{} assign_local_pointer var '{var_name}' of type {}",
+                    file!(),
+                    line!(),
+                    VarType::Float
+                ));
 
                 let stack_member = self.stack_pop().unwrap();
 
@@ -205,8 +215,6 @@ impl ASM {
             // def ch: char = 'a';
             // def ch_ptr: *char = &ch;
             t => {
-                is_ptr_deref = times_dereferenced > 0;
-
                 // Let's say the following code
                 //
                 // mem array 1024 --> array starts at addr 500
@@ -222,13 +230,26 @@ impl ASM {
                 // mov rbx, [rbp - 8]
                 // mov [rbx], rax
 
-                instructions.push(format!(";; assign_local_pointer of type {}", t));
+                instructions.push(format!(
+                    ";; {}:{} assign_local_pointer var '{var_name}' of type {t}. times_dereferenced: {times_dereferenced}",
+                    file!(),
+                    line!(),
+                ));
 
                 let rax = self.get_free_register(None);
                 let rbx = self.get_free_register(None);
 
                 let stack_member = self.stack_pop().unwrap();
-                instructions.push(format!("mov {rax}, {stack_member}"));
+
+                // we don't want register 'al' for a pointer to a char if we are not
+                // dereferencing the pointer
+                let actual_rax_name = if times_dereferenced > 0 {
+                    t.get_register_name(rax)
+                } else {
+                    &String::from(rax)
+                };
+
+                instructions.push(format!("mov {}, {stack_member}", actual_rax_name));
 
                 if is_ptr_deref {
                     instructions.push(format!("mov {rbx}, [rbp - {}]", var_offset));
@@ -239,7 +260,7 @@ impl ASM {
                 }
 
                 if is_ptr_deref {
-                    instructions.push(format!("mov [{rbx}], {}", t.get_register_name(rax)));
+                    instructions.push(format!("mov [{rbx}], {}", actual_rax_name));
                 }
 
                 self.unlock_register_from_stack_value(&stack_member);
@@ -302,7 +323,7 @@ impl ASM {
                     // times_dereferenced = 0 as you cannot dereference a struct member while
                     // initializing
                     VarType::Ptr(inner_type) => {
-                        self.assign_local_pointer(&inner_type, struct_offset - struct_member.offset, 0)
+                        self.assign_local_pointer(&inner_type, struct_offset - struct_member.offset, 0, struct_name)
                     }
                     VarType::Array(type_, size) => {
                         self.assign_local_array(struct_offset - struct_member.offset, &None, &type_, &size)
@@ -328,8 +349,6 @@ impl ASM {
         times_dereferenced: usize,
         array_access_index: &Option<ASTNode>,
     ) {
-        let mut instructions = vec![];
-
         // var = variable from call stack
         match &ar_var.borrow().var_type {
             VarType::Struct(name, members) => {
@@ -358,21 +377,12 @@ impl ASM {
                 }
             }
 
-            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => {
                 self.assign_local_number(ar_var.borrow().offset, &ar_var.borrow().var_type)
             }
 
             VarType::Float => {
                 let stack_member = self.stack_pop().unwrap();
-
-                // let xmm0 = self.get_free_float_register(None);
-
-                // self.extend_current_label(vec![
-                //     format!(";; For assignemt of float var name '{}'", ar_var.borrow().var_name),
-                //     // rax contains the memory address of the floating point number
-                //     format!("mov {rax}, {}", stack_member),
-                //     format!("mov [rbp - {}], {rax}", ar_var.borrow().offset),
-                // ]);
 
                 self.extend_current_label(vec![format!(
                     "movsd [rbp - {}], {stack_member}",
@@ -387,34 +397,14 @@ impl ASM {
 
             VarType::Str => self.assign_local_string(ar_var.borrow().offset),
 
-            VarType::Char => {
-                let stack_member = self.stack_pop().unwrap();
-
-                let rax = self.get_free_register(None);
-                let rbx = self.get_free_register(None);
-
-                // TODO: Update this
-                //
-                // pop the string pointer into rax
-                // the string len should be in rbx as string len is pushed
-                // last
-                // Treat a character as a string with length of 1
-                instructions.extend([
-                    format!("mov {rbx}, 1"),
-                    // format!("pop rax"),
-                    format!("mov {rax}, {}", stack_member),
-                    format!("mov [rbp - {}], {rax}", ar_var.borrow().offset),
-                ]);
-
-                self.unlock_register_from_stack_value(&stack_member);
-                self.unlock_register(rax);
-                self.unlock_register(rbx);
-            }
-
             // Assignment to a pointer should be simple enough
-            VarType::Ptr(var_ptr_type) => {
-                self.assign_local_pointer(var_ptr_type, ar_var.borrow().offset, times_dereferenced)
-            }
+            VarType::Ptr(var_ptr_type) => self.assign_local_pointer(
+                var_ptr_type,
+                ar_var.borrow().offset,
+                times_dereferenced,
+                &ar_var.borrow().var_name,
+            ),
+
             VarType::Array(type_, size) => {
                 self.assign_local_array(ar_var.borrow().offset, &array_access_index, type_, size)
             }
@@ -430,23 +420,23 @@ impl ASM {
         times_dereferenced: usize,
         instructions: &mut Vec<String>,
     ) {
-        let mut is_string = false;
-
         match &ar_var.borrow().var_type {
             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                 let stack_member = self.stack_pop().unwrap();
 
-                let rax = self.get_free_register(None);
+                let reg_with_value = if !Register::is_reg(&stack_member) {
+                    let rax = self.get_free_register(None);
+                    instructions.push(format!("mov {rax}, {stack_member}"));
+                    self.unlock_register(rax);
 
-                instructions.push(format!("mov {rax}, {stack_member}"));
+                    &rax.into()
+                } else {
+                    &stack_member
+                };
 
                 self.unlock_register_from_stack_value(&stack_member);
 
-                instructions.push(format!("mov [{}], {rax}", ar_var.borrow().var_name));
-
-                self.unlock_register(rax);
-
-                // instructions.extend([format!("pop rax")])
+                instructions.push(format!("mov [{}], {reg_with_value}", ar_var.borrow().var_name));
             }
 
             VarType::Struct(_, _) => todo!(),
@@ -465,43 +455,60 @@ impl ASM {
                 instructions.extend([format!("mov {rbx}, {}", str_len), format!("mov {rax}, {}", str_addr)]);
 
                 unimplemented!();
-
-                is_string = true;
             }
 
             VarType::Ptr(ptr_var_type) => {
                 match **ptr_var_type {
                     VarType::Struct(_, _) => todo!(),
 
-                    VarType::Int => {
+                    VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                         let stack_member = self.stack_pop().unwrap();
 
-                        let rax = self.get_free_register(None);
+                        let value_to_assign = if stack_member.starts_with("[") {
+                            // Move from memory to memory is not allowed
+                            // so we store the value in a register first
+                            let rax = self.get_free_register(None);
+                            instructions.push(format!("mov {rax}, {}", stack_member));
+
+                            self.unlock_register(rax);
+
+                            &String::from(rax)
+                        } else {
+                            &stack_member
+                        };
+
                         let rbx = self.get_free_register(None);
 
                         self.unlock_register_from_stack_value(&stack_member);
 
-                        // Store whatever's on the top of the stack into
-                        // this memory location
-                        instructions.extend([
-                            format!("mov {rax}, {}", stack_member),
-                            format!("mov {rbx}, {}", ar_var.borrow().var_name),
-                        ]);
+                        // Move the variable into rbx, so we can dereference it
+                        instructions.push(format!("mov {rbx}, {}", ar_var.borrow().var_name));
 
-                        instructions.extend(std::iter::repeat(format!("mov {rbx}, [{rbx}]")).take(times_dereferenced));
+                        // dereference the variable/ptr to variable stored in rbx
+                        instructions
+                            .extend(std::iter::repeat(format!("mov {rbx}, [{rbx}]")).take(times_dereferenced - 1));
 
-                        instructions.push(format!("mov {rbx}, {rax}"));
-                        instructions.push(format!("mov [{}], {rbx}", ar_var.borrow().var_name));
+                        // This is to prevent cases where top_stack_member was a register
+                        // We don't want instructions like "mov rax, rax"
+                        //
+                        // Move 'top_stack_member' to whatever rbx now points to.
+                        // We have dereferenced rbx so we should either point to the pointer
+                        // memory location or the memory location of the variable that the
+                        // pointer pointed to
+                        instructions.push(format!(
+                            "mov {} [{rbx}], {value_to_assign}",
+                            ar_var
+                                .borrow()
+                                .var_type
+                                .get_underlying_pointer_type()
+                                .get_operation_size()
+                        ));
 
-                        self.unlock_register(rax);
                         self.unlock_register(rbx);
                     }
 
                     VarType::Str => todo!(),
 
-                    VarType::Int8 => todo!(),
-                    VarType::Int16 => todo!(),
-                    VarType::Int32 => todo!(),
                     VarType::Array(..) => todo!(),
                     VarType::Float => todo!(),
                     VarType::Char => todo!(),
@@ -550,10 +557,8 @@ impl ASM {
                 self.handle_local_plus_minus_eq_assignment_integer(op, borrowed_ar_var.offset)
             }
 
-            VarType::Struct(name, members) => {
+            VarType::Struct(_, members) => {
                 if variable_assigned_to.member_access.len() == 0 {
-                    trace!("{borrowed_ar_var:#?}");
-
                     unreachable!(
                         "Found '{}=' operator for a struct. This should've been caught in the semantic analysis step.",
                         if op == "add" { "+" } else { "-" }
@@ -603,7 +608,6 @@ impl ASM {
         let (var_from_call_stack, variable_scope) = call_stack.get_var_with_name(&var_name);
 
         let mut instructions = vec![];
-        let mut is_string = false;
 
         match var_from_call_stack {
             Some(ar_var) => {

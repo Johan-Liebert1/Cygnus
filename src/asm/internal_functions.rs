@@ -1,17 +1,10 @@
 use crate::{
     ast::variable::Variable,
-    helpers::compiler_error,
-    interpreter::interpreter::Variables,
-    lexer::{
-        registers::{Register, ALL_REGISTERS},
-        tokens::VariableEnum,
-        types::{VarType, TYPE_INT, TYPE_STRING},
-    },
+    lexer::{registers::Register, types::VarType},
     semantic_analyzer::semantic_analyzer::CallStack,
-    trace,
 };
 
-use super::{asm::ASM, functions::FUNCTION_ARGS_REGS};
+use super::asm::ASM;
 
 pub const SYSCALL_ARGS_REGS: [Register; 7] = [
     Register::RAX,
@@ -43,8 +36,9 @@ impl ASM {
 
         let mut instructions = vec![];
 
-        if stack_member != String::from(Register::RAX) {
+        if !Register::is_reg(&stack_member) || !Register::is(&Register::RAX, Register::from_string(&stack_member)) {
             instructions.extend(vec![
+                format!(";; get_vec_for_write_number. stack_member: {stack_member}"),
                 if matches!(type_, VarType::Int) {
                     format!("xor rax, rax")
                 } else {
@@ -182,7 +176,7 @@ impl ASM {
 
                 match user_defined_type {
                     Some(user_defined_type) => match &user_defined_type.type_ {
-                        VarType::Struct(name, members) => {
+                        VarType::Struct(_, members) => {
                             let memebers_borrow = members.borrow();
                             let var = variable.expect("Expected a variable to be passed in");
                             let found = memebers_borrow.iter().find(|x| x.name == var.member_access[0]);
@@ -228,6 +222,9 @@ impl ASM {
         }
     }
 
+    /// Simply takes the arg_num (argument number) and stores in the
+    /// registers which corresponds to that argument number in accordance with x86 calling
+    /// conventions
     pub fn func_syscall_add_arg(&mut self, arg_num: usize) {
         let mut instructions = vec![];
 
@@ -258,23 +255,11 @@ impl ASM {
 
         let mut instructions = vec![];
 
-        self.function_call_register_restore(&mut instructions);
-
         if is_result_assigned {
-            let rax = if self.is_reg_locked(Register::RAX) {
-                let rbx = self.get_free_register(None);
-
-                instructions.push(format!("mov {rbx}, rax"));
-
-                self.unlock_register(Register::RAX);
-
-                self.get_free_register(None)
-            } else {
-                self.get_free_register(None)
-            };
-
-            self.stack_push(String::from(rax));
+            self.handle_function_return_value(&mut instructions, &String::from("sycall"), &VarType::Int);
         }
+
+        self.function_call_register_restore(&mut instructions);
 
         self.extend_current_label(instructions);
     }
@@ -332,7 +317,12 @@ impl ASM {
                         self.unlock_register_from_stack_value(&stack_member);
 
                         vec![
-                            format!("mov rax, {} {}", var.var_type.get_operation_size(), stack_member),
+                            format!(";; {}:{}", file!(), line!()),
+                            format!(
+                                "mov {}, {}",
+                                var.var_type.get_register_name(Register::RAX),
+                                stack_member
+                            ),
                             format!("call _printRAX"),
                         ]
                     }

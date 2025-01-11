@@ -1,8 +1,7 @@
 use core::panic;
 
 use crate::{
-    lexer::registers::{Register, ALL_FP_REGISTERS, ALL_REGISTERS},
-    trace,
+    lexer::registers::{Register, ALL_64BIT_REGISTERS, ALL_FP_REGISTERS},
 };
 
 #[derive(Debug)]
@@ -33,13 +32,25 @@ pub struct ASM {
     /// rdi might have been locked twice
     pub regs_locked_for_func_args: Vec<Vec<Register>>,
 
-    /// Vec<Vec<Register>> to handle recursive function calls where
-    /// rdi might have been locked twice
+    /// Used to save a register's current value to the x86 stack if
+    /// that register is to be used for a function call
     pub regs_saved_for_function_call: Vec<Vec<Register>>,
+
+    all_regs: Vec<&'static str>,
 }
 
 impl Default for ASM {
     fn default() -> Self {
+        let mut all_regs = vec![];
+
+        for i in 0..ALL_64BIT_REGISTERS.len() {
+            all_regs.extend(Register::get_all_register_variants(&ALL_64BIT_REGISTERS[i]));
+        }
+
+        for fr in &ALL_FP_REGISTERS {
+            all_regs.push(fr.as_ref())
+        }
+
         Self {
             num_strings: 0,
             num_floats: 0,
@@ -79,6 +90,8 @@ impl Default for ASM {
             used_regsiters: vec![],
             regs_locked_for_func_args: vec![],
             regs_saved_for_function_call: vec![],
+
+            all_regs,
         }
     }
 }
@@ -113,7 +126,7 @@ impl ASM {
         for label in &mut self.labels {
             if label.name == self.current_label {
                 label.code.push(line);
-                label.code.push(format!(""));
+                // label.code.push(format!(""));
                 break;
             }
         }
@@ -173,14 +186,6 @@ impl ASM {
         self.stack.push(to_push);
     }
 
-    // pub fn replace_reg_on_function_call_stack(&mut self, reg_to_replace: Register, reg_to_replace_with: Register) {
-    //     for reg in &mut self.regs_locked_for_func_args {
-    //         if *reg == reg_to_replace {
-    //             *reg = reg_to_replace_with;
-    //         }
-    //     }
-    // }
-
     pub fn replace_reg_on_stack(&mut self, reg_to_replace: Register, reg_to_replace_with: Register) {
         for reg in &mut self.stack {
             if *reg == String::from(reg_to_replace) {
@@ -239,7 +244,7 @@ impl ASM {
     }
 
     pub fn get_certain_free_register(&mut self, reg_name: Register) -> Register {
-        for reg in ALL_REGISTERS {
+        for reg in ALL_64BIT_REGISTERS {
             if !self.used_regsiters.contains(&reg) && reg == reg_name {
                 self.lock_register(reg);
                 return reg;
@@ -253,7 +258,7 @@ impl ASM {
     /// Always returns in this order
     /// [RAX, RBX, RCX, RDX, RSI, RDI, RBP, R8, R9, R10, R11]
     pub fn get_free_register(&mut self, skip_list: Option<&Vec<Register>>) -> Register {
-        for reg in ALL_REGISTERS {
+        for reg in ALL_64BIT_REGISTERS {
             if !self.used_regsiters.contains(&reg) {
                 if let Some(skip_list) = skip_list {
                     if skip_list.contains(&reg) {
@@ -290,12 +295,9 @@ impl ASM {
     }
 
     pub fn is_reg_name(&mut self, name: &String) -> (bool, Register) {
-        let mut all_regs = Vec::from(ALL_REGISTERS);
-        all_regs.extend(ALL_FP_REGISTERS);
-
-        for reg_name in all_regs {
-            if *name == String::from(reg_name) {
-                return (true, reg_name);
+        for reg_name in &self.all_regs {
+            if *name == String::from(*reg_name) {
+                return (true, Register::from(*reg_name).get_64bit_version());
             }
         }
 
