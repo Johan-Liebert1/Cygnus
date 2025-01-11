@@ -183,14 +183,15 @@ impl ASM {
                     let right = self.stack_pop().unwrap();
                     let left = self.stack_pop().unwrap();
 
-                    // trace!("first: {first}, second: {second}");
-
                     let rbx = self.get_free_register(Some(&regs_to_skip));
 
                     self.unlock_register_from_stack_value(&right);
                     self.unlock_register_from_stack_value(&left);
 
                     reg_to_lock = rax;
+
+                    let rax_actual = right_type.get_register_name(rax);
+                    let rbx_actual = left_type.get_register_name(rbx);
 
                     instructions.extend(vec![
                         // 40 / 5
@@ -199,8 +200,8 @@ impl ASM {
                         format!(";; Divide clean up rdx as this might mess up the final output as 'div' stores quotient in 'rax' and remainder in 'rdx'"),
                         format!("xor rdx, rdx"),
                         format!(";; get the two operands from the stack"),
-                        format!("mov {rbx}, {}", right),
-                        format!("mov {rax}, {}", left),
+                        format!("mov {rbx_actual}, {}", right),
+                        format!("mov {rax_actual}, {}", left),
                         format!("div {rbx}"),
                     ]);
 
