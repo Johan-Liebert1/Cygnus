@@ -10,7 +10,7 @@ use std::{cell::RefCell, collections::HashMap, fs::File, rc::Rc};
 use crate::lexer::tokens::VariableEnum;
 use crate::{
     asm::asm::ASM,
-    ast::abstract_syntax_tree::{VisitResult, AST},
+    ast::abstract_syntax_tree::VisitResult,
     lexer::tokens::Number,
 };
 
@@ -120,6 +120,6 @@ impl Interpreter {
             panic!("Found unused registers");
         }
 
-        self.write_nasm();
+        let _ = self.write_nasm();
     }
 }

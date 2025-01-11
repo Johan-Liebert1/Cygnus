@@ -1,17 +1,13 @@
 use crate::helpers::compiler_error;
 use crate::lexer::types::VarType;
-use crate::trace;
 use crate::types::ASTNode;
 
-use crate::semantic_analyzer::semantic_analyzer::{ActivationRecord, ActivationRecordType, CallStack};
+use crate::semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack};
 
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::{
-        lexer::Token,
-        tokens::{Number, TokenEnum, VariableEnum},
-    },
+    lexer::lexer::Token,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -127,36 +123,8 @@ impl AST for FunctionDefinition {
 
     // TODO: This function will be visited twice, once when the interpreter calls visit, and
     // another when the function is actually called
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
-        // TODO: handle global variables and function parameters with the same name
-        for param in &self.parameters {
-            let value = match param.borrow().var_type {
-                VarType::Int => todo!(),
-                VarType::Int8 => todo!(),
-                VarType::Int16 => todo!(),
-                VarType::Int32 => todo!(),
-                VarType::Array(..) => todo!(),
-                VarType::Str => todo!(),
-                VarType::Float => todo!(),
-                VarType::Ptr(_) => todo!(),
-                VarType::Unknown => todo!(),
-                VarType::Char => todo!(),
-                VarType::Struct(_, _) => todo!(),
-                VarType::Function(_, _, _) => todo!(),
-            };
-
-            v.insert(param.borrow().var_name.clone(), VariableEnum::Number(value));
-        }
-
-        self.block.borrow().visit(v, f, call_stack);
-
-        for param in &self.parameters {
-            v.remove(&param.borrow().var_name.clone());
-        }
-
-        return VisitResult {
-            token: Box::new(TokenEnum::Unknown("".to_string())),
-        };
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, _: &mut CallStack) -> VisitResult {
+        unimplemented!();
     }
 
     fn get_token(&self) -> &Token {

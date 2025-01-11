@@ -1,7 +1,7 @@
 use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{ast::variable::Variable, semantic_analyzer::semantic_analyzer::CallStack, trace};
+use crate::{ast::variable::Variable, semantic_analyzer::semantic_analyzer::CallStack};
 
 use super::asm::ASM;
 
@@ -40,7 +40,7 @@ impl ASM {
         let to = call_stack.get_var_with_name(&format!("loop_{}_to", loop_number));
         let step = call_stack.get_var_with_name(&format!("loop_{}_step", loop_number));
 
-        let (mut from_offset, mut to_offset, mut step_offset) = (0, 0, 0);
+        let (from_offset,to_offset, step_offset);
 
         match (from, to, step) {
             ((Some(from), _), (Some(to), _), (Some(step), _)) => {
@@ -84,10 +84,8 @@ impl ASM {
 
         loop_start.push(format!("mov QWORD [rbp - {}], {} ;; from", from_offset, from));
 
-        let mut call_stack_var = None;
-
         if let Some(v) = with_var {
-            (call_stack_var, _) = call_stack.get_var_with_name(&v.borrow().var_name);
+            let (call_stack_var, _) = call_stack.get_var_with_name(&v.borrow().var_name);
 
             if call_stack_var.is_none() {
                 panic!("`call_stack_var` is none but loop has a variable")
@@ -123,7 +121,7 @@ impl ASM {
         let (to, _) = call_stack.get_var_with_name(&format!("loop_{}_to", loop_number));
         let (step, _) = call_stack.get_var_with_name(&format!("loop_{}_step", loop_number));
 
-        let (mut from_offset, mut to_offset, mut step_offset) = (0, 0, 0);
+        let (from_offset, to_offset, step_offset);
 
         match (from, to, step) {
             (Some(from), Some(to), Some(step)) => {

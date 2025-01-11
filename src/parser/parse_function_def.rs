@@ -1,9 +1,8 @@
 use crate::{
-    ast::void::Void, helpers::unexpected_token, interpreter::interpreter::FunctionHashMapValue, lexer::types::VarType,
-    trace, types::ASTNode,
+    ast::void::Void, helpers::unexpected_token, interpreter::interpreter::FunctionHashMapValue, lexer::types::VarType, types::ASTNode,
 };
 
-use std::{cell::RefCell, process::exit, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::{function_def::FunctionDefinition, variable::Variable},
@@ -56,7 +55,6 @@ impl Parser {
 
             _ => {
                 unexpected_token(&func_name_token, None);
-                exit(1);
             }
         };
 

@@ -1,12 +1,12 @@
 use core::panic;
-use std::{cell::RefCell, fmt::format, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::{abstract_syntax_tree::ASTNodeEnum, variable::Variable},
+    ast::variable::Variable,
     lexer::{
         registers::Register,
-        tokens::{AssignmentTypes, VariableEnum},
-        types::{StructMemberType, VarType},
+        tokens::AssignmentTypes,
+        types::VarType,
     },
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
     trace,
@@ -79,7 +79,7 @@ impl ASM {
         let mut instructions = vec![];
 
         match array_access_index {
-            Some(index) => {
+            Some(..) => {
                 // We need 'rax' to be free here for the multiplication
                 let rax = if self.is_reg_locked(Register::RAX) {
                     let rbx = self.get_free_register(None);
@@ -349,12 +349,6 @@ impl ASM {
         times_dereferenced: usize,
         array_access_index: &Option<ASTNode>,
     ) {
-        trace!(
-            "handle_local_eq_assignment var_name: {}, var_type: {}",
-            ar_var.borrow().var_name,
-            ar_var.borrow().var_type
-        );
-
         // var = variable from call stack
         match &ar_var.borrow().var_type {
             VarType::Struct(name, members) => {
@@ -426,8 +420,6 @@ impl ASM {
         times_dereferenced: usize,
         instructions: &mut Vec<String>,
     ) {
-        let mut is_string = false;
-
         match &ar_var.borrow().var_type {
             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
                 let stack_member = self.stack_pop().unwrap();
@@ -463,8 +455,6 @@ impl ASM {
                 instructions.extend([format!("mov {rbx}, {}", str_len), format!("mov {rax}, {}", str_addr)]);
 
                 unimplemented!();
-
-                is_string = true;
             }
 
             VarType::Ptr(ptr_var_type) => {
@@ -567,7 +557,7 @@ impl ASM {
                 self.handle_local_plus_minus_eq_assignment_integer(op, borrowed_ar_var.offset)
             }
 
-            VarType::Struct(name, members) => {
+            VarType::Struct(_, members) => {
                 if variable_assigned_to.member_access.len() == 0 {
                     unreachable!(
                         "Found '{}=' operator for a struct. This should've been caught in the semantic analysis step.",
@@ -618,7 +608,6 @@ impl ASM {
         let (var_from_call_stack, variable_scope) = call_stack.get_var_with_name(&var_name);
 
         let mut instructions = vec![];
-        let mut is_string = false;
 
         match var_from_call_stack {
             Some(ar_var) => {

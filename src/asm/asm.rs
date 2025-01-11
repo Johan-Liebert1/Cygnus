@@ -2,7 +2,6 @@ use core::panic;
 
 use crate::{
     lexer::registers::{Register, ALL_64BIT_REGISTERS, ALL_FP_REGISTERS},
-    trace,
 };
 
 #[derive(Debug)]

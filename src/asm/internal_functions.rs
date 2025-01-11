@@ -1,17 +1,10 @@
 use crate::{
     ast::variable::Variable,
-    helpers::compiler_error,
-    interpreter::interpreter::Variables,
-    lexer::{
-        registers::{Register, ALL_64BIT_REGISTERS},
-        tokens::VariableEnum,
-        types::{VarType, TYPE_INT, TYPE_STRING},
-    },
+    lexer::{registers::Register, types::VarType},
     semantic_analyzer::semantic_analyzer::CallStack,
-    trace,
 };
 
-use super::{asm::ASM, functions::FUNCTION_ARGS_REGS};
+use super::asm::ASM;
 
 pub const SYSCALL_ARGS_REGS: [Register; 7] = [
     Register::RAX,
@@ -183,7 +176,7 @@ impl ASM {
 
                 match user_defined_type {
                     Some(user_defined_type) => match &user_defined_type.type_ {
-                        VarType::Struct(name, members) => {
+                        VarType::Struct(_, members) => {
                             let memebers_borrow = members.borrow();
                             let var = variable.expect("Expected a variable to be passed in");
                             let found = memebers_borrow.iter().find(|x| x.name == var.member_access[0]);

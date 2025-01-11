@@ -20,7 +20,7 @@ impl ASM {
         left_type: &VarType,
         right_type: &VarType,
     ) {
-        let mut reg_to_lock = Register::RAX;
+        let reg_to_lock: Register;
 
         let mut instructions = match op {
             Operations::Plus => {
@@ -31,7 +31,7 @@ impl ASM {
                     let xmm0 = self.get_free_float_register(None);
                     let xmm1 = self.get_free_float_register(None);
 
-                    let mut inst = vec![
+                    let inst = vec![
                         format!(";; Plus get the two operands from the stack"),
                         format!("movsd {xmm0}, {}", right),
                         format!("movsd {xmm1}, {}", left),
@@ -56,7 +56,7 @@ impl ASM {
                     let rax_actual = result_type.get_register_name(rax);
                     let rbx_actual = result_type.get_register_name(rbx);
 
-                    let mut inst = vec![
+                    let inst = vec![
                         format!(";; Plus get the two operands from the stack"),
                         format!("mov {rax_actual}, {}", right),
                         format!("mov {rbx_actual}, {}", left),
@@ -86,7 +86,7 @@ impl ASM {
                     let xmm0 = self.get_free_float_register(None);
                     let xmm1 = self.get_free_float_register(None);
 
-                    let mut inst = vec![
+                    let inst = vec![
                         format!(";; Minus get the two operands from the stack"),
                         format!("movsd {xmm0}, {}", left),
                         format!("movsd {xmm1}, {}", right),
@@ -111,7 +111,7 @@ impl ASM {
                     let rax_actual = result_type.get_register_name(rax);
                     let rbx_actual = result_type.get_register_name(rbx);
 
-                    let mut inst = vec![
+                    let inst = vec![
                         format!(";; Minus get the two operands from the stack. Result type: {result_type}. Token: {token:?}"),
                         format!("mov {rbx_actual}, {}", right),
                         format!("mov {rax_actual}, {}", left),
@@ -137,7 +137,7 @@ impl ASM {
                     let xmm0 = self.get_free_float_register(None);
                     let xmm1 = self.get_free_float_register(None);
 
-                    let mut inst = vec![
+                    let inst = vec![
                         format!(";; Plus get the two operands from the stack"),
                         format!("movsd {xmm0}, {}", left),
                         format!("movsd {xmm1}, {}", right),
@@ -219,7 +219,7 @@ impl ASM {
                     let xmm0 = self.get_free_float_register(None);
                     let xmm1 = self.get_free_float_register(None);
 
-                    let mut inst = vec![
+                    let inst = vec![
                         format!(";; Plus get the two operands from the stack"),
                         format!("movsd {xmm0}, {}", right),
                         format!("movsd {xmm1}, {}", left),

@@ -27,7 +27,7 @@ fn try_to_compile_example(file_name: &str) -> (String, String) {
 
     match command {
         Ok(mut child) => {
-            let sss = child.stderr.take().unwrap().read_to_string(&mut stderr);
+            let _ = child.stderr.take().unwrap().read_to_string(&mut stderr);
         }
 
         Err(err) => println!("Failed to spawn process err {:?}", err),

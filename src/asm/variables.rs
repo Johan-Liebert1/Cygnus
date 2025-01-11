@@ -1,16 +1,12 @@
 use core::panic;
-use std::{cell::RefCell, fmt::format, rc::Rc, string};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    ast::{
-        abstract_syntax_tree::AST,
-        variable::{self, Variable},
-    },
+    ast::variable::Variable,
     interpreter::interpreter::Functions,
     lexer::{
         registers::{get_register_name_for_bits, Register},
-        tokens::VariableEnum,
-        types::{StructMemberType, VarType, TYPE_FLOAT, TYPE_INT},
+        types::{StructMemberType, VarType},
     },
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
     trace,
@@ -89,7 +85,7 @@ impl ASM {
         self.stack_push(String::from(rax_actual_name));
     }
 
-    fn handle_local_ptr_str(&mut self, var_type: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
+    fn handle_local_ptr_str(&mut self, _: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
         if variable.dereference {
             let rax = self.get_free_register(None);
             let rbx = self.get_free_register(None);
@@ -127,7 +123,7 @@ impl ASM {
 
     fn handle_local_ptr_struct(
         &mut self,
-        var_type: &Box<VarType>,
+        _: &Box<VarType>,
         variable: &RequiredVarFields,
         ar_var_offset: usize,
         struct_name: &String,
@@ -227,7 +223,7 @@ impl ASM {
         }
     }
 
-    fn handle_local_ptr_char(&mut self, var_type: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
+    fn handle_local_ptr_char(&mut self, _: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
         // TODO: Differentiate btw pointer to the first char of a string and a pointer to a
         // single char
         if variable.dereference {
@@ -252,7 +248,6 @@ impl ASM {
 
         if variable.store_address {
             todo!();
-            return;
         }
 
         let rax = self.get_free_register(None);
@@ -368,7 +363,7 @@ impl ASM {
     }
 
     // need the var_type for struct member access as struct_name.member as the type 'struct_name'
-    fn handle_local_int_float(&mut self, variable: &Variable, ar_var_offset: usize, actual_var_type: &VarType) {
+    fn handle_local_int_float(&mut self, variable: &Variable, ar_var_offset: usize, _: &VarType) {
         if variable.dereference {
             unreachable!("Found dereferenced float/int/char in ASM generation. This has to be caught in the semantic analysis step.");
         }
@@ -525,8 +520,8 @@ impl ASM {
                     self.stack_push(String::from(rax));
                 } else {
                     todo!("need to get the string length as well");
-                    self.add_to_current_label(format!("mov {rax}, [{var_name}]"));
-                    self.stack_push(String::from(rax));
+                    // self.add_to_current_label(format!("mov {rax}, [{var_name}]"));
+                    // self.stack_push(String::from(rax));
                 }
             }
 
@@ -541,7 +536,7 @@ impl ASM {
         }
     }
 
-    fn handle_local_function_pointer(&mut self, variable: &Variable, ar_var: &Rc<RefCell<Variable>>) {
+    fn handle_local_function_pointer(&mut self, ar_var: &Rc<RefCell<Variable>>) {
         let rax = self.get_free_register(None);
 
         self.add_to_current_label(format!("mov {rax}, [rbp - {}]", ar_var.borrow().offset));
@@ -594,8 +589,6 @@ impl ASM {
                     return;
                 }
 
-                let offset = first;
-
                 // TODO: handle struct inside struct here
                 let borrow = member_access.borrow();
                 let found = borrow.iter().find(|x| x.name == variable.member_access[0]);
@@ -635,7 +628,7 @@ impl ASM {
             }
 
             VarType::Function(_, _, _) => {
-                self.handle_local_function_pointer(variable, ar_var);
+                self.handle_local_function_pointer(ar_var);
             }
 
             VarType::Unknown => todo!(),

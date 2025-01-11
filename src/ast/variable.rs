@@ -1,12 +1,10 @@
 use crate::{
     helpers::{self, compiler_error},
-    lexer::types::{VarType, TYPE_FLOAT, TYPE_INT, TYPE_STRING},
+    lexer::types::VarType,
     semantic_analyzer::semantic_analyzer::CallStack,
-    trace,
     types::ASTNode,
 };
 
-use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
@@ -121,7 +119,7 @@ impl AST for Variable {
         asm.gen_asm_for_var(&self, f, &call_stack);
     }
 
-    fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, _: &mut CallStack) -> VisitResult {
         todo!()
     }
 

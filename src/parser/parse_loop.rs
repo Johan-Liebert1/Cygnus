@@ -1,15 +1,11 @@
 use crate::{
     ast::variable::Variable,
     helpers::{compiler_error, unexpected_keyword, unexpected_token},
-    lexer::{
-        keywords::WITH,
-        types::{VarType, TYPE_INT},
-    },
-    trace,
+    lexer::{keywords::WITH, types::VarType},
     types::ASTNode,
 };
 
-use std::{cell::RefCell, process::exit, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::{ast_loop::Loop, factor::Factor},
@@ -135,16 +131,14 @@ impl Parser {
                                 0,
                             )))),
 
-                            (ref t) => {
+                            _ => {
                                 unexpected_token(&peek_next_token, Some(&TokenEnum::Variable("".into())));
-                                exit(1);
                             }
                         }
                     }
 
                     word => {
                         unexpected_keyword(&next_token, word, Some(WITH));
-                        exit(1);
                     }
                 }
             }

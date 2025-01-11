@@ -1,24 +1,14 @@
-use crate::trace;
-use crate::types::ASTNode;
-
-use crate::semantic_analyzer::semantic_analyzer::{ActivationRecord, ActivationRecordType, CallStack};
+use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::{
-        lexer::Token,
-        tokens::{Number, TokenEnum, VariableEnum},
-        types::VarType,
-    },
+    lexer::{lexer::Token, types::VarType},
 };
 use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut};
-use super::{
-    abstract_syntax_tree::{VisitResult, AST},
-    variable::Variable,
-};
+use super::abstract_syntax_tree::{VisitResult, AST};
 
 #[derive(Debug)]
 pub enum TypedefType {
@@ -50,15 +40,15 @@ impl Typedef {
 }
 
 impl AST for Typedef {
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, _: &mut CallStack) -> VisitResult {
         todo!()
     }
 
-    fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
+    fn visit_com(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, _: &mut ASM, _: &mut CallStack) {
         todo!()
     }
 
-    fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
+    fn semantic_visit(&mut self, _: &mut CallStack, _: Rc<RefCell<Functions>>) {
         todo!()
     }
 

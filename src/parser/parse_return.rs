@@ -1,4 +1,4 @@
-use std::{cell::RefCell, process::exit, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::jump::{Jump, JumpType},
@@ -35,7 +35,6 @@ impl Parser {
 
                 _ => {
                     unexpected_token(&peek_next, None);
-                    exit(1);
                 }
             },
 
@@ -46,7 +45,6 @@ impl Parser {
 
             _ => {
                 unexpected_token(&peek_next, None);
-                exit(1);
             }
         };
 

@@ -1,22 +1,16 @@
 use crate::{
-    asm::binary_op,
-    ast::{
-        abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, AST},
-        array::Array,
-        variable::Variable,
-    },
+    ast::{abstract_syntax_tree::ASTNodeEnumMut, array::Array, variable::Variable},
     helpers::unexpected_token,
     lexer::{keywords::AS, lexer::Token, tokens::Operations, types::VarType},
-    trace,
     types::ASTNode,
 };
 
-use std::{cell::RefCell, process::exit, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::factor::Factor,
-    constants, helpers,
-    lexer::tokens::{Bracket, Number, TokenEnum},
+    helpers,
+    lexer::tokens::{Bracket, TokenEnum},
 };
 
 use super::parser::Parser;
@@ -136,8 +130,6 @@ impl Parser {
                             panic!("Unclosed (");
                         }
                     };
-
-                    return return_value;
                 }
 
                 Bracket::RParen => match self.bracket_stack.last() {
@@ -212,7 +204,7 @@ impl Parser {
 
                 if let TokenEnum::Bracket(Bracket::LParen) = self.peek_next_token().token {
                     self.validate_token(TokenEnum::Bracket(Bracket::LParen));
-                    let mut exp = self.parse_expression();
+                    let exp = self.parse_expression();
                     self.validate_token(TokenEnum::Bracket(Bracket::RParen));
 
                     match exp.borrow_mut().get_node_mut() {
@@ -234,7 +226,7 @@ impl Parser {
                 //
                 // *(str as *char) + 3 will be counted as *(str as *char + 3) which is
                 // incredibly wrong
-                let mut exp = self.parse_factor();
+                let exp = self.parse_factor();
 
                 match exp.borrow_mut().get_node_mut() {
                     ASTNodeEnumMut::Variable(ref mut var) => {
@@ -252,7 +244,7 @@ impl Parser {
 
             TokenEnum::Ampersand => {
                 // consume '&'
-                let get_next_token = self.get_next_token();
+                self.get_next_token();
 
                 let next_next_token = self.peek_next_token();
 
@@ -274,14 +266,12 @@ impl Parser {
 
                     _ => {
                         helpers::unexpected_token(&next_next_token, Some(&TokenEnum::Variable("".into())));
-                        exit(1);
                     }
                 }
             }
 
             _ => {
                 helpers::unexpected_token(&next_token, None);
-                exit(1);
             }
         }
     }

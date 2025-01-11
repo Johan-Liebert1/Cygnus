@@ -1,12 +1,5 @@
 use crate::{
-    ast::abstract_syntax_tree::ASTNodeEnum,
-    lexer::{
-        tokens::{AssignmentTypes, VariableEnum},
-        types::VarType,
-    },
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
-    trace,
-    types::ASTNode,
 };
 
 use super::asm::ASM;

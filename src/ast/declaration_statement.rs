@@ -9,10 +9,7 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::{
-        lexer::Token,
-        tokens::{TokenEnum, VariableEnum},
-    },
+    lexer::lexer::Token,
 };
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut};
@@ -87,12 +84,7 @@ impl AST for DeclarationStatement {
         }
     }
 
-    fn visit(
-        &self,
-        vars: &mut Variables,
-        functions: Rc<RefCell<Functions>>,
-        call_stack: &mut CallStack,
-    ) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, _: &mut CallStack) -> VisitResult {
         unimplemented!()
     }
 
@@ -107,12 +99,6 @@ impl AST for DeclarationStatement {
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
         if let Some(right_node) = &self.right {
             right_node.borrow_mut().semantic_visit(call_stack, f.clone());
-        }
-
-        // Before inserting in the call stack we need the type of the variable to calculate its
-        // size
-        {
-            let left_mut = self.left.borrow_mut();
         }
 
         call_stack.insert_variable(Rc::clone(&self.left));

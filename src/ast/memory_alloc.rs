@@ -1,4 +1,4 @@
-use std::{cell::RefCell, process::exit, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     asm::asm::ASM,
@@ -9,7 +9,6 @@ use crate::{
         types::VarType,
     },
     semantic_analyzer::semantic_analyzer::CallStack,
-    trace,
 };
 
 use super::{
@@ -35,7 +34,7 @@ impl MemoryAlloc {
 }
 
 impl AST for MemoryAlloc {
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, _: &mut CallStack) -> VisitResult {
         todo!()
     }
 
@@ -43,7 +42,6 @@ impl AST for MemoryAlloc {
         call_stack.insert_variable(Rc::clone(&self.variable));
 
         // The size has to be known at compile time
-
         let result = self.size.borrow().visit(v, f, call_stack);
 
         let size = match *result.token {
@@ -54,7 +52,6 @@ impl AST for MemoryAlloc {
                             "Memory size must be a positive integer",
                             self.size.borrow().get_token(),
                         );
-                        exit(1);
                     } else {
                         i
                     }
@@ -65,7 +62,6 @@ impl AST for MemoryAlloc {
                         "Memory to be allocated has to be an integer",
                         self.size.borrow().get_token(),
                     );
-                    exit(1);
                 }
             },
 
@@ -74,7 +70,6 @@ impl AST for MemoryAlloc {
                     "Memory to be allocated has to be a number",
                     self.size.borrow().get_token(),
                 );
-                exit(1);
             }
         };
 

@@ -1,15 +1,11 @@
 use core::panic;
-use std::{cell::RefCell, fmt::Display, process::exit, rc::Rc};
+use std::{cell::RefCell, fmt::Display, rc::Rc};
 
-use crate::{
-    ast::{abstract_syntax_tree::AST, typedef::FunctionType, variable::Variable},
-    helpers::compiler_error,
-    trace,
-};
+use crate::{ast::variable::Variable, helpers::compiler_error};
 
 use super::{
     lexer::Token,
-    tokens::{AllOperations, Comparators, Operations},
+    tokens::{AllOperations, Operations},
 };
 
 #[derive(Debug, Clone)]
@@ -133,14 +129,12 @@ impl VarType {
                 1 => VarType::Char,
                 _ => {
                     compiler_error(format!("Cannot dereference Character"), token);
-                    exit(1);
                 }
             },
 
             t => {
                 if times_dereferenced > 0 {
                     compiler_error(format!("Cannot dereference {self}"), token);
-                    exit(1);
                 } else {
                     t.clone()
                 }
@@ -232,7 +226,6 @@ impl VarType {
     }
 
     pub fn figure_out_type(&self, other: &VarType, op: AllOperations) -> VarType {
-        use Comparators::*;
         use Operations::*;
         use VarType::*;
 
@@ -369,7 +362,7 @@ impl VarType {
             VarType::Ptr(_) => 8,
             VarType::Array(inner_type, _) => inner_type.get_mem_alignment(),
 
-            VarType::Struct(name, members) => {
+            VarType::Struct(_, members) => {
                 let mut max = 8;
 
                 for member in members.borrow().iter() {

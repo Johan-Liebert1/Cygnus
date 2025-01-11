@@ -1,8 +1,4 @@
-use crate::{
-    ast::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut},
-    trace,
-    types::ASTNode,
-};
+use crate::types::ASTNode;
 
 use std::{cell::RefCell, rc::Rc};
 
@@ -17,18 +13,7 @@ impl Parser {
     /// EXPRESSION -> BINARY_OP (+|-) BINARY_OP
     /// for precedence as term will be calculated first
     pub fn parse_expression(&mut self) -> ASTNode {
-        let bracket_stack_len = self.bracket_stack.len();
-        // trace!("Before parsing term BracketStack: {:?}", self.bracket_stack);
-
         let mut result = self.parse_term();
-
-        // trace!("After parsing term BracketStack: {:?}\n\n", self.bracket_stack);
-
-        // trace!(
-        //     "Frist Term: {}. BracketStack: {:?}\n\n",
-        //     result.borrow().get_node(),
-        //     self.bracket_stack
-        // );
 
         loop {
             let next_token = self.peek_next_token();
@@ -38,13 +23,7 @@ impl Parser {
                     Operations::Plus | Operations::Minus => {
                         self.get_next_token();
 
-                        let mut term = self.parse_term();
-
-                        // trace!(
-                        //     "=== Term: {}. BracketStack: {:?}\n\n",
-                        //     term.borrow().get_node(),
-                        //     self.bracket_stack
-                        // );
+                        let term = self.parse_term();
 
                         // If we have *a + b, term would be a Variable('a') and bracket_stack would
                         // have the same number of elements as before us parsing the term

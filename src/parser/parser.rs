@@ -1,17 +1,16 @@
 use crate::{
-    ast::{abstract_syntax_tree::AST, typedef::Typedef, void::Void},
+    ast::{typedef::Typedef, void::Void},
     helpers::{self, compiler_error, unexpected_token},
     lexer::{
         keywords::{CONST_VAR_DEFINE, CONTINUE, EXTERN, INCLUDE, MEM, STRUCT, TYPE_DEF},
-        tokens::{Number, Operations},
+        tokens::Operations,
         types::VarType,
     },
-    trace,
     types::ASTNode,
 };
 
 use core::panic;
-use std::{cell::RefCell, collections::HashMap, fs, mem, path::Path, process::exit, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, fs, mem, path::Path, rc::Rc};
 
 use crate::{
     ast::{
@@ -95,7 +94,6 @@ impl Parser {
 
         if token.token != token_expected {
             helpers::unexpected_token(&token, Some(&token_expected));
-            exit(1);
         }
 
         return token;
@@ -207,7 +205,7 @@ impl Parser {
 
                         let included_file_tok = self.peek_next_token();
 
-                        let mut file_path = String::new();
+                        let file_path: String;
 
                         if let TokenEnum::StringLiteral(fp) = included_file_tok.token {
                             self.get_next_token();
@@ -243,17 +241,14 @@ impl Parser {
 
                     ELSE_STATEMENT => {
                         compiler_error("Found 'else' without an 'if' {:?}", &current_token);
-                        exit(1);
                     }
 
                     ELIF_STATEMENT => {
                         compiler_error("Found 'elif' without an 'if' {:?}", &current_token);
-                        exit(1);
                     }
 
                     _ => {
                         compiler_error(format!("Keyword '{}' not recognised", keyword), &current_token);
-                        exit(1);
                     }
                 }
             }
@@ -281,7 +276,7 @@ impl Parser {
                                 // array[7] = 43
                                 let var_token = self.get_next_token();
 
-                                let next_token = self.get_next_token();
+                                self.get_next_token();
 
                                 let array_access_index = self.parse_logical_expression();
 
@@ -322,7 +317,6 @@ impl Parser {
                         self.parse_assignment_statement(token.clone(), var_name.into(), times_dereferenced, None)
                     } else {
                         unexpected_token(&token, Some(&TokenEnum::Variable("".into())));
-                        exit(1);
                     }
                 }
 
@@ -334,9 +328,8 @@ impl Parser {
                 Operations::Modulo => todo!(),
             },
 
-            TokenEnum::LogicalOp(op) => {
+            TokenEnum::LogicalOp(..) => {
                 helpers::unexpected_token(&current_token, None);
-                exit(1);
             }
 
             TokenEnum::StringLiteral(_) => todo!(),

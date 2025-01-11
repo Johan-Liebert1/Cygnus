@@ -1,14 +1,12 @@
-use std::{cell::RefCell, fmt::format, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::variable::Variable,
-    helpers::compiler_error,
     lexer::{
         registers::{Register, ALL_64BIT_REGISTERS, ALL_FP_REGISTERS},
         types::VarType,
     },
-    semantic_analyzer::semantic_analyzer::{ActivationRecord, CallStack},
-    trace,
+    semantic_analyzer::semantic_analyzer::CallStack,
 };
 
 use super::asm::ASM;
@@ -82,7 +80,7 @@ impl ASM {
     fn handle_non_float_function_call_arg(&mut self, arg_num: usize) {
         let mut instructions = vec![];
 
-        let mut arg_reg = FUNCTION_ARGS_REGS[arg_num];
+        let arg_reg = FUNCTION_ARGS_REGS[arg_num];
 
         let stack_member = self.stack_pop().unwrap();
 
@@ -110,7 +108,7 @@ impl ASM {
     fn handle_float_function_call_arg(&mut self, arg_num: usize) {
         let stack_member = self.stack_pop().unwrap();
 
-        let mut arg_reg = FUNCTION_FLOAT_ARGS_REGS[arg_num];
+        let arg_reg = FUNCTION_FLOAT_ARGS_REGS[arg_num];
 
         self.extend_current_label(vec![
             format!(";; Moving float argument number {}", arg_num + 1),
@@ -227,7 +225,7 @@ impl ASM {
     pub fn function_call(
         &mut self,
         function_name: &String,
-        num_args: usize,
+        _num_args: usize,
         func_return_type: &VarType,
         is_function_pointer_call: bool,
         call_stack: &CallStack,

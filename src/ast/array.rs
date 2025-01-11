@@ -7,7 +7,6 @@ use crate::{
     interpreter::interpreter::{Functions, Variables},
     lexer::{lexer::Token, types::VarType},
     semantic_analyzer::semantic_analyzer::CallStack,
-    trace,
     types::ASTNode,
 };
 
@@ -49,7 +48,7 @@ impl Array {
 }
 
 impl AST for Array {
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, _: &mut CallStack) -> VisitResult {
         todo!()
     }
 

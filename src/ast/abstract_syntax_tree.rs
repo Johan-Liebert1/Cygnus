@@ -1,4 +1,4 @@
-use core::{fmt, panic};
+use core::fmt;
 use std::{
     cell::RefCell,
     fmt::{Debug, Display},
@@ -14,7 +14,6 @@ use crate::{
         types::VarType,
     },
     semantic_analyzer::semantic_analyzer::CallStack,
-    trace,
 };
 
 use super::{
@@ -221,48 +220,45 @@ impl<'a> ASTNodeEnum<'a> {
 
         return match self {
             Factor(f) => {
-                let (actual_type, result_type) = f.get_type();
-
-                // trace!("'{}' Factor: {actual_type:?}, {result_type:?}", variable.var_name);
-
+                let (actual_type, _) = f.get_type();
                 (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
 
             BinaryOp(f) => {
-                let (actual_type, result_type) = f.get_type();
+                let (actual_type, _) = f.get_type();
                 (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
             ComparisonExp(f) => {
-                let (actual_type, result_type) = f.get_type();
+                let (actual_type, _) = f.get_type();
                 (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
             FunctionCall(f) => {
-                let (actual_type, result_type) = f.get_type();
+                let (actual_type, _) = f.get_type();
                 (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
             LogicalExp(f) => {
-                let (actual_type, result_type) = f.get_type();
+                let (actual_type, _) = f.get_type();
                 (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
             Variable(f) => {
-                let (actual_type, result_type) = f.get_type();
+                let (actual_type, _) = f.get_type();
 
-                // trace!("\n\n=======================================\nf's actual_type: {actual_type:#?}, result_type: {result_type:#?}");
-                // trace!("variable's actual_type: {:#?}, result_type: {:#?}", variable.get_type().0, variable.get_type().1);
+                // trace!("\n\n=======================================\nf's actual_type: {actual_type:#?}, _: {_:#?}");
+                // trace!("variable's actual_type: {:#?}, _: {:#?}", variable.get_type().0, variable.get_type().1);
 
                 (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
             MemoryAlloc(f) => {
-                let (actual_type, result_type) = f.get_type();
+                let (actual_type, _) = f.get_type();
                 (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
             Array(f) => {
-                let (actual_type, result_type) = f.get_type();
+                let (actual_type, _) = f.get_type();
                 (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
 
             Struct(f) => {
-                let (actual_type, result_type) = f.get_type();
+                let (actual_type, _) = f.get_type();
                 (actual_type.can_assign(&variable.get_type().0), actual_type)
             }
 

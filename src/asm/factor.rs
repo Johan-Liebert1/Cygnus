@@ -1,15 +1,13 @@
 use crate::{
-    helpers::compiler_error,
     lexer::tokens::{Number, TokenEnum},
-    semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
-    trace,
+    semantic_analyzer::semantic_analyzer::CallStack,
 };
 
 use super::asm::ASM;
 
 impl ASM {
     /// Pushes whatever token's in here onto the stack
-    pub fn generate_asm_factor(&mut self, token: &TokenEnum, call_stack: &CallStack) {
+    pub fn generate_asm_factor(&mut self, token: &TokenEnum, _: &CallStack) {
         let mut instructions: Vec<String> = vec![];
 
         match token {

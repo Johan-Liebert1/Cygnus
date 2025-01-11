@@ -6,7 +6,6 @@ use crate::{lexer::tokens::AssignmentTypes, types::ASTNode};
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
 use core::panic;
-use std::process::exit;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{

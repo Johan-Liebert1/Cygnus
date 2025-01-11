@@ -13,7 +13,7 @@ pub fn get_file_result(file_name: &str) -> String {
     match file_result {
         Ok(res) => res,
         Err(err) => {
-            eprint!("No such file {file_name}");
+            eprint!("Failed to read file {file_name}, with error: {err}");
             exit(1);
         }
     }
@@ -24,8 +24,8 @@ pub fn get_stdout_and_actual_result(file_name: &str) -> (String, String, String)
     let mut stderr_str = String::new();
 
     if let Some(ref mut stdout) = parse_input_file(format!("./examples/{}", file_name), true, true, true, &vec![]) {
-        stdout.0.read_to_string(&mut stdout_str);
-        stdout.1.read_to_string(&mut stderr_str);
+        let _ = stdout.0.read_to_string(&mut stdout_str);
+        let _ = stdout.1.read_to_string(&mut stderr_str);
     }
 
     return (stdout_str, stderr_str, get_file_result(file_name));

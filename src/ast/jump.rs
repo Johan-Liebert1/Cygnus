@@ -1,17 +1,15 @@
 use crate::{
     helpers::compiler_error,
     lexer::{lexer::Token, types::VarType},
-    semantic_analyzer::semantic_analyzer::{CallStack, PopTypes},
-    trace,
+    semantic_analyzer::semantic_analyzer::CallStack,
     types::ASTNode,
 };
 
-use std::{cell::RefCell, process::exit, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     asm::asm::ASM,
     interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::TokenEnum,
 };
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
@@ -53,13 +51,8 @@ impl Jump {
 }
 
 impl AST for Jump {
-    fn visit(&self, _v: &mut Variables, _f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(&self, _v: &mut Variables, _f: Rc<RefCell<Functions>>, _: &mut CallStack) -> VisitResult {
         todo!();
-
-        // this is pretty straightforward. We simply return
-        return VisitResult {
-            token: Box::new(TokenEnum::Unknown("".into())),
-        };
     }
 
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
@@ -120,7 +113,6 @@ impl AST for Jump {
                         ),
                         &self.token,
                     );
-                    exit(1);
                 }
             } else {
                 return;

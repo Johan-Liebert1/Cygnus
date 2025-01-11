@@ -1,6 +1,4 @@
-use std::{thread::sleep, time::Duration};
 
-use crate::trace;
 
 use super::{
     lexer::{Lexer, Token},
@@ -52,10 +50,6 @@ impl Lexer {
     }
 
     fn advance_to_next_token(&mut self) -> Token {
-        let index = self.index;
-        let col_number = self.col_number;
-        let line_number = self.line_number;
-
         while self.index < self.file.len() {
             let character = self.file[self.index] as char;
 

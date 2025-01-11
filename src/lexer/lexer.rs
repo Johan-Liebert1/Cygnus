@@ -1,18 +1,15 @@
 use std::{
     fmt::{Debug, Display},
     rc::Rc,
-    thread::sleep,
-    time::Duration,
 };
 
 use crate::{
     lexer::types::{TYPE_FLOAT, TYPE_STRING},
-    trace,
 };
 
 use super::{
     keywords::{self, LOGICAL_AND, LOGICAL_NOT, LOGICAL_OR},
-    tokens::{Bracket, LogicalOps, Number, Operations, TokenEnum},
+    tokens::{LogicalOps, Number, TokenEnum},
     types::{VarType, PREDEFINED_TYPES, TYPE_CHAR, TYPE_INT, TYPE_INT16, TYPE_INT32, TYPE_INT8},
 };
 

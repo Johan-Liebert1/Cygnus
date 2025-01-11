@@ -1,6 +1,6 @@
 use crate::{helpers::unexpected_token, types::ASTNode};
 
-use std::{cell::RefCell, process::exit, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::conditionals::{ConditionalStatement, ElseStatement, IfStatement},
@@ -82,15 +82,13 @@ impl Parser {
                     return IfStatement::new(condition, statements);
                 }
 
-                found_token => {
+                _ => {
                     unexpected_token(&token, Some(&TokenEnum::Bracket(Bracket::LCurly)));
-                    exit(1);
                 }
             },
 
-            found_token => {
+            _ => {
                 unexpected_token(&token, Some(&TokenEnum::Bracket(Bracket::LCurly)));
-                exit(1);
             }
         };
     }
@@ -113,15 +111,13 @@ impl Parser {
                     return ElseStatement::new(statements);
                 }
 
-                found_token => {
+                _ => {
                     unexpected_token(&token, Some(&TokenEnum::Bracket(Bracket::LCurly)));
-                    exit(1);
                 }
             },
 
-            found_token => {
+            _ => {
                 unexpected_token(&token, Some(&TokenEnum::Bracket(Bracket::LCurly)));
-                exit(1);
             }
         };
     }

@@ -1,4 +1,3 @@
-use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
@@ -10,14 +9,10 @@ use crate::{
         types::{StructMemberType, VarType},
     },
     semantic_analyzer::semantic_analyzer::CallStack,
-    trace,
     types::ASTNode,
 };
 
-use super::{
-    abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST},
-    variable::Variable,
-};
+use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
 
 #[derive(Debug)]
 pub struct StructMember {
@@ -56,7 +51,7 @@ impl StructDecleration {
 }
 
 impl AST for StructDecleration {
-    fn visit(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, call_stack: &mut CallStack) -> VisitResult {
+    fn visit(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, _: &mut CallStack) -> VisitResult {
         todo!()
     }
 

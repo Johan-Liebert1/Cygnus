@@ -8,12 +8,11 @@ use crate::{
 };
 
 use core::panic;
-use std::{cell::RefCell, cmp::min, collections::HashMap, process::exit, rc::Rc, usize};
+use std::{cell::RefCell, collections::HashMap, rc::Rc, usize};
 
 use crate::{
     ast::abstract_syntax_tree::AST,
-    interpreter::interpreter::{Functions, Variables},
-    lexer::tokens::VariableEnum,
+    interpreter::interpreter::Functions,
 };
 
 // #[derive(Debug)]
@@ -82,8 +81,8 @@ impl<'a> CallStack<'a> {
         return self.loop_number;
     }
 
-    fn push_record(&mut self, mut record: ActivationRecord) {
-        if let ActivationRecordType::Function(stack_var_size) = record.record_type {
+    fn push_record(&mut self, record: ActivationRecord) {
+        if let ActivationRecordType::Function(..) = record.record_type {
             self.current_function_name = Some(record.name.clone());
         }
 
@@ -143,7 +142,7 @@ impl<'a> CallStack<'a> {
         return (None, &ActivationRecordType::Global);
     }
 
-    pub fn insert_variable_in_most_recent_function(&mut self, mut variable: ActivationRecordVariablesValue) {
+    pub fn insert_variable_in_most_recent_function(&mut self, variable: ActivationRecordVariablesValue) {
         variable.borrow_mut().offset = self.update_function_variable_size_and_get_offset(&variable);
 
         let immutable_variable = variable.borrow();
@@ -212,7 +211,7 @@ impl<'a> CallStack<'a> {
 
                             // make sure every offset is properly aligned
                             if offset % var_mem_alignment != 0 {
-                                offset += (var_mem_alignment - offset % var_mem_alignment);
+                                offset += var_mem_alignment - offset % var_mem_alignment;
                             }
 
                             record.var_size_sum = offset;
@@ -231,7 +230,7 @@ impl<'a> CallStack<'a> {
         return offset;
     }
 
-    pub fn insert_variable(&mut self, mut variable: ActivationRecordVariablesValue) {
+    pub fn insert_variable(&mut self, variable: ActivationRecordVariablesValue) {
         variable.borrow_mut().offset = self.update_function_variable_size_and_get_offset(&variable);
 
         let var_name = &variable.borrow().var_name;
@@ -248,11 +247,10 @@ impl<'a> CallStack<'a> {
                             ),
                             variable.borrow().get_token(),
                         );
-                        exit(1);
                     }
 
                     None => {
-                        if let VarType::Struct(struct_name, struct_members) = &variable.borrow().result_type {
+                        if let VarType::Struct(_, struct_members) = &variable.borrow().result_type {
                             if struct_members.borrow().len() == 0 {
                                 last_record
                                     .variable_members
@@ -272,7 +270,7 @@ impl<'a> CallStack<'a> {
 
                                 // make sure every offset is properly aligned
                                 if member.offset % var_mem_alignment != 0 {
-                                    member.offset += (var_mem_alignment - member.offset % var_mem_alignment);
+                                    member.offset += var_mem_alignment - member.offset % var_mem_alignment;
                                 }
 
                                 prev_member_size = member.member_type.get_mem_aligned_size(&variable.borrow());

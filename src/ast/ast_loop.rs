@@ -1,11 +1,10 @@
 use crate::helpers::compiler_error;
 use crate::lexer::lexer::Token;
-use crate::lexer::tokens::VariableEnum;
 use crate::lexer::types::VarType;
 use crate::types::ASTNode;
-use crate::{helpers, trace};
+use crate::helpers;
 
-use crate::semantic_analyzer::semantic_analyzer::{ActivationRecord, ActivationRecordType, CallStack};
+use crate::semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack};
 
 use crate::{
     asm::asm::ASM,
@@ -13,7 +12,6 @@ use crate::{
     lexer::tokens::{Number, TokenEnum},
 };
 use core::panic;
-use std::process::exit;
 use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
@@ -162,7 +160,6 @@ impl AST for Loop {
 
         if !from.token.is_integer() || !to.token.is_integer() || !step_by.token.is_integer() {
             helpers::compiler_error("Expected from, to and step expressions to be Integer", self.get_token());
-            exit(1);
         }
 
         let from = if let TokenEnum::Number(Number::Integer(i)) = *from.token {
@@ -180,13 +177,11 @@ impl AST for Loop {
         let step_by = if let TokenEnum::Number(Number::Integer(i)) = *step_by.token {
             if i < 0 {
                 helpers::compiler_error("Step cannot be negative", self.get_token());
-                exit(1);
             }
 
             i as usize
         } else {
             helpers::compiler_error("Step has to be a positive integer", self.get_token());
-            exit(1);
         };
 
         for _ in (from..to).step_by(step_by) {
@@ -207,8 +202,6 @@ impl AST for Loop {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, f: Rc<RefCell<Functions>>) {
-        let var_enum = VariableEnum::Number(Number::Integer(1));
-
         // These variables live in the outer scope not in the loop scope
         self.add_call_stack(call_stack);
 

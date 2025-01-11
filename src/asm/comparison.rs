@@ -1,6 +1,5 @@
 use crate::{
-    lexer::{registers::get_register_name_for_bits, tokens::Comparators, types::VarType},
-    trace,
+    lexer::{tokens::Comparators, types::VarType},
 };
 
 use super::asm::ASM;

@@ -12,7 +12,7 @@ impl ASM {
                 let first = self.stack_pop().unwrap();
                 let second = self.stack_pop().unwrap();
 
-                let mut instructions = vec![
+                let instructions = vec![
                     format!(";; gen_logical_statement"),
                     format!("xor {rax}, {rax}"),
                     format!("mov {rax}, {first}"),
