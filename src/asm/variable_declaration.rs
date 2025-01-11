@@ -1,6 +1,4 @@
-use crate::{
-    semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
-};
+use crate::semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack};
 
 use super::asm::ASM;
 
@@ -12,12 +10,11 @@ impl ASM {
         let (variable, variable_scope) = call_stack.get_var_with_name(var_name);
 
         match variable {
-            Some(_) => {
+            Some(var) => {
                 match variable_scope {
                     ActivationRecordType::Global => {
-                        // this needs to be dq, as we are assuming all integers are 64 bits
                         // db will only allocate 1 byte while dq allocates a word
-                        self.data.push(format!("{} dq 0", var_name));
+                        self.data.push(format!("{var_name} {} 0", var.borrow().var_type.get_data_segment_size()));
                     }
 
                     _ => {

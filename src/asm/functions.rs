@@ -77,7 +77,7 @@ impl ASM {
         self.regs_locked_for_func_args.push(vec![]);
     }
 
-    fn handle_non_float_function_call_arg(&mut self, arg_num: usize) {
+    fn handle_non_float_function_call_arg(&mut self, arg_num: usize, arg_type: &VarType) {
         let mut instructions = vec![];
 
         let arg_reg = FUNCTION_ARGS_REGS[arg_num];
@@ -86,7 +86,7 @@ impl ASM {
 
         instructions.extend(vec![
             format!(";; Moving argument number {}", arg_num + 1),
-            format!("mov {}, {}", arg_reg, stack_member),
+            format!("mov {}, {}", arg_type.get_register_name(arg_reg), stack_member),
         ]);
 
         self.unlock_register_from_stack_value(&stack_member);
@@ -138,7 +138,7 @@ impl ASM {
             return self.handle_float_function_call_arg(arg_num);
         }
 
-        self.handle_non_float_function_call_arg(arg_num);
+        self.handle_non_float_function_call_arg(arg_num, &arg_type);
     }
 
     /// Restores registers that were saved for the function call.

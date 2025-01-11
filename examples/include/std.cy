@@ -8,7 +8,7 @@ def ACCEPT_SYSCALL: int = 43;
 def BIND_SYSCALL: int = 49;
 def LISTEN_SYSCALL: int = 50;
 
-def AF_INET: int16 = 2;
+def AF_INET: int = 2;
 def S_ADDR: int32 = 16777343; -- htonl(127.0.0.1)
 def PORT: int16 = 34835; -- htons(5000)
 def PAD: int = 0;

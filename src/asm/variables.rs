@@ -496,17 +496,21 @@ impl ASM {
 
         match variable.var_type {
             VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char => {
-                let rax = self.get_free_register(None);
-                let rax_actual_name = variable.var_type.get_register_name(rax);
+                // let rax = self.get_free_register(None);
+                // let rax_actual_name = variable.var_type.get_register_name(rax);
 
                 if variable.dereference {
                     panic!("Cannot dereference a number")
                 } else if variable.store_address {
-                    self.add_to_current_label(format!("lea {rax}, {var_name}"));
-                    self.stack_push(String::from(rax));
+                    // self.add_to_current_label(format!("lea {rax}, {var_name}"));
+                    // self.stack_push(String::from(rax));
+
+                    self.stack_push(format!("{} {var_name}", variable.var_type.get_operation_size()));
                 } else {
-                    self.add_to_current_label(format!("mov {rax_actual_name}, [{var_name}]"));
-                    self.stack_push(String::from(rax_actual_name));
+                    // self.add_to_current_label(format!("mov {rax_actual_name}, [{var_name}]"));
+                    // self.stack_push(String::from(rax_actual_name));
+                    
+                    self.stack_push(format!("{} [{var_name}]", variable.var_type.get_operation_size()));
                 }
             }
 

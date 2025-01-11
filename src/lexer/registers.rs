@@ -224,7 +224,7 @@ impl Register {
     }
 
     pub fn is_reg(string: &String) -> bool {
-        return ALL_64BIT_REGISTERS.iter().any(|r| format!("{}", r) == *string)
+        return ALL_REGISTERS.iter().any(|r| format!("{}", r) == *string)
             || ALL_FP_REGISTERS.iter().any(|fr| format!("{}", fr) == *string);
     }
 
@@ -395,6 +395,9 @@ impl VarType {
             Self::Ptr(..) => get_register_name_for_bits(&register, 64),
 
             Self::Str => get_register_name_for_bits(&register, 64),
+
+            // Function pointer so this does take 8 bytes
+            Self::Function(..) => get_register_name_for_bits(&register, 64),
 
             v => panic!("get_register_name not implemented for '{}'", v),
         };

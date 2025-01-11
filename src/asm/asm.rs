@@ -1,8 +1,6 @@
 use core::panic;
 
-use crate::{
-    lexer::registers::{Register, ALL_64BIT_REGISTERS, ALL_FP_REGISTERS},
-};
+use crate::lexer::registers::{Register, ALL_64BIT_REGISTERS, ALL_FP_REGISTERS};
 
 #[derive(Debug)]
 pub struct Label {

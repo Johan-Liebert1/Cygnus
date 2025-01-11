@@ -19,7 +19,7 @@ mem req_method 32
 mem req_path 256
 mem file_to_read 256
 
-const PRINT_REQ: int = 0;
+const PRINT_REQ: int = 1;
 const SPACE_ASCII: int8 = 32;
 const NEW_LINE_ASCII: int8 = 10;
 const NULL_BYTE: int8 = 0;
@@ -29,9 +29,9 @@ const NULL_BYTE: int8 = 0;
 -- User-Agent: curl/8.5.0
 -- Accept: */*
 fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
-    -- if PRINT_REQ {
-    --     write("Writing req to stdout...")
-    --     syscall(WRITE_SYSCALL, STDOUT, req, read_bytes);
+    -- if PRINT_REQ == 1 {
+        write("Writing req to stdout...\n")
+        syscall(WRITE_SYSCALL, STDOUT, req, read_bytes);
     -- }
 
     def dot_html: str = ".html";
@@ -54,12 +54,8 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
     -- parse the method
     def method_ends_at_idx: int = 0;
 
-    write("after definitions")
-
     loop {
         def character: *char = req + idx;
-
-        write("at char ", *character)
 
         if *character == SPACE_ASCII or *character == NULL_BYTE {
             method_ends_at_idx = idx - 1;
@@ -79,8 +75,6 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
     loop {
         def character1: *char = req + idx;
 
-        write("character1 ", *character1, "SPACE_ASCII = ", SPACE_ASCII, " NULL_BYTE = ", NULL_BYTE)
-
         if *character1 == SPACE_ASCII or *character1 == NULL_BYTE {
             path_ends_at_idx = idx - 1;
             break;
@@ -91,6 +85,9 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
 
     def path_as_char: *char = req + path_starts_at_idx;
     def path_len: int = path_ends_at_idx - path_starts_at_idx + 1;
+
+    write("path_as_char = ")
+    syscall(WRITE_SYSCALL, STDOUT, path_as_char, path_len)
 
     if string_ends_with(path_as_char, path_len, dot_html as *char, strlen(&dot_html)) == 0 {
         def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_404 as *char, strlen(&http_404));
@@ -112,6 +109,8 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
         path_ends_at_idx - path_starts_at_idx + 1,
         file_to_read
     );
+
+    write("final_file_abs_path = ", final_file_abs_path)
     
     syscall(WRITE_SYSCALL, STDOUT, path_as_char, path_ends_at_idx - path_starts_at_idx + 1)
     write("\n")

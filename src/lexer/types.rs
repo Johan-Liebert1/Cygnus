@@ -428,6 +428,24 @@ impl VarType {
         };
     }
 
+    pub fn get_data_segment_size(&self) -> &str {
+        match self {
+            VarType::Int => "dq",
+            VarType::Int8 => "db",
+            VarType::Int16 => "dw",
+            VarType::Int32 => "dd",
+            VarType::Char => "db",
+
+            VarType::Str => todo!(),
+            VarType::Float => todo!(),
+            VarType::Ptr(_) => todo!(),
+            VarType::Array(_, _) => todo!(),
+            VarType::Struct(_, _) => todo!(),
+            VarType::Function(_, _, _) => todo!(),
+            VarType::Unknown => todo!(),
+        }
+    }
+
     pub fn get_operation_size(&self) -> &str {
         match self {
             VarType::Int => "QWORD",
