@@ -23,7 +23,7 @@ pub fn get_stdout_and_actual_result(file_name: &str) -> (String, String, String)
     let mut stdout_str = String::new();
     let mut stderr_str = String::new();
 
-    if let Some(ref mut stdout) = parse_input_file(format!("./examples/{}", file_name), true, true, true, &vec![]) {
+    if let Some(ref mut stdout) = parse_input_file(format!("./examples/{}", file_name), true, true, &vec![]) {
         let _ = stdout.0.read_to_string(&mut stdout_str);
         let _ = stdout.1.read_to_string(&mut stderr_str);
     }

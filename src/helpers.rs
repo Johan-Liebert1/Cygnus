@@ -76,5 +76,8 @@ pub fn compiler_error<S: AsRef<str> + Display>(message: S, tok: &Token) -> ! {
 }
 
 pub fn compiler_warning<S: AsRef<str> + Display>(message: S, tok: &Token) {
-    println!("WARNING: {}:{}:{} {}", tok.file, tok.line_number, tok.col_number, message);
+    println!(
+        "WARNING: {}:{}:{} {}",
+        tok.file, tok.line_number, tok.col_number, message
+    );
 }

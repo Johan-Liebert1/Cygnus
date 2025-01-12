@@ -39,7 +39,7 @@ impl Array {
             ASTNodeEnum::Variable(node) => node.result_type.clone(),
             ASTNodeEnum::MemoryAlloc(node) => node.result_type.clone(),
 
-            t => compiler_error(format!("Arrays with type {t} are not supported"), self.get_token())
+            t => compiler_error(format!("Arrays with type {t} are not supported"), self.get_token()),
         };
     }
 }

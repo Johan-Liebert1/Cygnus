@@ -50,7 +50,6 @@ pub fn generate_asm(linker_flags: &Vec<String>) -> io::Result<()> {
 
 pub fn parse_input_file(
     path: String,
-    compile_mode: bool,
     run_asm: bool,
     is_test: bool,
     linker_flags: &Vec<String>,
@@ -81,68 +80,58 @@ pub fn parse_input_file(
     let mut semantic_analyzer =
         SemanticAnalyzer::new(ast, parser.functions, &parser.user_defined_types, &parser.type_aliases);
 
-    if compile_mode {
-        let _result = interpreter.compile(&mut semantic_analyzer.call_stack);
+    let _result = interpreter.compile(&mut semantic_analyzer.call_stack);
 
-        let current_dir = std::env::current_dir().unwrap();
-        std::env::set_current_dir("./generated").unwrap();
+    let current_dir = std::env::current_dir().unwrap();
+    std::env::set_current_dir("./generated").unwrap();
 
-        match generate_asm(linker_flags) {
-            Ok(_) => {
-                println!("Successful!{}", if run_asm { "" } else { " Not running the program" });
-            }
-
-            Err(e) => {
-                println!("Failed to generate asm: {:?}", e);
-                std::env::set_current_dir(current_dir).unwrap();
-                return None;
-            }
+    match generate_asm(linker_flags) {
+        Ok(_) => {
+            println!("Successful!{}", if run_asm { "" } else { " Not running the program" });
         }
 
-        if !run_asm {
+        Err(e) => {
+            println!("Failed to generate asm: {:?}", e);
             std::env::set_current_dir(current_dir).unwrap();
             return None;
         }
+    }
 
-        match std::process::Command::new("./output")
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-        {
-            Ok(ref mut child) => match child.wait() {
-                Ok(exit_status) => {
-                    if !is_test {
-                        println!("Exited with status {exit_status}")
-                    }
-
-                    std::env::set_current_dir(current_dir).unwrap();
-                    return Some((child.stdout.take().unwrap(), child.stderr.take().unwrap()));
-                }
-
-                Err(err) => {
-                    println!("Error while waiting for child {:?}", err)
-                }
-            },
-
-            Err(e) => {
-                println!("Failed to spawn run process: {:?}", e);
-            }
-        }
-
+    if !run_asm {
         std::env::set_current_dir(current_dir).unwrap();
         return None;
     }
 
-    let result = interpreter.interpret(&mut semantic_analyzer.call_stack);
+    match std::process::Command::new("./output")
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+    {
+        Ok(ref mut child) => match child.wait() {
+            Ok(exit_status) => {
+                if !is_test {
+                    println!("Exited with status {exit_status}")
+                }
 
-    println!("{:#?}", result);
+                std::env::set_current_dir(current_dir).unwrap();
+                return Some((child.stdout.take().unwrap(), child.stderr.take().unwrap()));
+            }
 
+            Err(err) => {
+                println!("Error while waiting for child {:?}", err)
+            }
+        },
+
+        Err(e) => {
+            println!("Failed to spawn run process: {:?}", e);
+        }
+    }
+
+    std::env::set_current_dir(current_dir).unwrap();
     return None;
 }
 
 fn main() {
-    #[allow(non_snake_case)]
-    let mut COMPILE_MODE = true;
     #[allow(non_snake_case)]
     let mut RUN_PROGRAM = false;
 
@@ -158,8 +147,10 @@ fn main() {
 
     while let Some(arg) = iterartor.next() {
         match arg.as_str() {
-            "com" => COMPILE_MODE = true,
-            "int" => COMPILE_MODE = false,
+            "int" => {
+                println!("WARNING: Interpreter mode is deprecated. Defaulting to compilation.")
+            }
+
             "-r" => RUN_PROGRAM = true,
             "-f" => file_name_next = true,
 
@@ -196,7 +187,7 @@ fn main() {
         };
     }
 
-    if let Some(ref mut stdout) = parse_input_file(file_name.into(), COMPILE_MODE, RUN_PROGRAM, false, &linker_flags) {
+    if let Some(ref mut stdout) = parse_input_file(file_name.into(), RUN_PROGRAM, false, &linker_flags) {
         let mut str = String::new();
         let _ = stdout.0.read_to_string(&mut str);
         println!("{:?}", str);

@@ -41,7 +41,10 @@ impl Factor {
         if !matches!(type_, VarType::Ptr(..)) {
             self.result_type = type_;
         } else {
-            compiler_warning(format!("Cannot coerce {} to {}. Skipping...", self.get_token(), type_), self.get_token());
+            compiler_warning(
+                format!("Cannot coerce {} to {}. Skipping...", self.get_token(), type_),
+                self.get_token(),
+            );
         }
     }
 }

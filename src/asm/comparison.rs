@@ -1,6 +1,4 @@
-use crate::{
-    lexer::{tokens::Comparators, types::VarType},
-};
+use crate::lexer::{tokens::Comparators, types::VarType};
 
 use super::asm::ASM;
 

@@ -3,11 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::variable::Variable,
-    lexer::{
-        registers::Register,
-        tokens::AssignmentTypes,
-        types::VarType,
-    },
+    lexer::{registers::Register, tokens::AssignmentTypes, types::VarType},
     semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack},
     trace,
     types::ASTNode,

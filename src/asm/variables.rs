@@ -166,7 +166,10 @@ impl ASM {
 
                     let rax_actual_name = struct_member_type.member_type.get_register_name(rax);
 
-                    println!("struct_member_type: {:#?}. rax_actual_name: {rax_actual_name}", struct_member_type);
+                    println!(
+                        "struct_member_type: {:#?}. rax_actual_name: {rax_actual_name}",
+                        struct_member_type
+                    );
 
                     self.extend_current_label(vec![
                         format!("mov {rbx}, [rbp - {}]", ar_var_offset),
@@ -189,7 +192,6 @@ impl ASM {
                     self.extend_current_label(vec![
                         format!("mov {rbx}, [rbp - {}]", ar_var_offset),
                         format!("add {rbx}, {}", struct_member_type.offset),
-
                         // format!("xor {rax}, {rax}"),
                         format!("mov {rax}, [{rbx}]"),
                         // format!("push rax"),

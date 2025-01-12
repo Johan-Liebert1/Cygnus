@@ -1,5 +1,3 @@
-
-
 use super::{
     lexer::{Lexer, Token},
     tokens::{Bracket, Comparators, Number, Operations, TokenEnum},

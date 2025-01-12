@@ -256,11 +256,11 @@ _memset:
 	add rbx, rcx
 	;; will lock rbx. first = [rbp - 32]. second = rax. Locked: [rax, rbx, rcx]
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'thing' of type Integer. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'thing' of type Integer. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 64], rax
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'thing' of type Integer. times_dereferenced: 1
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'thing' of type Integer. times_dereferenced: 1
 	mov rax, [rbp - 16]
 	mov rbx, [rbp - 64]
 	mov [rbx], rax
@@ -284,13 +284,13 @@ _memset:
 	jmp .loop_0
 	.loop_end_0:
 	
-	;; 'ptr' at '[rbp - 8]'
-	;; 'size' at '[rbp - 24]'
 	;; 'loop_0_to' at '[rbp - 48]'
-	;; 'loop_0_step' at '[rbp - 56]'
-	;; 'i' at '[rbp - 32]'
+	;; 'ptr' at '[rbp - 8]'
 	;; 'loop_0_from' at '[rbp - 40]'
 	;; 'value' at '[rbp - 16]'
+	;; 'loop_0_step' at '[rbp - 56]'
+	;; 'i' at '[rbp - 32]'
+	;; 'size' at '[rbp - 24]'
 	mov rsp, rbp
 	pop rbp
 	ret
@@ -380,7 +380,7 @@ _strlen:
 	;; will lock rbx. first = 8. second = rax. Locked: [rax, rbx, rcx]
 	;; binary op ptr -> str
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'len' of type String. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'len' of type String. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 16], rax
 	
@@ -400,9 +400,9 @@ _strlen:
 	pop rbp
 	ret
 	
-	;; 'length' at '[rbp - 24]'
-	;; 'len' at '[rbp - 16]'
 	;; 'string' at '[rbp - 8]'
+	;; 'len' at '[rbp - 16]'
+	;; 'length' at '[rbp - 24]'
 
 _read_file_into_memory:
 	push rbp
@@ -503,11 +503,11 @@ _read_file_into_memory:
 	pop rbp
 	ret
 	
-	;; 'mem_size' at '[rbp - 16]'
-	;; 'memory' at '[rbp - 8]'
 	;; 'fd' at '[rbp - 32]'
 	;; 'read_bytes' at '[rbp - 40]'
+	;; 'memory' at '[rbp - 8]'
 	;; 'abs_file_path' at '[rbp - 24]'
+	;; 'mem_size' at '[rbp - 16]'
 
 _write_int_into_mem:
 	push rbp
@@ -607,7 +607,7 @@ _write_int_into_mem:
 	add rbx, rcx
 	;; will lock rbx. first = [rbp - 48]. second = rax. Locked: [rax, rbx, rcx]
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'idx_into_mem' of type Integer8. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'idx_into_mem' of type Integer8. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 64], rax
 	
@@ -619,7 +619,7 @@ _write_int_into_mem:
 	add al, bl
 	;; will lock rax. first = [rbp - 17]. second = [rbp - 49]. Locked: [rax, rbx]
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'idx_into_mem' of type Integer8. times_dereferenced: 1
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'idx_into_mem' of type Integer8. times_dereferenced: 1
 	mov bl, al
 	mov rcx, [rbp - 64]
 	mov [rcx], bl
@@ -673,14 +673,14 @@ _write_int_into_mem:
 	pop rbp
 	ret
 	
-	;; 'c' at '[rbp - 49]'
-	;; 'idx_into_mem' at '[rbp - 64]'
-	;; 'number_len' at '[rbp - 40]'
-	;; 'idx' at '[rbp - 48]'
 	;; 'n' at '[rbp - 32]'
-	;; 'zero_ascii' at '[rbp - 17]'
+	;; 'idx_into_mem' at '[rbp - 64]'
 	;; 'memory' at '[rbp - 8]'
 	;; 'number' at '[rbp - 16]'
+	;; 'number_len' at '[rbp - 40]'
+	;; 'zero_ascii' at '[rbp - 17]'
+	;; 'c' at '[rbp - 49]'
+	;; 'idx' at '[rbp - 48]'
 
 _write_str_into_mem:
 	push rbp
@@ -713,7 +713,7 @@ _write_str_into_mem:
 	;; will lock rbx. first = [rbp - 56]. second = rax. Locked: [rax, rbx, rcx]
 	;; binary op ptr -> char
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'memo' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'memo' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 64], rax
 	
@@ -729,7 +729,7 @@ _write_str_into_mem:
 	xor rbx, rbx
 	mov bl, [rax]
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'memo' of type Character. times_dereferenced: 1
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'memo' of type Character. times_dereferenced: 1
 	mov al, bl
 	mov rcx, [rbp - 64]
 	mov [rcx], al
@@ -759,12 +759,12 @@ _write_str_into_mem:
 	pop rbp
 	ret
 	
-	;; 'memory' at '[rbp - 8]'
+	;; 'string' at '[rbp - 16]'
+	;; 'loop_4_to' at '[rbp - 40]'
 	;; 'loop_4_from' at '[rbp - 32]'
 	;; 'loop_4_step' at '[rbp - 48]'
-	;; 'loop_4_to' at '[rbp - 40]'
 	;; 'len' at '[rbp - 24]'
-	;; 'string' at '[rbp - 16]'
+	;; 'memory' at '[rbp - 8]'
 
 _string_ends_with:
 	push rbp
@@ -835,7 +835,7 @@ _string_ends_with:
 	;; will lock rbx. first = [rbp - 40]. second = rax. Locked: [rax, rbx, rcx]
 	;; binary op ptr -> char
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'str_char' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'str_char' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 56], rax
 	
@@ -848,7 +848,7 @@ _string_ends_with:
 	;; will lock rbx. first = [rbp - 48]. second = rax. Locked: [rax, rbx, rcx]
 	;; binary op ptr -> char
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'substr_char' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'substr_char' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 64], rax
 	
@@ -936,14 +936,14 @@ _string_ends_with:
 	pop rbp
 	ret
 	
-	;; 'string' at '[rbp - 8]'
-	;; 'substr' at '[rbp - 24]'
-	;; 'idx_into_str' at '[rbp - 40]'
-	;; 'idx_into_substr' at '[rbp - 48]'
-	;; 'substr_len' at '[rbp - 32]'
 	;; 'string_len' at '[rbp - 16]'
+	;; 'substr' at '[rbp - 24]'
 	;; 'str_char' at '[rbp - 56]'
 	;; 'substr_char' at '[rbp - 64]'
+	;; 'substr_len' at '[rbp - 32]'
+	;; 'string' at '[rbp - 8]'
+	;; 'idx_into_str' at '[rbp - 40]'
+	;; 'idx_into_substr' at '[rbp - 48]'
 
 _string_starts_with:
 	push rbp
@@ -1002,7 +1002,7 @@ _string_starts_with:
 	;; will lock rbx. first = [rbp - 40]. second = rax. Locked: [rax, rbx, rcx]
 	;; binary op ptr -> char
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'str_char' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'str_char' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 56], rax
 	
@@ -1015,7 +1015,7 @@ _string_starts_with:
 	;; will lock rbx. first = [rbp - 48]. second = rax. Locked: [rax, rbx, rcx]
 	;; binary op ptr -> char
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'substr_char' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'substr_char' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 64], rax
 	
@@ -1103,14 +1103,14 @@ _string_starts_with:
 	pop rbp
 	ret
 	
-	;; 'substr_len' at '[rbp - 32]'
-	;; 'substr' at '[rbp - 24]'
 	;; 'string' at '[rbp - 8]'
-	;; 'str_char' at '[rbp - 56]'
-	;; 'substr_char' at '[rbp - 64]'
+	;; 'substr' at '[rbp - 24]'
+	;; 'substr_len' at '[rbp - 32]'
 	;; 'idx_into_str' at '[rbp - 40]'
-	;; 'string_len' at '[rbp - 16]'
 	;; 'idx_into_substr' at '[rbp - 48]'
+	;; 'substr_char' at '[rbp - 64]'
+	;; 'string_len' at '[rbp - 16]'
+	;; 'str_char' at '[rbp - 56]'
 
 _string_eq:
 	push rbp
@@ -1169,7 +1169,7 @@ _string_eq:
 	;; will lock rbx. first = [rbp - 40]. second = rax. Locked: [rax, rbx, rcx]
 	;; binary op ptr -> char
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'str_char' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'str_char' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 56], rax
 	
@@ -1182,7 +1182,7 @@ _string_eq:
 	;; will lock rbx. first = [rbp - 48]. second = rax. Locked: [rax, rbx, rcx]
 	;; binary op ptr -> char
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'substr_char' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'substr_char' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 64], rax
 	
@@ -1270,14 +1270,14 @@ _string_eq:
 	pop rbp
 	ret
 	
-	;; 'string' at '[rbp - 8]'
-	;; 'idx_into_substr' at '[rbp - 48]'
+	;; 'string_len' at '[rbp - 16]'
+	;; 'substr_char' at '[rbp - 64]'
+	;; 'idx_into_str' at '[rbp - 40]'
 	;; 'string2_len' at '[rbp - 32]'
 	;; 'string2' at '[rbp - 24]'
-	;; 'string_len' at '[rbp - 16]'
-	;; 'idx_into_str' at '[rbp - 40]'
-	;; 'substr_char' at '[rbp - 64]'
 	;; 'str_char' at '[rbp - 56]'
+	;; 'idx_into_substr' at '[rbp - 48]'
+	;; 'string' at '[rbp - 8]'
 
 _str_concat:
 	push rbp
@@ -1318,7 +1318,7 @@ _str_concat:
 	;; will lock rbx. first = [rbp - 48]. second = rax. Locked: [rax, rbx, rcx]
 	;; binary op ptr -> char
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'new_str_idx' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'new_str_idx' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 88], rax
 	
@@ -1331,7 +1331,7 @@ _str_concat:
 	;; will lock rbx. first = [rbp - 80]. second = rax. Locked: [rax, rbx, rcx]
 	;; binary op ptr -> char
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'old_char' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'old_char' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 96], rax
 	
@@ -1339,7 +1339,7 @@ _str_concat:
 	xor rax, rax
 	mov al, [rbx]
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'new_str_idx' of type Character. times_dereferenced: 1
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'new_str_idx' of type Character. times_dereferenced: 1
 	mov bl, al
 	mov rcx, [rbp - 88]
 	mov [rcx], bl
@@ -1387,7 +1387,7 @@ _str_concat:
 	;; will lock rbx. first = [rbp - 48]. second = rax. Locked: [rax, rbx, rcx]
 	;; binary op ptr -> char
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'new_str_idx' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'new_str_idx' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 136], rax
 	
@@ -1400,7 +1400,7 @@ _str_concat:
 	;; will lock rbx. first = [rbp - 128]. second = rax. Locked: [rax, rbx, rcx]
 	;; binary op ptr -> char
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'old_char' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'old_char' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 144], rax
 	
@@ -1408,7 +1408,7 @@ _str_concat:
 	xor rax, rax
 	mov al, [rbx]
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'new_str_idx' of type Character. times_dereferenced: 1
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'new_str_idx' of type Character. times_dereferenced: 1
 	mov bl, al
 	mov rcx, [rbp - 136]
 	mov [rcx], bl
@@ -1444,18 +1444,18 @@ _str_concat:
 	pop rbp
 	ret
 	
-	;; 'loop_8_to' at '[rbp - 64]'
-	;; 'string2' at '[rbp - 24]'
-	;; 'string_len' at '[rbp - 16]'
-	;; 'string2_len' at '[rbp - 32]'
-	;; 'loop_9_to' at '[rbp - 112]'
-	;; 'idx_into_new_str' at '[rbp - 48]'
-	;; 'new_str' at '[rbp - 40]'
-	;; 'loop_8_from' at '[rbp - 56]'
-	;; 'string' at '[rbp - 8]'
 	;; 'loop_8_step' at '[rbp - 72]'
-	;; 'loop_9_step' at '[rbp - 120]'
+	;; 'new_str' at '[rbp - 40]'
 	;; 'loop_9_from' at '[rbp - 104]'
+	;; 'string' at '[rbp - 8]'
+	;; 'string2' at '[rbp - 24]'
+	;; 'string2_len' at '[rbp - 32]'
+	;; 'string_len' at '[rbp - 16]'
+	;; 'loop_9_to' at '[rbp - 112]'
+	;; 'loop_9_step' at '[rbp - 120]'
+	;; 'loop_8_to' at '[rbp - 64]'
+	;; 'idx_into_new_str' at '[rbp - 48]'
+	;; 'loop_8_from' at '[rbp - 56]'
 
 _parse_http_request:
 	push rbp
@@ -1599,7 +1599,7 @@ _parse_http_request:
 	add rbx, rcx
 	;; will lock rbx. first = [rbp - 200]. second = rax. Locked: [rax, rbx, rcx]
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'character' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'character' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 216], rax
 	
@@ -1702,7 +1702,7 @@ _parse_http_request:
 	add rbx, rcx
 	;; will lock rbx. first = [rbp - 200]. second = rax. Locked: [rax, rbx, rcx]
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'character1' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'character1' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 240], rax
 	
@@ -1778,7 +1778,7 @@ _parse_http_request:
 	add rbx, rcx
 	;; will lock rbx. first = [rbp - 224]. second = rax. Locked: [rax, rbx, rcx]
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'path_as_char' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'path_as_char' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 248], rax
 	
@@ -2034,12 +2034,12 @@ _parse_http_request:
 	add rbx, rcx
 	;; will lock rbx. first = [rbp - 272]. second = rax. Locked: [rax, rbx, rcx]
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'to_write' of type Character. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'to_write' of type Character. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 280], rax
 	
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'to_write' of type Character. times_dereferenced: 1
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'to_write' of type Character. times_dereferenced: 1
 	mov al, 0
 	mov rbx, [rbp - 280]
 	mov [rbx], al
@@ -2395,35 +2395,35 @@ _parse_http_request:
 	
 	syscall
 	
-	;; 'write_ret' at '[rbp - 304]'
-	;; 'http_ok' at '[rbp - 80]'
-	;; 'character' at '[rbp - 216]'
 	;; 'read_bytes' at '[rbp - 24]'
-	;; 'file_read_bytes' at '[rbp - 288]'
-	;; 'path_ends_at_idx' at '[rbp - 232]'
-	;; 'current_ptr' at '[rbp - 296]'
-	;; 'final_file_abs_path_len' at '[rbp - 272]'
-	;; 'NULL_BYTE' at '[rbp - 35]'
-	;; 'SPACE_ASCII' at '[rbp - 33]'
-	;; 'header_body_seperator_len' at '[rbp - 168]'
+	;; 'write_ret' at '[rbp - 304]'
 	;; 'path_starts_at_idx' at '[rbp - 224]'
-	;; 'index_html_file_dir_path' at '[rbp - 192]'
-	;; 'path_as_char' at '[rbp - 248]'
-	;; 'to_write' at '[rbp - 280]'
-	;; 'NEW_LINE_ASCII' at '[rbp - 34]'
-	;; 'path_len' at '[rbp - 256]'
-	;; 'idx' at '[rbp - 200]'
-	;; 'http_header_for_content' at '[rbp - 128]'
-	;; 'connfd' at '[rbp - 8]'
-	;; 'PRINT_REQ' at '[rbp - 32]'
-	;; 'character1' at '[rbp - 240]'
-	;; 'http_header_for_content_len' at '[rbp - 136]'
-	;; 'http_500' at '[rbp - 112]'
 	;; 'req' at '[rbp - 16]'
-	;; 'http_404' at '[rbp - 96]'
-	;; 'header_body_seperator' at '[rbp - 160]'
-	;; 'dot_html' at '[rbp - 64]'
+	;; 'index_html_file_dir_path' at '[rbp - 192]'
+	;; 'to_write' at '[rbp - 280]'
+	;; 'idx' at '[rbp - 200]'
+	;; 'http_ok' at '[rbp - 80]'
+	;; 'SPACE_ASCII' at '[rbp - 33]'
 	;; 'method_ends_at_idx' at '[rbp - 208]'
+	;; 'path_as_char' at '[rbp - 248]'
+	;; 'http_header_for_content' at '[rbp - 128]'
+	;; 'dot_html' at '[rbp - 64]'
+	;; 'connfd' at '[rbp - 8]'
+	;; 'character' at '[rbp - 216]'
+	;; 'PRINT_REQ' at '[rbp - 32]'
+	;; 'header_body_seperator' at '[rbp - 160]'
+	;; 'path_len' at '[rbp - 256]'
+	;; 'http_500' at '[rbp - 112]'
+	;; 'file_read_bytes' at '[rbp - 288]'
+	;; 'current_ptr' at '[rbp - 296]'
+	;; 'http_header_for_content_len' at '[rbp - 136]'
+	;; 'http_404' at '[rbp - 96]'
+	;; 'final_file_abs_path_len' at '[rbp - 272]'
+	;; 'NEW_LINE_ASCII' at '[rbp - 34]'
+	;; 'path_ends_at_idx' at '[rbp - 232]'
+	;; 'character1' at '[rbp - 240]'
+	;; 'NULL_BYTE' at '[rbp - 35]'
+	;; 'header_body_seperator_len' at '[rbp - 168]'
 	mov rsp, rbp
 	pop rbp
 	ret
@@ -2490,7 +2490,7 @@ _main:
 	xor rax, rax
 	mov rax, serveraddr_mem
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'sa_prefix' of type Integer. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'sa_prefix' of type Integer. times_dereferenced: 0
 	mov rbx, rax
 	mov [rbp - 16], rax
 	
@@ -2505,7 +2505,7 @@ _main:
 	add rbx, rcx
 	;; will lock rbx. first = 2. second = rax. Locked: [rax, rbx, rcx]
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'sin_port' of type Integer16. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'sin_port' of type Integer16. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 24], rax
 	
@@ -2520,21 +2520,21 @@ _main:
 	add rbx, rcx
 	;; will lock rbx. first = 4. second = rax. Locked: [rax, rbx, rcx]
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 's_addr' of type Integer32. times_dereferenced: 0
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 's_addr' of type Integer32. times_dereferenced: 0
 	mov rax, rbx
 	mov [rbp - 32], rax
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'sa_prefix' of type Integer. times_dereferenced: 1
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'sa_prefix' of type Integer. times_dereferenced: 1
 	mov rax, QWORD [AF_INET]
 	mov rbx, [rbp - 16]
 	mov [rbx], rax
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 'sin_port' of type Integer16. times_dereferenced: 1
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 'sin_port' of type Integer16. times_dereferenced: 1
 	mov ax, WORD [PORT]
 	mov rbx, [rbp - 24]
 	mov [rbx], ax
 	
-	;; src/asm/variable_assignment.rs:236 assign_local_pointer var 's_addr' of type Integer32. times_dereferenced: 1
+	;; src/asm/variable_assignment.rs:232 assign_local_pointer var 's_addr' of type Integer32. times_dereferenced: 1
 	mov eax, DWORD [S_ADDR]
 	mov rbx, [rbp - 32]
 	mov [rbx], eax
@@ -2755,13 +2755,13 @@ _main:
 	.loop_end_12:
 	
 	;; 'sin_port' at '[rbp - 24]'
-	;; 'connfd' at '[rbp - 56]'
-	;; 's_addr' at '[rbp - 32]'
-	;; 'sa_prefix' at '[rbp - 16]'
-	;; 'listener' at '[rbp - 48]'
 	;; 'sockfd' at '[rbp - 8]'
 	;; 'bind_ret' at '[rbp - 40]'
+	;; 'listener' at '[rbp - 48]'
+	;; 's_addr' at '[rbp - 32]'
+	;; 'sa_prefix' at '[rbp - 16]'
 	;; 'read_bytes' at '[rbp - 64]'
+	;; 'connfd' at '[rbp - 56]'
 	mov rsp, rbp
 	pop rbp
 	ret

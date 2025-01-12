@@ -8,11 +8,7 @@ use std::io::prelude::*;
 use std::{cell::RefCell, collections::HashMap, fs::File, rc::Rc};
 
 use crate::lexer::tokens::VariableEnum;
-use crate::{
-    asm::asm::ASM,
-    ast::abstract_syntax_tree::VisitResult,
-    lexer::tokens::Number,
-};
+use crate::{asm::asm::ASM, ast::abstract_syntax_tree::VisitResult, lexer::tokens::Number};
 
 // This is a struct because
 // This will always panic on semantic_visit of a `return` node as semantic_visit needs a mutable reference

@@ -14,7 +14,10 @@ impl ASM {
                 match variable_scope {
                     ActivationRecordType::Global => {
                         // db will only allocate 1 byte while dq allocates a word
-                        self.data.push(format!("{var_name} {} 0", var.borrow().var_type.get_data_segment_size()));
+                        self.data.push(format!(
+                            "{var_name} {} 0",
+                            var.borrow().var_type.get_data_segment_size()
+                        ));
                     }
 
                     _ => {

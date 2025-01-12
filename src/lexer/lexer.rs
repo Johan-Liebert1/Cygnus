@@ -3,9 +3,7 @@ use std::{
     rc::Rc,
 };
 
-use crate::{
-    lexer::types::{TYPE_FLOAT, TYPE_STRING},
-};
+use crate::lexer::types::{TYPE_FLOAT, TYPE_STRING};
 
 use super::{
     keywords::{self, LOGICAL_AND, LOGICAL_NOT, LOGICAL_OR},

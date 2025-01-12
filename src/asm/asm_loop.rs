@@ -39,7 +39,7 @@ impl ASM {
         let to = call_stack.get_var_with_name(&format!("loop_{}_to", loop_number));
         let step = call_stack.get_var_with_name(&format!("loop_{}_step", loop_number));
 
-        let (from_offset,to_offset, step_offset);
+        let (from_offset, to_offset, step_offset);
 
         match (from, to, step) {
             ((Some(from), _), (Some(to), _), (Some(step), _)) => {

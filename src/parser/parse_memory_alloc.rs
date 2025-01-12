@@ -2,10 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::{memory_alloc::MemoryAlloc, variable::Variable},
-    lexer::{
-        tokens::TokenEnum,
-        types::VarType,
-    },
+    lexer::{tokens::TokenEnum, types::VarType},
     types::ASTNode,
 };
 
