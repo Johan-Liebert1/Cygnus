@@ -1,4 +1,3 @@
-use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
@@ -76,13 +75,13 @@ impl ASM {
             return;
         }
 
+        // Pointer not dereferenced so we need a 64bit reg to store it
         let rax = self.get_free_register(None);
-        let rax_actual_name = inner_ptr_type.get_register_name(rax);
 
-        self.extend_current_label(vec![format!("mov {rax_actual_name}, [rbp - {ar_var_offset}]")]);
+        self.extend_current_label(vec![format!("mov {rax}, [rbp - {ar_var_offset}]")]);
 
         // already locked by self.get_free_register
-        self.stack_push(String::from(rax_actual_name));
+        self.stack_push(String::from(rax));
     }
 
     fn handle_local_ptr_str(&mut self, _: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
@@ -129,6 +128,8 @@ impl ASM {
         struct_name: &String,
         members: Rc<RefCell<Vec<StructMemberType>>>,
     ) {
+        trace!("handle_local_ptr_struct");
+
         if variable.member_access.len() == 0 {
             let rax = self.get_free_register(None);
 
@@ -165,7 +166,7 @@ impl ASM {
 
                     let rax_actual_name = struct_member_type.member_type.get_register_name(rax);
 
-                    println!("struct_member_type: {:#?}", struct_member_type);
+                    println!("struct_member_type: {:#?}. rax_actual_name: {rax_actual_name}", struct_member_type);
 
                     self.extend_current_label(vec![
                         format!("mov {rbx}, [rbp - {}]", ar_var_offset),
@@ -188,7 +189,8 @@ impl ASM {
                     self.extend_current_label(vec![
                         format!("mov {rbx}, [rbp - {}]", ar_var_offset),
                         format!("add {rbx}, {}", struct_member_type.offset),
-                        format!("xor {rax}, {rax}"),
+
+                        // format!("xor {rax}, {rax}"),
                         format!("mov {rax}, [{rbx}]"),
                         // format!("push rax"),
                         // length is pushed last
@@ -500,7 +502,9 @@ impl ASM {
                 // let rax_actual_name = variable.var_type.get_register_name(rax);
 
                 if variable.dereference {
-                    panic!("Cannot dereference a number")
+                    unreachable!(
+                        "Cannot dereference a string. This should've been caught in the semantic analysis phase."
+                    )
                 } else if variable.store_address {
                     // self.add_to_current_label(format!("lea {rax}, {var_name}"));
                     // self.stack_push(String::from(rax));
@@ -509,7 +513,7 @@ impl ASM {
                 } else {
                     // self.add_to_current_label(format!("mov {rax_actual_name}, [{var_name}]"));
                     // self.stack_push(String::from(rax_actual_name));
-                    
+
                     self.stack_push(format!("{} [{var_name}]", variable.var_type.get_operation_size()));
                 }
             }
@@ -518,7 +522,9 @@ impl ASM {
                 let rax = self.get_free_register(None);
 
                 if variable.dereference {
-                    panic!("Cannot dereference a string")
+                    unreachable!(
+                        "Cannot dereference a string. This should've been caught in the semantic analysis phase."
+                    )
                 } else if variable.store_address {
                     self.add_to_current_label(format!("lea {rax}, {var_name}"));
                     self.stack_push(String::from(rax));

@@ -56,7 +56,7 @@ pub fn unexpected_token(unexpected: &Token, expected: Option<&TokenEnum>) -> ! {
     exit(1);
 }
 
-pub fn unexpected_token_string(unexpected: &Token, expected: &str) -> ! {
+pub fn unexpected_token_string<S: AsRef<str> + Display>(unexpected: &Token, expected: S) -> ! {
     eprintln!(
         "{}:{}:{} Unexpected Token: '{}'. Expected {}",
         unexpected.file, unexpected.line_number, unexpected.col_number, unexpected, expected
@@ -73,4 +73,8 @@ pub fn compiler_error<S: AsRef<str> + Display>(message: S, tok: &Token) -> ! {
     let backtrace = std::backtrace::Backtrace::capture();
     println!("{:#?}", backtrace);
     exit(1);
+}
+
+pub fn compiler_warning<S: AsRef<str> + Display>(message: S, tok: &Token) {
+    println!("WARNING: {}:{}:{} {}", tok.file, tok.line_number, tok.col_number, message);
 }

@@ -8,6 +8,7 @@ use super::parser::Parser;
 
 impl Parser {
     /// COMPARISON_EXPRESSION -> EXPRESSION ((> | < | >= | <= | == | !=) EXPRESSION)*
+    /// Cannot type cast a comparison_exp, doesn't make sense
     pub fn parse_comparison_expression(&mut self) -> ASTNode {
         let left_expression = self.parse_expression();
 

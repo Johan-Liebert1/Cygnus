@@ -84,13 +84,13 @@ impl Parser {
             _ => self.parse_expression(),
         };
 
-        let default_step: ASTNode = Rc::new(RefCell::new(Box::new(Factor::new(Box::new(Token {
+        let default_step: ASTNode = Rc::new(RefCell::new(Box::new(Factor::new(Token {
             token: TokenEnum::Number(Number::Integer(1)),
             line_number: 0,
             index: 0,
             col_number: 0,
             file: Rc::new(String::new()),
-        })))));
+        }))));
 
         let step = match self.peek_next_token().token {
             TokenEnum::Keyword(keyword) => {
@@ -123,7 +123,7 @@ impl Parser {
                         // the next token has to be a variable
                         match peek_next_token.token {
                             TokenEnum::Variable(var_name) => Some(Rc::new(RefCell::new(Variable::new(
-                                Box::new(self.get_next_token()),
+                                self.get_next_token(),
                                 VarType::Int,
                                 var_name,
                                 false,

@@ -1,8 +1,8 @@
+use crate::helpers;
 use crate::helpers::compiler_error;
 use crate::lexer::lexer::Token;
 use crate::lexer::types::VarType;
 use crate::types::ASTNode;
-use crate::helpers;
 
 use crate::semantic_analyzer::semantic_analyzer::{ActivationRecordType, CallStack};
 
@@ -11,7 +11,6 @@ use crate::{
     interpreter::interpreter::{Functions, Variables},
     lexer::tokens::{Number, TokenEnum},
 };
-use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
@@ -67,7 +66,7 @@ impl Loop {
         //
         // These variables live in the outer scope not in the loop scope
         call_stack.insert_variable_in_most_recent_function(Rc::new(RefCell::new(Variable::new(
-            Box::new(token.clone()),
+            token.clone(),
             VarType::Int,
             from_name,
             false,
@@ -76,7 +75,7 @@ impl Loop {
         ))));
 
         call_stack.insert_variable_in_most_recent_function(Rc::new(RefCell::new(Variable::new(
-            Box::new(token.clone()),
+            token.clone(),
             VarType::Int,
             to_name,
             false,
@@ -85,7 +84,7 @@ impl Loop {
         ))));
 
         call_stack.insert_variable_in_most_recent_function(Rc::new(RefCell::new(Variable::new(
-            Box::new(token),
+            token,
             VarType::Int,
             step_name,
             false,
@@ -134,7 +133,7 @@ impl AST for Loop {
                 asm.gen_inf_loop_end(self.loop_number);
             }
 
-            _ => panic!("from, to or step not defined"),
+            _ => compiler_error("from, to or step not defined for loop.", self.get_token()),
         }
     }
 
@@ -159,7 +158,7 @@ impl AST for Loop {
             .visit(v, Rc::clone(&f), call_stack);
 
         if !from.token.is_integer() || !to.token.is_integer() || !step_by.token.is_integer() {
-            helpers::compiler_error("Expected from, to and step expressions to be Integer", self.get_token());
+            compiler_error("Expected from, to and step expressions to be Integer", self.get_token());
         }
 
         let from = if let TokenEnum::Number(Number::Integer(i)) = *from.token {
@@ -181,7 +180,7 @@ impl AST for Loop {
 
             i as usize
         } else {
-            helpers::compiler_error("Step has to be a positive integer", self.get_token());
+            compiler_error("Step has to be a positive integer", self.get_token());
         };
 
         for _ in (from..to).step_by(step_by) {
@@ -246,7 +245,7 @@ impl AST for Loop {
                 // no-op. It's an infinite loop
             }
 
-            _ => panic!("from, to or step not defined"),
+            _ => compiler_error("from, to or step not defined for loop.", self.get_token()),
         }
 
         self.block.borrow_mut().semantic_visit(call_stack, Rc::clone(&f));

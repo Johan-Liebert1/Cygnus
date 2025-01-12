@@ -1,4 +1,3 @@
-use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
@@ -30,7 +29,7 @@ impl Array {
         }
     }
 
-    fn get_member_type(member: &ASTNode) -> VarType {
+    fn get_member_type(&self, member: &ASTNode) -> VarType {
         return match member.borrow().get_node() {
             ASTNodeEnum::BinaryOp(node) => node.result_type.clone(),
             ASTNodeEnum::ComparisonExp(node) => node.result_type.clone(),
@@ -40,9 +39,7 @@ impl Array {
             ASTNodeEnum::Variable(node) => node.result_type.clone(),
             ASTNodeEnum::MemoryAlloc(node) => node.result_type.clone(),
 
-            _ => {
-                panic!("");
-            }
+            t => compiler_error(format!("Arrays with type {t} are not supported"), self.get_token())
         };
     }
 }
@@ -65,12 +62,12 @@ impl AST for Array {
 
         self.members[0].borrow_mut().semantic_visit(call_stack, f.clone());
 
-        let first_member_type = Array::get_member_type(&self.members[0]);
+        let first_member_type = self.get_member_type(&self.members[0]);
 
         for member in self.members.iter().skip(1) {
             member.borrow_mut().semantic_visit(call_stack, f.clone());
 
-            let new_member_type = Array::get_member_type(&member);
+            let new_member_type = self.get_member_type(&member);
 
             if first_member_type != new_member_type {
                 compiler_error(

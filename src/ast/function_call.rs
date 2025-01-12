@@ -51,27 +51,30 @@ impl AST for FunctionCall {
 
                     match arg.borrow().get_node() {
                         ASTNodeEnum::Variable(v) => {
-                            asm.func_write_var(v, call_stack);
+                            asm.func_write_var(v);
                         }
 
-                        ASTNodeEnum::BinaryOp(bo) => match &bo.result_type {
-                            VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Int | VarType::Char => {
-                                asm.func_write_number(bo.result_type.clone())
+                        // match the actual type after all dereferences have been applied
+                        ASTNodeEnum::BinaryOp(bo) => {
+                            let actual_type = bo.get_type().0;
+
+                            match &actual_type {
+                                VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Int | VarType::Char => {
+                                    asm.func_write_number(actual_type)
+                                }
+
+                                VarType::Str => asm.func_write_string(),
+
+                                VarType::Float => asm.func_write_float(),
+
+                                VarType::Ptr(..) => asm.func_write_pointer(),
+
+                                VarType::Array(..) => todo!(),
+                                VarType::Struct(_, _) => todo!(),
+                                VarType::Unknown => todo!(),
+                                VarType::Function(_, _, _) => todo!(),
                             }
-
-                            VarType::Str => asm.func_write_string(),
-
-                            VarType::Float => asm.func_write_float(),
-
-                            VarType::Ptr(ptr_type) => {
-                                asm.func_write_pointer(&ptr_type, bo.times_dereferenced, &call_stack, None)
-                            }
-
-                            VarType::Array(..) => todo!(),
-                            VarType::Struct(_, _) => todo!(),
-                            VarType::Unknown => todo!(),
-                            VarType::Function(_, _, _) => todo!(),
-                        },
+                        }
 
                         ASTNodeEnum::Factor(f) => match &f.get_token().token {
                             // Int64 is the default for a number literal

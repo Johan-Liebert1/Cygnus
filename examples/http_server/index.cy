@@ -19,20 +19,22 @@ mem req_method 32
 mem req_path 256
 mem file_to_read 256
 
-const PRINT_REQ: int = 1;
-const SPACE_ASCII: int8 = 32;
-const NEW_LINE_ASCII: int8 = 10;
-const NULL_BYTE: int8 = 0;
+mem buffer 1024 * 1024
 
 -- GET / HTTP/1.1
 -- Host: localhost:5000
 -- User-Agent: curl/8.5.0
 -- Accept: */*
-fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
-    -- if PRINT_REQ == 1 {
+fun parse_http_request(connfd: int, req: *int8, read_bytes: int) {
+    const PRINT_REQ: int = 1;
+    const SPACE_ASCII: int8 = 32;
+    const NEW_LINE_ASCII: int8 = 10;
+    const NULL_BYTE: int8 = 0;
+
+    if PRINT_REQ == 1 {
         write("Writing req to stdout...\n")
         syscall(WRITE_SYSCALL, STDOUT, req, read_bytes);
-    -- }
+    }
 
     def dot_html: str = ".html";
 
@@ -40,8 +42,10 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
     def http_404: str = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
     def http_500: str = "HTTP/1.1 500 Internal Server Error\r\n\r\n";
 
-    def http_index_html: str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ";
-    def http_index_html_len: int = strlen(&http_index_html);
+    def http_header_for_content: str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ";
+    def http_header_for_content_len: int = strlen(&http_header_for_content);
+
+    write("http_header_for_content_len = ", http_header_for_content_len)
 
     def header_body_seperator: str = "\r\n\r\n";
     def header_body_seperator_len: int = strlen(&header_body_seperator);
@@ -64,6 +68,8 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
 
         idx += 1;
     }
+
+    write("method_ends_at_idx = ", method_ends_at_idx)
 
     -- consume the space character
     idx += 1;
@@ -88,6 +94,7 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
 
     write("path_as_char = ")
     syscall(WRITE_SYSCALL, STDOUT, path_as_char, path_len)
+    write("\n")
 
     if string_ends_with(path_as_char, path_len, dot_html as *char, strlen(&dot_html)) == 0 {
         def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_404 as *char, strlen(&http_404));
@@ -102,7 +109,7 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
         return;
     }
 
-    def final_file_abs_path: int = str_concat(
+    def final_file_abs_path_len: int = str_concat(
         index_html_file_dir_path as *char, 
         strlen(&index_html_file_dir_path), 
         path_as_char, 
@@ -110,11 +117,17 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
         file_to_read
     );
 
-    write("final_file_abs_path = ", final_file_abs_path)
+    -- terminate file path with \0
+    -- *((file_to_read + final_file_abs_path_len) as *char) = 0;
+    
+    def to_write: *char = (file_to_read + final_file_abs_path_len);
+    *to_write = 0;
+
+    write("final_file_abs_path_len = ", final_file_abs_path_len)
     
     syscall(WRITE_SYSCALL, STDOUT, path_as_char, path_ends_at_idx - path_starts_at_idx + 1)
     write("\n")
-    syscall(WRITE_SYSCALL, STDOUT, file_to_read, final_file_abs_path)
+    syscall(WRITE_SYSCALL, STDOUT, file_to_read, final_file_abs_path_len)
 
     def file_read_bytes: int = read_file_into_memory(read_data, 4096, file_to_read as *char);
 
@@ -123,23 +136,25 @@ fun parse_http_request(connfd: int, req: *int, read_bytes: int) {
         write("read_file_into_memory returned: ")
         print_int(file_read_bytes)
     } else {
-        write("Read ", file_read_bytes, " bytes from file ", file_to_read, "\n")
+        write("Read ", file_read_bytes, " bytes from file \n")
 
-        def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_index_html as *char, http_index_html_len);
-        write("Writing to connfd returned: ");
-        print_int(write_ret)
+        -- clear buffer
+        memset(buffer, 0, 1024 * 1024)
 
-        def num_written: int = write_int_into_mem(file_len, file_read_bytes);
-        write_ret = syscall(WRITE_SYSCALL, connfd, file_len, num_written);
+        -- put 
+        def current_ptr: int = write_str_into_mem(buffer, http_header_for_content as *char, http_header_for_content_len)
+        -- write the content length
+        current_ptr += write_int_into_mem(buffer + current_ptr, file_read_bytes)
+        -- write header_body_seperator
+        current_ptr += write_str_into_mem(buffer + current_ptr, header_body_seperator as *char, header_body_seperator_len)
+        -- write the file data, i.e. HTTP body
+        current_ptr += write_str_into_mem(buffer + current_ptr, read_data, file_read_bytes)
 
-        write_ret = syscall(WRITE_SYSCALL, connfd, header_body_seperator as *char, header_body_seperator_len);
-        write("Writing header_body_seperator to connfd returned: ");
-        print_int(write_ret)
+        def write_ret: int = syscall(WRITE_SYSCALL, connfd, buffer, current_ptr);
 
-        write_ret = syscall(WRITE_SYSCALL, connfd, read_data, file_read_bytes);
-        write("Writing to connfd returned: ");
-        print_int(write_ret)
+        write("Wrote ", write_ret, " into connfd\n");
 
+        syscall(WRITE_SYSCALL, STDOUT, buffer, current_ptr)
     }
 
     syscall(CLOSE_SYSCALL, connfd);
@@ -154,9 +169,9 @@ fun main() {
         exit(1);
     }
 
-    def sa_prefix: *int16 = serveraddr_mem;
+    def sa_prefix: *int = serveraddr_mem;
     def sin_port: *int16 = serveraddr_mem + 2;
-    def s_addr: *int = serveraddr_mem + 4;
+    def s_addr: *int32 = serveraddr_mem + 4;
 
     *sa_prefix = AF_INET;
     *sin_port = PORT;

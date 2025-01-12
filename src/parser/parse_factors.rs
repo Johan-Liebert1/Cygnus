@@ -1,7 +1,7 @@
 use crate::{
     ast::{abstract_syntax_tree::ASTNodeEnumMut, array::Array, variable::Variable},
-    helpers::unexpected_token,
-    lexer::{keywords::AS, lexer::Token, tokens::Operations, types::VarType},
+    helpers::{compiler_error, unexpected_token},
+    lexer::{lexer::Token, tokens::Operations, types::VarType},
     types::ASTNode,
 };
 
@@ -9,7 +9,6 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     ast::factor::Factor,
-    helpers,
     lexer::tokens::{Bracket, TokenEnum},
 };
 
@@ -18,32 +17,7 @@ use super::parser::Parser;
 impl Parser {
     /// VARIABLE (as type)*
     fn parse_variable_factor(&mut self, var_token: &Token, var_name: &String) -> ASTNode {
-        let mut variable = Variable::new(
-            Box::new(var_token.clone()),
-            VarType::Unknown,
-            var_name.into(),
-            false,
-            false,
-            0,
-        );
-
-        if let TokenEnum::Keyword(word) = self.peek_next_token().token {
-            if word == AS {
-                // consume 'as'
-                self.get_next_token();
-
-                // the next token HAS to be a type
-                let type_cast = self.validate_token(TokenEnum::Type(VarType::Unknown));
-
-                let var_type = if let TokenEnum::Type(var_type) = type_cast.token {
-                    var_type
-                } else {
-                    unreachable!("Validate token failed")
-                };
-
-                variable.type_cast = Some(var_type);
-            }
-        }
+        let mut variable = Variable::new(var_token.clone(), VarType::Unknown, var_name.into(), false, false, 0);
 
         // check if this is an array access
         if let TokenEnum::Bracket(Bracket::LSquare) = self.peek_next_token().token {
@@ -54,6 +28,7 @@ impl Parser {
             self.validate_token(TokenEnum::Bracket(Bracket::RSquare));
         }
 
+        // Check if struct member access
         let mut member_access = vec![];
 
         while let TokenEnum::Dot = self.peek_next_token().token {
@@ -71,6 +46,9 @@ impl Parser {
 
         variable.member_access = member_access;
 
+        // Handle type casting after all array accesses and struct member accesses
+        variable.type_cast = self.parse_type_cast();
+
         return Rc::new(RefCell::new(Box::new(variable)));
     }
 
@@ -81,7 +59,7 @@ impl Parser {
         match &next_token.token {
             TokenEnum::Number(..) | TokenEnum::StringLiteral(..) => {
                 self.get_next_token();
-                return Rc::new(RefCell::new(Box::new(Factor::new(Box::new(next_token)))));
+                return Rc::new(RefCell::new(Box::new(Factor::new(next_token))));
             }
 
             // This could also be a function call
@@ -110,7 +88,7 @@ impl Parser {
 
                     _ => self.parse_variable_factor(&var_token, var_name),
                 }
-            }
+            } // Factor Variable End
 
             TokenEnum::Bracket(paren) => match paren {
                 Bracket::LParen => {
@@ -119,17 +97,28 @@ impl Parser {
 
                     let return_value = self.parse_logical_expression();
 
-                    match self.peek_next_token().token {
-                        TokenEnum::Bracket(Bracket::RParen) => {
-                            self.get_next_token();
-                            self.bracket_stack.pop();
-                            return return_value;
-                        }
+                    self.validate_token(TokenEnum::Bracket(Bracket::RParen));
+                    self.bracket_stack.pop();
 
-                        _ => {
-                            panic!("Unclosed (");
-                        }
-                    };
+                    let type_cast = self.parse_type_cast();
+
+                    if type_cast.is_some() {
+                        match return_value.borrow_mut().get_node_mut() {
+                            ASTNodeEnumMut::BinaryOp(b) => b.set_type_cast(type_cast),
+
+                            ASTNodeEnumMut::ComparisonExp(c) => c.set_type_cast(type_cast),
+
+                            ASTNodeEnumMut::LogicalExp(l) => l.set_type_cast(type_cast),
+
+                            _ => {
+                                unreachable!(
+                                "All logical expressions should be either BinaryOP or ComparisonExp, found {return_value:#?}"
+                            )
+                            }
+                        };
+                    }
+
+                    return_value
                 }
 
                 Bracket::RParen => match self.bracket_stack.last() {
@@ -139,22 +128,16 @@ impl Parser {
                                 // all good. A left paren was closed
                                 self.get_next_token();
                                 self.bracket_stack.pop();
-                                return Rc::new(RefCell::new(Box::new(Factor::new(Box::new(next_token)))));
+                                return Rc::new(RefCell::new(Box::new(Factor::new(next_token))));
                             }
 
-                            TokenEnum::Bracket(Bracket::RParen) => {
-                                panic!(") never opened");
-                            }
+                            TokenEnum::Bracket(Bracket::RParen) => compiler_error("Unclosed (", &bracket),
 
-                            _ => {
-                                panic!("Invalid token {:?}", next_token);
-                            }
+                            _ => unexpected_token(&next_token, None),
                         }
                     }
 
-                    None => {
-                        panic!(") never opened");
-                    }
+                    None => unexpected_token(&next_token, None),
                 },
 
                 // Array definition, the RHS bit
@@ -187,11 +170,10 @@ impl Parser {
                     return Rc::new(RefCell::new(Box::new(Array::new(members, bracket_token))));
                 }
 
-                _ => {
-                    panic!("Invalid token {:?}", next_token);
-                }
-            },
+                _ => unexpected_token(&next_token, None),
+            }, // Factor bracket match end
 
+            // A pointer dereference, not a multiplication statement
             TokenEnum::Op(Operations::Multiply) => {
                 self.get_next_token();
 
@@ -240,7 +222,7 @@ impl Parser {
                 self.times_dereferenced = 0;
 
                 return exp;
-            }
+            } // Factor Op::Multiply end
 
             TokenEnum::Ampersand => {
                 // consume '&'
@@ -252,7 +234,7 @@ impl Parser {
                 match next_next_token.token {
                     TokenEnum::Variable(var_name) => {
                         Rc::new(RefCell::new(Box::new(Variable::new(
-                            Box::new(self.get_next_token()),
+                            self.get_next_token(),
                             // this is not a variable declaration, only a variable
                             // name so we don't have type information here
                             // This is handled via the call stack
@@ -265,13 +247,13 @@ impl Parser {
                     }
 
                     _ => {
-                        helpers::unexpected_token(&next_next_token, Some(&TokenEnum::Variable("".into())));
+                        unexpected_token(&next_next_token, Some(&TokenEnum::Variable("".into())));
                     }
                 }
-            }
+            } // Factor Ampersand end
 
             _ => {
-                helpers::unexpected_token(&next_token, None);
+                unexpected_token(&next_token, None);
             }
         }
     }

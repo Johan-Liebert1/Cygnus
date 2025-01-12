@@ -1,4 +1,4 @@
-use crate::{types::ASTNode};
+use crate::types::ASTNode;
 
 use std::{cell::RefCell, rc::Rc};
 
@@ -14,14 +14,10 @@ impl Parser {
     pub fn parse_term(&mut self) -> ASTNode {
         let mut result = self.parse_factor();
 
+        // trace!("parse_term result = {:?}", result);
+
         loop {
             let next_token = self.peek_next_token();
-
-            // trace!(
-            //     "parse_term next_token {:#?}. BracketStack: {:?}",
-            //     next_token,
-            //     self.bracket_stack
-            // );
 
             match &next_token.token {
                 TokenEnum::Op(op) => match op {
@@ -32,6 +28,8 @@ impl Parser {
                     | Operations::Modulo => {
                         let token = self.get_next_token();
 
+                        // let type_cast = self.parse_type_cast();
+
                         // reassign the result
                         // if we have 1*2*3
                         // in the first iteration, result is (left: 1, op: *, right: 2)
@@ -40,7 +38,7 @@ impl Parser {
                         // and so on
                         result = Rc::new(RefCell::new(Box::new(BinaryOP::new(
                             result,
-                            Box::new(token),
+                            token,
                             self.parse_factor(),
                             // multiplying a pointer or dividing it or shifting left/right doesn't
                             // make any sense

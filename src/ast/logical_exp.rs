@@ -1,3 +1,4 @@
+use crate::types::TypeCast;
 use crate::{lexer::types::VarType, types::ASTNode};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
@@ -17,17 +18,23 @@ pub struct LogicalExpression {
     left: Option<ASTNode>,
     op: Token,
     right: ASTNode,
+    type_cast: TypeCast,
     pub result_type: VarType,
 }
 
 impl LogicalExpression {
-    pub fn new(left: Option<ASTNode>, op: Token, right: ASTNode) -> Self {
+    pub fn new(left: Option<ASTNode>, op: Token, right: ASTNode, type_cast: TypeCast) -> Self {
         Self {
             left,
             op,
             right,
+            type_cast,
             result_type: VarType::Int,
         }
+    }
+
+    pub fn set_type_cast(&mut self, casted_type: TypeCast) {
+        self.type_cast = casted_type;
     }
 }
 

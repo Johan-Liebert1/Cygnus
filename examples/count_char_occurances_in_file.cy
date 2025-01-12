@@ -39,7 +39,7 @@ fun main() {
             -- write("after the first if\n")
             def inc: int8 =  *(thing as *char) - lower_a;
 
-            def addr_to_update: *int = lower_char_occurances + (inc) * 8;
+            def addr_to_update: *int = lower_char_occurances + (inc * 8) as int;
 
             -- FIXME: Can't do *addr_to_update = *addr_to_update + 1;
             *addr_to_update = *(addr_to_update as *int) + 1;

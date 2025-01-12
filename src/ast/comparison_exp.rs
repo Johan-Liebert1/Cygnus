@@ -1,6 +1,6 @@
 use crate::lexer::tokens::AllOperations;
 use crate::lexer::types::VarType;
-use crate::types::ASTNode;
+use crate::types::{ASTNode, TypeCast};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
@@ -22,6 +22,7 @@ pub struct ComparisonExp {
     left: ASTNode,
     comp_op: Box<Token>,
     right: ASTNode,
+    type_cast: TypeCast,
     pub result_type: VarType,
 }
 
@@ -31,6 +32,7 @@ impl ComparisonExp {
             left,
             comp_op,
             right,
+            type_cast: None,
             result_type: VarType::Int,
         }
     }
@@ -123,6 +125,10 @@ impl ComparisonExp {
             (Operand::Variable(v1), Operand::Variable(v2)) => self.eval_var_var(v1, v2, i),
         }
     }
+
+    pub fn set_type_cast(&mut self, casted_type: TypeCast) {
+        self.type_cast = casted_type;
+    }
 }
 
 impl AST for ComparisonExp {
@@ -183,11 +189,11 @@ impl AST for ComparisonExp {
 
         if let TokenEnum::Comparator(op) = &self.comp_op.token {
             // need to do this even though it's always going to be an int
-            self.result_type = self
-                .left
-                .borrow()
-                .get_node()
-                .figure_out_type(&self.right.borrow().get_node(), AllOperations::Comparator(op.clone()));
+            self.result_type = self.left.borrow().get_node().figure_out_type(
+                &self.right.borrow().get_node(),
+                AllOperations::Comparator(op.clone()),
+                self.get_token(),
+            );
         } else {
             unreachable!(
                 "Found Operation '{:?}' which is not defined for a comparison operation.\

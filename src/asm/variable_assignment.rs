@@ -246,7 +246,7 @@ impl ASM {
                 let actual_rax_name = if times_dereferenced > 0 {
                     t.get_register_name(rax)
                 } else {
-                    &String::from(rax)
+                    rax
                 };
 
                 instructions.push(format!("mov {}, {stack_member}", actual_rax_name));
@@ -388,8 +388,6 @@ impl ASM {
                     "movsd [rbp - {}], {stack_member}",
                     ar_var.borrow().offset
                 )]);
-
-                trace!("stack_member: {stack_member}");
 
                 self.unlock_register_from_stack_value(&stack_member);
                 // self.unlock_register(xmm0);

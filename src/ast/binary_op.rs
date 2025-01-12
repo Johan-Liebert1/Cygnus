@@ -1,6 +1,7 @@
+use crate::helpers::compiler_error;
 use crate::lexer::tokens::AllOperations;
 use crate::lexer::types::VarType;
-use crate::types::ASTNode;
+use crate::types::{ASTNode, TypeCast};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
@@ -13,7 +14,6 @@ use crate::{
         tokens::{Number, Operand, Operations, TokenEnum, VariableEnum},
     },
 };
-use core::panic;
 use std::{cell::RefCell, rc::Rc};
 
 use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST};
@@ -21,19 +21,21 @@ use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST}
 #[derive(Debug)]
 pub struct BinaryOP {
     left: ASTNode,
-    operator: Box<Token>,
+    operator: Token,
     right: ASTNode,
+    type_cast: TypeCast,
     pub times_dereferenced: usize,
     pub result_type: VarType,
 }
 
 impl BinaryOP {
-    pub fn new(left: ASTNode, operator: Box<Token>, right: ASTNode, times_dereferenced: usize) -> Self {
+    pub fn new(left: ASTNode, operator: Token, right: ASTNode, times_dereferenced: usize) -> Self {
         Self {
             left,
             operator,
             right,
             times_dereferenced,
+            type_cast: None,
             result_type: VarType::Unknown,
         }
     }
@@ -80,11 +82,15 @@ impl BinaryOP {
                 Operations::Minus => l - r,
                 Operations::Divide => l / r,
                 Operations::Multiply => l * r,
-                Operations::ShiftLeft => panic!("Op << not implemented for floating point numbers"),
-                Operations::ShiftRight => {
-                    panic!("Op >> not implemented for floating point numbers")
+                Operations::ShiftLeft => {
+                    compiler_error("Op << not implemented for floating point numbers", self.get_token())
                 }
-                Operations::Modulo => panic!("Op % not implemented for floating point numbers"),
+                Operations::ShiftRight => {
+                    compiler_error("Op >> not implemented for floating point numbers", self.get_token());
+                }
+                Operations::Modulo => {
+                    compiler_error("Op % not implemented for floating point numbers", self.get_token())
+                }
             },
 
             _ => {
@@ -107,9 +113,7 @@ impl BinaryOP {
                 };
             }
 
-            _ => {
-                panic!("Cannot add Float and Integer");
-            }
+            _ => compiler_error("Cannot add Float and Integer", self.get_token()),
         };
     }
 
@@ -123,7 +127,7 @@ impl BinaryOP {
                 VariableEnum::Pointer(_) => todo!(),
             },
 
-            None => panic!("Variable {} is not defined", variable),
+            None => compiler_error(format!("Variable {} is not defined", variable), self.get_token()),
         }
     }
 
@@ -145,9 +149,12 @@ impl BinaryOP {
                 (VariableEnum::Pointer(_), VariableEnum::Pointer(_)) => todo!(),
             },
 
-            (None, Some(_)) => panic!("Variable {} is not defined", var2),
-            (Some(_), None) => panic!("Variable {} is not defined", var1),
-            (None, None) => panic!("Variable {} and {} is not defined", var1, var2),
+            (None, Some(_)) => compiler_error(format!("Variable {} is not defined", var2), self.get_token()),
+            (Some(_), None) => compiler_error(format!("Variable {} is not defined", var1), self.get_token()),
+            (None, None) => compiler_error(
+                format!("Variable {} and {} is not defined", var1, var2),
+                self.get_token(),
+            ),
         }
     }
 
@@ -160,6 +167,10 @@ impl BinaryOP {
 
             (Operand::Variable(v1), Operand::Variable(v2)) => self.eval_var_var(v1, v2, i),
         }
+    }
+
+    pub fn set_type_cast(&mut self, casted_type: TypeCast) {
+        self.type_cast = casted_type;
     }
 }
 
@@ -182,8 +193,8 @@ impl AST for BinaryOP {
                     self.times_dereferenced,
                     &self.get_type().1,
                     self.get_token(),
-                    &left_borrow.get_type().1,
-                    &right_borrow.get_type().1,
+                    &left_borrow.get_type().0,
+                    &right_borrow.get_type().0,
                 );
             }
 
@@ -235,11 +246,15 @@ impl AST for BinaryOP {
         self.right.borrow_mut().semantic_visit(call_stack, f);
 
         if let TokenEnum::Op(op) = &self.operator.token {
-            self.result_type = self
-                .left
-                .borrow()
-                .get_node()
-                .figure_out_type(&self.right.borrow().get_node(), AllOperations::Op(op.clone()));
+            self.result_type = self.left.borrow_mut().get_node_mut().figure_out_type(
+                &mut self.right.borrow_mut().get_node_mut(),
+                AllOperations::Op(op.clone()),
+                self.get_token(),
+            );
+
+            if let Some(casted_type) = &self.type_cast {
+                self.result_type = casted_type.clone().1;
+            }
 
             // trace!("result_type: {}, left: {}",  self.result_type, self.left.borrow().get_type().1);
             // trace!("result_type: {}, right: {}\n", self.result_type, self.right.borrow().get_type().1);

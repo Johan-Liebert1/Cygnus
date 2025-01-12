@@ -1,6 +1,10 @@
 syscall(1, 1, "hello", get_len("hello"))
 
+-------------------------------------------------
+
 passing strings into functions
+
+-------------------------------------------------
 
 fun main() {
     def a: char = 97; 
@@ -9,3 +13,7 @@ fun main() {
 }
 
 main()
+
+-------------------------------------------------
+
+global vars don't work properly server/index.cy

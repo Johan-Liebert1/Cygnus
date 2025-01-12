@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use crate::{
     ast::{memory_alloc::MemoryAlloc, variable::Variable},
     lexer::{
-        tokens::{TokenEnum},
+        tokens::TokenEnum,
         types::VarType,
     },
     types::ASTNode,
@@ -21,7 +21,7 @@ impl Parser {
 
         if let TokenEnum::Variable(var_name) = &var_token.token {
             let mut variable = Variable::new(
-                Box::new(var_token.clone()),
+                var_token.clone(),
                 VarType::Ptr(Box::new(VarType::Int)),
                 var_name.clone(),
                 false,

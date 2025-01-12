@@ -1,4 +1,3 @@
-use core::panic;
 use std::{cell::RefCell, fmt::Display, rc::Rc};
 
 use crate::{ast::variable::Variable, helpers::compiler_error};
@@ -225,7 +224,7 @@ impl VarType {
         return is_ok;
     }
 
-    pub fn figure_out_type(&self, other: &VarType, op: AllOperations) -> VarType {
+    pub fn figure_out_type(&self, other: &VarType, op: AllOperations, token: &Token) -> VarType {
         use Operations::*;
         use VarType::*;
 
@@ -252,30 +251,27 @@ impl VarType {
             (Int8, Int16) => Int16,
             (Int8, Int8) => Int8,
 
-
             // No matter what the op is, the result will always be an float
             (Float, Float) => Float,
 
             // Incrementing a pointer
             // char is represented as an int so this should be fine
-            (Int, Ptr(ptr)) | (Ptr(ptr), Int) /*| (Ptr(..), Int) | (Ptr(_), Char)*/ => {
+            (Int, Ptr(ptr)) | (Ptr(ptr), Int) | (Ptr(ptr), Int8) | (Ptr(ptr), Char) | (Ptr(ptr), Int32) => {
                 let is_allowed = matches!(
                     op,
-                    AllOperations::Op(Plus) // only addition is allowed
-                    | AllOperations::Op(Minus) // only addition is allowed
-                        | AllOperations::Comparator(..) // all comparisons allowed
-                                                        // Logical and/or not allowed
+                    AllOperations::Op(Plus) | AllOperations::Op(Minus) | AllOperations::Comparator(..) // all comparisons allowed
+                                                                                                       // Logical and/or not allowed
                 );
 
                 if !is_allowed {
-                    panic!("'{op}' not defined for '{self}' and '{other}'")
+                    compiler_error(format!("'{op}' not defined for '{self}' and '{other}'"), token);
                 }
 
                 // any pointer incremented is the same pointer to the same type unless casted
                 Ptr(ptr.clone())
             }
 
-            (Ptr(ptr1), Ptr(ptr2)) => ptr1.figure_out_type(ptr2, op),
+            (Ptr(ptr1), Ptr(ptr2)) => ptr1.figure_out_type(ptr2, op, token),
 
             (Char, Char) | (Int8, Char) | (Char, Int8) => {
                 let is_allowed = matches!(
@@ -286,7 +282,7 @@ impl VarType {
                 );
 
                 if !is_allowed {
-                    panic!("'{op}' not defined for '{self}' and '{other}'")
+                    compiler_error(format!("'{op}' not defined for '{self}' and '{other}'"), token);
                 }
 
                 // result of comparison is always an int
@@ -300,7 +296,7 @@ impl VarType {
                 );
 
                 if !is_allowed {
-                    panic!("'{op}' not defined for '{self}' and '{other}'")
+                    compiler_error(format!("'{op}' not defined for '{self}' and '{other}'"), token);
                 }
 
                 // result of comparison is always an int
@@ -308,7 +304,7 @@ impl VarType {
             }
 
             (..) => {
-                panic!("'{op}' not defined for '{self}' and '{other}'")
+                compiler_error(format!("'{op}' not defined for '{self}' and '{other}'"), token);
             }
         };
     }
