@@ -29,10 +29,15 @@ const NULL_BYTE: int8 = 0;
 -- User-Agent: curl/8.5.0
 -- Accept: */*
 fun parse_http_request(connfd: int, req: *int8, read_bytes: int) {
-    -- if PRINT_REQ == 1 {
+    const PRINT_REQ: int = 1;
+    const SPACE_ASCII: int8 = 32;
+    const NEW_LINE_ASCII: int8 = 10;
+    const NULL_BYTE: int8 = 0;
+
+    if PRINT_REQ == 1 {
         write("Writing req to stdout...\n")
         syscall(WRITE_SYSCALL, STDOUT, req, read_bytes);
-    -- }
+    }
 
     def dot_html: str = ".html";
 
@@ -90,6 +95,7 @@ fun parse_http_request(connfd: int, req: *int8, read_bytes: int) {
 
     write("path_as_char = ")
     syscall(WRITE_SYSCALL, STDOUT, path_as_char, path_len)
+    write("\n")
 
     if string_ends_with(path_as_char, path_len, dot_html as *char, strlen(&dot_html)) == 0 {
         def write_ret: int = syscall(WRITE_SYSCALL, connfd, http_404 as *char, strlen(&http_404));
@@ -104,7 +110,7 @@ fun parse_http_request(connfd: int, req: *int8, read_bytes: int) {
         return;
     }
 
-    def final_file_abs_path: int = str_concat(
+    def final_file_abs_path_len: int = str_concat(
         index_html_file_dir_path as *char, 
         strlen(&index_html_file_dir_path), 
         path_as_char, 
@@ -112,11 +118,17 @@ fun parse_http_request(connfd: int, req: *int8, read_bytes: int) {
         file_to_read
     );
 
-    write("final_file_abs_path = ", final_file_abs_path)
+    -- terminate file path with \0
+    -- *((file_to_read + final_file_abs_path_len) as *char) = 0;
+    
+    def to_write: *char = (file_to_read + final_file_abs_path_len);
+    *to_write = 0;
+
+    write("final_file_abs_path_len = ", final_file_abs_path_len)
     
     syscall(WRITE_SYSCALL, STDOUT, path_as_char, path_ends_at_idx - path_starts_at_idx + 1)
     write("\n")
-    syscall(WRITE_SYSCALL, STDOUT, file_to_read, final_file_abs_path)
+    syscall(WRITE_SYSCALL, STDOUT, file_to_read, final_file_abs_path_len)
 
     def file_read_bytes: int = read_file_into_memory(read_data, 4096, file_to_read as *char);
 

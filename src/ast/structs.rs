@@ -60,7 +60,6 @@ impl AST for StructDecleration {
         // then, at the end when popping we want to get the very first member as the first argument
         // when we start popping from the stack
         for member in self.members.iter().rev() {
-            println!("member: {:#?}", member);
             member.rhs.borrow().visit_com(v, f.clone(), asm, call_stack)
         }
     }

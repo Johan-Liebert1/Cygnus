@@ -128,6 +128,8 @@ impl ASM {
         struct_name: &String,
         members: Rc<RefCell<Vec<StructMemberType>>>,
     ) {
+        trace!("handle_local_ptr_struct");
+
         if variable.member_access.len() == 0 {
             let rax = self.get_free_register(None);
 
@@ -164,7 +166,7 @@ impl ASM {
 
                     let rax_actual_name = struct_member_type.member_type.get_register_name(rax);
 
-                    println!("struct_member_type: {:#?}", struct_member_type);
+                    println!("struct_member_type: {:#?}. rax_actual_name: {rax_actual_name}", struct_member_type);
 
                     self.extend_current_label(vec![
                         format!("mov {rbx}, [rbp - {}]", ar_var_offset),
@@ -187,7 +189,8 @@ impl ASM {
                     self.extend_current_label(vec![
                         format!("mov {rbx}, [rbp - {}]", ar_var_offset),
                         format!("add {rbx}, {}", struct_member_type.offset),
-                        format!("xor {rax}, {rax}"),
+
+                        // format!("xor {rax}, {rax}"),
                         format!("mov {rax}, [{rbx}]"),
                         // format!("push rax"),
                         // length is pushed last
@@ -499,7 +502,9 @@ impl ASM {
                 // let rax_actual_name = variable.var_type.get_register_name(rax);
 
                 if variable.dereference {
-                    unreachable!("Cannot dereference a string. This should've been caught in the semantic analysis phase.")
+                    unreachable!(
+                        "Cannot dereference a string. This should've been caught in the semantic analysis phase."
+                    )
                 } else if variable.store_address {
                     // self.add_to_current_label(format!("lea {rax}, {var_name}"));
                     // self.stack_push(String::from(rax));
@@ -508,7 +513,7 @@ impl ASM {
                 } else {
                     // self.add_to_current_label(format!("mov {rax_actual_name}, [{var_name}]"));
                     // self.stack_push(String::from(rax_actual_name));
-                    
+
                     self.stack_push(format!("{} [{var_name}]", variable.var_type.get_operation_size()));
                 }
             }
@@ -517,7 +522,9 @@ impl ASM {
                 let rax = self.get_free_register(None);
 
                 if variable.dereference {
-                    unreachable!("Cannot dereference a string. This should've been caught in the semantic analysis phase.")
+                    unreachable!(
+                        "Cannot dereference a string. This should've been caught in the semantic analysis phase."
+                    )
                 } else if variable.store_address {
                     self.add_to_current_label(format!("lea {rax}, {var_name}"));
                     self.stack_push(String::from(rax));
@@ -642,8 +649,6 @@ impl ASM {
         let var_name = &variable.var_name;
 
         let (variable_from_stack, variable_scope) = call_stack.get_var_with_name(var_name);
-
-        trace!("{variable:#?}");
 
         match variable_from_stack {
             Some(ar_var) => match variable_scope {

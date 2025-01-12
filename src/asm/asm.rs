@@ -34,7 +34,7 @@ pub struct ASM {
     /// that register is to be used for a function call
     pub regs_saved_for_function_call: Vec<Vec<Register>>,
 
-    all_regs: Vec<&'static str>,
+    all_regs: Vec<Register>,
 }
 
 impl Default for ASM {
@@ -46,7 +46,7 @@ impl Default for ASM {
         }
 
         for fr in &ALL_FP_REGISTERS {
-            all_regs.push(fr.as_ref())
+            all_regs.push(*fr)
         }
 
         Self {

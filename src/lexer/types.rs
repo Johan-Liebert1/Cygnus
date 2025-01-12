@@ -1,6 +1,6 @@
 use std::{cell::RefCell, fmt::Display, rc::Rc};
 
-use crate::{ast::variable::Variable, helpers::compiler_error};
+use crate::{ast::variable::Variable, helpers::compiler_error, trace};
 
 use super::{
     lexer::Token,
@@ -259,9 +259,8 @@ impl VarType {
             (Int, Ptr(ptr)) | (Ptr(ptr), Int) | (Ptr(ptr), Int8) | (Ptr(ptr), Char) | (Ptr(ptr), Int32) => {
                 let is_allowed = matches!(
                     op,
-                    AllOperations::Op(Plus) // only addition is allowed
-                        | AllOperations::Comparator(..) // all comparisons allowed
-                                                        // Logical and/or not allowed
+                    AllOperations::Op(Plus) | AllOperations::Op(Minus) | AllOperations::Comparator(..) // all comparisons allowed
+                                                                                                       // Logical and/or not allowed
                 );
 
                 if !is_allowed {

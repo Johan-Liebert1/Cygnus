@@ -1,8 +1,5 @@
 use crate::{
-    helpers::{self, compiler_error},
-    lexer::types::VarType,
-    semantic_analyzer::semantic_analyzer::CallStack,
-    types::{ASTNode, TypeCast},
+    helpers::{self, compiler_error}, lexer::types::VarType, semantic_analyzer::semantic_analyzer::CallStack, trace, types::{ASTNode, TypeCast}
 };
 
 use std::{cell::RefCell, rc::Rc};

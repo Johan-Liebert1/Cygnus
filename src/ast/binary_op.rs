@@ -1,6 +1,7 @@
 use crate::helpers::compiler_error;
 use crate::lexer::tokens::AllOperations;
 use crate::lexer::types::VarType;
+use crate::trace;
 use crate::types::{ASTNode, TypeCast};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
@@ -246,16 +247,15 @@ impl AST for BinaryOP {
         self.right.borrow_mut().semantic_visit(call_stack, f);
 
         if let TokenEnum::Op(op) = &self.operator.token {
-            if let Some(casted_type) = &self.type_cast {
-                self.result_type = casted_type.clone().1;
-                return;
-            }
-
             self.result_type = self.left.borrow_mut().get_node_mut().figure_out_type(
                 &mut self.right.borrow_mut().get_node_mut(),
                 AllOperations::Op(op.clone()),
                 self.get_token(),
             );
+
+            if let Some(casted_type) = &self.type_cast {
+                self.result_type = casted_type.clone().1;
+            }
 
             // trace!("result_type: {}, left: {}",  self.result_type, self.left.borrow().get_type().1);
             // trace!("result_type: {}, right: {}\n", self.result_type, self.right.borrow().get_type().1);

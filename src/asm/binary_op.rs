@@ -1,11 +1,8 @@
-use crate::{
-    lexer::{
-        lexer::Token,
-        registers::{get_register_name_for_bits, Register},
-        tokens::Operations,
-        types::VarType,
-    },
-    trace,
+use crate::lexer::{
+    lexer::Token,
+    registers::{get_register_name_for_bits, Register},
+    tokens::Operations,
+    types::VarType,
 };
 
 use super::asm::ASM;
@@ -20,7 +17,7 @@ impl ASM {
         left_type: &VarType,
         right_type: &VarType,
     ) {
-        let reg_to_lock: Register;
+        let mut reg_to_lock: Register;
 
         let mut instructions = match op {
             Operations::Plus => {
@@ -57,7 +54,9 @@ impl ASM {
                     let rbx_actual = left_type.get_register_name(rbx);
 
                     let inst = vec![
-                        format!(";; Plus get the two operands from the stack. Result type: {result_type}. Token: {token:?}"),
+                        format!(
+                            ";; Plus get the two operands from the stack. Result type: {result_type}. Token: {token:?}"
+                        ),
                         format!("mov {rax_actual}, {}", right),
                         format!("mov {rbx_actual}, {}", left),
                         format!("add {rax_actual}, {rbx_actual}"),
@@ -162,11 +161,6 @@ impl ASM {
                     let rax = if self.is_reg_locked(Register::RAX) {
                         let rbx = self.get_free_register(Some(&regs_to_skip));
 
-                        trace!(
-                            "RAX was locked so rbx = '{rbx}'. Used registers: {:#?}",
-                            self.get_used_registers()
-                        );
-
                         instructions.extend(vec![format!(
                             "mov {rbx}, rax ;; moving rax into {rbx} as rax is needed"
                         )]);
@@ -244,7 +238,7 @@ impl ASM {
                     let rax = if self.is_reg_locked(Register::RAX) {
                         let rbx = self.get_free_register(Some(&regs_to_skip));
 
-                        instructions.extend(vec![format!("mov {rbx}, rax")]);
+                        instructions.extend(vec![format!("mov {rbx}, rax ;; Saving rax")]);
 
                         self.replace_reg_on_stack(Register::RAX, rbx);
 
@@ -451,25 +445,31 @@ impl ASM {
 
         // Don't need to lock as get_free_register locks it
         //
-        // self.lock_register(reg_to_lock);
+        // We might've preformed OP on two int8s, but casted it to an integer
+        // So, we need to push the register that will hold an integer
+
+        let actual_reg_to_lock = Register::from(result_type.get_register_name(reg_to_lock));
+
+        // if actual_reg_to_lock != reg_to_lock {
+        //     let bit64_reg = actual_reg_to_lock.get_64bit_version();
+
+        //     instructions.extend(vec![
+        //         format!("push {bit64_reg}"),
+        //         format!("mov {bit64_reg}, 0"),
+        //         format!("pop {bit64_reg}")
+        //     ]);
+        // }
+
+        reg_to_lock = actual_reg_to_lock;
 
         // result will always be in rax
         // We will also never dereference a string as we want the character address
         match result_type {
-            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+            VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Char | VarType::Float => {
                 self.stack_push(String::from(reg_to_lock));
             }
 
             VarType::Str => todo!(),
-
-            VarType::Float => {
-                self.stack_push(String::from(reg_to_lock));
-            }
-
-            // this is basically an integer, a u8 to be precise
-            VarType::Char => {
-                self.stack_push(String::from(reg_to_lock));
-            }
 
             VarType::Ptr(type_) => match **type_ {
                 VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
@@ -491,7 +491,7 @@ impl ASM {
                         instructions.extend(vec![
                             format!("mov {rbx}, {reg_to_lock}"),
                             format!("xor {reg_to_lock}, {reg_to_lock}"),
-                            format!("xor {reg_to_lock_actual}, [{rbx}]",),
+                            format!("mov {reg_to_lock_actual}, [{rbx}]",),
                         ]);
 
                         self.unlock_register(rbx);
