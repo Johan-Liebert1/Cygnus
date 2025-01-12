@@ -75,13 +75,13 @@ impl ASM {
             return;
         }
 
+        // Pointer not dereferenced so we need a 64bit reg to store it
         let rax = self.get_free_register(None);
-        let rax_actual_name = inner_ptr_type.get_register_name(rax);
 
-        self.extend_current_label(vec![format!("mov {rax_actual_name}, [rbp - {ar_var_offset}]")]);
+        self.extend_current_label(vec![format!("mov {rax}, [rbp - {ar_var_offset}]")]);
 
         // already locked by self.get_free_register
-        self.stack_push(String::from(rax_actual_name));
+        self.stack_push(String::from(rax));
     }
 
     fn handle_local_ptr_str(&mut self, _: &Box<VarType>, variable: &RequiredVarFields, ar_var_offset: usize) {
@@ -642,6 +642,8 @@ impl ASM {
         let var_name = &variable.var_name;
 
         let (variable_from_stack, variable_scope) = call_stack.get_var_with_name(var_name);
+
+        trace!("{variable:#?}");
 
         match variable_from_stack {
             Some(ar_var) => match variable_scope {
