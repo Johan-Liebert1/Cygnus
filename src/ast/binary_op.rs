@@ -1,7 +1,7 @@
 use crate::helpers::compiler_error;
 use crate::lexer::tokens::AllOperations;
 use crate::lexer::types::VarType;
-use crate::types::ASTNode;
+use crate::types::{ASTNode, TypeCast};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
@@ -21,19 +21,21 @@ use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST}
 #[derive(Debug)]
 pub struct BinaryOP {
     left: ASTNode,
-    operator: Box<Token>,
+    operator: Token,
     right: ASTNode,
+    type_cast: TypeCast,
     pub times_dereferenced: usize,
     pub result_type: VarType,
 }
 
 impl BinaryOP {
-    pub fn new(left: ASTNode, operator: Box<Token>, right: ASTNode, times_dereferenced: usize) -> Self {
+    pub fn new(left: ASTNode, operator: Token, right: ASTNode, times_dereferenced: usize) -> Self {
         Self {
             left,
             operator,
             right,
             times_dereferenced,
+            type_cast: None,
             result_type: VarType::Unknown,
         }
     }
@@ -166,6 +168,10 @@ impl BinaryOP {
             (Operand::Variable(v1), Operand::Variable(v2)) => self.eval_var_var(v1, v2, i),
         }
     }
+
+    pub fn set_type_cast(&mut self, casted_type: TypeCast) {
+        self.type_cast = casted_type;
+    }
 }
 
 impl AST for BinaryOP {
@@ -187,8 +193,8 @@ impl AST for BinaryOP {
                     self.times_dereferenced,
                     &self.get_type().1,
                     self.get_token(),
-                    &left_borrow.get_type().1,
-                    &right_borrow.get_type().1,
+                    &left_borrow.get_type().0,
+                    &right_borrow.get_type().0,
                 );
             }
 
@@ -240,8 +246,13 @@ impl AST for BinaryOP {
         self.right.borrow_mut().semantic_visit(call_stack, f);
 
         if let TokenEnum::Op(op) = &self.operator.token {
-            self.result_type = self.left.borrow().get_node().figure_out_type(
-                &self.right.borrow().get_node(),
+            if let Some(casted_type) = &self.type_cast {
+                self.result_type = casted_type.clone().1;
+                return;
+            }
+
+            self.result_type = self.left.borrow_mut().get_node_mut().figure_out_type(
+                &mut self.right.borrow_mut().get_node_mut(),
                 AllOperations::Op(op.clone()),
                 self.get_token(),
             );

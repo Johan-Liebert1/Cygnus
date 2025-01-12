@@ -251,17 +251,15 @@ impl VarType {
             (Int8, Int16) => Int16,
             (Int8, Int8) => Int8,
 
-
             // No matter what the op is, the result will always be an float
             (Float, Float) => Float,
 
             // Incrementing a pointer
             // char is represented as an int so this should be fine
-            (Int, Ptr(ptr)) | (Ptr(ptr), Int) /*| (Ptr(..), Int) | (Ptr(_), Char)*/ => {
+            (Int, Ptr(ptr)) | (Ptr(ptr), Int) | (Ptr(ptr), Int8) | (Ptr(ptr), Char) | (Ptr(ptr), Int32) => {
                 let is_allowed = matches!(
                     op,
                     AllOperations::Op(Plus) // only addition is allowed
-                    | AllOperations::Op(Minus) // only addition is allowed
                         | AllOperations::Comparator(..) // all comparisons allowed
                                                         // Logical and/or not allowed
                 );

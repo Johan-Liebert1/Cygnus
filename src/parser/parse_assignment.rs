@@ -1,6 +1,6 @@
 use crate::{
     ast::variable::Variable,
-    helpers::{unexpected_token},
+    helpers::unexpected_token,
     lexer::{lexer::Token, types::VarType},
     types::ASTNode,
 };
@@ -47,7 +47,7 @@ impl Parser {
         let right = self.parse_logical_expression();
 
         let mut variable = Variable::new(
-            Box::new(var_token),
+            var_token,
             VarType::Unknown,
             var_name,
             times_dereferenced > 0,

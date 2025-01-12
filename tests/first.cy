@@ -1,7 +1,5 @@
-const print: int = 0;
-
 fun main() {
-    def a: int = (4;
+    def a: int8 = (9 + 5 * 7) as int8;
 }
 
 main()

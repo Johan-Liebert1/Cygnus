@@ -1,4 +1,4 @@
-use crate::helpers::compiler_error;
+use crate::helpers::{compiler_error, compiler_warning};
 use crate::lexer::tokens::Number;
 use crate::lexer::types::VarType;
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
@@ -19,12 +19,12 @@ use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST}
 /// FACTOR -> INTEGER | FLOAT
 #[derive(Debug)]
 pub struct Factor {
-    token: Box<Token>,
+    token: Token,
     pub result_type: VarType,
 }
 
 impl Factor {
-    pub fn new(token: Box<Token>) -> Self {
+    pub fn new(token: Token) -> Self {
         Self {
             token,
             result_type: VarType::Unknown,
@@ -33,6 +33,16 @@ impl Factor {
 
     pub fn get_type_factor(&self) -> &VarType {
         return &self.result_type;
+    }
+
+    /// Will coerce type of a literal to the type provided.
+    /// NOTE: Will never coerce to a pointer and will always ignore it
+    pub fn coerce_type(&mut self, type_: VarType) {
+        if !matches!(type_, VarType::Ptr(..)) {
+            self.result_type = type_;
+        } else {
+            compiler_warning(format!("Cannot coerce {} to {}. Skipping...", self.get_token(), type_), self.get_token());
+        }
     }
 }
 

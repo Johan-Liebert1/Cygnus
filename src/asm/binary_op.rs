@@ -53,11 +53,11 @@ impl ASM {
                     let rax = self.get_free_register(None);
                     let rbx = self.get_free_register(None);
 
-                    let rax_actual = result_type.get_register_name(rax);
-                    let rbx_actual = result_type.get_register_name(rbx);
+                    let rax_actual = right_type.get_register_name(rax);
+                    let rbx_actual = left_type.get_register_name(rbx);
 
                     let inst = vec![
-                        format!(";; Plus get the two operands from the stack"),
+                        format!(";; Plus get the two operands from the stack. Result type: {result_type}. Token: {token:?}"),
                         format!("mov {rax_actual}, {}", right),
                         format!("mov {rbx_actual}, {}", left),
                         format!("add {rax_actual}, {rbx_actual}"),
@@ -72,7 +72,7 @@ impl ASM {
 
                     self.unlock_register(rbx);
 
-                    reg_to_lock = rax;
+                    reg_to_lock = rax_actual.into();
 
                     inst
                 }
@@ -108,8 +108,8 @@ impl ASM {
                     let rax = self.get_free_register(None);
                     let rbx = self.get_free_register(None);
 
-                    let rax_actual = result_type.get_register_name(rax);
-                    let rbx_actual = result_type.get_register_name(rbx);
+                    let rax_actual = left_type.get_register_name(rax);
+                    let rbx_actual = right_type.get_register_name(rbx);
 
                     let inst = vec![
                         format!(";; Minus get the two operands from the stack. Result type: {result_type}. Token: {token:?}"),
@@ -123,7 +123,7 @@ impl ASM {
                     self.unlock_register_from_stack_value(&right);
                     self.unlock_register_from_stack_value(&left);
 
-                    reg_to_lock = Register::from(rax_actual); // rax;
+                    reg_to_lock = rax_actual.into();
 
                     inst
                 }
@@ -188,8 +188,6 @@ impl ASM {
                     self.unlock_register_from_stack_value(&right);
                     self.unlock_register_from_stack_value(&left);
 
-                    reg_to_lock = rax;
-
                     let rax_actual = right_type.get_register_name(rax);
                     let rbx_actual = left_type.get_register_name(rbx);
 
@@ -206,6 +204,8 @@ impl ASM {
                     ]);
 
                     self.unlock_register(rbx);
+
+                    reg_to_lock = rax_actual.into();
 
                     instructions
                 }
@@ -276,7 +276,7 @@ impl ASM {
 
                     self.unlock_register(rbx);
 
-                    reg_to_lock = rax;
+                    reg_to_lock = rax_actual.into();
 
                     instructions
                 }

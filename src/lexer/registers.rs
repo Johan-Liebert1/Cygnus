@@ -388,8 +388,7 @@ impl VarType {
             Self::Int => get_register_name_for_bits(&register, 64),
             Self::Int32 => get_register_name_for_bits(&register, 32),
             Self::Int16 => get_register_name_for_bits(&register, 16),
-            Self::Int8 => get_register_name_for_bits(&register, 8),
-            Self::Char => get_register_name_for_bits(&register, 8),
+            Self::Int8 | Self::Char => get_register_name_for_bits(&register, 8),
             Self::Float => get_register_name_for_bits(&register, 64),
 
             Self::Ptr(..) => get_register_name_for_bits(&register, 64),

@@ -66,7 +66,7 @@ impl Loop {
         //
         // These variables live in the outer scope not in the loop scope
         call_stack.insert_variable_in_most_recent_function(Rc::new(RefCell::new(Variable::new(
-            Box::new(token.clone()),
+            token.clone(),
             VarType::Int,
             from_name,
             false,
@@ -75,7 +75,7 @@ impl Loop {
         ))));
 
         call_stack.insert_variable_in_most_recent_function(Rc::new(RefCell::new(Variable::new(
-            Box::new(token.clone()),
+            token.clone(),
             VarType::Int,
             to_name,
             false,
@@ -84,7 +84,7 @@ impl Loop {
         ))));
 
         call_stack.insert_variable_in_most_recent_function(Rc::new(RefCell::new(Variable::new(
-            Box::new(token),
+            token,
             VarType::Int,
             step_name,
             false,

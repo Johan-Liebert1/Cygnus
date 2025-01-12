@@ -49,7 +49,7 @@ impl Parser {
                         // and so on
                         result = Rc::new(RefCell::new(Box::new(BinaryOP::new(
                             result,
-                            Box::new(next_token),
+                            next_token,
                             term,
                             self.times_dereferenced,
                         ))));

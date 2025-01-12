@@ -49,7 +49,7 @@ fun parse_http_request(connfd: int, req: *int8, read_bytes: int) {
     def index_html_file_dir_path: str = "/home/pragyan/Rust/lang/examples/http_server";
 
     -- we'll only parse the method and path for now
-    def idx: int8 = 0;
+    def idx: int = 0;
 
     -- parse the method
     def method_ends_at_idx: int = 0;

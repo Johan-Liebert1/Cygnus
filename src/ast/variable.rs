@@ -2,7 +2,7 @@ use crate::{
     helpers::{self, compiler_error},
     lexer::types::VarType,
     semantic_analyzer::semantic_analyzer::CallStack,
-    types::ASTNode,
+    types::{ASTNode, TypeCast},
 };
 
 use std::{cell::RefCell, rc::Rc};
@@ -20,7 +20,7 @@ use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST}
 
 #[derive(Debug, Clone)]
 pub struct Variable {
-    token: Box<Token>,
+    token: Token,
 
     pub var_name: String,
 
@@ -41,7 +41,7 @@ pub struct Variable {
     pub times_dereferenced: usize,
     pub offset: usize,
     pub is_memory_block: bool,
-    pub type_cast: Option<VarType>,
+    pub type_cast: TypeCast,
     pub array_aceess_index: Option<ASTNode>,
 
     /// if it's a.b.c.d then the var_name is 'a'
@@ -53,7 +53,7 @@ pub struct Variable {
 
 impl Variable {
     pub fn new(
-        token: Box<Token>,
+        token: Token,
         var_type: VarType,
         var_name: String,
         dereference: bool,
@@ -136,7 +136,7 @@ impl AST for Variable {
 
         if let Some(variable_in_stack) = variable_in_stack {
             if let Some(casted_type) = &self.type_cast {
-                self.var_type = casted_type.clone();
+                self.var_type = casted_type.clone().1;
             } else {
                 // actually need this as we don't have type information for the variable all
                 // the time. We only have it at time of decleration and store it in the call
