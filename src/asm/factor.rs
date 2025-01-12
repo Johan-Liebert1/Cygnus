@@ -67,7 +67,7 @@ impl ASM {
 
                 // add the string literal in the data segement
                 self.data
-                    .push(format!("string_{} db {}", self.num_strings, chars.join(",")));
+                    .push(format!("string_{} db {} ;; {token:?}", self.num_strings, chars.join(",")));
 
                 self.stack_extend(vec![format!("string_{}", self.num_strings), format!("{}", chars.len())]);
 

@@ -51,7 +51,7 @@ impl AST for FunctionCall {
 
                     match arg.borrow().get_node() {
                         ASTNodeEnum::Variable(v) => {
-                            asm.func_write_var(v, call_stack);
+                            asm.func_write_var(v);
                         }
 
                         // match the actual type after all dereferences have been applied

@@ -67,15 +67,14 @@ fun read_file_into_memory(memory: *int, mem_size: int, abs_file_path: *char) -> 
     -- open syscall
     def fd: int = syscall(OPEN_SYSCALL, abs_file_path, 0, 0);
 
-    write("syscall(OPEN_SYSCALL, abs_file_path, 0, 0) = ")
-    print_int(fd)
-
     if fd < 0 {
+        write("read_file_into_memory open syscall failed for file: ")
+        print_int(fd)
         return -1;
     }
 
     -- read syscall
-    def read_bytes: int = syscall(0, fd, memory, mem_size);
+    def read_bytes: int = syscall(READ_SYSCALL, fd, memory, mem_size);
 
     syscall(CLOSE_SYSCALL, fd)
 
@@ -84,7 +83,7 @@ fun read_file_into_memory(memory: *int, mem_size: int, abs_file_path: *char) -> 
 
 -- returns the amount of bytes written into memory
 fun write_int_into_mem(memory: *int, number: int) -> int {
-    def zero_ascii: int = 48;
+    def zero_ascii: int8 = 48;
     def n: int = number;
 
     def number_len: int = 0;
@@ -102,9 +101,9 @@ fun write_int_into_mem(memory: *int, number: int) -> int {
     n = number
 
     loop {
-        def c: int = n % 10;
+        def c: int8 = n % 10;
 
-        def idx_into_mem: *int = memory + idx;
+        def idx_into_mem: *int8 = memory + idx;
         *idx_into_mem = c + zero_ascii;
 
         n = n / 10
@@ -116,6 +115,15 @@ fun write_int_into_mem(memory: *int, number: int) -> int {
     }
 
     return number_len;
+}
+
+fun write_str_into_mem(memory: *char, string: *char, len: int) -> int {
+    loop from 0 to len with i {
+        def memo: *char = memory + i;
+        *memo = *(string + i);
+    }
+
+    return len
 }
 
 -- @returns 0 if string does not end with substr else returns the index in the string where substr starts

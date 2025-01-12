@@ -1,7 +1,6 @@
 use crate::{
     ast::{abstract_syntax_tree::AST, variable::Variable},
     lexer::{registers::Register, types::VarType},
-    semantic_analyzer::semantic_analyzer::CallStack,
     trace,
 };
 
@@ -252,7 +251,7 @@ impl ASM {
         self.extend_current_label(instructions);
     }
 
-    pub fn func_write_var(&mut self, var: &Variable, call_stack: &CallStack) {
+    pub fn func_write_var(&mut self, var: &Variable) {
         let var_name = &var.var_name;
 
         let instructions = match var_name.as_str() {

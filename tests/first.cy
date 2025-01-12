@@ -1,11 +1,17 @@
-mem lower_char_occurances 8 * 26
+-- def READ_SYSCALL: int = 0;
+-- def WRITE_SYSCALL: int = 1;
+-- def OPEN_SYSCALL: int = 2;
+
+include "../examples/include/std.cy"
+
+mem file 1024
 
 fun main() {
-    def inc: int8 = 3;
-    def addr_to_update: *int = lower_char_occurances + (inc * 8) as int;
+    def i: int = 399;
 
-    write("lower_char_occurances = ", lower_char_occurances)
-    write("addr_to_update = ", addr_to_update)
+    write_int_into_mem(file, i)
+
+    syscall(WRITE_SYSCALL, STDOUT, file, 1024)
 }
 
 main()
