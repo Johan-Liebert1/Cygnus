@@ -78,6 +78,24 @@ pub const ALL_FP_REGISTERS: [Register; 8] = [
 
 impl Display for Register {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
+}
+
+impl Debug for Register {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self)
+    }
+}
+
+impl From<Register> for String {
+    fn from(value: Register) -> Self {
+        format!("{value}")
+    }
+}
+
+impl AsRef<str> for Register {
+    fn as_ref(&self) -> &str {
         let s = match self {
             Register::RAX => "rax",
             Register::RBX => "rbx",
@@ -135,25 +153,7 @@ impl Display for Register {
             Register::R11B => "r11b",
         };
 
-        write!(f, "{}", s)
-    }
-}
-
-impl Debug for Register {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self)
-    }
-}
-
-impl From<Register> for String {
-    fn from(value: Register) -> Self {
-        format!("{value}")
-    }
-}
-
-impl AsRef<str> for Register {
-    fn as_ref(&self) -> &str {
-        get_register_name_for_bits(self, 64)
+        return s;
     }
 }
 
@@ -228,7 +228,11 @@ impl Register {
             || ALL_FP_REGISTERS.iter().any(|fr| format!("{}", fr) == *string);
     }
 
-    pub fn get_all_register_variants(&self) -> Vec<&'static str> {
+    pub fn is_64bit_reg(&self) -> bool {
+        return ALL_64BIT_REGISTERS.contains(self);
+    }
+
+    pub fn get_all_register_variants(&self) -> Vec<Register> {
         let mut all_regs = vec![];
 
         for bits in [8, 16, 32, 64] {
@@ -299,91 +303,91 @@ impl Register {
     }
 }
 
-pub fn get_register_name_for_bits(register: &Register, bits: u8) -> &'static str {
+pub fn get_register_name_for_bits(register: &Register, bits: u8) -> Register {
+    use Register::*;
+
     return match register {
-        Register::RAX => match bits {
-            8 => "al",
-            16 => "ax",
-            32 => "eax",
-            _ => "rax",
+        Register::EAX | Register::AX | Register::AL | Register::RAX => match bits {
+            8 => AL,
+            16 => AX,
+            32 => EAX,
+            _ => RAX,
         },
-        Register::RBX => match bits {
-            8 => "bl",
-            16 => "bx",
-            32 => "ebx",
-            _ => "rbx",
+        Register::EBX | Register::BX | Register::BL | Register::RBX => match bits {
+            8 => BL,
+            16 => BX,
+            32 => EBX,
+            _ => RBX,
         },
-        Register::RCX => match bits {
-            8 => "cl",
-            16 => "cx",
-            32 => "ecx",
-            _ => "rcx",
+        Register::ECX | Register::CX | Register::CL | Register::RCX => match bits {
+            8 => CL,
+            16 => CX,
+            32 => ECX,
+            _ => RCX,
         },
-        Register::RDX => match bits {
-            8 => "dl",
-            16 => "dx",
-            32 => "edx",
-            _ => "rdx",
+        Register::EDX | Register::DX | Register::DL | Register::RDX => match bits {
+            8 => DL,
+            16 => DX,
+            32 => EDX,
+            _ => RDX,
         },
-        Register::RSI => match bits {
-            8 => "sil",
-            16 => "si",
-            32 => "esi",
-            _ => "rsi",
+        Register::ESI | Register::SI | Register::SIL | Register::RSI => match bits {
+            8 => SIL,
+            16 => SI,
+            32 => ESI,
+            _ => RSI,
         },
-        Register::RDI => match bits {
-            8 => "dil",
-            16 => "di",
-            32 => "edi",
-            _ => "rdi",
+        Register::EDI | Register::DI | Register::DIL | Register::RDI => match bits {
+            8 => DIL,
+            16 => DI,
+            32 => EDI,
+            _ => RDI,
         },
-        Register::RBP => match bits {
-            8 => "bpl",
-            16 => "bp",
-            32 => "ebp",
-            _ => "rbp",
+        Register::EBP | Register::BP | Register::BPL | Register::RBP => match bits {
+            8 => BPL,
+            16 => BP,
+            32 => EBP,
+            _ => RBP,
         },
-        Register::R8 => match bits {
-            8 => "r8b",
-            16 => "r8w",
-            32 => "r8d",
-            _ => "r8",
+        Register::R8D | Register::R8W | Register::R8B | Register::R8 => match bits {
+            8 => R8B,
+            16 => R8W,
+            32 => R8D,
+            _ => R8,
         },
-        Register::R9 => match bits {
-            8 => "r9b",
-            16 => "r9w",
-            32 => "r9d",
-            _ => "r9",
+        Register::R9D | Register::R9W | Register::R9B | Register::R9 => match bits {
+            8 => R9B,
+            16 => R9W,
+            32 => R9D,
+            _ => R9,
         },
-        Register::R10 => match bits {
-            8 => "r10b",
-            16 => "r10w",
-            32 => "r10d",
-            _ => "r10",
+        Register::R10D | Register::R10W | Register::R10B | Register::R10 => match bits {
+            8 => R10B,
+            16 => R10W,
+            32 => R10D,
+            _ => R10,
         },
-        Register::R11 => match bits {
-            8 => "r11b",
-            16 => "r11w",
-            32 => "r11d",
-            _ => "r11",
+        Register::R11D | Register::R11W | Register::R11B | Register::R11 => match bits {
+            8 => R11B,
+            16 => R11W,
+            32 => R11D,
+            _ => R11,
         },
 
         // We only support one size of floating point numbers for now
-        Register::XMM0 => "xmm0",
-        Register::XMM1 => "xmm1",
-        Register::XMM2 => "xmm2",
-        Register::XMM3 => "xmm3",
-        Register::XMM4 => "xmm4",
-        Register::XMM5 => "xmm5",
-        Register::XMM6 => "xmm6",
-        Register::XMM7 => "xmm7",
-
-        r => unimplemented!("get_register_name_for_bits for {r} is not implemented"),
+        Register::XMM0 => XMM0,
+        Register::XMM1 => XMM1,
+        Register::XMM2 => XMM2,
+        Register::XMM3 => XMM3,
+        Register::XMM4 => XMM4,
+        Register::XMM5 => XMM5,
+        Register::XMM6 => XMM6,
+        Register::XMM7 => XMM7,
     };
 }
 
 impl VarType {
-    pub fn get_register_name(&self, register: Register) -> &'static str {
+    pub fn get_register_name(&self, register: Register) -> Register {
         let thing = match self {
             Self::Int => get_register_name_for_bits(&register, 64),
             Self::Int32 => get_register_name_for_bits(&register, 32),
