@@ -1,6 +1,6 @@
 use std::{cell::RefCell, fmt::Display, rc::Rc};
 
-use crate::{ast::variable::Variable, helpers::compiler_error, trace};
+use crate::{ast::variable::Variable, helpers::compiler_error};
 
 use super::{
     lexer::Token,

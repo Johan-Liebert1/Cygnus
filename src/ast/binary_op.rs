@@ -1,7 +1,6 @@
 use crate::helpers::compiler_error;
 use crate::lexer::tokens::AllOperations;
 use crate::lexer::types::VarType;
-use crate::trace;
 use crate::types::{ASTNode, TypeCast};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;

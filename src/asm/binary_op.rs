@@ -8,6 +8,14 @@ use crate::lexer::{
 use super::asm::ASM;
 
 impl ASM {
+    fn clear_registers_if_needed(&self, reg: Register, instructions: &mut Vec<String>) {
+        // We need to clear only if we're not using all 64 bits of the register
+        // Also, not xoring here as we don't want to set some unnecessary flags
+        if !reg.is_64bit_reg() {
+            instructions.push(format!("mov {}, 0 ;; clearing {reg}", reg.get_64bit_version()))
+        }
+    }
+
     pub fn binary_op_nums(
         &mut self,
         op: Operations,
@@ -53,10 +61,14 @@ impl ASM {
                     let rax_actual = right_type.get_register_name(rax);
                     let rbx_actual = left_type.get_register_name(rbx);
 
-                    let inst = vec![
-                        format!(
-                            ";; Plus get the two operands from the stack. Result type: {result_type}. Token: {token:?}"
-                        ),
+                    let mut inst = vec![format!(
+                        ";; Plus get the two operands from the stack. Result type: {result_type}. Token: {token:?}"
+                    )];
+
+                    self.clear_registers_if_needed(rax_actual, &mut inst);
+                    self.clear_registers_if_needed(rbx_actual, &mut inst);
+
+                    inst.extend(vec![
                         format!("mov {rax_actual}, {}", right),
                         format!("mov {rbx_actual}, {}", left),
                         format!("add {rax_actual}, {rbx_actual}"),
@@ -64,7 +76,7 @@ impl ASM {
                             ";; will lock {rax}. first = {right}. second = {left}. Locked: {:?}",
                             self.get_used_registers()
                         ),
-                    ];
+                    ]);
 
                     self.unlock_register_from_stack_value(&right);
                     self.unlock_register_from_stack_value(&left);
@@ -110,12 +122,22 @@ impl ASM {
                     let rax_actual = left_type.get_register_name(rax);
                     let rbx_actual = right_type.get_register_name(rbx);
 
-                    let inst = vec![
-                        format!(";; Minus get the two operands from the stack. Result type: {result_type}. Token: {token:?}"),
-                        format!("mov {rbx_actual}, {}", right),
+                    let mut inst = vec![format!(
+                        ";; Minus get the two operands from the stack. Result type: {result_type}. Token: {token:?}"
+                    )];
+
+                    self.clear_registers_if_needed(rax_actual, &mut inst);
+                    self.clear_registers_if_needed(rbx_actual, &mut inst);
+
+                    inst.extend(vec![
                         format!("mov {rax_actual}, {}", left),
+                        format!("mov {rbx_actual}, {}", right),
                         format!("sub {rax_actual}, {rbx_actual}"),
-                    ];
+                        format!(
+                            ";; will lock {rax}. first = {right}. second = {left}. Locked: {:?}",
+                            self.get_used_registers()
+                        ),
+                    ]);
 
                     self.unlock_register(rbx);
 
@@ -191,6 +213,12 @@ impl ASM {
                         // push 5
                         format!(";; Divide clean up rdx as this might mess up the final output as 'div' stores quotient in 'rax' and remainder in 'rdx'"),
                         format!("xor rdx, rdx"),
+                    ]);
+
+                    self.clear_registers_if_needed(rax_actual, &mut instructions);
+                    self.clear_registers_if_needed(rbx_actual, &mut instructions);
+
+                    instructions.extend(vec![
                         format!(";; get the two operands from the stack"),
                         format!("mov {rbx_actual}, {}", right),
                         format!("mov {rax_actual}, {}", left),
@@ -260,6 +288,12 @@ impl ASM {
                     instructions.extend(vec![
                         format!(";; Multiply get the two operands from the stack. Type: {result_type}"),
                         format!("xor rdx, rdx"),
+                    ]);
+
+                    self.clear_registers_if_needed(rax_actual, &mut instructions);
+                    self.clear_registers_if_needed(rbx_actual, &mut instructions);
+
+                    instructions.extend(vec![
                         format!("mov {rax_actual}, {}", right),
                         format!("mov {rbx_actual}, {}", left),
                         format!("mul {rbx}"),
