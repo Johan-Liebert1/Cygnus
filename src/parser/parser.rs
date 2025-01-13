@@ -39,11 +39,11 @@ pub struct Parser {
     pub bracket_stack: Vec<Token>,
     pub functions: ParserFunctions,
 
-    // how deeply nested are we inside loops
+    /// how deeply nested are we inside loops
     pub inside_loop_depth: usize,
-    // how deeply nested are we inside function bodies
+    /// how deeply nested are we inside function bodies
     pub inside_function_depth: usize,
-    // how deeply nested are we inside conditionals
+    /// how deeply nested are we inside conditionals
     pub inside_if_else_depth: usize,
 
     pub num_loops: usize,
@@ -58,6 +58,8 @@ pub struct Parser {
     pub user_defined_types: Vec<UserDefinedType>,
 
     pub type_aliases: Vec<Typedef>,
+
+    pub parsing_memory_allocation: bool,
 }
 
 impl Parser {
@@ -84,6 +86,8 @@ impl Parser {
             current_function_being_parsed: None,
             user_defined_types: vec![],
             type_aliases: vec![],
+
+            parsing_memory_allocation: false
         }
     }
 
@@ -251,7 +255,6 @@ impl Parser {
                 }
             } // match KEYWORD end
 
-            // FIXME: This cannot be any bracket, example \{ is not correct
             TokenEnum::Number(..) | TokenEnum::Bracket(Bracket::LParen) => self.parse_logical_expression(),
 
             TokenEnum::Variable(var) => {

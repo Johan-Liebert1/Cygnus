@@ -4,7 +4,8 @@
 
 include "../examples/include/std.cy"
 
-mem file 1024
+def size: int = 1024
+mem file size
 
 fun main() {
     def i: int = 399;

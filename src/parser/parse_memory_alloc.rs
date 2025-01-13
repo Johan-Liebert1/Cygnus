@@ -14,6 +14,8 @@ impl Parser {
         // we get here after consuming the 'mem' token
         let var_token = self.validate_token(TokenEnum::Variable("".into()));
 
+        self.parsing_memory_allocation = true;
+
         let memory_size = self.parse_expression();
 
         if let TokenEnum::Variable(var_name) = &var_token.token {
@@ -29,6 +31,8 @@ impl Parser {
             variable.is_memory_block = true;
 
             let memory_alloc = MemoryAlloc::new(Rc::new(RefCell::new(variable)), memory_size);
+
+            self.parsing_memory_allocation = false;
 
             return Rc::new(RefCell::new(Box::new(memory_alloc)));
         }

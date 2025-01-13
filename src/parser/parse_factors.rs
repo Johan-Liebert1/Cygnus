@@ -64,6 +64,10 @@ impl Parser {
 
             // This could also be a function call
             TokenEnum::Variable(var_name) => {
+                if self.parsing_memory_allocation {
+                    compiler_error("Variables are not allowed while specifying memory sizes", &next_token);
+                }
+
                 // this is not a variable declaration, only a variable
                 // name so we don't have type information here
                 // This is handled via the call stack
