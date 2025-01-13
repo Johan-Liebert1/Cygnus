@@ -1,8 +1,11 @@
-include "../examples/include/std.cy"
+mem first 1024
 
 fun main() {
-    def hello: str = "hello";
-    syscall(1, 1, hello as *char, strlen(&hello))
+    *first = 100
+
+    *(first + 1) = 101
+
+    write("first ", *first)
 }
 
 main()

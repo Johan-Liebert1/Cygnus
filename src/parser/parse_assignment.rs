@@ -9,7 +9,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{ast::assignment_statement::AssignmentStatement, lexer::tokens::TokenEnum};
 
-use super::parser::Parser;
+use super::parser::{Generic, Parser};
 
 impl Parser {
     pub fn parse_assignment_statement(
@@ -19,6 +19,13 @@ impl Parser {
         times_dereferenced: usize,
         array_access_index: Option<ASTNode>,
     ) -> ASTNode {
+        // We get here after consuming the variable token
+
+        self.parsing_variable_assignment = Generic {
+            status: true,
+            value: var_name.clone(),
+        };
+
         let mut member_access = vec![];
 
         while matches!(self.peek_next_token().token, TokenEnum::Dot) {
@@ -40,7 +47,6 @@ impl Parser {
             };
         }
 
-        // we get here after parsing the variable name
         let validated_token =
             self.validate_any_token(vec![TokenEnum::Equals, TokenEnum::PlusEquals, TokenEnum::MinusEquals]);
 

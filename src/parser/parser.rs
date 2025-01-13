@@ -6,10 +6,10 @@ use crate::{
         tokens::Operations,
         types::VarType,
     },
+    trace,
     types::ASTNode,
 };
 
-use core::panic;
 use std::{cell::RefCell, collections::HashMap, fs, mem, path::Path, rc::Rc};
 
 use crate::{
@@ -31,6 +31,12 @@ pub type ParserFunctions = Rc<RefCell<Functions>>;
 pub struct UserDefinedType {
     pub name: String,
     pub type_: VarType,
+}
+
+#[derive(Debug)]
+pub struct Generic<T> {
+    pub status: bool,
+    pub value: T,
 }
 
 #[derive(Debug)]
@@ -60,6 +66,9 @@ pub struct Parser {
     pub type_aliases: Vec<Typedef>,
 
     pub parsing_memory_allocation: bool,
+
+    /// value = variable name
+    pub parsing_variable_assignment: Generic<String>,
 }
 
 impl Parser {
@@ -87,7 +96,12 @@ impl Parser {
             user_defined_types: vec![],
             type_aliases: vec![],
 
-            parsing_memory_allocation: false
+            parsing_memory_allocation: false,
+
+            parsing_variable_assignment: Generic {
+                status: false,
+                value: "".into(),
+            },
         }
     }
 
@@ -120,7 +134,7 @@ impl Parser {
         match validated_token {
             Some(token) => token.clone(),
             None => {
-                panic!("Expected {:?}, got {:?}", tokens_expected, token)
+                unexpected_token_string(&token, format!("{:?}", tokens_expected));
             }
         }
     }
@@ -303,6 +317,8 @@ impl Parser {
             // could be something like *a = 23 or *(a + 1) = 34
             TokenEnum::Op(op) => match op {
                 Operations::Multiply => {
+                    trace!("Went into the Multiply thingy");
+
                     let mut times_dereferenced = 0;
 
                     while let TokenEnum::Op(Operations::Multiply) = self.peek_next_token().token {
