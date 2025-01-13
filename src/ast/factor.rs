@@ -3,6 +3,7 @@ use crate::lexer::tokens::Number;
 use crate::lexer::types::VarType;
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
 
+use crate::types::TypeCast;
 use crate::{
     asm::asm::ASM,
     constants,
@@ -20,6 +21,7 @@ use super::abstract_syntax_tree::{ASTNodeEnum, ASTNodeEnumMut, VisitResult, AST}
 #[derive(Debug)]
 pub struct Factor {
     token: Token,
+    type_cast: TypeCast,
     pub result_type: VarType,
 }
 
@@ -27,6 +29,7 @@ impl Factor {
     pub fn new(token: Token) -> Self {
         Self {
             token,
+            type_cast: None,
             result_type: VarType::Unknown,
         }
     }
@@ -47,11 +50,15 @@ impl Factor {
             );
         }
     }
+
+    pub fn set_type_cast(&mut self, casted_type: TypeCast) {
+        self.type_cast = casted_type;
+    }
 }
 
 impl AST for Factor {
-    fn visit_com(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
-        asm.generate_asm_factor(&self.token, call_stack);
+    fn visit_com(&self, _: &mut Variables, _: Rc<RefCell<Functions>>, asm: &mut ASM, _: &mut CallStack) {
+        asm.generate_asm_factor(&self.token, &self.result_type);
     }
 
     fn visit(&self, v: &mut Variables, _: Rc<RefCell<Functions>>, _: &mut CallStack) -> VisitResult {
@@ -92,6 +99,11 @@ impl AST for Factor {
     }
 
     fn semantic_visit(&mut self, call_stack: &mut CallStack, _f: Rc<RefCell<Functions>>) {
+        if let Some(casted_type) = &self.type_cast {
+            self.result_type = casted_type.clone().1;
+            return;
+        }
+
         self.result_type = match &self.token.token {
             TokenEnum::Variable(v) => {
                 let (variable, _) = call_stack.get_var_with_name(v);

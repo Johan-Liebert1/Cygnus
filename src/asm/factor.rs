@@ -3,15 +3,15 @@ use crate::{
     lexer::{
         lexer::Token,
         tokens::{Number, TokenEnum},
+        types::VarType,
     },
-    semantic_analyzer::semantic_analyzer::CallStack,
 };
 
 use super::asm::ASM;
 
 impl ASM {
     /// Pushes whatever token's in here onto the stack
-    pub fn generate_asm_factor(&mut self, token: &Token, _: &CallStack) {
+    pub fn generate_asm_factor(&mut self, token: &Token, result_type: &VarType) {
         let mut instructions: Vec<String> = vec![];
 
         match &token.token {
@@ -72,7 +72,17 @@ impl ASM {
                     chars.join(",")
                 ));
 
-                self.stack_extend(vec![format!("string_{}", self.num_strings), format!("{}", chars.len())]);
+                match result_type {
+                    VarType::Str => {
+                        self.stack_extend(vec![format!("string_{}", self.num_strings), format!("{}", chars.len())])
+                    },
+
+                    VarType::Ptr(boxed) if **boxed == VarType::Char => {
+                        self.stack_push(format!("string_{}", self.num_strings))
+                    },
+
+                    _ => unreachable!("Found type of token to be {result_type} when it's a string. This must be a bug in the semantic analysis step.")
+                }
 
                 self.num_strings += 1;
             }

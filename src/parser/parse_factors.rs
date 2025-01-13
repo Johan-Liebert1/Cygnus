@@ -59,7 +59,13 @@ impl Parser {
         match &next_token.token {
             TokenEnum::Number(..) | TokenEnum::StringLiteral(..) => {
                 self.get_next_token();
-                return Rc::new(RefCell::new(Box::new(Factor::new(next_token))));
+
+                let casted_type = self.parse_type_cast();
+
+                let mut factor = Factor::new(next_token);
+                factor.set_type_cast(casted_type);
+
+                return Rc::new(RefCell::new(Box::new(factor)));
             }
 
             // This could also be a function call
