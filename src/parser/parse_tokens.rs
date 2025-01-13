@@ -12,7 +12,7 @@ impl Parser {
         return self.lexer.peek_nth_token(n);
     }
 
-    pub fn get_next_token(&mut self) -> Token {
-        return self.lexer.get_next_token();
+    pub fn consume_token(&mut self) -> Token {
+        return self.lexer.consume_token();
     }
 }

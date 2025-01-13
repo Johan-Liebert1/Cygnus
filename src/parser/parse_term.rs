@@ -26,7 +26,7 @@ impl Parser {
                     | Operations::ShiftLeft
                     | Operations::ShiftRight
                     | Operations::Modulo => {
-                        let token = self.get_next_token();
+                        let token = self.consume_token();
 
                         // let type_cast = self.parse_type_cast();
 

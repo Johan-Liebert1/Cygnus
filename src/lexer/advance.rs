@@ -9,7 +9,7 @@ impl Lexer {
         return self.peek_nth_token(1);
     }
 
-    pub fn get_next_token(&mut self) -> Token {
+    pub fn consume_token(&mut self) -> Token {
         return self.advance_to_next_token();
     }
 
@@ -101,7 +101,7 @@ impl Lexer {
                                 // Also handle things like -var_name
                                 TokenEnum::Number(num) => match num {
                                     Number::Integer(int) => {
-                                        self.get_next_token();
+                                        self.consume_token();
                                         TokenEnum::Number(Number::Integer(-int))
                                     }
 
@@ -128,7 +128,7 @@ impl Lexer {
                     match self.peek_next_token().token {
                         TokenEnum::Type(type_) => {
                             // consume the 'type_' token
-                            self.get_next_token();
+                            self.consume_token();
                             self.index -= 1;
 
                             TokenEnum::Type(VarType::Ptr(Box::new(type_)))

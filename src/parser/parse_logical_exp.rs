@@ -23,7 +23,7 @@ impl Parser {
         }
 
         // consume 'as'
-        self.get_next_token();
+        self.consume_token();
 
         let var_type = self.parse_var_type();
 
@@ -33,7 +33,7 @@ impl Parser {
     /// LOGICAL_EXPRESSION -> (not)* COMPARISON_EXPRESSION ((and | or) COMPARISON_EXPRESSION)* (as TYPE)*
     pub fn parse_logical_expression(&mut self) -> ASTNode {
         while matches!(self.peek_next_token().token, TokenEnum::LogicalOp(LogicalOps::Not)) {
-            let tok = self.get_next_token();
+            let tok = self.consume_token();
 
             return Rc::new(RefCell::new(Box::new(LogicalExpression::new(
                 None,
@@ -54,7 +54,7 @@ impl Parser {
 
                     return Rc::new(RefCell::new(Box::new(LogicalExpression::new(
                         Some(left),
-                        self.get_next_token(),
+                        self.consume_token(),
                         self.parse_logical_expression(),
                         type_cast,
                     ))));

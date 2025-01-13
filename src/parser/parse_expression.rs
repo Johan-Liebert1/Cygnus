@@ -21,7 +21,7 @@ impl Parser {
             match &next_token.token {
                 TokenEnum::Op(op) => match op {
                     Operations::Plus | Operations::Minus => {
-                        self.get_next_token();
+                        self.consume_token();
 
                         let term = self.parse_term();
 

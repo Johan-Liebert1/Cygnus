@@ -22,7 +22,7 @@ impl Parser {
             match &token.token {
                 TokenEnum::Bracket(b) => match b {
                     Bracket::RParen => {
-                        self.get_next_token();
+                        self.consume_token();
                         break;
                     }
 
@@ -32,7 +32,7 @@ impl Parser {
                 },
 
                 TokenEnum::Comma => {
-                    self.get_next_token();
+                    self.consume_token();
                     continue;
                 }
 
@@ -49,7 +49,7 @@ impl Parser {
     /// FUNCTION_DEF -> fun VAR_NAME LPAREN (VAR_NAME : VAR_TYPE)* RPAREN (-> VarType)* LCURLY (STATEMENT[] - FUNCTION_DEF) RCURLY
     pub fn parse_function_definition(&mut self, f: ParserFunctions, is_extern_function_definition: bool) -> ASTNode {
         // we get here after consuming 'fun'
-        let func_name_token = self.get_next_token();
+        let func_name_token = self.consume_token();
 
         let function_name = match &func_name_token.token {
             TokenEnum::Variable(n) => n,
@@ -61,7 +61,7 @@ impl Parser {
 
         self.current_function_being_parsed = Some(function_name.clone());
 
-        self.validate_token(TokenEnum::Bracket(Bracket::LParen));
+        self.validate_and_consume_token(TokenEnum::Bracket(Bracket::LParen));
 
         // we validate closing ')' in the following function
         let parameters = self.parse_function_definition_parameters();
@@ -69,7 +69,7 @@ impl Parser {
         let mut return_type = VarType::Unknown;
 
         if let TokenEnum::FunctionReturnIndicator = self.peek_next_token().token {
-            self.get_next_token();
+            self.consume_token();
 
             let (_, var_type) = self.parse_var_type();
 
@@ -79,7 +79,7 @@ impl Parser {
         let ff = function_name.clone();
 
         let function_def = if !is_extern_function_definition {
-            self.validate_token(TokenEnum::Bracket(Bracket::LCurly));
+            self.validate_and_consume_token(TokenEnum::Bracket(Bracket::LCurly));
 
             // As we can fit an entire program inside a function
             // TODO: This introduces function and variable scoping issues
@@ -89,7 +89,7 @@ impl Parser {
 
             // println!("next token after parse_statements in parse_function_definition {:?}", self.peek_next_token().token);
 
-            self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
+            self.validate_and_consume_token(TokenEnum::Bracket(Bracket::RCurly));
 
             // Create an Rc from the Box
             FunctionDefinition::new(

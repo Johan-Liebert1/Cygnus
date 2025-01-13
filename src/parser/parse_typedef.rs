@@ -28,7 +28,7 @@ impl Parser {
                 },
 
                 TokenEnum::Comma => {
-                    self.get_next_token();
+                    self.consume_token();
                     continue;
                 }
 
@@ -42,15 +42,15 @@ impl Parser {
     // Returns parameters and return type
     pub fn parse_function_typedef(&mut self) -> (Vec<VarType>, VarType) {
         // Consume 'def'
-        self.validate_token(TokenEnum::Keyword(FUNCTION_DEFINE.into()));
+        self.validate_and_consume_token(TokenEnum::Keyword(FUNCTION_DEFINE.into()));
 
-        self.validate_token(TokenEnum::Bracket(Bracket::LParen));
+        self.validate_and_consume_token(TokenEnum::Bracket(Bracket::LParen));
 
         let parameters = self.get_all_params();
 
-        self.validate_token(TokenEnum::Bracket(Bracket::RParen));
+        self.validate_and_consume_token(TokenEnum::Bracket(Bracket::RParen));
 
-        self.validate_token(TokenEnum::FunctionReturnIndicator);
+        self.validate_and_consume_token(TokenEnum::FunctionReturnIndicator);
 
         let return_type = self.parse_var_type();
 
@@ -61,7 +61,7 @@ impl Parser {
     pub fn parse_typedef(&mut self) {
         let type_name: String;
 
-        let next_token = self.get_next_token();
+        let next_token = self.consume_token();
 
         if let TokenEnum::Variable(var_name) = next_token.token {
             type_name = var_name;
@@ -69,7 +69,7 @@ impl Parser {
             unexpected_token(&next_token, Some(&TokenEnum::Variable("".into())));
         }
 
-        self.validate_token(TokenEnum::Equals);
+        self.validate_and_consume_token(TokenEnum::Equals);
 
         let next_token = self.peek_next_token();
 
@@ -96,7 +96,7 @@ impl Parser {
         };
 
         // consume the type
-        self.get_next_token();
+        self.consume_token();
 
         self.user_defined_types.push(UserDefinedType {
             name: type_name,
@@ -108,7 +108,7 @@ impl Parser {
     //
     // extern fun FuncName(type1, type2, type3, ...) (-> ReturnType)*
     pub fn parse_extern_func_definition(&mut self) {
-        self.validate_token(TokenEnum::Keyword(FUNCTION_DEFINE.into()));
+        self.validate_and_consume_token(TokenEnum::Keyword(FUNCTION_DEFINE.into()));
         todo!()
     }
 }

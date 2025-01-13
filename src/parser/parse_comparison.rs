@@ -17,7 +17,7 @@ impl Parser {
 
             match token.token {
                 TokenEnum::Comparator(_) => {
-                    self.get_next_token();
+                    self.consume_token();
 
                     return Rc::new(RefCell::new(Box::new(ComparisonExp::new(
                         left_expression,

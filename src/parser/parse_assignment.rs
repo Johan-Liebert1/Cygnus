@@ -32,9 +32,9 @@ impl Parser {
             // this is a struct member assignment
 
             // consume '.'
-            self.get_next_token();
+            self.consume_token();
 
-            let next = self.get_next_token();
+            let next = self.consume_token();
 
             match next.token {
                 TokenEnum::Variable(name) => {

@@ -28,7 +28,7 @@ impl Parser {
 
             if let TokenEnum::Keyword(keyword) = token.token {
                 if keyword == ELIF_STATEMENT {
-                    self.get_next_token();
+                    self.consume_token();
 
                     elif_ladder.push(self.parse_if_elif());
                     continue;
@@ -47,7 +47,7 @@ impl Parser {
 
         if let TokenEnum::Keyword(keyword) = token.token {
             if keyword == ELSE_STATEMENT {
-                self.get_next_token();
+                self.consume_token();
 
                 else_statement = Some(self.parse_else());
             }
@@ -71,13 +71,13 @@ impl Parser {
         match &token.token {
             TokenEnum::Bracket(b) => match b {
                 Bracket::LCurly => {
-                    self.get_next_token();
+                    self.consume_token();
 
                     self.inside_if_else_depth += 1;
                     let statements = self.parse_program();
                     self.inside_if_else_depth -= 1;
 
-                    self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
+                    self.validate_and_consume_token(TokenEnum::Bracket(Bracket::RCurly));
 
                     return IfStatement::new(condition, statements);
                 }
@@ -100,13 +100,13 @@ impl Parser {
         match &token.token {
             TokenEnum::Bracket(b) => match b {
                 Bracket::LCurly => {
-                    self.get_next_token();
+                    self.consume_token();
 
                     self.inside_if_else_depth += 1;
                     let statements = self.parse_program();
                     self.inside_if_else_depth -= 1;
 
-                    self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
+                    self.validate_and_consume_token(TokenEnum::Bracket(Bracket::RCurly));
 
                     return ElseStatement::new(statements);
                 }

@@ -107,8 +107,8 @@ impl Parser {
 
     /// Validates the current token with expected token and consumes the token
     /// panics if current token is not the same as expected token
-    pub fn validate_token(&mut self, token_expected: TokenEnum) -> Token {
-        let token = self.get_next_token();
+    pub fn validate_and_consume_token(&mut self, token_expected: TokenEnum) -> Token {
+        let token = self.consume_token();
 
         if token.token != token_expected {
             helpers::unexpected_token(&token, Some(&token_expected));
@@ -120,7 +120,7 @@ impl Parser {
     /// Validates the current token with expected token and consumes the token
     /// panics if current token is not the same as expected token
     pub fn validate_any_token(&mut self, tokens_expected: Vec<TokenEnum>) -> TokenEnum {
-        let token = self.get_next_token();
+        let token = self.consume_token();
 
         let mut validated_token = None;
 
@@ -145,7 +145,7 @@ impl Parser {
 
         match &current_token.token {
             TokenEnum::Keyword(keyword) => {
-                self.get_next_token();
+                self.consume_token();
 
                 match keyword as &str {
                     VAR_DEFINE => self.parse_declaration_statement(false),
@@ -171,7 +171,7 @@ impl Parser {
 
                     EXTERN => {
                         // as parse_function_definition expectes 'fun' to be already consumed
-                        self.validate_token(TokenEnum::Keyword(FUNCTION_DEFINE.into()));
+                        self.validate_and_consume_token(TokenEnum::Keyword(FUNCTION_DEFINE.into()));
 
                         self.parse_function_definition(Rc::clone(&self.functions), true)
                     }
@@ -224,7 +224,7 @@ impl Parser {
                         let file_path: String;
 
                         if let TokenEnum::StringLiteral(fp) = included_file_tok.token {
-                            self.get_next_token();
+                            self.consume_token();
                             file_path = fp;
                         } else {
                             unexpected_token(&included_file_tok, Some(&TokenEnum::StringLiteral("".into())));
@@ -280,20 +280,20 @@ impl Parser {
                         match b {
                             Bracket::LParen => {
                                 // function invocation
-                                self.get_next_token();
+                                self.consume_token();
                                 self.parse_function_call(var.to_string(), false)
                             }
 
                             Bracket::LSquare => {
                                 // array index assignment
                                 // array[7] = 43
-                                let var_token = self.get_next_token();
+                                let var_token = self.consume_token();
 
-                                self.get_next_token();
+                                self.consume_token();
 
                                 let array_access_index = self.parse_logical_expression();
 
-                                self.validate_token(TokenEnum::Bracket(Bracket::RSquare));
+                                self.validate_and_consume_token(TokenEnum::Bracket(Bracket::RSquare));
 
                                 self.parse_assignment_statement(var_token, var.to_string(), 0, Some(array_access_index))
                             }
@@ -304,7 +304,7 @@ impl Parser {
 
                     TokenEnum::Equals | TokenEnum::MinusEquals | TokenEnum::PlusEquals | TokenEnum::Dot => {
                         // variable assignment
-                        let var_token = self.get_next_token();
+                        let var_token = self.consume_token();
                         self.parse_assignment_statement(var_token, var.to_string(), 0, None)
                     }
 
@@ -322,11 +322,11 @@ impl Parser {
                     let mut times_dereferenced = 0;
 
                     while let TokenEnum::Op(Operations::Multiply) = self.peek_next_token().token {
-                        self.get_next_token();
+                        self.consume_token();
                         times_dereferenced += 1;
                     }
 
-                    let token = self.get_next_token();
+                    let token = self.consume_token();
 
                     if let TokenEnum::Variable(ref var_name) = &token.token {
                         self.parse_assignment_statement(token.clone(), var_name.into(), times_dereferenced, None)
@@ -362,7 +362,7 @@ impl Parser {
                 }
 
                 TokenEnum::SemiColon => {
-                    self.get_next_token();
+                    self.consume_token();
                     continue;
                 }
 

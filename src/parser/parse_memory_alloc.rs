@@ -12,7 +12,7 @@ impl Parser {
     /// MEMORY_BLOCK -> mem VAR_NAME (size in bytes)
     pub fn parse_memory_alloc(&mut self) -> ASTNode {
         // we get here after consuming the 'mem' token
-        let var_token = self.validate_token(TokenEnum::Variable("".into()));
+        let var_token = self.validate_and_consume_token(TokenEnum::Variable("".into()));
 
         self.parsing_memory_allocation = true;
 

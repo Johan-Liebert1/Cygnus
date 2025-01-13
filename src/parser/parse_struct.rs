@@ -16,7 +16,7 @@ impl Parser {
     pub fn parse_struct_definition(&mut self) {
         let name: String;
 
-        let next_token = self.get_next_token();
+        let next_token = self.consume_token();
 
         if let TokenEnum::Variable(var_name) = next_token.token {
             name = var_name;
@@ -24,7 +24,7 @@ impl Parser {
             unexpected_token(&next_token, Some(&TokenEnum::Variable("".into())));
         }
 
-        self.validate_token(TokenEnum::Bracket(Bracket::LCurly));
+        self.validate_and_consume_token(TokenEnum::Bracket(Bracket::LCurly));
 
         let mut members = vec![];
 
@@ -47,11 +47,11 @@ impl Parser {
             });
 
             if matches!(self.peek_next_token().token, TokenEnum::Comma) {
-                self.get_next_token();
+                self.consume_token();
             }
         }
 
-        self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
+        self.validate_and_consume_token(TokenEnum::Bracket(Bracket::RCurly));
 
         self.user_defined_types.push(UserDefinedType {
             name: name.clone(),
@@ -63,7 +63,7 @@ impl Parser {
     pub fn parse_struct_decleration(&mut self) -> ASTNode {
         let struct_name: String;
 
-        let name_token = self.get_next_token();
+        let name_token = self.consume_token();
 
         if let TokenEnum::Variable(ref name) = name_token.token {
             struct_name = name.into();
@@ -71,7 +71,7 @@ impl Parser {
             unexpected_token_string(&name_token, "Struct name");
         }
 
-        self.validate_token(TokenEnum::Bracket(Bracket::LCurly));
+        self.validate_and_consume_token(TokenEnum::Bracket(Bracket::LCurly));
 
         let mut members = vec![];
 
@@ -84,7 +84,7 @@ impl Parser {
             //      a: 1,
             //      b: "hello",
             // }
-            let var_token = self.get_next_token();
+            let var_token = self.consume_token();
 
             let var_name: String;
 
@@ -94,7 +94,7 @@ impl Parser {
                 unexpected_token(&var_token, Some(&TokenEnum::Variable("".into())));
             }
 
-            self.validate_token(TokenEnum::Colon);
+            self.validate_and_consume_token(TokenEnum::Colon);
             let variable_assigned_to = self.parse_logical_expression();
 
             members.push(StructMember {
@@ -104,11 +104,11 @@ impl Parser {
             });
 
             if matches!(self.peek_next_token().token, TokenEnum::Comma) {
-                self.get_next_token();
+                self.consume_token();
             }
         }
 
-        self.validate_token(TokenEnum::Bracket(Bracket::RCurly));
+        self.validate_and_consume_token(TokenEnum::Bracket(Bracket::RCurly));
 
         return Rc::new(RefCell::new(Box::new(StructDecleration::new(
             struct_name,

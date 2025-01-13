@@ -21,23 +21,23 @@ impl Parser {
 
         // check if this is an array access
         if let TokenEnum::Bracket(Bracket::LSquare) = self.peek_next_token().token {
-            self.get_next_token();
+            self.consume_token();
 
             variable.array_aceess_index = Some(self.parse_logical_expression());
 
-            self.validate_token(TokenEnum::Bracket(Bracket::RSquare));
+            self.validate_and_consume_token(TokenEnum::Bracket(Bracket::RSquare));
         }
 
         // Check if struct member access
         let mut member_access = vec![];
 
         while let TokenEnum::Dot = self.peek_next_token().token {
-            self.get_next_token();
+            self.consume_token();
 
             let next_token = self.peek_next_token();
 
             if let TokenEnum::Variable(member_name) = next_token.token {
-                self.get_next_token();
+                self.consume_token();
                 member_access.push(member_name);
             } else {
                 unexpected_token(&next_token, Some(&TokenEnum::Variable("".into())))
@@ -58,7 +58,7 @@ impl Parser {
 
         match &next_token.token {
             TokenEnum::Number(..) | TokenEnum::StringLiteral(..) => {
-                self.get_next_token();
+                self.consume_token();
 
                 let casted_type = self.parse_type_cast();
 
@@ -79,7 +79,7 @@ impl Parser {
                 // This is handled via the call stack
                 // This is done in the assignment_statemetn
 
-                let var_token = self.get_next_token();
+                let var_token = self.consume_token();
 
                 let peeked_token = self.peek_next_token();
 
@@ -102,12 +102,12 @@ impl Parser {
 
             TokenEnum::Bracket(paren) => match paren {
                 Bracket::LParen => {
-                    let tok = self.get_next_token();
+                    let tok = self.consume_token();
                     self.bracket_stack.push(tok);
 
                     let return_value = self.parse_logical_expression();
 
-                    self.validate_token(TokenEnum::Bracket(Bracket::RParen));
+                    self.validate_and_consume_token(TokenEnum::Bracket(Bracket::RParen));
                     self.bracket_stack.pop();
 
                     let type_cast = self.parse_type_cast();
@@ -136,7 +136,7 @@ impl Parser {
                         match bracket.token {
                             TokenEnum::Bracket(Bracket::LParen) => {
                                 // all good. A left paren was closed
-                                self.get_next_token();
+                                self.consume_token();
                                 self.bracket_stack.pop();
                                 return Rc::new(RefCell::new(Box::new(Factor::new(next_token))));
                             }
@@ -153,7 +153,7 @@ impl Parser {
                 // Array definition, the RHS bit
                 // def a: int[3] = [1, 2, 3];
                 Bracket::LSquare => {
-                    let bracket_token = self.get_next_token();
+                    let bracket_token = self.consume_token();
 
                     let mut members = vec![];
 
@@ -164,12 +164,12 @@ impl Parser {
 
                         match peeked_token.token {
                             TokenEnum::Comma => {
-                                self.get_next_token();
+                                self.consume_token();
                                 continue;
                             }
 
                             TokenEnum::Bracket(Bracket::RSquare) => {
-                                self.get_next_token();
+                                self.consume_token();
                                 break;
                             }
 
@@ -185,19 +185,19 @@ impl Parser {
 
             // A pointer dereference, not a multiplication statement
             TokenEnum::Op(Operations::Multiply) => {
-                self.get_next_token();
+                self.consume_token();
 
                 self.times_dereferenced = 1;
 
                 while let TokenEnum::Op(Operations::Multiply) = self.peek_next_token().token {
                     self.times_dereferenced += 1;
-                    self.get_next_token();
+                    self.consume_token();
                 }
 
                 if let TokenEnum::Bracket(Bracket::LParen) = self.peek_next_token().token {
-                    self.validate_token(TokenEnum::Bracket(Bracket::LParen));
+                    self.validate_and_consume_token(TokenEnum::Bracket(Bracket::LParen));
                     let exp = self.parse_expression();
-                    self.validate_token(TokenEnum::Bracket(Bracket::RParen));
+                    self.validate_and_consume_token(TokenEnum::Bracket(Bracket::RParen));
 
                     match exp.borrow_mut().get_node_mut() {
                         ASTNodeEnumMut::Variable(ref mut var) => {
@@ -236,7 +236,7 @@ impl Parser {
 
             TokenEnum::Ampersand => {
                 // consume '&'
-                self.get_next_token();
+                self.consume_token();
 
                 let next_next_token = self.peek_next_token();
 
@@ -244,7 +244,7 @@ impl Parser {
                 match next_next_token.token {
                     TokenEnum::Variable(var_name) => {
                         Rc::new(RefCell::new(Box::new(Variable::new(
-                            self.get_next_token(),
+                            self.consume_token(),
                             // this is not a variable declaration, only a variable
                             // name so we don't have type information here
                             // This is handled via the call stack

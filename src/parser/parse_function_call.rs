@@ -14,7 +14,7 @@ impl Parser {
     pub fn parse_function_call(&mut self, name: String, is_assigned: bool) -> ASTNode {
         // We parse from the LPAREN
         // consume the LPAREN
-        let tok = self.get_next_token();
+        let tok = self.consume_token();
 
         self.bracket_stack.push(tok.clone());
 
@@ -38,7 +38,7 @@ impl Parser {
                             }
                         };
 
-                        self.get_next_token();
+                        self.consume_token();
                         break;
                     }
 
@@ -51,7 +51,7 @@ impl Parser {
                 },
 
                 TokenEnum::Comma => {
-                    self.get_next_token();
+                    self.consume_token();
                     continue;
                 }
 
