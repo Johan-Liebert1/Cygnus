@@ -216,8 +216,8 @@ _print_int:
 	call _printRAX
 	
 	.else_end_0:
-	;; 'a' at '[rbp - 8]'
 	;; 'n' at '[rbp - 16]'
+	;; 'a' at '[rbp - 8]'
 	mov rsp, rbp
 	pop rbp
 	ret
@@ -284,13 +284,13 @@ _memset:
 	jmp .loop_0
 	.loop_end_0:
 	
-	;; 'ptr' at '[rbp - 8]'
-	;; 'value' at '[rbp - 16]'
-	;; 'size' at '[rbp - 24]'
-	;; 'loop_0_to' at '[rbp - 48]'
 	;; 'loop_0_from' at '[rbp - 40]'
-	;; 'loop_0_step' at '[rbp - 56]'
+	;; 'value' at '[rbp - 16]'
+	;; 'loop_0_to' at '[rbp - 48]'
 	;; 'i' at '[rbp - 32]'
+	;; 'loop_0_step' at '[rbp - 56]'
+	;; 'size' at '[rbp - 24]'
+	;; 'ptr' at '[rbp - 8]'
 	mov rsp, rbp
 	pop rbp
 	ret
@@ -359,8 +359,8 @@ _strlen_cstr:
 	pop rbp
 	ret
 	
-	;; 'i' at '[rbp - 16]'
 	;; 'string' at '[rbp - 8]'
+	;; 'i' at '[rbp - 16]'
 
 _strlen:
 	push rbp
@@ -503,10 +503,10 @@ _read_file_into_memory:
 	pop rbp
 	ret
 	
-	;; 'mem_size' at '[rbp - 16]'
-	;; 'abs_file_path' at '[rbp - 24]'
-	;; 'memory' at '[rbp - 8]'
 	;; 'fd' at '[rbp - 32]'
+	;; 'memory' at '[rbp - 8]'
+	;; 'abs_file_path' at '[rbp - 24]'
+	;; 'mem_size' at '[rbp - 16]'
 	;; 'read_bytes' at '[rbp - 40]'
 
 _write_int_into_mem:
@@ -673,14 +673,14 @@ _write_int_into_mem:
 	pop rbp
 	ret
 	
-	;; 'idx' at '[rbp - 48]'
-	;; 'c' at '[rbp - 49]'
-	;; 'n' at '[rbp - 32]'
+	;; 'idx_into_mem' at '[rbp - 64]'
 	;; 'number' at '[rbp - 16]'
-	;; 'zero_ascii' at '[rbp - 17]'
 	;; 'number_len' at '[rbp - 40]'
 	;; 'memory' at '[rbp - 8]'
-	;; 'idx_into_mem' at '[rbp - 64]'
+	;; 'idx' at '[rbp - 48]'
+	;; 'n' at '[rbp - 32]'
+	;; 'c' at '[rbp - 49]'
+	;; 'zero_ascii' at '[rbp - 17]'
 
 _write_str_into_mem:
 	push rbp
@@ -759,12 +759,12 @@ _write_str_into_mem:
 	pop rbp
 	ret
 	
-	;; 'loop_4_step' at '[rbp - 48]'
-	;; 'len' at '[rbp - 24]'
-	;; 'string' at '[rbp - 16]'
-	;; 'memory' at '[rbp - 8]'
-	;; 'loop_4_from' at '[rbp - 32]'
 	;; 'loop_4_to' at '[rbp - 40]'
+	;; 'loop_4_from' at '[rbp - 32]'
+	;; 'loop_4_step' at '[rbp - 48]'
+	;; 'memory' at '[rbp - 8]'
+	;; 'string' at '[rbp - 16]'
+	;; 'len' at '[rbp - 24]'
 
 _string_ends_with:
 	push rbp
@@ -937,12 +937,12 @@ _string_ends_with:
 	ret
 	
 	;; 'string' at '[rbp - 8]'
-	;; 'substr_char' at '[rbp - 64]'
-	;; 'string_len' at '[rbp - 16]'
 	;; 'idx_into_str' at '[rbp - 40]'
+	;; 'substr_char' at '[rbp - 64]'
+	;; 'substr_len' at '[rbp - 32]'
 	;; 'idx_into_substr' at '[rbp - 48]'
 	;; 'substr' at '[rbp - 24]'
-	;; 'substr_len' at '[rbp - 32]'
+	;; 'string_len' at '[rbp - 16]'
 	;; 'str_char' at '[rbp - 56]'
 
 _string_starts_with:
@@ -1103,14 +1103,14 @@ _string_starts_with:
 	pop rbp
 	ret
 	
-	;; 'string' at '[rbp - 8]'
-	;; 'idx_into_str' at '[rbp - 40]'
-	;; 'substr_len' at '[rbp - 32]'
-	;; 'string_len' at '[rbp - 16]'
-	;; 'str_char' at '[rbp - 56]'
-	;; 'idx_into_substr' at '[rbp - 48]'
 	;; 'substr' at '[rbp - 24]'
+	;; 'idx_into_substr' at '[rbp - 48]'
+	;; 'string' at '[rbp - 8]'
+	;; 'substr_len' at '[rbp - 32]'
 	;; 'substr_char' at '[rbp - 64]'
+	;; 'string_len' at '[rbp - 16]'
+	;; 'idx_into_str' at '[rbp - 40]'
+	;; 'str_char' at '[rbp - 56]'
 
 _string_eq:
 	push rbp
@@ -1270,13 +1270,13 @@ _string_eq:
 	pop rbp
 	ret
 	
-	;; 'string2' at '[rbp - 24]'
-	;; 'idx_into_substr' at '[rbp - 48]'
 	;; 'string2_len' at '[rbp - 32]'
 	;; 'idx_into_str' at '[rbp - 40]'
-	;; 'string' at '[rbp - 8]'
-	;; 'string_len' at '[rbp - 16]'
 	;; 'str_char' at '[rbp - 56]'
+	;; 'string2' at '[rbp - 24]'
+	;; 'string' at '[rbp - 8]'
+	;; 'idx_into_substr' at '[rbp - 48]'
+	;; 'string_len' at '[rbp - 16]'
 	;; 'substr_char' at '[rbp - 64]'
 
 _str_concat:
@@ -1444,18 +1444,18 @@ _str_concat:
 	pop rbp
 	ret
 	
+	;; 'loop_9_to' at '[rbp - 112]'
+	;; 'loop_9_step' at '[rbp - 120]'
+	;; 'idx_into_new_str' at '[rbp - 48]'
+	;; 'string' at '[rbp - 8]'
+	;; 'new_str' at '[rbp - 40]'
+	;; 'loop_8_to' at '[rbp - 64]'
+	;; 'string2_len' at '[rbp - 32]'
+	;; 'string2' at '[rbp - 24]'
 	;; 'loop_8_step' at '[rbp - 72]'
 	;; 'loop_9_from' at '[rbp - 104]'
-	;; 'loop_9_to' at '[rbp - 112]'
-	;; 'string' at '[rbp - 8]'
-	;; 'loop_8_to' at '[rbp - 64]'
-	;; 'loop_9_step' at '[rbp - 120]'
 	;; 'loop_8_from' at '[rbp - 56]'
 	;; 'string_len' at '[rbp - 16]'
-	;; 'new_str' at '[rbp - 40]'
-	;; 'string2' at '[rbp - 24]'
-	;; 'string2_len' at '[rbp - 32]'
-	;; 'idx_into_new_str' at '[rbp - 48]'
 
 _parse_http_request:
 	push rbp
@@ -2395,35 +2395,35 @@ _parse_http_request:
 	
 	syscall
 	
-	;; 'path_as_char' at '[rbp - 248]'
-	;; 'path_len' at '[rbp - 256]'
-	;; 'character' at '[rbp - 216]'
-	;; 'header_body_seperator' at '[rbp - 160]'
-	;; 'req' at '[rbp - 16]'
-	;; 'http_500' at '[rbp - 112]'
-	;; 'current_ptr' at '[rbp - 296]'
-	;; 'read_bytes' at '[rbp - 24]'
-	;; 'write_ret' at '[rbp - 304]'
 	;; 'http_ok' at '[rbp - 80]'
-	;; 'path_ends_at_idx' at '[rbp - 232]'
-	;; 'SPACE_ASCII' at '[rbp - 33]'
-	;; 'index_html_file_dir_path' at '[rbp - 192]'
-	;; 'PRINT_REQ' at '[rbp - 32]'
-	;; 'http_404' at '[rbp - 96]'
-	;; 'NULL_BYTE' at '[rbp - 35]'
-	;; 'final_file_abs_path_len' at '[rbp - 272]'
-	;; 'connfd' at '[rbp - 8]'
-	;; 'NEW_LINE_ASCII' at '[rbp - 34]'
-	;; 'http_header_for_content' at '[rbp - 128]'
-	;; 'http_header_for_content_len' at '[rbp - 136]'
-	;; 'to_write' at '[rbp - 280]'
 	;; 'method_ends_at_idx' at '[rbp - 208]'
-	;; 'path_starts_at_idx' at '[rbp - 224]'
-	;; 'character1' at '[rbp - 240]'
-	;; 'idx' at '[rbp - 200]'
-	;; 'header_body_seperator_len' at '[rbp - 168]'
 	;; 'dot_html' at '[rbp - 64]'
+	;; 'write_ret' at '[rbp - 304]'
+	;; 'final_file_abs_path_len' at '[rbp - 272]'
+	;; 'header_body_seperator' at '[rbp - 160]'
+	;; 'to_write' at '[rbp - 280]'
+	;; 'http_header_for_content_len' at '[rbp - 136]'
+	;; 'connfd' at '[rbp - 8]'
+	;; 'character1' at '[rbp - 240]'
+	;; 'character' at '[rbp - 216]'
+	;; 'path_len' at '[rbp - 256]'
+	;; 'idx' at '[rbp - 200]'
+	;; 'NEW_LINE_ASCII' at '[rbp - 34]'
+	;; 'path_ends_at_idx' at '[rbp - 232]'
 	;; 'file_read_bytes' at '[rbp - 288]'
+	;; 'path_starts_at_idx' at '[rbp - 224]'
+	;; 'path_as_char' at '[rbp - 248]'
+	;; 'http_404' at '[rbp - 96]'
+	;; 'read_bytes' at '[rbp - 24]'
+	;; 'http_header_for_content' at '[rbp - 128]'
+	;; 'SPACE_ASCII' at '[rbp - 33]'
+	;; 'current_ptr' at '[rbp - 296]'
+	;; 'req' at '[rbp - 16]'
+	;; 'NULL_BYTE' at '[rbp - 35]'
+	;; 'index_html_file_dir_path' at '[rbp - 192]'
+	;; 'http_500' at '[rbp - 112]'
+	;; 'PRINT_REQ' at '[rbp - 32]'
+	;; 'header_body_seperator_len' at '[rbp - 168]'
 	mov rsp, rbp
 	pop rbp
 	ret
@@ -2754,14 +2754,14 @@ _main:
 	jmp .loop_12
 	.loop_end_12:
 	
-	;; 'sa_prefix' at '[rbp - 16]'
-	;; 'connfd' at '[rbp - 56]'
-	;; 'listener' at '[rbp - 48]'
-	;; 's_addr' at '[rbp - 32]'
-	;; 'sin_port' at '[rbp - 24]'
 	;; 'read_bytes' at '[rbp - 64]'
+	;; 'sa_prefix' at '[rbp - 16]'
 	;; 'bind_ret' at '[rbp - 40]'
+	;; 's_addr' at '[rbp - 32]'
 	;; 'sockfd' at '[rbp - 8]'
+	;; 'connfd' at '[rbp - 56]'
+	;; 'sin_port' at '[rbp - 24]'
+	;; 'listener' at '[rbp - 48]'
 	mov rsp, rbp
 	pop rbp
 	ret
