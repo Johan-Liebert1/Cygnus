@@ -153,7 +153,87 @@ impl FunctionCall {
                 }
             }
 
-            Err(_) => compiler_info("Found recursive function definition.", self.get_token()),
+            Err(_) => {
+                self.result_type = function_definition.return_type.clone();
+                compiler_info("Found recursive function definition.", self.get_token());
+            }
+        }
+    }
+
+    fn handle_internal_func_write(
+        &self,
+        v: &mut Variables,
+        f: Rc<RefCell<Functions>>,
+        asm: &mut ASM,
+        call_stack: &mut CallStack,
+    ) {
+        for arg in self.arguments.iter() {
+            arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
+
+            match arg.borrow().get_node() {
+                ASTNodeEnum::Variable(v) => {
+                    asm.func_write_var(v);
+                }
+
+                // match the actual type after all dereferences have been applied
+                ASTNodeEnum::BinaryOp(bo) => {
+                    let actual_type = bo.get_type().0;
+
+                    match &actual_type {
+                        VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Int | VarType::Char => {
+                            asm.func_write_number(actual_type)
+                        }
+
+                        VarType::Str => asm.func_write_string(),
+
+                        VarType::Float => asm.func_write_float(),
+
+                        VarType::Ptr(..) => asm.func_write_pointer(),
+
+                        VarType::Array(..) => todo!(),
+                        VarType::Struct(_, _) => todo!(),
+                        VarType::Unknown => todo!(),
+                        VarType::Function(_, _, _) => todo!(),
+                    }
+                }
+
+                ASTNodeEnum::Factor(f) => match &f.get_token().token {
+                    // Int64 is the default for a number literal
+                    TokenEnum::Number(_) => asm.func_write_number(VarType::Int),
+                    TokenEnum::StringLiteral(_) => asm.func_write_string(),
+
+                    _ => unreachable!("This should be unreachable"),
+                },
+
+                // This will always be an integer
+                ASTNodeEnum::LogicalExp(..) => {
+                    todo!()
+                }
+
+                // This will always be an integer
+                ASTNodeEnum::ComparisonExp(..) => todo!(),
+
+                ASTNodeEnum::FunctionCall(fc) => {
+                    // if the function returns anything, then that will be in rax
+
+                    let borrow = f.borrow();
+                    // this will most definitely exist here
+                    let func_def = borrow.get(&fc.name).unwrap();
+
+                    match func_def.return_type {
+                        VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
+                            asm.func_write_number(func_def.return_type.clone())
+                        }
+
+                        _ => unimplemented!(),
+                    };
+                }
+
+                node => {
+                    trace!("{:#?}", node);
+                    todo!();
+                }
+            };
         }
     }
 }
@@ -161,76 +241,7 @@ impl FunctionCall {
 impl AST for FunctionCall {
     fn visit_com(&self, v: &mut Variables, f: Rc<RefCell<Functions>>, asm: &mut ASM, call_stack: &mut CallStack) {
         match self.name.as_str() {
-            FUNC_WRITE => {
-                for arg in self.arguments.iter() {
-                    arg.borrow().visit_com(v, Rc::clone(&f), asm, call_stack);
-
-                    match arg.borrow().get_node() {
-                        ASTNodeEnum::Variable(v) => {
-                            asm.func_write_var(v);
-                        }
-
-                        // match the actual type after all dereferences have been applied
-                        ASTNodeEnum::BinaryOp(bo) => {
-                            let actual_type = bo.get_type().0;
-
-                            match &actual_type {
-                                VarType::Int8 | VarType::Int16 | VarType::Int32 | VarType::Int | VarType::Char => {
-                                    asm.func_write_number(actual_type)
-                                }
-
-                                VarType::Str => asm.func_write_string(),
-
-                                VarType::Float => asm.func_write_float(),
-
-                                VarType::Ptr(..) => asm.func_write_pointer(),
-
-                                VarType::Array(..) => todo!(),
-                                VarType::Struct(_, _) => todo!(),
-                                VarType::Unknown => todo!(),
-                                VarType::Function(_, _, _) => todo!(),
-                            }
-                        }
-
-                        ASTNodeEnum::Factor(f) => match &f.get_token().token {
-                            // Int64 is the default for a number literal
-                            TokenEnum::Number(_) => asm.func_write_number(VarType::Int),
-                            TokenEnum::StringLiteral(_) => asm.func_write_string(),
-
-                            _ => unreachable!("This should be unreachable"),
-                        },
-
-                        // This will always be an integer
-                        ASTNodeEnum::LogicalExp(..) => {
-                            todo!()
-                        }
-
-                        // This will always be an integer
-                        ASTNodeEnum::ComparisonExp(..) => todo!(),
-
-                        ASTNodeEnum::FunctionCall(fc) => {
-                            // if the function returns anything, then that will be in rax
-
-                            let borrow = f.borrow();
-                            // this will most definitely exist here
-                            let func_def = borrow.get(&fc.name).unwrap();
-
-                            match func_def.return_type {
-                                VarType::Int | VarType::Int8 | VarType::Int16 | VarType::Int32 => {
-                                    asm.func_write_number(func_def.return_type.clone())
-                                }
-
-                                _ => unimplemented!(),
-                            };
-                        }
-
-                        node => {
-                            trace!("{:#?}", node);
-                            todo!();
-                        }
-                    };
-                }
-            }
+            FUNC_WRITE => self.handle_internal_func_write(v, f, asm, call_stack),
 
             FUNC_EXIT => {
                 for arg in &self.arguments {
