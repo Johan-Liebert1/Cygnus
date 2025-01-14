@@ -1,5 +1,5 @@
 use crate::lexer::types::VarType;
-use crate::{helpers, trace};
+use crate::helpers;
 use crate::{lexer::tokens::AssignmentTypes, types::ASTNode};
 
 use crate::semantic_analyzer::semantic_analyzer::CallStack;
@@ -37,8 +37,6 @@ impl DeclarationStatement {
             let (is_assignment_okay, rhs_type) = node.is_var_assignment_okay(&self.left.borrow());
 
             if !is_assignment_okay {
-                trace!("Decleration statement: self.left: {:#?}", self.left);
-
                 helpers::compiler_error(
                     format!(
                         "Cannot assign variable (LHS) of type {} to RHS {}",

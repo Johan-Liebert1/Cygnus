@@ -114,13 +114,13 @@ fun parse_http_request(connfd: int, req: *int8, read_bytes: int) {
         strlen(&index_html_file_dir_path), 
         path_as_char, 
         path_ends_at_idx - path_starts_at_idx + 1,
-        file_to_read
+        file_to_read as *char
     );
 
     -- terminate file path with \0
     -- *((file_to_read + final_file_abs_path_len) as *char) = 0;
     
-    def to_write: *char = (file_to_read + final_file_abs_path_len);
+    def to_write: *char = (file_to_read as *char + final_file_abs_path_len);
     *to_write = 0;
 
     write("final_file_abs_path_len = ", final_file_abs_path_len)
@@ -142,13 +142,13 @@ fun parse_http_request(connfd: int, req: *int8, read_bytes: int) {
         memset(buffer, 0, 1024 * 1024)
 
         -- put 
-        def current_ptr: int = write_str_into_mem(buffer, http_header_for_content as *char, http_header_for_content_len)
+        def current_ptr: int = write_str_into_mem(buffer as *char, http_header_for_content as *char, http_header_for_content_len)
         -- write the content length
         current_ptr += write_int_into_mem(buffer + current_ptr, file_read_bytes)
         -- write header_body_seperator
-        current_ptr += write_str_into_mem(buffer + current_ptr, header_body_seperator as *char, header_body_seperator_len)
+        current_ptr += write_str_into_mem(buffer as *char + current_ptr, header_body_seperator as *char, header_body_seperator_len)
         -- write the file data, i.e. HTTP body
-        current_ptr += write_str_into_mem(buffer + current_ptr, read_data, file_read_bytes)
+        current_ptr += write_str_into_mem(buffer as *char + current_ptr, read_data as *char, file_read_bytes)
 
         def write_ret: int = syscall(WRITE_SYSCALL, connfd, buffer, current_ptr);
 
@@ -170,8 +170,8 @@ fun main() {
     }
 
     def sa_prefix: *int = serveraddr_mem;
-    def sin_port: *int16 = serveraddr_mem + 2;
-    def s_addr: *int32 = serveraddr_mem + 4;
+    def sin_port: *int16 = serveraddr_mem as *int16 + 2;
+    def s_addr: *int32 = serveraddr_mem as *int32 + 4;
 
     *sa_prefix = AF_INET;
     *sin_port = PORT;
@@ -206,7 +206,7 @@ fun main() {
         write("Read ", read_bytes, " bytes \n")
         -- syscall(WRITE_SYSCALL, STDOUT, read_data as *char, read_bytes)
 
-        parse_http_request(connfd, read_data, read_bytes);
+        parse_http_request(connfd, read_data as *int8, read_bytes);
     }
 }
 

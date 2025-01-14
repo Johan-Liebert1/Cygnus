@@ -338,7 +338,7 @@ impl AST for FunctionCall {
 
                         self.result_type = fd.return_type.clone();
 
-                        for (actual_param, formal_param) in fd.parameters.iter().zip(&self.arguments) {
+                        for (idx, (actual_param, formal_param)) in fd.parameters.iter().zip(&self.arguments).enumerate() {
                             let binding = formal_param.borrow();
                             let binding = binding.get_node();
 
@@ -350,7 +350,8 @@ impl AST for FunctionCall {
                             if !is_var_assignment_okay {
                                 compiler_error(
                                     format!(
-                                        "Cannot assign param of type {} to '{}', as '{}' is defined as type {}",
+                                        "Cannot assign param number {} of type {} to '{}', as '{}' is defined as type {}",
+                                        idx + 1,
                                         rhs_type,
                                         borrowed_actual_param.var_name,
                                         borrowed_actual_param.var_name,

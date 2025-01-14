@@ -42,6 +42,8 @@ impl PartialEq for VarType {
             | (VarType::Int32, VarType::Int32)
             | (VarType::Float, VarType::Float)
             | (VarType::Char, VarType::Char)
+            | (VarType::Char, VarType::Int8)
+            | (VarType::Int8, VarType::Char)
             | (VarType::Unknown, VarType::Unknown) => true,
 
             (VarType::Str, VarType::Str) => true,
@@ -105,6 +107,7 @@ impl PartialEq for VarType {
 }
 
 impl VarType {
+    /// Dereferences a pointer type as many times as needed and returns the final result
     pub fn get_underlying_pointer_type(&self) -> VarType {
         match self {
             VarType::Ptr(inner) => inner.get_underlying_pointer_type(),
@@ -159,7 +162,8 @@ impl VarType {
             Char => *other == Char || *other == Int8,
 
             Ptr(inner) => match other {
-                Ptr(inner2) => inner.can_assign(inner2),
+                Ptr(inner2) => inner == inner2, // inner.can_assign(inner2),
+
                 Function(..) => inner.can_assign(other),
 
                 _ => false,

@@ -189,8 +189,8 @@ impl AST for ComparisonExp {
 
         if let TokenEnum::Comparator(op) = &self.comp_op.token {
             // need to do this even though it's always going to be an int
-            self.result_type = self.left.borrow().get_node().figure_out_type(
-                &self.right.borrow().get_node(),
+            self.result_type = self.left.borrow_mut().get_node_mut().figure_out_type(
+                &mut self.right.borrow_mut().get_node_mut(),
                 AllOperations::Comparator(op.clone()),
                 self.get_token(),
             );

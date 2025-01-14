@@ -123,8 +123,6 @@ impl Lexer {
 
                     self.index += 1;
 
-                    // FIXME: Every peek inside of advance should decrement the index after it's
-                    // done with it
                     match self.peek_next_token().token {
                         TokenEnum::Type(type_) => {
                             // consume the 'type_' token

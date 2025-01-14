@@ -6,7 +6,6 @@ use crate::{
         tokens::Operations,
         types::VarType,
     },
-    trace,
     types::ASTNode,
 };
 
@@ -317,8 +316,6 @@ impl Parser {
             // could be something like *a = 23 or *(a + 1) = 34
             TokenEnum::Op(op) => match op {
                 Operations::Multiply => {
-                    trace!("Went into the Multiply thingy");
-
                     let mut times_dereferenced = 0;
 
                     while let TokenEnum::Op(Operations::Multiply) = self.peek_next_token().token {
