@@ -122,13 +122,13 @@ fun main() {
         ret = SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         ret = SDL_RenderClear(renderer);
 
-        ret = SDL_PollEvent(event);
+        ret = SDL_PollEvent(event as *char);
 
         if ret != 0 {
             if *(event as *int32) == SDL_QUIT {
                 quit = 1;
             } elif *(event as *int32) == SDL_KEYDOWN {
-                def keysym: *int32 = event + 4 * 5;
+                def keysym: *int32 = event as *int32 + 4 * 5;
 
                 if *keysym == SDL_ESC or *keysym == SDLK_q {
                     quit = 1;
