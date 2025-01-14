@@ -81,3 +81,10 @@ pub fn compiler_warning<S: AsRef<str> + Display>(message: S, tok: &Token) {
         tok.file, tok.line_number, tok.col_number, message
     );
 }
+
+pub fn compiler_info<S: AsRef<str> + Display>(message: S, tok: &Token) {
+    println!(
+        "INFO: {}:{}:{} {}",
+        tok.file, tok.line_number, tok.col_number, message
+    );
+}

@@ -222,3 +222,9 @@ fn decleration_only() {
     let (stdout_str, _, file_result) = get_stdout_and_actual_result("decleration_only.cy");
     assert_eq!(stdout_str, file_result);
 }
+
+#[test]
+fn fibonacci_recursive() {
+    let (stdout_str, _, file_result) = get_stdout_and_actual_result("fibonacci_recursive.cy");
+    assert_eq!(stdout_str, file_result);
+}

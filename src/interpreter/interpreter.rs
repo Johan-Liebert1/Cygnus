@@ -15,7 +15,11 @@ use crate::{asm::asm::ASM, ast::abstract_syntax_tree::VisitResult, lexer::tokens
 // and this is called by semantic_visit of function_def which holds the mutable ref
 #[derive(Debug)]
 pub struct FunctionHashMapValue {
+    /// The function body AST
     pub func: ASTNode,
+    /// We store return type here for recursive function calls 
+    /// Since we will get already borrowed error for recursive calls on semantic visit
+    /// We need to store the return type separately
     pub return_type: VarType,
     pub is_extern_func: bool,
 }
